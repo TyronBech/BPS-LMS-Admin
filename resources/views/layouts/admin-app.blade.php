@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <title>BPS Library Management System</title>
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
+  <link rel="icon" href="{{ asset('img/School Logo.png') }}"> 
+  <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
+</head>
+<body class="relative bg-blue-50">
+  @include('layouts.admin-header')
+  <main class="container relative mx-auto px-2 font-sans flex-col">
+    @include('layouts.toast')
+    @yield('content')
+  </main>
+  @include('layouts.footer')
+  @yield('scripts')
+</body>
+</html>
