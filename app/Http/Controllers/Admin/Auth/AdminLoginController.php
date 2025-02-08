@@ -28,7 +28,7 @@ class AdminLoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(route('dashboard.dashboard', absolute: false));
+        return redirect()->intended(route('dashboard', absolute: false));
     }
 
     /**
@@ -42,6 +42,6 @@ class AdminLoginController extends Controller
 
         $request->session()->regenerateToken();
 
-        return redirect()->route('welcome');
+        return redirect()->route('main-welcome');
     }
 }

@@ -23,11 +23,11 @@ Route::get('/', function () {
 //     return view('dashboard');
 // })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
+// Route::middleware('auth')->group(function () {
+//     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+//     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+//     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+// });
 
 Route::middleware('guest', RedirectIfAuthenticated::class)->group(function () {
     Route::get('/', function () {
@@ -42,6 +42,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     Route::get('dashboard', function(){
         return view('dashboard.dashboard');
     })->name('dashboard');
+    /*
     Route::group(['prefix' => 'report'], function () {
         Route::get('user-report',       [LogsController::class, 'index'])               ->name('report.user');
         Route::post('user-report',      [LogsController::class, 'retrieve'])            ->name('report.user-retrieve');
@@ -82,6 +83,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             //Route::destroy('delete-student',    [StudentMaintenanceController::class, 'destroy'])   ->name('maintenance.delete-student');
         });
     });
+    */
     Route::post('logout', [AdminLoginController::class, 'destroy'])->name('admin.logout');
 });
 
