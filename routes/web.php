@@ -47,9 +47,6 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     Route::get('dashboard', function(){
         return view('dashboard.dashboard');
     })->name('dashboard');
-    Route::get('test', function(){
-        return view('test');
-    })->name('test');
     /*
     Route::group(['prefix' => 'report'], function () {
         Route::get('user-report',       [LogsController::class, 'index'])               ->name('report.user');
