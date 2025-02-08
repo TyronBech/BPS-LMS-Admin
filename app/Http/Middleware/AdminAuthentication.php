@@ -16,7 +16,7 @@ class AdminAuthentication
      */
     public function handle(Request $request, Closure $next): Response
     {
-        //if(!Auth::guard('admin')->check()) return redirect()->route('login')->with(['toast-error' => 'You are not authenticated']);
+        if(!Auth::guard('admin')->check()) return redirect()->route('login')->with(['toast-error' => 'You are not authenticated']);
         return $next($request);
     }
 }
