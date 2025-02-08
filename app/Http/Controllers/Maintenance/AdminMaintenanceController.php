@@ -1,0 +1,62 @@
+<?php
+
+namespace App\Http\Controllers\Maintenance;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Spatie\Permission\Models\Role;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
+use App\Models\Admin;
+
+class AdminMaintenanceController extends Controller
+{
+    public function index()
+    {
+        return view('maintenance.admins.admins');
+    }
+    public function create()
+    {
+        $roles = Role::where('guard_name', 'admin')
+                    ->where('name', '!=', 'Super Admin')
+                    ->get();
+        return view('maintenance.admins.create', compact('roles'));
+    }
+    public function store(Request $request){
+        $request->validate([
+            'first-name'    => 'required|string|max:50',            
+            'middle-name'   => 'required|string|max:50',
+            'last-name'     => 'required|string|max:50',
+            'email'         => 'required|email',            
+            'password'      => 'required|min:8',
+            'role'          => 'required',
+        ]);
+        if($this->has_invalid_characters($request->input('first-name'))){
+            return redirect()->back()->with('toast-warning', 'Admin\'s name contains invalid characters');
+        } else if($this->has_invalid_characters($request->input('middle-name'))){
+            return redirect()->back()->with('toast-warning', 'Admin\'s middle name contains invalid characters');
+        } else if($this->has_invalid_characters($request->input('last-name'))){
+            return redirect()->back()->with('toast-warning', 'Admin\'s last name contains invalid characters');
+        }
+        DB::beginTransaction();
+        try {
+            $admin = Admin::create([
+                'first_name'    => $request->input('first-name'),
+                'middle_name'   => $request->input('middle-name'),
+                'last_name'     => $request->input('last-name'),
+                'email'         => $request->input('email'),
+                'password'      => Hash::make($request->input('password')),
+            ]);
+            $admin->assignRole(Role::findById($request->input('role'), 'admin'));
+        } catch(\Illuminate\Database\QueryException $e){
+            DB::rollBack();
+            return redirect()->back()->with('toast-error', $e->getMessage());
+        }
+        DB::commit();
+        return redirect()->route('maintenance.admins')->with('toast-success', 'Admin created successfully');
+    }
+    private function has_invalid_characters($name) {
+        $pattern = '/^[a-zA-ZáéíóúñÁÉÍÓÚÑ]+$/';
+        return !(bool) preg_match($pattern, $name); 
+    }
+}

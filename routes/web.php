@@ -12,8 +12,10 @@ use App\Http\Controllers\Report\TransactionController;
 use App\Http\Controllers\Report\BookCirculationController;
 use App\Http\Controllers\Import\StudentImportController;
 use App\Http\Controllers\Import\BookImportController;
+use App\Http\Controllers\Maintenance\AdminMaintenanceController;
 use App\Http\Controllers\Maintenance\BookMaintenanceController;
 use App\Http\Controllers\Maintenance\StudentMaintenanceController;
+use App\Http\Controllers\Roles_Permissions\PermissionsController;
 
 Route::get('/', function () {
     return view('main-welcome');
@@ -37,11 +39,17 @@ Route::middleware('guest', RedirectIfAuthenticated::class)->group(function () {
     Route::post('login',    [AdminLoginController::class, 'store'])->name('login');
     Route::get('register', [RegisterAdminController::class, 'create'])->name('register');
     Route::post('register', [RegisterAdminController::class, 'store']);
+    // Route::prefix('roles_and_permissions')->group(function(){
+    //     Route::get('permissions', [PermissionsController::class, 'index'])->name('permissions.index');
+    // });
 });
 Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->group(function () {
     Route::get('dashboard', function(){
         return view('dashboard.dashboard');
     })->name('dashboard');
+    Route::get('test', function(){
+        return view('test');
+    })->name('test');
     /*
     Route::group(['prefix' => 'report'], function () {
         Route::get('user-report',       [LogsController::class, 'index'])               ->name('report.user');
@@ -60,8 +68,9 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::get('books',             [BookImportController::class, 'index'])     ->name('import.import-books');
         Route::post('books-data',       [BookImportController::class, 'upload'])    ->name('import.upload-books');
         Route::put('insert-data',       [BookImportController::class, 'store'])     ->name('import.store-books');
-    });
+    });*/
     Route::group(['prefix' => 'maintenance'], function () {
+        /*
         Route::group(['prefix' => 'books'], function () {
             Route::get('books',         [BookMaintenanceController::class, 'index'])    ->name('maintenance.books');
             Route::get('add-book',      [BookMaintenanceController::class, 'create'])   ->name('maintenance.create-book');
@@ -81,9 +90,13 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::get('show-students',     [StudentMaintenanceController::class, 'show'])      ->name('maintenance.show-students');
             Route::get('delete-student',    [StudentMaintenanceController::class, 'destroy'])   ->name('maintenance.delete-student');
             //Route::destroy('delete-student',    [StudentMaintenanceController::class, 'destroy'])   ->name('maintenance.delete-student');
+        });*/
+        Route::group(['prefix' => 'admin-management'], function () {
+            Route::get('admins', [AdminMaintenanceController::class, 'index'])->name('maintenance.admins');
+            Route::get('add-admin', [AdminMaintenanceController::class, 'create'])->name('maintenance.create-admin');
+            Route::post('add-admin', [AdminMaintenanceController::class, 'store'])->name('maintenance.store-admin');
         });
     });
-    */
     Route::post('logout', [AdminLoginController::class, 'destroy'])->name('admin.logout');
 });
 
