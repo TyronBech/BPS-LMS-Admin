@@ -15,7 +15,7 @@ use App\Http\Controllers\Import\BookImportController;
 use App\Http\Controllers\Maintenance\AdminMaintenanceController;
 use App\Http\Controllers\Maintenance\BookMaintenanceController;
 use App\Http\Controllers\Maintenance\StudentMaintenanceController;
-use App\Http\Controllers\Roles_Permissions\PermissionsController;
+use App\Http\Controllers\Roles_Permissions\RolesController;
 use App\Http\Middleware\SuperAdminAuthentication;
 
 Route::get('/', function () {
@@ -97,6 +97,9 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::put('edit-admin',    [AdminMaintenanceController::class, 'update'])  ->name('maintenance.update-admin');
             Route::get('show-admins',   [AdminMaintenanceController::class, 'show'])    ->name('maintenance.show-admins');
             Route::get('delete-admin',  [AdminMaintenanceController::class, 'destroy']) ->name('maintenance.delete-admin');
+            Route::prefix('roles-and-permissions')->group(function () {
+                Route::get('management', [RolesController::class, 'index'])->name('maintenance.roles-and-permissions.management');
+            });
         });
     });
     Route::post('logout', [AdminLoginController::class, 'destroy'])->name('admin.logout');

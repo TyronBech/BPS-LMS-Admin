@@ -3,7 +3,7 @@
 <h1 class="font-semibold text-center text-4xl p-5">Maintenance</h1>
 <div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow">
   <div class="flex justify-between">
-    <h5 class="mb-1 text-2xl font-bold tracking-tight text-gray-900">Edit User</h5>
+    <h5 class="mb-1 text-2xl font-bold tracking-tight text-gray-900">Edit Admin</h5>
     <a href="{{ route('maintenance.admins') }}" class="inline-flex items-center px-3 py-1 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
       Back
       <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">

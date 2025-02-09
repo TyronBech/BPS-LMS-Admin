@@ -9,5 +9,8 @@ use Spatie\Permission\Models\Permission;
 
 class RolesController extends Controller
 {
-    
+    public function index()
+    {
+        return view('roles_permissions.roles');
+    }
 }
