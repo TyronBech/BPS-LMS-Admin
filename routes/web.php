@@ -39,9 +39,9 @@ Route::middleware('guest', RedirectIfAuthenticated::class)->group(function () {
     Route::get('/', function () {
         return view('main-welcome');
     })->name('main-welcome');
-    Route::get('login',     [AdminLoginController::class, 'index'])->name('login');
-    Route::post('login',    [AdminLoginController::class, 'store'])->name('login');
-    Route::get('register', [RegisterAdminController::class, 'create'])->name('register');
+    Route::get('login',     [AdminLoginController::class, 'index'])     ->name('login');
+    Route::post('login',    [AdminLoginController::class, 'store'])     ->name('login');
+    Route::get('register',  [RegisterAdminController::class, 'create']) ->name('register');
     Route::post('register', [RegisterAdminController::class, 'store']);
 });
 Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->group(function () {
