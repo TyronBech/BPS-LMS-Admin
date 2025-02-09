@@ -61,15 +61,12 @@ class BookMaintenanceController extends Controller
     public function edit(Request $request)
     {
         $book = null;
-        DB::beginTransaction();
         try{
             $accession = array_keys($request->all())[0]; 
             $book = Book::where('accession', $accession)->first();
         } catch(\Exception $e){
-            DB::rollBack();
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
-        DB::commit();
         return view('maintenance.books.edit', compact('book'));
     }
     public function show(Request $request)

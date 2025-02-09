@@ -12,11 +12,9 @@ class PermissionsController extends Controller
 {
     public function index()
     {
-        $roles = Role::all();
-        $permissions = Permission::all();
-        $admin = Admin::findOrFail(1);
+        $admin = Admin::findOrFail(3);
         $adminRole = $admin->getRoleNames();
         $adminPermissions = $admin->getAllPermissions();
-        return ['roles' => $roles, 'permissions' => $permissions, 'adminRole' => $adminRole, 'adminPermissions' => $adminPermissions];
+        return ['adminRole' => $adminRole, 'adminPermissions' => $adminPermissions];
     }
 }

@@ -17,10 +17,14 @@ class RolePermissionSeeder extends Seeder
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
         //Permission::create(['name' => 'Edit Users',       'guard_name' => 'admin']);
         //Permission::create(['name' => 'Delete Users',     'guard_name' => 'admin']);
-        //Permission::create(['name' => 'Add Users',        'guard_name' => 'admin']);
+        //Permission::create(['name' => 'Create Users',     'guard_name' => 'admin']);
         //Permission::create(['name' => 'Modify Admins',    'guard_name' => 'admin']);
 
-        $role = Role::create(['name' => 'Admin', 'guard_name' => 'admin']);
-        $role->givePermissionTo('Edit Users', 'Add Users');
+        //$role = Role::create(['name' => 'Admin', 'guard_name' => 'admin']);
+        //$role->givePermissionTo('Edit Users', 'Create Users');
+        $role = Role::findById(3, 'admin');
+        $permission = Permission::findById(3, 'admin');
+        $role->revokePermissionTo($permission);
+        $role->givePermissionTo('Edit Users', 'Create Users');
     }
 }

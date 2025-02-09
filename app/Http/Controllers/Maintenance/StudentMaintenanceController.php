@@ -81,15 +81,13 @@ class StudentMaintenanceController extends Controller
     }
     public function edit(Request $request)
     {
-        DB::beginTransaction();
+        $user = null;
         try{
             $id = array_keys($request->all())[0];
             $user = User::where('user_id', $id)->first();
         } catch(\Illuminate\Database\QueryException $e){
-            DB::rollBack();
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
-        DB::commit();
         return view('maintenance.students.edit', compact('user'));
     }
     public function update(Request $request)

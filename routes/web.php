@@ -31,6 +31,9 @@ Route::get('/', function () {
 //     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 // });
 
+// Route::prefix('roles_and_permissions')->group(function(){
+//     Route::get('permissions', [PermissionsController::class, 'index'])->name('permissions.index');
+// });
 Route::middleware('guest', RedirectIfAuthenticated::class)->group(function () {
     Route::get('/', function () {
         return view('main-welcome');
@@ -39,9 +42,6 @@ Route::middleware('guest', RedirectIfAuthenticated::class)->group(function () {
     Route::post('login',    [AdminLoginController::class, 'store'])->name('login');
     Route::get('register', [RegisterAdminController::class, 'create'])->name('register');
     Route::post('register', [RegisterAdminController::class, 'store']);
-    // Route::prefix('roles_and_permissions')->group(function(){
-    //     Route::get('permissions', [PermissionsController::class, 'index'])->name('permissions.index');
-    // });
 });
 Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->group(function () {
     Route::get('dashboard', function(){
@@ -89,9 +89,13 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             //Route::destroy('delete-student',    [StudentMaintenanceController::class, 'destroy'])   ->name('maintenance.delete-student');
         });*/
         Route::group(['prefix' => 'admin-management'], function () {
-            Route::get('admins', [AdminMaintenanceController::class, 'index'])->name('maintenance.admins');
-            Route::get('add-admin', [AdminMaintenanceController::class, 'create'])->name('maintenance.create-admin');
-            Route::post('add-admin', [AdminMaintenanceController::class, 'store'])->name('maintenance.store-admin');
+            Route::get('admins',        [AdminMaintenanceController::class, 'index'])   ->name('maintenance.admins');
+            Route::get('add-admin',     [AdminMaintenanceController::class, 'create'])  ->name('maintenance.create-admin');
+            Route::post('add-admin',    [AdminMaintenanceController::class, 'store'])   ->name('maintenance.store-admin');
+            Route::get('edit-admin',    [AdminMaintenanceController::class, 'edit'])    ->name('maintenance.edit-admin');
+            Route::put('edit-admin',    [AdminMaintenanceController::class, 'update'])  ->name('maintenance.update-admin');
+            Route::get('show-admins',   [AdminMaintenanceController::class, 'show'])    ->name('maintenance.show-admins');
+            Route::get('delete-admin',  [AdminMaintenanceController::class, 'destroy']) ->name('maintenance.delete-admin');
         });
     });
     Route::post('logout', [AdminLoginController::class, 'destroy'])->name('admin.logout');
