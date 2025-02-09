@@ -111,6 +111,9 @@ class AdminMaintenanceController extends Controller
         DB::commit();
         return redirect()->route('maintenance.admins')->with('toast-success', 'Admin updated successfully');
     }
+    public function destroy(Request $request){
+        return redirect()->route('maintenance.admins')->with('toast-success', 'you reached this page');
+    }
     private function has_invalid_characters($name) {
         $pattern = '/^[a-zA-ZáéíóúñÁÉÍÓÚÑ]+$/';
         return !(bool) preg_match($pattern, $name); 

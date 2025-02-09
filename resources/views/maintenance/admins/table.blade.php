@@ -19,7 +19,9 @@
           <td>{{ $admin->email }}</td>
           <td class="pb-1 flex justify-center">
             <a href="{{ route('maintenance.edit-admin', $admin->id) }}" id="editBtn" name="editBtn" class="text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2">Edit</a>
-            <a href="#" id="deleteBtn" name="deleteBtn" class="focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2" onclick="return confirm('Are you sure you want to delete this data?')">Delete</a>
+            @if(auth()->user()->hasRole(App\Enum\RolesEnum::SUPER_ADMIN))
+            <a href="{{ route('maintenance.delete-admin', $admin->id) }}" id="deleteBtn" name="deleteBtn" class="focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2" onclick="return confirm('Are you sure you want to delete this data?')">Delete</a>
+            @endif
           </td>
         </tr>
         @empty

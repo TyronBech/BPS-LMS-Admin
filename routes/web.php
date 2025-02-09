@@ -16,6 +16,7 @@ use App\Http\Controllers\Maintenance\AdminMaintenanceController;
 use App\Http\Controllers\Maintenance\BookMaintenanceController;
 use App\Http\Controllers\Maintenance\StudentMaintenanceController;
 use App\Http\Controllers\Roles_Permissions\PermissionsController;
+use App\Http\Middleware\SuperAdminAuthentication;
 
 Route::get('/', function () {
     return view('main-welcome');
@@ -88,7 +89,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::get('delete-student',    [StudentMaintenanceController::class, 'destroy'])   ->name('maintenance.delete-student');
             //Route::destroy('delete-student',    [StudentMaintenanceController::class, 'destroy'])   ->name('maintenance.delete-student');
         });*/
-        Route::group(['prefix' => 'admin-management'], function () {
+        Route::prefix('admin-management')->middleware(SuperAdminAuthentication::class)->group(function () {
             Route::get('admins',        [AdminMaintenanceController::class, 'index'])   ->name('maintenance.admins');
             Route::get('add-admin',     [AdminMaintenanceController::class, 'create'])  ->name('maintenance.create-admin');
             Route::post('add-admin',    [AdminMaintenanceController::class, 'store'])   ->name('maintenance.store-admin');
