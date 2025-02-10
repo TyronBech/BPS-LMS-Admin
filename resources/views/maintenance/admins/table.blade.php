@@ -1,4 +1,5 @@
 @use('App\Enum\RolesEnum')
+@use('Spatie\Permission\Models\Role')
 <div class="mx-auto px-2 font-sans flex-col">
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
     <table class="w-full text-sm text-left rtl:text-right">
@@ -8,6 +9,7 @@
           <th scope="col" class="p-2 text-center">Middle Name</th>
           <th scope="col" class="p-2 text-center">Last Name</th>
           <th scope="col" class="p-2 text-center">Email</th>
+          <th scope="col" class="p-2 text-center">Role</th>
           <th scope="col" class="p-2 text-center">Actions</th>
         </tr>
       </thead>
@@ -18,6 +20,7 @@
           <td>{{ $admin->middle_name }}</td>
           <td>{{ $admin->last_name }}</td>
           <td>{{ $admin->email }}</td>
+          <td>{{ implode(', ', $admin->getRoleNames()->toArray()) }}</td>
           <td class="pb-1 flex justify-center">
             <a href="{{ route('maintenance.edit-admin', $admin->id) }}" id="editBtn" name="editBtn" class="text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2">Edit</a>
             @if(auth()->user()->hasRole(RolesEnum::SUPER_ADMIN))
@@ -27,7 +30,7 @@
         </tr>
         @empty
         <tr>
-          <td colspan="4" class="text-center py-1.5">No data found.</td>
+          <td colspan="5" class="text-center py-1.5">No data found.</td>
         </tr>
         @endforelse
       </tbody>

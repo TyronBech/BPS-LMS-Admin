@@ -16,7 +16,8 @@ class AdminMaintenanceController extends Controller
     public function index()
     {
         $admins = Admin::all();
-        return view('maintenance.admins.admins', compact('admins'));
+        $roles = Role::all();
+        return view('maintenance.admins.admins', compact('admins', 'roles'));
     }
     public function create()
     {
