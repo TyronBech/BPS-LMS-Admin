@@ -1,5 +1,7 @@
 @extends('layouts.admin-app')
 @section('content')
+@use('App\Enum\RolesEnum')
+@use('App\Enum\PermissionsEnum')
 <h1 class="font-semibold text-center text-4xl p-5">Home</h1>
 <div class="flex items-center justify-center">
   <a href="#" class="block max-w-xl p-6 bg-white border border-gray-200 rounded-lg shadow-sm hover:bg-gray-100 dark:bg-gray-800 dark:border-gray-700 dark:hover:bg-gray-700">
@@ -8,23 +10,23 @@
     </svg>
     <p class="font-normal text-gray-700 dark:text-gray-400">Welcome! {{ auth()->user()->first_name }} {{ auth()->user()->last_name }}</p>
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Role</h5>
-    @role(App\Enum\RolesEnum::SUPER_ADMIN)
+    @role(RolesEnum::SUPER_ADMIN)
     <p class="font-normal text-gray-700 dark:text-gray-400">You are a super admin.</p>
     @endrole
-    @role(App\Enum\RolesEnum::ADMIN)
+    @role(RolesEnum::ADMIN)
     <p class="font-normal text-gray-700 dark:text-gray-400">You are a admin.</p>
     @endrole
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Permissions</h5>
-    @can(App\Enum\PermissionsEnum::MODIFY_ADMIN)
+    @can(PermissionsEnum::MODIFY_ADMIN)
     <p class="font-normal text-gray-700 dark:text-gray-400">You can modify admins.</p>
     @endcan
-    @can(App\Enum\PermissionsEnum::CREATE_USERS)
+    @can(PermissionsEnum::CREATE_USERS)
     <p class="font-normal text-gray-700 dark:text-gray-400">You can create users.</p>
     @endcan
-    @can(App\Enum\PermissionsEnum::EDIT_USERS)
+    @can(PermissionsEnum::EDIT_USERS)
     <p class="font-normal text-gray-700 dark:text-gray-400">You can edit users.</p>
     @endcan
-    @can(App\Enum\PermissionsEnum::DELETE_USERS)
+    @can(PermissionsEnum::DELETE_USERS)
     <p class="font-normal text-gray-700 dark:text-gray-400">You can delete users.</p>
     @endcan
   </a>
