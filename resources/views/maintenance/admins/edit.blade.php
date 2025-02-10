@@ -1,5 +1,6 @@
 @extends('layouts.admin-app')
 @section('content')
+@use('App\Enum\RolesEnum')
 <h1 class="font-semibold text-center text-4xl p-5">Maintenance</h1>
 <div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow">
   <div class="flex justify-between">
@@ -47,7 +48,7 @@
     <div class="mb-5">
       <label for="role" class="block mb-2 text-sm font-medium text-gray-900">Select Role:</label>
       <select id="role" name="role" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-        @if(auth()->user()->hasRole(App\Enum\RolesEnum::SUPER_ADMIN) && auth()->user()->id == $admin->id)
+        @if(auth()->user()->hasRole(RolesEnum::SUPER_ADMIN) && auth()->user()->id == $admin->id)
         <option value="{{ $super_admin->id }}">{{ $super_admin->name }}</option>
         @else
         @foreach($roles as $role)

@@ -60,12 +60,16 @@ class AdminMaintenanceController extends Controller
     }
     public function edit(Request $request){
         $admin = null;
+        $super_admin = null;
         try{
             $id = array_keys($request->all())[0];
             $admin = Admin::findOrFail($id);
-            $super_admin = Role::where('name', 'Super Admin')
-                            ->where('guard_name', 'admin')
-                            ->first();
+            $authAdmin = Admin::findOrFail(Auth::guard('admin')->user()->id);
+            if($authAdmin->hasRole(RolesEnum::SUPER_ADMIN)){
+                $super_admin = Role::where('name', 'Super Admin')
+                                ->where('guard_name', 'admin')
+                                ->first();
+            }
             $roles = Role::where('guard_name', 'admin')
                     ->where('name', '!=', 'Super Admin')
                     ->get();
