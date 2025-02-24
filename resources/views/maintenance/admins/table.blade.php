@@ -23,6 +23,11 @@
           <td>{{ implode(', ', $admin->getRoleNames()->toArray()) }}</td>
           <td class="pb-1 flex justify-center">
             <a href="{{ route('maintenance.edit-admin', $admin->id) }}" id="editBtn" name="editBtn" class="text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2">Edit</a>
+            @if(auth()->user()->id == $admin->id)
+            <button class="focus:outline-none cursor-not-allowed text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2" type="button">
+              Delete
+            </button>
+            @endif
             @if(auth()->user()->hasRole(RolesEnum::SUPER_ADMIN) && auth()->user()->id != $admin->id)
             @php
             $adminID = ['id' => $admin->id];
@@ -56,7 +61,7 @@
         <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
         </svg>
-        <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete this product?</h3>
+        <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete this admin?</h3>
         <form action="{{ route('maintenance.delete-admin', $adminID) }}" method="POST" class="flex items-center justify-center">
           @csrf
           @method('DELETE')
