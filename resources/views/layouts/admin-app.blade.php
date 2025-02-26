@@ -7,9 +7,8 @@
   <title>BPS Library Management System</title>
   @vite(['resources/css/app.css', 'resources/js/app.js'])
   <link rel="icon" href="{{ asset('img/School Logo.png') }}"> 
-  <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
 </head>
-<body class="relative bg-blue-50">
+<body class="relative bg-blue-50 dark:bg-gray-900 dark:text-white">
   @include('layouts.admin-header')
   <main class="container relative mx-auto px-2 font-sans flex-col">
     @include('layouts.toast')

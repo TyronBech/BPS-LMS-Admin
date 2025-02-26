@@ -8,12 +8,11 @@
   <title>BPS Library Management System</title>
   @vite(['resources/css/app.css', 'resources/js/app.js'])
   <link rel="icon" href="{{ asset('img/School Logo.png') }}">
-  <link href="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.css" rel="stylesheet" />
 </head>
 
-<body class="relative bg-blue-50">
+<body class="relative bg-blue-50 dark:bg-gray-900">
   <header>
-      <div class="bg-blue-700 border-gray-200">
+      <div class="bg-blue-700 border-gray-200 dark:bg-blue-950">
         <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto">
           <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 rtl:space-x-reverse">
             <img class="rounded-full w-36 h-36" src="{{ asset('img/School Logo.png') }}" alt="School Logo">
@@ -31,8 +30,6 @@
     @yield('content')
   </main>
   @include('layouts.footer')
-  <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flowbite@2.5.2/dist/flowbite.min.js"></script>
   @yield('scripts')
 </body>
 
