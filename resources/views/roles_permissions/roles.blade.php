@@ -8,9 +8,9 @@
     @csrf
     <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Add new role</button>
   </form>
-  <div class="flex justify-center">
+  <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-3">
     @foreach($roles_with_permissions as $role)
-    <div class="flex flex-col w-1/4 p-6 mx-3 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <div class="flex flex-col w-full p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
       <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ $role->name }}</h5>
       <hr class="mb-2 border-gray-600 dark:border-gray-500">
       <ul class="font-normal text-gray-700 dark:text-gray-400">
@@ -40,9 +40,9 @@
   </div>
   <h1 class="font-semibold text-center text-4xl p-5">Permissions</h1>
       <hr class="mb-2 border-gray-600 dark:border-gray-500">
-  <div class="flex justify-center">
+  <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-3">
     @foreach($permissions_with_roles as $permission)
-    <div class="flex flex-col w-1/3 p-6 mx-2 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <div class="flex flex-col w-full p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
       <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ $permission->name }}</h5>
       <hr class="mb-2 border-gray-600 dark:border-gray-500">
       <ul class="font-normal text-gray-700 dark:text-gray-400">
