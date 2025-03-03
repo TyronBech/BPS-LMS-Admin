@@ -3,7 +3,7 @@
 <div class="mx-auto px-2 font-sans flex-col">
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
     <table class="w-full text-sm text-left rtl:text-right">
-      <thead class="text-xs py-2 text-gray-700 uppercase bg-gray-300 text-center">
+      <thead class="text-xs py-2 text-gray-700 uppercase bg-gray-300 text-center dark:bg-gray-500 dark:text-white">
         <tr>
           <th scope="col" class="p-2 text-center">First Name</th>
           <th scope="col" class="p-2 text-center">Middle Name</th>
@@ -15,7 +15,7 @@
       </thead>
       <tbody>
         @forelse($admins as $admin)
-        <tr class="bg-white border-b text-center">
+        <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
           <td>{{ $admin->first_name }}</td>
           <td>{{ $admin->middle_name }}</td>
           <td>{{ $admin->last_name }}</td>
