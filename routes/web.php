@@ -98,7 +98,12 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::get('show-admins',       [AdminMaintenanceController::class, 'show'])    ->name('maintenance.show-admins');
             Route::delete('delete-admin',   [AdminMaintenanceController::class, 'destroy']) ->name('maintenance.delete-admin');
             Route::prefix('roles-and-permissions')->group(function () {
-                Route::get('management', [RolesController::class, 'index'])->name('maintenance.roles-and-permissions.management');
+                Route::get('management',        [RolesController::class, 'index'])      ->name('maintenance.roles-and-permissions.management');
+                Route::get('add-role',          [RolesController::class, 'create'])     ->name('maintenance.roles-and-permissions.create-role');
+                Route::post('add-role',         [RolesController::class, 'store'])      ->name('maintenance.roles-and-permissions.store-role');
+                Route::get('edit-role',         [RolesController::class, 'edit'])       ->name('maintenance.roles-and-permissions.edit-role');
+                Route::put('edit-role',         [RolesController::class, 'update'])     ->name('maintenance.roles-and-permissions.update-role');
+                Route::delete('delete-role',    [RolesController::class, 'destroy'])    ->name('maintenance.roles-and-permissions.delete-role');
             });
         });
     });
