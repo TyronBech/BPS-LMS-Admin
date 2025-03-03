@@ -1,7 +1,7 @@
 @extends('layouts.admin-app')
 @section('content')
 <h1 class="font-semibold text-center text-4xl p-5">Maintenance</h1>
-<div class="container mx-auto p-4 mt-4 border border-gray-200 rounded-lg dark:bg-gray-900 dark:border-gray-600">
+<div class="container mx-auto p-4 mt-4 border bg-white shadow border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-600">
   <h1 class="font-semibold text-center text-4xl p-5">Roles</h1>
   <hr class="mb-2 border-gray-600 dark:border-gray-500">
   <form action="{{ route('maintenance.roles-and-permissions.create-role') }}" method="GET">
@@ -10,22 +10,22 @@
   </form>
   <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-3">
     @foreach($roles_with_permissions as $role)
-    <div class="flex flex-col w-full p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <div class="flex flex-col w-full p-6 bg-white border-2 border-gray-300 rounded-lg shadow dark:bg-gray-700 dark:border-gray-500">
       <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ $role->name }}</h5>
       <hr class="mb-2 border-gray-600 dark:border-gray-500">
       <ul class="font-normal text-gray-700 dark:text-gray-400">
         @foreach($role->permissions as $permission)
-        <li class="flex flex-row my-2 font-normal text-gray-700 dark:text-gray-400">
+        <li class="flex flex-row my-2 font-normal text-gray-700 dark:text-gray-200">
           {{ $permission->name }}
         </li>
         @endforeach
       </ul>
       <hr class="mb-2 border-gray-600 dark:border-gray-500">
-      <span class="font-bold text-gray-700 dark:text-gray-400">Assigned:</span>
+      <span class="font-bold text-gray-700 dark:text-white">Assigned:</span>
       <ul class="font-normal text-gray-700 dark:text-gray-400">
         @foreach($admins as $admin)
         @if($admin->hasRole($role->name))
-        <li class="flex flex-row my-2 font-normal text-gray-700 dark:text-gray-400">
+        <li class="flex flex-row my-2 font-normal text-gray-700 dark:text-gray-200">
           {{ $admin->last_name }}, {{ $admin->first_name }} {{ $admin->middle_name }}
         </li>
         @endif
@@ -45,12 +45,12 @@
   <hr class="mb-2 border-gray-600 dark:border-gray-500">
   <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-3">
     @foreach($permissions_with_roles as $permission)
-    <div class="flex flex-col w-full p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <div class="flex flex-col w-full p-6 bg-white border-2 border-gray-300 rounded-lg shadow dark:bg-gray-700 dark:border-gray-500">
       <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ $permission->name }}</h5>
       <hr class="mb-2 border-gray-600 dark:border-gray-500">
       <ul class="font-normal text-gray-700 dark:text-gray-400">
         @foreach($permission->roles as $role)
-        <li class="flex flex-row my-2 font-normal text-gray-700 dark:text-gray-400">
+        <li class="flex flex-row my-2 font-normal text-gray-700 dark:text-gray-200">
           {{ $role->name }}
         </li>
         @endforeach
