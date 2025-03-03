@@ -25,7 +25,7 @@ class RolesController extends Controller
     }
     public function store(Request $request){
         $request->validate([
-            'role'          => 'required|string|max:50',
+            'role' => 'required|string|max:50',
         ]);
         if($request->input('permissions') == null){
             return redirect()->route('maintenance.roles-and-permissions.create-role')->with('toast-warning', 'Please select at least one permission');
@@ -37,9 +37,7 @@ class RolesController extends Controller
                 return redirect()->route('maintenance.roles-and-permissions.create-role')->with('toast-warning', 'Role already exists');
             }
             $role = Role::create(['name' => $request->input('role')]);
-            for($i = 0; $i < count($request->input('permissions')); $i++){
-                $role->givePermissionTo($request->input('permissions')[$i]);
-            }
+            $role->syncPermissions($request->input('permissions'));
         } catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();
             return redirect()->route('maintenance.roles-and-permissions.management')->with('toast-error', 'Something went wrong');
@@ -47,22 +45,36 @@ class RolesController extends Controller
         DB::commit();
         return redirect()->route('maintenance.roles-and-permissions.management')->with('toast-success', 'Role created successfully');
     }
-    public function edit($role_id)
+    public function edit(Request $request)
     {
-        $role = Role::findById($role_id);
-        $permissions = Permission::all();
+        $role_id = array_keys($request->all())[0];
+        try{
+            $role = Role::findById($role_id);
+            $permissions = Permission::all();
+        } catch(\Illuminate\Database\QueryException $e){
+            return redirect()->back()->with('toast-error', 'Something went wrong');
+        }
         return view('roles_permissions.edit', compact('role', 'permissions'));
     }
-    public function update(Request $request, $role_id){
+    public function update(Request $request){
         $request->validate([
-            'role'          => 'required|string|max:50',
-            'permissions'   => 'required',
+            'role' => 'required|string|max:50',
         ]);
-        $role = Role::findById($role_id);
-        $role->name = $request->input('role');
-        $role->save();
-        $role->syncPermissions($request->input('permissions'));
-        return redirect()->route('roles_permissions.roles')->with('toast-success', 'Role updated successfully');
+        if($request->input('permissions') == null){
+            return redirect()->back()->with('toast-warning', 'Please select at least one permission');
+        }
+        DB::beginTransaction();
+        try{
+            $role = Role::findById($request->input('role_id'));
+            $role->name = $request->input('role');
+            $role->save();
+            $role->syncPermissions($request->input('permissions'));
+        } catch(\Illuminate\Database\QueryException $e){
+            DB::rollBack();
+            return redirect()->back()->with('toast-error', 'Something went wrong');
+        }
+        DB::commit();
+        return redirect()->route('maintenance.roles-and-permissions.management')->with('toast-success', 'Role updated successfully');
     }
     public function destroy($role_id){
         $role = Role::findById($role_id);

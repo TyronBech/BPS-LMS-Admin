@@ -32,7 +32,7 @@
         @endforeach
       </ul>
       <div class="items-center mt-auto mx-auto sm:flex sm:flex-col lg:flex-row">
-        <a href="#" id="editBtn" name="editBtn" class="text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 lg:my-2 sm:my-1">Edit</a>
+        <a href="{{ route('maintenance.roles-and-permissions.edit-role', $role->id) }}" id="editBtn" name="editBtn" class="text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 lg:my-2 sm:my-1">Edit</a>
         <a href="#" id="deleteBtn" name="deleteBtn" class="focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 lg:my-2 sm:my-1">Delete</a>
       </div>
     </div>
