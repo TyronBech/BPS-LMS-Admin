@@ -76,10 +76,18 @@ class RolesController extends Controller
         DB::commit();
         return redirect()->route('maintenance.roles-and-permissions.management')->with('toast-success', 'Role updated successfully');
     }
-    public function destroy($role_id){
-        $role = Role::findById($role_id);
-        $role->delete();
-        return redirect()->route('roles_permissions.roles')->with('toast-success', 'Role deleted successfully');
+    public function destroy(Request $request){
+        DB::beginTransaction();
+        try{
+            $role = Role::findById($request->input('id'));
+            $role->revokePermissionTo($role->permissions);
+            $role->delete();
+        } catch(\Illuminate\Database\QueryException $e){
+            DB::rollBack();
+            return redirect()->back()->with('toast-error', 'Something went wrong');
+        }
+        DB::commit();
+        return redirect()->route('maintenance.roles-and-permissions.management')->with('toast-success', 'Role deleted successfully');
     }
     private function assign_permission(Request $request, $role_id){
         $role = Role::findById($role_id);
