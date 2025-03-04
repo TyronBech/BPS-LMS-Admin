@@ -8,6 +8,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Transaction extends Model
 {
     use HasFactory;
-    protected $table = 'transaction';
-    protected $primaryKey = 'transaction_id';
+    protected $fillable = [
+        'user_id',
+        'book_id',
+        'transaction_type',
+        'date_borrowed',
+        'due_date',
+        'returned_date',
+    ];
 }

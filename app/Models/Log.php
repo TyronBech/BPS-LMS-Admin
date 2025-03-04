@@ -8,14 +8,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 class Log extends Model
 {
     use HasFactory;
-    protected $table = 'userlogs';
-    protected $primaryKey = 'log_id';
+    protected $table = 'user_logs';
     protected $fillable = [
         'user_id',
-        'visitor_id',
+        'computer_use',
         'timestamp',
-        'actions',
-        'created_at',
-        'updated_at'
+        'action',
     ];
 }
