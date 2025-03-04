@@ -29,6 +29,15 @@
     @can(PermissionsEnum::DELETE_USERS)
     <p class="font-normal text-gray-700 dark:text-gray-300">You can delete users.</p>
     @endcan
+    @can(PermissionsEnum::CREATE_BOOKS)
+    <p class="font-normal text-gray-700 dark:text-gray-300">You can create books.</p>
+    @endcan
+    @can(PermissionsEnum::EDIT_BOOKS)
+    <p class="font-normal text-gray-700 dark:text-gray-300">You can edit books.</p>
+    @endcan
+    @can(PermissionsEnum::DELETE_BOOKS)
+    <p class="font-normal text-gray-700 dark:text-gray-300">You can delete books.</p>
+    @endcan
   </a>
 </div>
 @endsection
