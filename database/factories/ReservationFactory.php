@@ -20,7 +20,7 @@ class ReservationFactory extends Factory
             'user_id' => $this->faker->numberBetween(1, 5),
             'book_id' => $this->faker->numberBetween(1, 50),
             'reservation_date' => $this->faker->date(),
-            'status' => $this->faker->randomElement(['Available', 'Borrowed', 'In Use', 'Reserved']),
+            'status' => $this->faker->randomElement(['Active', 'Completed', 'Cancelled']),
             'created_at' => now(),
             'updated_at' => now(),
         ];

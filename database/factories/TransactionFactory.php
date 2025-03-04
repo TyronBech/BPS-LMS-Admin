@@ -22,7 +22,7 @@ class TransactionFactory extends Factory
             'transaction_type' => $this->faker->randomElement(['Borrow', 'Return']),
             'date_borrowed' => $this->faker->dateTimeThisYear(),
             'due_date' => $this->faker->dateTimeThisYear(),
-            'returned_date' => $this->faker->dateTimeThisYear(),
+            'return_date' => $this->faker->dateTimeThisYear(),
             'created_at' => now(),
             'updated_at' => now(),
 
