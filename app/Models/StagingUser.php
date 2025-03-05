@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class StagingUser extends Model
 {
     protected $fillable = [
-        'rfid_tag',
+        'rfid',
         'first_name',
         'middle_name',
         'last_name',

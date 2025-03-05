@@ -8,14 +8,14 @@ use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Admin;
 use App\Enum\RolesEnum;
+use App\Models\User;
 
 class AdminMaintenanceController extends Controller
 {
     public function index()
     {
-        $admins = Admin::all();
+        $admins = User::all();
         $roles = Role::all();
         return view('maintenance.admins.admins', compact('admins', 'roles'));
     }
@@ -44,7 +44,7 @@ class AdminMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try {
-            $admin = Admin::create([
+            $admin = User::create([
                 'first_name'    => $request->input('first-name'),
                 'middle_name'   => $request->input('middle-name'),
                 'last_name'     => $request->input('last-name'),
@@ -64,8 +64,8 @@ class AdminMaintenanceController extends Controller
         $super_admin = null;
         try{
             $id = array_keys($request->all())[0];
-            $admin = Admin::findOrFail($id);
-            $authAdmin = Admin::findOrFail(Auth::guard('admin')->user()->id);
+            $admin = User::findOrFail($id);
+            $authAdmin = User::findOrFail(Auth::guard('admin')->user()->id);
             if($authAdmin->hasRole(RolesEnum::SUPER_ADMIN)){
                 $super_admin = Role::where('name', 'Super Admin')
                                 ->where('guard_name', 'admin')
@@ -96,9 +96,9 @@ class AdminMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try {
-            $authAdmin = Admin::findOrFail(Auth::guard('admin')->user()->id);
+            $authAdmin = User::findOrFail(Auth::guard('admin')->user()->id);
             if($authAdmin->hasAnyRole(RolesEnum::SUPER_ADMIN, RolesEnum::ADMIN)){
-                $admin = Admin::findOrFail($request->input('id'));
+                $admin = User::findOrFail($request->input('id'));
                 $admin->update([
                     'first_name'    => $request->input('first-name'),
                     'middle_name'   => $request->input('middle-name'),

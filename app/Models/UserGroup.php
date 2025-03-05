@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 class UserGroup extends Model
 {
     protected $fillable = [
-        'name',
+        'group_name',
         'category',
         'max_book_allowed',
-        'borrowed_duration_days',
+        'borrow_duration_days',
         'renewal_limit',
         'is_unlimited',
+        'can_have_role',
     ];
 }

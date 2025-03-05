@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
-use App\Models\Admin;
+use App\Models\user;
 use Illuminate\Support\Facades\DB;
 
 class RolesController extends Controller
@@ -15,7 +15,7 @@ class RolesController extends Controller
     {
         $roles_with_permissions = Role::with('permissions')->get();
         $permissions_with_roles = Permission::with('roles')->get();
-        $admins = Admin::all();
+        $admins = User::all();
         return view('roles_permissions.roles', compact('roles_with_permissions', 'permissions_with_roles', 'admins'));
     }
     public function create()
@@ -100,12 +100,12 @@ class RolesController extends Controller
         return redirect()->route('roles_permissions.roles')->with('toast-success', 'Permission revoked successfully');
     }
     private function assign_role(Request $request, $admin_id){
-        $admin = Admin::find($admin_id);
+        $admin = User::find($admin_id);
         $admin->assignRole($request->input('role'));
         return redirect()->route('roles_permissions.roles')->with('toast-success', 'Role assigned successfully');
     }
     private function revoke_role(Request $request, $admin_id){
-        $admin = Admin::find($admin_id);
+        $admin = User::find($admin_id);
         $admin->removeRole($request->input('role'));
         return redirect()->route('roles_permissions.roles')->with('toast-success', 'Role revoked successfully');
     }

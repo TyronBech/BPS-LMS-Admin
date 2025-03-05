@@ -6,7 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
-use App\Models\Admin;
+use App\Models\User;
 
 class RolePermissionSeeder extends Seeder
 {
@@ -35,9 +35,9 @@ class RolePermissionSeeder extends Seeder
         //$role->revokePermissionTo($permission);
         //$role->givePermissionTo('Edit Users', 'Create Users');
         //$role->givePermissionTo('Create Books', 'Edit Books', 'Delete Books');
-        // $admin1 = Admin::find(1);
-        // $admin1->assignRole('Super Admin');
-        // $admin2 = Admin::find(2);
-        // $admin2->assignRole('Admin');
+        $admin1 = User::find(1);
+        $admin1->assignRole('Super Admin');
+        $admin2 = User::find(2);
+        $admin2->assignRole('Admin');
     }
 }
