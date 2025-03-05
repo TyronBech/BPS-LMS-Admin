@@ -7,6 +7,9 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use App\Models\UserGroup;
+use Illuminate\Support\Facades\Validator;
+use App\Models\StagingUser;
 
 class UsersMaintenanceController extends Controller
 {
@@ -15,11 +18,13 @@ class UsersMaintenanceController extends Controller
         $users = User::with('students', 'employees', 'visitors', 'groups')
                     ->orderBy(DB::raw('DATE(users.updated_at)'), 'desc')
                     ->orderBy(DB::raw('TIME(users.updated_at)'), 'desc')->get();
+        //dd($users->toArray());
         return view('maintenance.users.users', compact('users'));
     }
     public function create()
     {
-        return view('maintenance.users.create');
+        $groups = UserGroup::all()->pluck('group_name', 'id');
+        return view('maintenance.users.create', compact('groups'));
     }
     public function show(Request $request)
     {
@@ -28,18 +33,36 @@ class UsersMaintenanceController extends Controller
     }
     public function store(Request $request)
     {
-        $request->validate([
+        
+        $validator = Validator::make($request->all(), [
             'rfid'          => 'required|string|max:50',
             'first-name'    => 'required|string|max:50',
-            'middle-name'   => 'max:50',
+            'middle-name'   => 'sometimes|string|max:50',
             'last-name'     => 'required|string|max:50',
             'suffix'        => 'sometimes|max:10',
+            'lrn'           => 'sometimes|max:50',
             'grade'         => 'sometimes|max:10',
             'section'       => 'sometimes|max:50',
-            'role'          => 'required',
+            'employee_id'   => 'sometimes|max:50',
+            'group'         => 'required',
             'email'         => 'required|email',
-            'profile-image' => 'sometimes|image|mimes:jpeg,png,jpg',
+            'password'      => 'required',
         ]);
+        if($validator->fails()){
+            return redirect()->back()->with('toast-warning', 'Please fill up the required fields');
+        }
+        if($request->input('group') == 'Student'){
+            if($request->input('lrn') == null && $request->input('grade') == null && $request->input('section') == null){
+                return redirect()->back()->with('toast-warning', 'Please fill up the fields for students if the user is a student');
+            }
+            if($request->input('employee_id') != null){
+                return redirect()->back()->with('toast-warning', 'Employee ID is not required for students');
+            }
+        } else {
+            if($request->input('lrn') != null || $request->input('grade') != null || $request->input('section') != null){
+                return redirect()->back()->with('toast-warning', 'Please remove the fields for students if the user is not a student');
+            }
+        }
         if(!preg_match('/^[0-9]+$/', $request->input('rfid'))){
             return redirect()->back()->with('toast-warning', 'RFID number is invalid');
         } else if($this->has_invalid_characters($request->input('first-name'))){
@@ -57,25 +80,33 @@ class UsersMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try{
-            User::create([
-                'lrn'           => $request->input('lrn') == '' ? null : $request->input('lrn'),
-                'rfid_tag'      => $request->input('rfid'),
-                'employee_id'   => $request->input('employeeID') == '' ? null : $request->input('employeeID'),
+            StagingUser::create([
+                'rfid'          => $request->input('rfid'),
                 'first_name'    => $request->input('first-name'),
-                'middle_name'   => $request->input('middle-name'),
+                'middle_name'   => $request->input('middle-name') == '' ? null : $request->input('middle-name'),
                 'last_name'     => $request->input('last-name'),
                 'suffix'        => $request->input('suffix')    == '' ? null : $request->input('suffix'),
+                'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
+                'lrn'           => $request->input('lrn') == '' ? null : $request->input('lrn'),
                 'grade_level'   => $request->input('grade')     == '' ? null : $request->input('grade'),
                 'section'       => $request->input('section')   == '' ? null : $request->input('section'),
-                'role_id'       => $request->input('role') == 'Student' ? 5 : ($request->input('role') == 'Faculty' ? 3 : ($request->input('role') == 'Admin' ? 1 : ($request->input('role') == 'Librarian' ? 2 : 4))),
+                'employee_id'   => $request->input('employee_id') == '' ? null : $request->input('employeeID'),
+                'group_name'    => $request->input('group'),
                 'email'         => $request->input('email'),
                 'password'      => Hash::make($request->input('password')),
-                'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
-                'penalty_total' => 0
+                'penalty_total' => 0,
+                'user_type'     => $request->input('group') == 'Student' ? 'student' : 'employee',
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             return redirect()->back()->with('toast-error', 'User with RFID or email ' . $request->input('rfid') . ' already exists. Error code: ' . $e->getMessage());
+        }
+        DB::commit();
+        DB::beginTransaction();
+        try{
+            DB::statement('CALL DistributeStagingUsers()');
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
         }
         DB::commit();
         return redirect()->back()->with('toast-success', 'User added successfully');
