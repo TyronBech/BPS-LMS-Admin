@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
@@ -53,5 +54,17 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
         ];
+    }
+    public function students() : HasOne
+    {
+        return $this->hasOne(StudentDetail::class, 'user_id', 'id');
+    }
+    public function employees() : HasOne
+    {
+        return $this->hasOne(EmployeeDetail::class, 'user_id', 'id');
+    }
+    public function visitors() : HasOne
+    {
+        return $this->hasOne(VisitorDetail::class, 'user_id', 'id');
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class VisitorDetail extends Model
 {
@@ -13,4 +14,8 @@ class VisitorDetail extends Model
         'purpose',
         'gender',
     ];
+    public function users() : BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
 }

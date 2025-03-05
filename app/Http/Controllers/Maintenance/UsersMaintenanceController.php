@@ -8,22 +8,23 @@ use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
-class StudentMaintenanceController extends Controller
+class UsersMaintenanceController extends Controller
 {
     public function index()
     {
-        $students = User::orderBy(DB::raw('DATE(updated_at)'), 'desc')
+        $users = User::with('students', 'employees', 'visitors')->orderBy(DB::raw('DATE(updated_at)'), 'desc')
                     ->orderBy(DB::raw('TIME(updated_at)'), 'desc')->get();
-        return view('maintenance.students.students', compact('students'));
+        dd($users);
+        return view('maintenance.users.users', compact('users'));
     }
     public function create()
     {
-        return view('maintenance.students.create');
+        return view('maintenance.users.create');
     }
     public function show(Request $request)
     {
-        $students = User::where('rfid_tag', $request->input('search-users'))->get();
-        return view('maintenance.students.students', compact('students'));
+        $users = User::where('rfid_tag', $request->input('search-users'))->get();
+        return view('maintenance.users.users', compact('users'));
     }
     public function store(Request $request)
     {
@@ -88,7 +89,7 @@ class StudentMaintenanceController extends Controller
         } catch(\Illuminate\Database\QueryException $e){
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
-        return view('maintenance.students.edit', compact('user'));
+        return view('maintenance.users.edit', compact('user'));
     }
     public function update(Request $request)
     {

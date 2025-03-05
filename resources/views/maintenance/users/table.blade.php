@@ -1,7 +1,7 @@
 <div class="container mx-auto px-2 font-sans flex-col">
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
     <table class="w-full text-sm text-left rtl:text-right">
-      <thead class="text-xs py-2 text-gray-700 uppercase bg-gray-300 text-center">
+      <thead class="text-xs py-2 text-gray-700 uppercase bg-gray-300 text-center dark:bg-gray-500 dark:text-white">
         <tr>
           <th scope="col" class="p-2 text-center">RFID</th>
           <th scope="col" class="p-2 text-center">First Name</th>
@@ -16,8 +16,8 @@
         </tr>
       </thead>
       <tbody>
-        @forelse($students as $item)
-        <tr class="bg-white border-b text-center">
+        @forelse($users as $item)
+        <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
           <td scope="row" class="px-4 py-2 font-medium text-gray-900 whitespace-nowrap">{{ $item->rfid_tag }}</td>
           <td class="pb-1">{{ $item->first_name }}</td>
           <td class="pb-1">{{ $item->middle_name }}</td>
