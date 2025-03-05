@@ -12,9 +12,9 @@ class UsersMaintenanceController extends Controller
 {
     public function index()
     {
-        $users = User::with('students', 'employees', 'visitors')->orderBy(DB::raw('DATE(updated_at)'), 'desc')
-                    ->orderBy(DB::raw('TIME(updated_at)'), 'desc')->get();
-        dd($users);
+        $users = User::with('students', 'employees', 'visitors', 'groups')
+                    ->orderBy(DB::raw('DATE(users.updated_at)'), 'desc')
+                    ->orderBy(DB::raw('TIME(users.updated_at)'), 'desc')->get();
         return view('maintenance.users.users', compact('users'));
     }
     public function create()

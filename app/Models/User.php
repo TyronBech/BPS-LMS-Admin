@@ -4,6 +4,7 @@ namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -66,5 +67,9 @@ class User extends Authenticatable
     public function visitors() : HasOne
     {
         return $this->hasOne(VisitorDetail::class, 'user_id', 'id');
+    }
+    public function groups() : BelongsTo
+    {
+        return $this->belongsTo(UserGroup::class, 'group_id', 'id');
     }
 }
