@@ -1,9 +1,9 @@
 @extends('layouts.admin-app')
 @section('content')
 <h1 class="font-semibold text-center text-4xl p-5">Maintenance</h1>
-<div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow">
+<div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
   <div class="flex justify-between">
-    <h5 class="mb-1 text-2xl font-bold tracking-tight text-gray-900">Add Admin</h5>
+    <h5 class="mb-1 text-2xl font-bold tracking-tight">Add Admin</h5>
     <a href="{{ route('maintenance.admins') }}" class="inline-flex items-center px-3 py-1 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
       Back
       <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
@@ -16,7 +16,7 @@
     @csrf
     <h6 class="mb-1 text-xl font-semibold tracking-tight text-gray-800">Admin Information</h6>
     <div class="mb-5">
-      <label for="first-name" class="block mb-2 text-sm font-medium text-gray-900">First Name:</label>
+      <label for="first-name" class="block mb-2 text-sm font-medium">First Name:</label>
       <input type="text" id="first-name" name="first-name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Juan">
       @error('first-name')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
@@ -25,7 +25,7 @@
       @enderror
     </div>
     <div class="mb-5">
-      <label for="middle-name" class="block mb-2 text-sm font-medium text-gray-900">Middle Name:</label>
+      <label for="middle-name" class="block mb-2 text-sm font-medium">Middle Name:</label>
       <input type="text" id="middle-name" name="middle-name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Santos">
       @error('middle-name')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
@@ -34,7 +34,7 @@
       @enderror
     </div>
     <div class="mb-5">
-      <label for="last-name" class="block mb-2 text-sm font-medium text-gray-900">Last Name:</label>
+      <label for="last-name" class="block mb-2 text-sm font-medium">Last Name:</label>
       <input type="text" id="last-name" name="last-name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Dela Cruz">
       @error('last-name')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
@@ -43,7 +43,7 @@
       @enderror
     </div>
     <div class="mb-5">
-      <label for="role" class="block mb-2 text-sm font-medium text-gray-900">Select Role:</label>
+      <label for="role" class="block mb-2 text-sm font-medium">Select Role:</label>
       <select id="role" name="role" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
         @foreach($roles as $role)
         <option value="{{ $role->id }}">{{ $role->name }}</option>
@@ -56,7 +56,7 @@
       @enderror
     </div>
     <div class="mb-5">
-      <label for="email" class="block mb-2 text-sm font-medium text-gray-900">Email Address:</label>
+      <label for="email" class="block mb-2 text-sm font-medium">Email Address:</label>
       <div class="relative">
         <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
           <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 16">
@@ -73,8 +73,8 @@
       @enderror
     </div>
     <div class="mb-5">
-      <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password:</label>
-      <input type="password" id="password" name="password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required />
+      <label for="password" class="block mb-2 text-sm font-medium">Password:</label>
+      <input type="password" id="password" name="password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required />
       @error('password')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>

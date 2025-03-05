@@ -15,9 +15,13 @@ class AdminMaintenanceController extends Controller
 {
     public function index()
     {
-        $admins = User::all();
-        $roles = Role::all();
-        return view('maintenance.admins.admins', compact('admins', 'roles'));
+        $admins = User::join('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
+                    ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
+                    ->where('model_has_roles.model_type', 'App\Models\User')
+                    ->where('roles.guard_name', 'admin')
+                    ->select('users.*', 'roles.name as role')
+                    ->get();
+        return view('maintenance.admins.admins', compact('admins'));
     }
     public function create()
     {
