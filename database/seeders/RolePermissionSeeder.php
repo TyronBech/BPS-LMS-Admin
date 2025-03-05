@@ -35,9 +35,9 @@ class RolePermissionSeeder extends Seeder
         //$role->revokePermissionTo($permission);
         //$role->givePermissionTo('Edit Users', 'Create Users');
         //$role->givePermissionTo('Create Books', 'Edit Books', 'Delete Books');
-        $admin1 = User::find(1);
-        $admin1->assignRole('Super Admin');
-        $admin2 = User::find(2);
-        $admin2->assignRole('Admin');
+        // $admin1 = User::find(1);
+        // $admin1->assignRole('Super Admin');
+        // $admin2 = User::find(2);
+        // $admin2->assignRole('Admin');
     }
 }
