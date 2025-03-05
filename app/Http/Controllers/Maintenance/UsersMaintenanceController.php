@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\UserGroup;
 use Illuminate\Support\Facades\Validator;
 use App\Models\StagingUser;
+use App\Models\StudentDetail;
+use App\Models\EmployeeDetail;
 
 class UsersMaintenanceController extends Controller
 {
@@ -23,7 +25,7 @@ class UsersMaintenanceController extends Controller
     }
     public function create()
     {
-        $groups = UserGroup::all()->pluck('group_name', 'id');
+        $groups = UserGroup::all()->pluck('group_name');
         return view('maintenance.users.create', compact('groups'));
     }
     public function show(Request $request)
@@ -33,11 +35,10 @@ class UsersMaintenanceController extends Controller
     }
     public function store(Request $request)
     {
-        
         $validator = Validator::make($request->all(), [
             'rfid'          => 'required|string|max:50',
             'first-name'    => 'required|string|max:50',
-            'middle-name'   => 'sometimes|string|max:50',
+            'middle-name'   => 'sometimes|max:50',
             'last-name'     => 'required|string|max:50',
             'suffix'        => 'sometimes|max:10',
             'lrn'           => 'sometimes|max:50',
@@ -52,7 +53,7 @@ class UsersMaintenanceController extends Controller
             return redirect()->back()->with('toast-warning', 'Please fill up the required fields');
         }
         if($request->input('group') == 'Student'){
-            if($request->input('lrn') == null && $request->input('grade') == null && $request->input('section') == null){
+            if($request->input('lrn') == null || $request->input('grade') == null || $request->input('section') == null){
                 return redirect()->back()->with('toast-warning', 'Please fill up the fields for students if the user is a student');
             }
             if($request->input('employee_id') != null){
@@ -116,31 +117,43 @@ class UsersMaintenanceController extends Controller
         $user = null;
         try{
             $id = array_keys($request->all())[0];
-            $user = User::where('user_id', $id)->first();
+            $user = User::with('students', 'employees', 'groups')->where('id', $id)->first();
+            $groups = UserGroup::all()->pluck('group_name');
         } catch(\Illuminate\Database\QueryException $e){
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
-        return view('maintenance.users.edit', compact('user'));
+        return view('maintenance.users.edit', compact('user', 'groups'));
     }
     public function update(Request $request)
     {
-        $request->validate([
+        $validator = Validator::make($request->all(), [
             'rfid'          => 'required|string|max:50',
             'first-name'    => 'required|string|max:50',
-            'middle-name'   => 'max:50',
+            'middle-name'   => 'sometimes|max:50',
             'last-name'     => 'required|string|max:50',
             'suffix'        => 'sometimes|max:10',
-            'grade'         => 'sometimes|max:10',
-            'section'       => 'sometimes|max:50',
-            'role'          => 'required',
             'email'         => 'required|email',
-            'profile-image' => 'sometimes|image|mimes:jpeg,png,jpg',
         ]);
+        if($validator->fails()){
+            return redirect()->back()->with('toast-warning', 'Please fill up the required fields');
+        }
+        if($request->input('group') == 'Student'){
+            if($request->input('lrn') == null || $request->input('grade') == null || $request->input('section') == null){
+                return redirect()->back()->with('toast-warning', 'Please fill up the fields for students if the user is a student');
+            }
+            if($request->input('employee_id') != null){
+                return redirect()->back()->with('toast-warning', 'Employee ID is not required for students');
+            }
+        } else {
+            if($request->input('lrn') != null || $request->input('grade') != null || $request->input('section') != null){
+                return redirect()->back()->with('toast-warning', 'Please remove the fields for students if the user is not a student');
+            }
+        }
         if(!preg_match('/^[0-9]+$/', $request->input('rfid'))){
             return redirect()->back()->with('toast-warning', 'RFID number is invalid');
         } else if($this->has_invalid_characters($request->input('first-name'))){
             return redirect()->back()->with('toast-warning', 'User\'s name contains invalid characters');
-        } else if($this->has_invalid_characters($request->input('middle-name'))){
+        } else if($request->input('middle-name') != null && $this->has_invalid_characters($request->input('middle-name'))){
             return redirect()->back()->with('toast-warning', 'User\'s middle name contains invalid characters');
         } else if($this->has_invalid_characters($request->input('last-name'))){
             return redirect()->back()->with('toast-warning', 'User\'s last name contains invalid characters');
@@ -153,26 +166,32 @@ class UsersMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try{
-            $user = User::where('user_id', $request->input('id'))->first();
+            $user = User::findOrFail($request->input('id'));
             $user->update([
-                'lrn'           => $request->input('lrn'),
-                'rfid_tag'      => $request->input('rfid'),
-                'employee_id'   => $request->input('employeeID'),
+                'rfid'          => $request->input('rfid'),
                 'first_name'    => $request->input('first-name'),
-                'middle_name'   => $request->input('middle-name'),
+                'middle_name'   => $request->input('middle-name')   == '' ? null : $request->input('middle-name'),
                 'last_name'     => $request->input('last-name'),
-                'suffix'        => $request->input('suffix')    == '' ? null : $request->input('suffix'),
-                'grade_level'   => $request->input('grade')     == '' ? null : $request->input('grade'),
-                'section'       => $request->input('section')   == '' ? null : $request->input('section'),
-                'role_id'       => $request->input('role') == 'Student' ? 5 : ($request->input('role') == 'Faculty' ? 3 : ($request->input('role') == 'Admin' ? 1 : ($request->input('role') == 'Librarian' ? 2 : 4))),
+                'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
                 'email'         => $request->input('email'),
-                'password'      => Hash::make($request->input('password')),
                 'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
-                'penalty_total' => 0
             ]);
+            $studentDetails = StudentDetail::where('user_id', $user->id)->first();
+            $employeeDetails = EmployeeDetail::where('user_id', $user->id)->first();
+            if($request->input('group') == 'Student'){
+                $studentDetails->update([
+                    'lrn'           => $request->input('lrn'),
+                    'grade_level'   => $request->input('grade'),
+                    'section'       => $request->input('section'),
+                ]);
+            } else {
+                $employeeDetails->update([
+                    'employee_id'   => $request->input('employee_id'),
+                ]);
+            }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
-            return redirect()->back()->with('toast-error', 'Something went wrong!');
+            return redirect()->back()->with('toast-error', $e->getMessage());
         }
         DB::commit();
         return redirect()->back()->with('toast-success', 'User updated successfully');
