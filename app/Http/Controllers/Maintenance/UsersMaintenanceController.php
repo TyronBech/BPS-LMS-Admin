@@ -200,7 +200,7 @@ class UsersMaintenanceController extends Controller
     {
         DB::beginTransaction();
         try{
-            $id = array_keys($request->all())[0];
+            $id = $request->input('id');
             User::find($id)->delete();
         } catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();

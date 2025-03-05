@@ -88,7 +88,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::put('edit-student',      [UsersMaintenanceController::class, 'update'])    ->name('maintenance.update-student');
             Route::get('show-students',     [UsersMaintenanceController::class, 'show'])      ->name('maintenance.show-students');
             Route::get('delete-student',    [UsersMaintenanceController::class, 'destroy'])   ->name('maintenance.delete-student');
-            //Route::delete('delete-student',    [UsersMaintenanceController::class, 'destroy'])   ->name('maintenance.delete-student');
+            Route::delete('delete-student',    [UsersMaintenanceController::class, 'destroy'])->name('maintenance.delete-student');
         });
         Route::prefix('admin-management')->middleware(SuperAdminAuthentication::class)->group(function () {
             Route::get('admins',            [AdminMaintenanceController::class, 'index'])   ->name('maintenance.admins');
