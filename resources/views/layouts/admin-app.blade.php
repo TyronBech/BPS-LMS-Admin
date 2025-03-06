@@ -8,7 +8,7 @@
   @vite(['resources/css/app.css', 'resources/js/app.js'])
   <link rel="icon" href="{{ asset('img/School Logo.png') }}"> 
 </head>
-<body class="relative bg-blue-50 dark:bg-gray-900 dark:text-white">
+<body class="relative bg-blue-50 dark:bg-gray-900 text-gray-900 dark:text-white">
   @include('layouts.admin-header')
   <main class="container relative mx-auto px-2 font-sans flex-col">
     @include('layouts.toast')

@@ -18,7 +18,7 @@
     <hr class="h-px my-1 bg-gray-200 border-0">
     <div class="mb-5">
       <label for="rfid" class="block mb-2 text-sm font-medium">RFID Number:</label>
-      <input type="text" id="rfid" name="rfid" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 text-gray-900" placeholder="0123456789" required>
+      <input type="text" id="rfid" name="rfid" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="0123456789" required>
       @error('rfid')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -27,7 +27,7 @@
     </div>
     <div class="mb-5">
       <label for="first-name" class="block mb-2 text-sm font-medium">First Name:</label>
-      <input type="text" id="first-name" name="first-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 text-gray-900" placeholder="Juan" required>
+      <input type="text" id="first-name" name="first-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Juan" required>
       @error('first-name')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -36,7 +36,7 @@
     </div>
     <div class="mb-5">
       <label for="middle-name" class="block mb-2 text-sm font-medium">Middle Name:</label>
-      <input type="text" id="middle-name" name="middle-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 text-gray-900" placeholder="Santos">
+      <input type="text" id="middle-name" name="middle-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Santos">
       @error('middle-name')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -45,7 +45,7 @@
     </div>
     <div class="mb-5">
       <label for="last-name" class="block mb-2 text-sm font-medium">Last Name:</label>
-      <input type="text" id="last-name" name="last-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 text-gray-900" placeholder="Dela Cruz" required>
+      <input type="text" id="last-name" name="last-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Dela Cruz" required>
       @error('last-name')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -54,7 +54,7 @@
     </div>
     <div class="mb-5">
       <label for="suffix" class="block mb-2 text-sm font-medium">Suffix:</label>
-      <input type="text" id="suffix" name="suffix" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 text-gray-900" placeholder="Jr.">
+      <input type="text" id="suffix" name="suffix" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Jr.">
       @error('suffix')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -63,7 +63,7 @@
     </div>
     <div class="mb-5">
       <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white" for="profile-image">Profile Image:</label>
-      <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50" id="profile-image" name="profile-image" type="file">
+      <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" id="profile-image" name="profile-image" type="file">
       @error('profile-image')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -74,7 +74,7 @@
     <hr class="h-px my-1 bg-gray-200 border-0">
     <div class="mb-5">
       <label for="lrn" class="block mb-2 text-sm font-medium">LRN Number:</label>
-      <input type="text" id="lrn" name="lrn" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 text-gray-900" placeholder="0123456789">
+      <input type="text" id="lrn" name="lrn" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="0123456789">
       @error('lrn')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -83,7 +83,7 @@
     </div>
     <div class="mb-5">
       <label for="grade" class="block mb-2 text-sm font-medium">Grade:</label>
-      <input type="text" id="grade" name="grade" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 text-gray-900" placeholder="12">
+      <input type="text" id="grade" name="grade" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="12">
       @error('grade')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -92,7 +92,7 @@
     </div>
     <div class="mb-5">
       <label for="section" class="block mb-2 text-sm font-medium">Section:</label>
-      <input type="text" id="section" name="section" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 text-gray-900" placeholder="A">
+      <input type="text" id="section" name="section" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="A">
       @error('section')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -103,7 +103,7 @@
       <h6 class="mb-1 text-md font-bold tracking-tight">Employee Credential <span class="text-sm font-normal">(If the user is an employee)</span></h6>
       <hr class="h-px my-1 bg-gray-200 border-0">
       <label for="employee_id" class="block mb-2 text-sm font-medium">Employee ID:</label>
-      <input type="text" id="employee_id" name="employee_id" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 text-gray-900" placeholder="0123456789">
+      <input type="text" id="employee_id" name="employee_id" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="0123456789">
       @error('employee_id')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -114,7 +114,7 @@
     <hr class="h-px my-1 bg-gray-200 border-0">
     <div class="mb-5">
       <label for="group" class="block mb-2 text-sm font-medium">Select Group:</label>
-      <select id="group" name="group" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:text-black">
+      <select id="group" name="group" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         @foreach($groups as $group)
         <option class="text-sm dark:text-black" value="{{ $group }}">{{ $group }}</option>
         @endforeach
@@ -136,7 +136,7 @@
             <path d="M11.241 9.817c-.36.275-.801.425-1.255.427-.428 0-.845-.138-1.187-.395L0 2.6V14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V2.5l-8.759 7.317Z" />
           </svg>
         </div>
-        <input type="email" id="email" name="email" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 text-gray-900" placeholder="juandelacruz@gmail.com" required>
+        <input type="email" id="email" name="email" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="juandelacruz@gmail.com" required>
       </div>
       @error('email')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
@@ -146,7 +146,7 @@
     </div>
     <div class="mb-5">
       <label for="password" class="block mb-2 text-sm font-medium">Password:</label>
-      <input type="password" id="password" name="password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 text-gray-900" required />
+      <input type="password" id="password" name="password" placeholder="••••••••" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 text-gray-900" required />
       @error('password')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
