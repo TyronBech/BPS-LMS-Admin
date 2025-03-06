@@ -58,25 +58,23 @@
           <tr>
             <th>Log ID</th>
             <th>RFID</th>
-            <th>Name</th>
-            <th>Middle Name</th>
-            <th>Surname</th>
+            <th>Name</th>>
             <th>Date</th>
-            <th>Time In</th>
+            <th>Time</th>
+            <th>Computer Use</th>
             <th>Action</th>
           </tr>
         </thead>
         <tbody>
           @forelse($items as $item)
             <tr>
-              <td>{{ $item->log_id }}</td>
-              <td>{{ $item->rfid_tag }}</td>
-              <td>{{ $item->first_name }}</td>
-              <td>{{ $item->middle_name }}</td>
-              <td>{{ $item->last_name }}</td>
-              <td>{{ $item->log_date }}</td>
-              <td>{{ $item->log_time }}</td>
-              <td>{{ $item->actions }}</td>
+              <td>{{ $item->id }}</td>
+              <td>{{ $item->rfid }}</td>
+              <td>{{ $item->users->last_name }}, {{ $item->users->first_name }} {{ $item->users->middle_name }}</td>
+              <td>{{ \Carbon\Carbon::parse($item->timestamp)->format('Y-m-d') }}</td>
+              <td>{{ \Carbon\Carbon::parse($item->timestamp)->format('H:i:s') }}</td>
+              <td>{{ $item->computer_use }}</td>
+              <td>{{ $item->action }}</td>
             </tr>
           @empty
             <tr>

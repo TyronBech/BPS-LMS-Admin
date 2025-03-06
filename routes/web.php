@@ -6,7 +6,7 @@ use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\AdminAuthentication;
 use App\Http\Controllers\Admin\Auth\AdminLoginController;
 use App\Http\Controllers\Admin\Auth\RegisterAdminController;
-use App\Http\Controllers\Report\LogsController;
+use App\Http\Controllers\Report\UserLogsController;
 use App\Http\Controllers\Report\VisitorLogsController;
 use App\Http\Controllers\Report\TransactionController;
 use App\Http\Controllers\Report\BookCirculationController;
@@ -48,17 +48,17 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     Route::get('dashboard', function(){
         return view('dashboard.dashboard');
     })->name('dashboard');
-    /*
     Route::group(['prefix' => 'report'], function () {
-        Route::get('user-report',       [LogsController::class, 'index'])               ->name('report.user');
-        Route::post('user-report',      [LogsController::class, 'retrieve'])            ->name('report.user-retrieve');
+        Route::get('user-report',       [UserLogsController::class, 'index'])           ->name('report.user');
+        Route::post('user-report',      [UserLogsController::class, 'search'])          ->name('report.search');
         Route::get('visitor-report',    [VisitorLogsController::class, 'index'])        ->name('report.visitor');
         Route::post('visitor-report',   [VisitorLogsController::class, 'retrieve'])     ->name('report.visitor-retrieve');
         Route::get('transaction',       [TransactionController::class, 'index'])        ->name('report.transaction');
         Route::post('transaction',      [TransactionController::class, 'retrieve'])     ->name('report.transaction-retrieve');
         Route::get('book-circulation',  [BookCirculationController::class, 'index'])    ->name('report.book-circulation');
         Route::post('book-circulation', [BookCirculationController::class, 'retrieve']) ->name('report.book-circulation-retrieve');
-    });
+        });
+    /*
     Route::group(['prefix' => 'import'], function () {
         Route::get('students',          [StudentImportController::class, 'index'])  ->name('import.import-students');
         Route::post('students-data',    [StudentImportController::class, 'upload']) ->name('import.upload-students');
