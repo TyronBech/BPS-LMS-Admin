@@ -3,7 +3,6 @@
 <h1 class="font-semibold text-center text-4xl p-5">Report Document</h1>
   <form action="{{ route('report.search') }}" method="POST">
     @csrf
-    <input type="hidden" id="shownData" name="shownData" value="{{ json_encode($data) }}">
     <div class="container flex flex-row justify-center">
       <div id="date-range-picker" date-rangepicker class="flex items-center">
         <div class="relative">

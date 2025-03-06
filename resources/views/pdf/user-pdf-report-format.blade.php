@@ -69,7 +69,7 @@
           @forelse($items as $item)
             <tr>
               <td>{{ $item->id }}</td>
-              <td>{{ $item->rfid }}</td>
+              <td>{{ $item->users->rfid }}</td>
               <td>{{ $item->users->last_name }}, {{ $item->users->first_name }} {{ $item->users->middle_name }}</td>
               <td>{{ \Carbon\Carbon::parse($item->timestamp)->format('Y-m-d') }}</td>
               <td>{{ \Carbon\Carbon::parse($item->timestamp)->format('H:i:s') }}</td>

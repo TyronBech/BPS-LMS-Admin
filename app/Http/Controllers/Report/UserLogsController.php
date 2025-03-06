@@ -27,11 +27,10 @@ class UserLogsController extends Controller
     }
     public function search(Request $request)
     {
-        $inputName      = "";
-        $inputLastName  = "";
-        $fromInputDate  = "";
-        $toInputDate    = "";
-        $shownData      = null;
+        $inputName      = $request->input('first-name');
+        $inputLastName  = $request->input('last-name');
+        $fromInputDate  = $request->input('start');
+        $toInputDate    = $request->input('end');
         $peak_hour      = "00:00";
         $validator = Validator::make($request->all(), [
             'start'         => 'sometimes',
@@ -42,16 +41,30 @@ class UserLogsController extends Controller
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
-        if($request->input('shownData')) $shownData = json_decode($request->input('shownData'), true);
         if($request->input('submit') == 'pdf'){
-            $this->generatePDF($shownData);
+            $data = $this->generateData($request);
+            $this->generatePDF($data);
+            return redirect()->route('report.user')->with('toast-success', 'Successfully exported to PDF');
+        } else if($request->input('submit') == 'excel'){
+            $data = $this->generateData($request);
+            $this->exportExcel($data);
+            return redirect()->route('report.user')->with('toast-success', 'Successfully exported to Excel');
         }
         $data = $this->generateData($request);
         $hours = $data->map(function ($item) {
-            $item = Carbon::parse($item->timestamp)->format('H:i:s'); // Or 'h:i:s A' for 12-hour format
+            $item = Carbon::parse($item->timestamp)->format('H:i:s');
             return $item;
         });
-        $peak_hour = $this->findPeakHour($hours) . ":00";
+        $hour = $this->findPeakHour($hours);
+        if($hour == 12){
+            $peak_hour = "12:00 PM";
+        } else if($hour == 0){
+            $peak_hour = "12:00 AM";
+        } else if($hour > 12){
+            $peak_hour = $hour - 12 . ":00 PM";
+        } else {
+            $peak_hour = $hour . ":00 AM";
+        }
         return view('report.users.user-logs', compact('data', 'inputName', 'inputLastName', 'fromInputDate', 'toInputDate', 'peak_hour'));
     }
     private function findPeakHour($times)
@@ -73,11 +86,11 @@ class UserLogsController extends Controller
     }
     private function generatePDF($data)
     {
-        // $collection = collect($data);
-        // $arrayPdf   = array( 'data' => $collection );
-        // $pdf        = Pdf::loadView('pdf.user-pdf-report-format', $arrayPdf);
-        // $directory  = 'C:/Users/tyron/Downloads';
-        // $pdf->save($directory . '/users-report_' . date('Y-m-d') . '.pdf');
+        $chunk      = $data->chunk(25);
+        $arrayPdf   = array( 'data' => $chunk );
+        $pdf        = Pdf::loadView('pdf.user-pdf-report-format', $arrayPdf);
+        $directory  = 'C:/Users/tyron/Downloads';
+        $pdf->save($directory . '/users-report_' . date('Y-m-d') . '.pdf');
     }
     private function exportExcel($data)
     {
@@ -86,21 +99,19 @@ class UserLogsController extends Controller
         $sheet->setCellValue('A1', 'Log ID');
         $sheet->setCellValue('B1', 'RFID');
         $sheet->setCellValue('C1', 'Name');
-        $sheet->setCellValue('D1', 'Middle Name');
-        $sheet->setCellValue('E1', 'Surname');
-        $sheet->setCellValue('F1', 'Date');
-        $sheet->setCellValue('G1', 'Time');
-        $sheet->setCellValue('H1', 'Action');
+        $sheet->setCellValue('D1', 'Date');
+        $sheet->setCellValue('E1', 'Time');
+        $sheet->setCellValue('F1', 'Compute Use');
+        $sheet->setCellValue('G1', 'Action');
         $row = 2;
         foreach($data as $item){
-            $sheet->setCellValue('A' . $row, $item->log_id);
-            $sheet->setCellValue('B' . $row, $item->rfid_tag);
-            $sheet->setCellValue('C' . $row, $item->first_name);
-            $sheet->setCellValue('D' . $row, $item->middle_name);
-            $sheet->setCellValue('E' . $row, $item->last_name);
-            $sheet->setCellValue('F' . $row, $item->log_date);
-            $sheet->setCellValue('G' . $row, $item->log_time);
-            $sheet->setCellValue('H' . $row, $item->actiontype);
+            $sheet->setCellValue('A' . $row, $item->id);
+            $sheet->setCellValue('B' . $row, $item->users->rfid);
+            $sheet->setCellValue('C' . $row, $item->users->last_name . ', ' . $item->users->first_name . ' ' . $item->users->middle_name);
+            $sheet->setCellValue('D' . $row, Carbon::parse($item->timestamp)->format('Y-m-d'));
+            $sheet->setCellValue('E' . $row, Carbon::parse($item->timestamp)->format('H:i:s'));
+            $sheet->setCellValue('F' . $row, $item->computer_use);
+            $sheet->setCellValue('G' . $row, $item->action);
             $row++;
         }
         $writer     = new WriterXlsx($spreadsheet);
