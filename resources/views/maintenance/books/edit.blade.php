@@ -1,9 +1,9 @@
 @extends('layouts.admin-app')
 @section('content')
 <h1 class="font-semibold text-center text-4xl p-5">Maintenance</h1>
-<div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow">
+<div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
   <div class="flex justify-between">
-    <h5 class="mb-1 text-2xl font-bold tracking-tight text-gray-900">Add Book</h5>
+    <h5 class="mb-1 text-2xl font-bold tracking-tight">Edit Book</h5>
     <a href="{{ route('maintenance.books') }}" class="inline-flex items-center px-3 py-1 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
       Back
       <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
@@ -15,11 +15,11 @@
   <form action="{{ route('maintenance.update-book') }}" class="max-w-2xl mx-auto" method="POST">
     @csrf
     @method('PUT')
-    <input type="hidden" name="id" value="{{ $book->accession }}">
-    <h6 class="mb-1 text-xl font-semibold tracking-tight text-gray-800">Book Information</h6>
+    <input type="hidden" name="id" value="{{ $book->id }}">
+    <h6 class="mb-1 text-xl font-semibold tracking-tight">Book Information</h6>
     <div class="mb-5">
-      <label for="accession" name="accession" class="block mb-2 text-sm font-medium text-gray-900">Accession Number:</label>
-      <input type="text" id="accession" name="accession" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="FIL0123456789" value="{{ $book->accession }}">
+      <label for="accession" class="block mb-2 text-sm font-medium">Accession Number:</label>
+      <input type="text" id="accession" name="accession" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="FIL0123456789" value="{{ $book->accession }}">
       @error('accession')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -27,8 +27,8 @@
       @enderror
     </div>
     <div class="mb-5">
-      <label for="call_number" name="call_number" class="block mb-2 text-sm font-medium text-gray-900">Call Number:</label>
-      <input type="text" id="call_number" name="call_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="192.000..." value="{{ $book->call_number }}">
+      <label for="call_number" class="block mb-2 text-sm font-medium">Call Number:</label>
+      <input type="text" id="call_number" name="call_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="192.000..." value="{{ $book->call_number }}">
       @error('call_number')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -36,8 +36,17 @@
       @enderror
     </div>
     <div class="mb-5">
-      <label for="title" name="title" class="block mb-2 text-sm font-medium text-gray-900">Title:</label>
-      <input type="text" id="title" name="title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Title..." value="{{ $book->title }}">
+      <label for="barcode" class="block mb-2 text-sm font-medium">Barcode:</label>
+      <input type="text" id="barcode" name="barcode" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="1234 5678" value="{{ $book->barcode }}">
+      @error('barcode')
+      <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+        <span class="font-medium">{{ $message }}</span>
+      </div>
+      @enderror
+    </div>
+    <div class="mb-5">
+      <label for="title" class="block mb-2 text-sm font-medium">Title:</label>
+      <input type="text" id="title" name="title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Title..." value="{{ $book->title }}">
       @error('title')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -45,8 +54,8 @@
       @enderror
     </div>
     <div class="mb-5">
-      <label for="authors" name="authors" class="block mb-2 text-sm font-medium text-gray-900">Authors:</label>
-      <input type="text" id="authors" name="authors" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Juan Dela Cruz" value="{{ $book->authors }}">
+      <label for="authors" class="block mb-2 text-sm font-medium">Authors:</label>
+      <input type="text" id="authors" name="authors" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Juan Dela Cruz" value="{{ $book->author }}">
       @error('authors')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -54,8 +63,8 @@
       @enderror
     </div>
     <div class="mb-5">
-      <label for="edition" name="edition" class="block mb-2 text-sm font-medium text-gray-900">Edition:</label>
-      <input type="text" id="edition" name="edition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="1st Edition" value="{{ $book->edition }}">
+      <label for="edition" class="block mb-2 text-sm font-medium">Edition:</label>
+      <input type="text" id="edition" name="edition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="1st Edition" value="{{ $book->edition }}">
       @error('edition')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -63,8 +72,8 @@
       @enderror
     </div>
     <div class="mb-5">
-      <label for="publication" name="publication" class="block mb-2 text-sm font-medium text-gray-900">Publication:</label>
-      <input type="text" id="publication" name="publication" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Manila, Philippines" value="{{ $book->place_of_publication }}">
+      <label for="publication" class="block mb-2 text-sm font-medium">Publication:</label>
+      <input type="text" id="publication" name="publication" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Manila, Philippines" value="{{ $book->place_of_publication }}">
       @error('publication')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -72,8 +81,8 @@
       @enderror
     </div>
     <div class="mb-5">
-      <label for="publisher" name="publisher" class="block mb-2 text-sm font-medium text-gray-900">Publisher:</label>
-      <input type="text" id="publisher" name="publisher" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="National Library of the Philippines" value="{{ $book->publisher }}">
+      <label for="publisher" class="block mb-2 text-sm font-medium">Publisher:</label>
+      <input type="text" id="publisher" name="publisher" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="National Library of the Philippines" value="{{ $book->publisher }}">
       @error('publisher')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -81,8 +90,8 @@
       @enderror
     </div>
     <div class="mb-5">
-      <label for="copyright" name="copyright" class="block mb-2 text-sm font-medium text-gray-900">Copyright:</label>
-      <input type="text" id="copyright" name="copyright" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="2026" value="{{ $book->copyrights }}">
+      <label for="copyright" class="block mb-2 text-sm font-medium">Copyright:</label>
+      <input type="text" id="copyright" name="copyright" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="2026" value="{{ $book->copyrights }}">
       @error('copyright')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -90,8 +99,8 @@
       @enderror
     </div>
     <div class="mb-5">
-      <label for="cover_image" name="cover_image" class="block mb-2 text-sm font-medium text-gray-900">Cover Image:</label>
-      <input class="block w-full text-sm text-gray-600 border border-gray-900 rounded-md cursor-pointer bg-gray-100 focus:outline-none" id="cover_image" name="cover_image" type="file">
+      <label for="cover_image" class="block mb-2 text-sm font-medium">Cover Image:</label>
+      <input class="block w-full text-sm text-gray-600 border border-gray-900 rounded-md cursor-pointer bg-gray-100 focus:outline-none  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" id="cover_image" name="cover_image" type="file">
       @error('cover_image')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -99,8 +108,8 @@
       @enderror
     </div>
     <div class="mb-5">
-      <label for="digital_copy_url" name="digital_copy_url" class="block mb-2 text-sm font-medium text-gray-900">Digital Copy URL:</label>
-      <input type="text" id="digital_copy_url" name="digital_copy_url" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="www.example.com">
+      <label for="digital_copy_url" class="block mb-2 text-sm font-medium">Digital Copy URL:</label>
+      <input type="text" id="digital_copy_url" name="digital_copy_url" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="www.example.com" value="{{ $book->digital_copy_url }}">
       @error('digital_copy_url')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -108,23 +117,69 @@
       @enderror
     </div>
     <div class="mb-5">
-      <label for="remarks" name="remarks" class="block mb-2 text-sm font-medium text-gray-900">Select Remarks:</label>
-      <select id="remarks" name="remarks" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-        @if($book->remarks == 'Onshelf')
-          <option selected>Onshelf</option>
-          <option>Lost</option>
-          <option>Missing</option>
-        @elseif($book->remarks == 'Lost')
-          <option>Onshelf</option>
-          <option selected>Lost</option>
-          <option>Missing</option>
-        @elseif($book->remarks == 'Missing')
-          <option>Onshelf</option>
-          <option>Lost</option>
-          <option selected>Missing</option>
+      <label for="category" class="block mb-2 text-sm font-medium">Category:</label>
+      <select id="category" name="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <option selected disabled>Choose a category</option>
+        @foreach($categories as $key => $category)
+        @if($key == $book->category_id)
+        <option value="{{ $key }}" selected>{{ $category }}</option>
+        @else
+        <option value="{{ $key }}">{{ $category }}</option>
         @endif
+        @endforeach
+      </select>
+      @error('category')
+      <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+        <span class="font-medium">{{ $message }}</span>
+      </div>
+      @enderror
+    </div>
+    <div class="mb-5">
+      <label for="remarks" class="block mb-2 text-sm font-medium">Select Remarks:</label>
+      <select id="remarks" name="remarks" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        @foreach($remarks as $value)
+        @if($value == $book->remarks)
+        <option value="{{ $value }}" selected>{{ $value }}</option>
+        @else
+        <option value="{{ $value }}">{{ $value }}</option>        
+        @endif
+        @endforeach
       </select>
       @error('remarks')
+      <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+        <span class="font-medium">{{ $message }}</span>
+      </div>
+      @enderror
+    </div>
+    <div class="mb-5">
+      <label for="availability" class="block mb-2 text-sm font-medium">Select Availability:</label>
+      <select id="availability" name="availability" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        @foreach($availability as $value)
+        @if($value == $book->availability_status)
+        <option value="{{ $value }}" selected>{{ $value }}</option>
+        @else
+        <option value="{{ $value }}">{{ $value }}</option>
+        @endif
+        @endforeach
+      </select>
+      @error('availability')
+      <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+        <span class="font-medium">{{ $message }}</span>
+      </div>
+      @enderror
+    </div>
+    <div class="mb-5">
+      <label for="condition" class="block mb-2 text-sm font-medium">Select Condition:</label>
+      <select id="condition" name="condition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        @foreach($condition as $value)
+        @if($value == $book->condition_status)
+        <option value="{{ $value }}" selected>{{ $value }}</option>
+        @else
+        <option value="{{ $value }}">{{ $value }}</option>
+        @endif
+        @endforeach
+      </select>
+      @error('condition')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
       </div>
