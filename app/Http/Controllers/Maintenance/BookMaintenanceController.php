@@ -11,8 +11,10 @@ class BookMaintenanceController extends Controller
 {
     public function index()
     {
-        $books = Book::orderBy(DB::raw('DATE(updated_at)'), 'desc')
-                    ->orderBy(DB::raw('TIME(updated_at)'), 'desc')->get();
+        $books = Book::with('category')
+                    ->orderBy(DB::raw('DATE(updated_at)'), 'desc')
+                    ->orderBy(DB::raw('TIME(updated_at)'), 'desc')
+                    ->get();
         return view('maintenance.books.books', compact('books'));
     }
     public function create()

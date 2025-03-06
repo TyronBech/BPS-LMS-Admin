@@ -68,7 +68,6 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::put('insert-data',       [BookImportController::class, 'store'])     ->name('import.store-books');
     });*/
     Route::group(['prefix' => 'maintenance'], function () {
-        /*
         Route::group(['prefix' => 'books'], function () {
             Route::get('books',         [BookMaintenanceController::class, 'index'])    ->name('maintenance.books');
             Route::get('add-book',      [BookMaintenanceController::class, 'create'])   ->name('maintenance.create-book');
@@ -77,9 +76,8 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::put('edit-book',     [BookMaintenanceController::class, 'update'])   ->name('maintenance.update-book');
             Route::post('show-books',   [BookMaintenanceController::class, 'show'])     ->name('maintenance.show-books');
             Route::get('delete-book',   [BookMaintenanceController::class, 'destroy'])  ->name('maintenance.delete-book');
-            //Route::destroy('delete-book',   [BookMaintenanceController::class, 'destroy'])  ->name('maintenance.delete-book');
+            Route::delete('delete-book',   [BookMaintenanceController::class, 'destroy'])  ->name('maintenance.delete-book');
         });
-        */
         Route::group(['prefix' => 'students'], function () {
             Route::get('students',          [UsersMaintenanceController::class, 'index'])     ->name('maintenance.students');
             Route::get('add-student',       [UsersMaintenanceController::class, 'create'])    ->name('maintenance.create-student');
