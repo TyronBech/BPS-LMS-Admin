@@ -1,7 +1,7 @@
 @extends('layouts.admin-app')
 @section('content')
 <h1 class="font-semibold text-center text-4xl p-5">Report Document</h1>
-  <form action="{{ route('report.search') }}" method="POST">
+  <form action="{{ route('report.user-search') }}" method="POST">
     @csrf
     <div class="container flex flex-row justify-center">
       <div id="date-range-picker" date-rangepicker class="flex items-center">

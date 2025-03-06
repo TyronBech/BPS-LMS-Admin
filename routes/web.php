@@ -50,11 +50,11 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     })->name('dashboard');
     Route::group(['prefix' => 'report'], function () {
         Route::get('user-report',       [UserLogsController::class, 'index'])           ->name('report.user');
-        Route::post('user-report',      [UserLogsController::class, 'search'])          ->name('report.search');
+        Route::post('user-report',      [UserLogsController::class, 'search'])          ->name('report.user-search');
         Route::get('visitor-report',    [VisitorLogsController::class, 'index'])        ->name('report.visitor');
         Route::post('visitor-report',   [VisitorLogsController::class, 'retrieve'])     ->name('report.visitor-retrieve');
         Route::get('transaction',       [TransactionController::class, 'index'])        ->name('report.transaction');
-        Route::post('transaction',      [TransactionController::class, 'retrieve'])     ->name('report.transaction-retrieve');
+        Route::post('transaction',      [TransactionController::class, 'search'])       ->name('report.transaction-search');
         Route::get('book-circulation',  [BookCirculationController::class, 'index'])    ->name('report.book-circulation');
         Route::post('book-circulation', [BookCirculationController::class, 'retrieve']) ->name('report.book-circulation-retrieve');
         });
@@ -78,7 +78,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::get('delete-book',   [BookMaintenanceController::class, 'destroy'])  ->name('maintenance.delete-book');
             Route::delete('delete-book',   [BookMaintenanceController::class, 'destroy'])  ->name('maintenance.delete-book');
         });
-        Route::group(['prefix' => 'students'], function () {
+        Route::group(['prefix' => 'users'], function () {
             Route::get('students',          [UsersMaintenanceController::class, 'index'])     ->name('maintenance.students');
             Route::get('add-student',       [UsersMaintenanceController::class, 'create'])    ->name('maintenance.create-student');
             Route::post('add-student',      [UsersMaintenanceController::class, 'store'])     ->name('maintenance.store-student');

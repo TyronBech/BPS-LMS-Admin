@@ -121,10 +121,10 @@ class UserLogsController extends Controller
     }
     private function generateData(Request $request)
     {
-        $fromInputDate = $request->input('start');
-        $toInputDate = $request->input('end');
-        $inputName = strtolower($request->input('first-name'));
-        $inputLastName = strtolower($request->input('last-name'));
+        $fromInputDate  = $request->input('start');
+        $toInputDate    = $request->input('end');
+        $inputName      = strtolower($request->input('first-name'));
+        $inputLastName  = strtolower($request->input('last-name'));
 
         $query = Log::with('users');
 

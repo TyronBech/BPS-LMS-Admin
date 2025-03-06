@@ -6,6 +6,12 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Transaction;
 use DateTime;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Carbon\Carbon;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 
 class TransactionController extends Controller
 {
@@ -15,154 +21,98 @@ class TransactionController extends Controller
         $toInputDate    = "";
         $inputName      = "";
         $inputLastName  = "";
-        $data           = array();
+        $data           = Transaction::with('books', 'users')->get();
         return view('report.transactions.transactions' , compact('data', 'inputName', 'inputLastName', 'fromInputDate', 'toInputDate'));
     }
-    public function retrieve(Request $request)
+    public function search(Request $request)
     {
-        $fromInputDate  = $request->input('start');
-        $toInputDate    = $request->input('end');
         $inputName      = $request->input('first-name');
         $inputLastName  = $request->input('last-name');
-        $findBtn        = $request->input('findBtn');
-        $findAllBtn     = $request->input('findAllBtn');
-        $data           = array();
-        if($findBtn == 'activated'){
-            if(strlen($fromInputDate) != 0 || strlen($inputName) != 0 || strlen($inputLastName) != 0){
-                $data = $this->generateData($request);
-            } else {
-                return redirect()->route('report.transaction')->with('toast-warning', 'Please enter at least one search criteria.');
-            }
-        } else if($findAllBtn == 'activated'){
-            $inputName      = "";
-            $inputLastname  = "";
-            $fromInputDate  = "";
-            $toInputDate    = "";
-            $data = Transaction::join('users as a', 'a.user_id', '=', 'transaction.user_id')
-                    ->select('transaction.copy_id', 
-                            'transaction.user_id', 
-                            'a.last_name', 
-                            'a.first_name',
-                            'transaction.transaction_type',
-                            'transaction.date_borrowed',
-                            'transaction.due_date',
-                            'transaction.return_date')
-                    ->orderBy('transaction.updated_at', 'desc')
-                    ->get();
+        $fromInputDate  = $request->input('start');
+        $toInputDate    = $request->input('end');
+        $validator = Validator::make($request->all(), [
+            'start'         => 'sometimes',
+            'end'           => 'sometimes',
+            'last-name'     => 'sometimes',
+            'first-name'    => 'sometimes',
+        ]);
+        if($validator->fails()){
+            return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
-        if(!count($data)) return redirect()->route('report.transaction')->with('toast-error', 'No data found.');
-        return view('report.transaction.transactions' , compact('data', 'inputName', 'inputLastName', 'fromInputDate', 'toInputDate'));
+        // if($request->input('submit') == 'pdf'){
+        //     $data = $this->generateData($request);
+        //     $this->generatePDF($data);
+        //     return redirect()->route('report.user')->with('toast-success', 'Successfully exported to PDF');
+        // } else if($request->input('submit') == 'excel'){
+        //     $data = $this->generateData($request);
+        //     $this->exportExcel($data);
+        //     return redirect()->route('report.user')->with('toast-success', 'Successfully exported to Excel');
+        // }
+        $data = $this->generateData($request);
+        return view('report.transactions.transactions' , compact('data', 'inputName', 'inputLastName', 'fromInputDate', 'toInputDate'));
+    }
+    private function generatePDF($data)
+    {
+        $chunk      = $data->chunk(25);
+        $arrayPdf   = array( 'data' => $chunk );
+        $pdf        = Pdf::loadView('pdf.user-pdf-report-format', $arrayPdf);
+        $directory  = 'C:/Users/tyron/Downloads';
+        $pdf->save($directory . '/users-report_' . date('Y-m-d') . '.pdf');
+    }
+    private function exportExcel($data)
+    {
+        $spreadsheet    = new Spreadsheet(); 
+        $sheet          = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Log ID');
+        $sheet->setCellValue('B1', 'RFID');
+        $sheet->setCellValue('C1', 'Name');
+        $sheet->setCellValue('D1', 'Date');
+        $sheet->setCellValue('E1', 'Time');
+        $sheet->setCellValue('F1', 'Compute Use');
+        $sheet->setCellValue('G1', 'Action');
+        $row = 2;
+        foreach($data as $item){
+            $sheet->setCellValue('A' . $row, $item->id);
+            $sheet->setCellValue('B' . $row, $item->users->rfid);
+            $sheet->setCellValue('C' . $row, $item->users->last_name . ', ' . $item->users->first_name . ' ' . $item->users->middle_name);
+            $sheet->setCellValue('D' . $row, Carbon::parse($item->timestamp)->format('Y-m-d'));
+            $sheet->setCellValue('E' . $row, Carbon::parse($item->timestamp)->format('H:i:s'));
+            $sheet->setCellValue('F' . $row, $item->computer_use);
+            $sheet->setCellValue('G' . $row, $item->action);
+            $row++;
+        }
+        $writer     = new WriterXlsx($spreadsheet);
+        $directory  = 'C:/Users/tyron/Downloads';
+        $filename   = $directory . '/student-report_' . date('Y-m-d') . '.xlsx';
+        $writer->save($filename);
     }
     private function generateData(Request $request)
     {
         $fromInputDate  = $request->input('start');
         $toInputDate    = $request->input('end');
-        $inputName      = $request->input('first-name');
-        $inputLastName  = $request->input('last-name');
-        $data           = array();
-        if(strlen($fromInputDate) > 0){
-            $fromInputDate = DateTime::createFromFormat('m/d/Y', $fromInputDate);
-            $fromInputDate = $fromInputDate->format('Y-m-d');
-            $toInputDate = DateTime::createFromFormat('m/d/Y', $toInputDate);
-            $toInputDate = $toInputDate->format('Y-m-d');
+        $inputName      = strtolower($request->input('first-name'));
+        $inputLastName  = strtolower($request->input('last-name'));
+
+        $query = Transaction::with('books', 'users');
+        if (strlen($fromInputDate) > 0) {
+            $fromInputDate = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
+            $toInputDate = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
+            $query->whereBetween(DB::raw('DATE(date_borrowed)'), [$fromInputDate, $toInputDate]);
         }
-        if(strlen($fromInputDate) > 0 && strlen($inputName) > 0 && strlen($inputLastName) > 0){
-            $data = Transaction::join('users as a', 'a.user_id', '=', 'transaction.user_id')
-                    ->select('transaction.copy_id', 
-                            'transaction.user_id', 
-                            'a.last_name', 
-                            'a.first_name',
-                            'transaction.transaction_type',
-                            'transaction.date_borrowed',
-                            'transaction.due_date',
-                            'transaction.return_date')
-                    ->whereBetween('transaction.date_borrowed', [$fromInputDate, $toInputDate])
-                    ->where('a.last_name', $inputLastName)
-                    ->where('a.first_name', $inputName)
-                    ->orderBy('transaction.updated_at', 'desc')
-                    ->get();
-        } else if(strlen($inputName) > 0 && strlen($inputLastName) > 0){
-            $data = Transaction::join('users as a', 'a.user_id', '=', 'transaction.user_id')
-                    ->select('transaction.copy_id', 
-                            'transaction.user_id', 
-                            'a.last_name', 
-                            'a.first_name',
-                            'transaction.transaction_type',
-                            'transaction.date_borrowed',
-                            'transaction.due_date',
-                            'transaction.return_date')
-                    ->where('a.last_name', $inputLastName)
-                    ->where('a.first_name', $inputName)
-                    ->orderBy('transaction.updated_at', 'desc')
-                    ->get();
-        } else if(strlen($fromInputDate) > 0 && strlen($inputName) > 0){
-            $data = Transaction::join('users as a', 'a.user_id', '=', 'transaction.user_id')
-                    ->select('transaction.copy_id', 
-                            'transaction.user_id', 
-                            'a.last_name', 
-                            'a.first_name',
-                            'transaction.transaction_type',
-                            'transaction.date_borrowed',
-                            'transaction.due_date',
-                            'transaction.return_date')
-                    ->whereBetween('transaction.date_borrowed', [$fromInputDate, $toInputDate])
-                    ->where('a.first_name', $inputName)
-                    ->orderBy('transaction.updated_at', 'desc')
-                    ->get();
-        } else if(strlen($fromInputDate) > 0 && strlen($inputLastName) > 0){
-            $data = Transaction::join('users as a', 'a.user_id', '=', 'transaction.user_id')
-                    ->select('transaction.copy_id', 
-                            'transaction.user_id', 
-                            'a.last_name', 
-                            'a.first_name',
-                            'transaction.transaction_type',
-                            'transaction.date_borrowed',
-                            'transaction.due_date',
-                            'transaction.return_date')
-                    ->whereBetween('transaction.date_borrowed', [$fromInputDate, $toInputDate])
-                    ->where('a.last_name', $inputLastName)
-                    ->orderBy('transaction.updated_at', 'desc')
-                    ->get();
-        } else if(strlen($inputName) > 0){
-            $data = Transaction::join('users as a', 'a.user_id', '=', 'transaction.user_id')
-                    ->select('transaction.copy_id', 
-                            'transaction.user_id', 
-                            'a.last_name', 
-                            'a.first_name',
-                            'transaction.transaction_type',
-                            'transaction.date_borrowed',
-                            'transaction.due_date',
-                            'transaction.return_date')
-                    ->where('a.first_name', $inputName)
-                    ->orderBy('transaction.updated_at', 'desc')
-                    ->get();
-        } else if(strlen($inputLastName) > 0){
-            $data = Transaction::join('users as a', 'a.user_id', '=', 'transaction.user_id')
-                    ->select('transaction.copy_id', 
-                            'transaction.user_id', 
-                            'a.last_name', 
-                            'a.first_name',
-                            'transaction.transaction_type',
-                            'transaction.date_borrowed',
-                            'transaction.due_date',
-                            'transaction.return_date')
-                    ->where('a.last_name', $inputLastName)
-                    ->orderBy('transaction.updated_at', 'desc')
-                    ->get();
-        } else if(strlen($fromInputDate) > 0){
-            $data = Transaction::join('users as a', 'a.user_id', '=', 'transaction.user_id')
-                    ->select('transaction.copy_id', 
-                            'transaction.user_id', 
-                            'a.last_name', 
-                            'a.first_name',
-                            'transaction.transaction_type',
-                            'transaction.date_borrowed',
-                            'transaction.due_date',
-                            'transaction.return_date')
-                    ->whereBetween('transaction.date_borrowed', [$fromInputDate, $toInputDate])
-                    ->orderBy('transaction.updated_at', 'desc')
-                    ->get();
+
+        if (strlen($inputName) > 0) {
+            $query->whereHas('users', function ($q) use ($inputName) {
+                $q->where(DB::raw('lower(first_name)'), 'like', '%' . $inputName . '%');
+            });
         }
+
+        if (strlen($inputLastName) > 0) {
+            $query->whereHas('users', function ($q) use ($inputLastName) {
+                $q->where(DB::raw('lower(last_name)'), 'like', '%' . $inputLastName . '%');
+            });
+        }
+        $data = $query->orderBy(DB::raw('DATE(date_borrowed)'), 'asc')
+            ->get();
         return $data;
     }
 }

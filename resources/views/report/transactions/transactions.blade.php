@@ -1,7 +1,7 @@
 @extends('layouts.admin-app')
 @section('content')
 <h1 class="font-semibold text-center text-4xl p-5">Transaction History</h1>
-  <form action="{{ route('report.transaction-retrieve') }}" method="POST">
+  <form action="{{ route('report.transaction-search') }}" method="POST">
     @csrf
     <div class="container flex flex-row justify-center">
       <div id="date-range-picker" date-rangepicker class="flex items-center">
@@ -24,20 +24,21 @@
         </div>
       </div>
       <div class="sm:col-span-2 sm:col-start-1 flex items-center">
-        <label for="first-name" class="block text-sm/6 font-medium text-gray-900 mr-2 ml-4">Name:</label>
+        <label for="first-name" class="block text-sm/6 font-medium mr-2 ml-4">Name:</label>
         <div class="">
-          <input type="text" name="first-name" id="first-name" placeholder="Juan" class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 min-w-[140px]" value="<?php echo $inputName; ?>">
+          <input type="text" name="first-name" id="first-name" placeholder="Juan" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value="<?php echo $inputName; ?>">
         </div>
       </div>
       <div class="sm:col-span-2 sm:col-start-1 flex items-center">
-        <label for="last-name" class="block text-sm/6 font-medium text-gray-900 mr-2 ml-4">Surname:</label>
+        <label for="last-name" class="block text-sm/6 font-medium mr-2 ml-4">Surname:</label>
         <div class="">
-          <input type="text" name="last-name" id="last-name" placeholder="Dela Cruz" class="block w-full rounded-md bg-white px-3 py-1.5 text-base text-gray-900 outline outline-1 -outline-offset-1 outline-gray-300 placeholder:text-gray-400 focus:outline focus:outline-2 focus:-outline-offset-2 focus:outline-indigo-600 sm:text-sm/6 min-w-[140px]" value="<?php echo $inputLastName; ?>">
+          <input type="text" name="last-name" id="last-name" placeholder="Dela Cruz" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value="<?php echo $inputLastName; ?>">
         </div>
       </div>
       <div class="sm:col-span-2 sm:col-start-1 flex items-center">
-        <button type="submit" id="findBtn" name="findBtn" class="bg-blue-500 hover:bg-blue-700 active:bg-blue-900 text-white text-sm font-bold py-1 px-4 rounded h-12 mt-2 mb-2 ml-4 mr-4 w-20">Find</button>
-        <button type="submit" id="findAllBtn" name="findAllBtn" class="bg-blue-500 hover:bg-blue-700 active:bg-blue-900 text-white text-sm font-bold py-1 px-4 rounded h-12 mt-2 mb-2 ml-4 mr-4 w-20">Find All</button>
+        <button type="submit" id="submit" name="submit" value="find" class="bg-blue-500 hover:bg-blue-700 active:bg-blue-900 text-white text-sm font-bold py-1 px-4 rounded h-12 mt-2 mb-2 ml-4 mr-4 w-20">Find</button>
+        <button type="submit" id="submit" name="submit" value="pdf" class="bg-red-500 hover:bg-red-700 active:bg-red-900 text-white text-sm font-bold py-1 px-4 rounded h-12 mt-2 mb-2 ml-4 mr-4 w-20">Export PDF</button>
+        <button type="submit" id="submit" name="submit" value="excel" class="bg-green-500 hover:bg-green-700 active:bg-green-900 text-white text-sm font-bold py-1 px-4 rounded h-12 mt-2 mb-2 ml-4 mr-4 w-20">Export Excel</button>
       </div>
     </div>
   </form>
