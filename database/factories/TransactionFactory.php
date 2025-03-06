@@ -17,7 +17,7 @@ class TransactionFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => $this->faker->numberBetween(1, 5),
+            'user_id' => $this->faker->randomElement([1, 2, 4]),
             'book_id' => $this->faker->numberBetween(1, 50),
             'transaction_type' => $this->faker->randomElement(['Borrow', 'Return']),
             'date_borrowed' => $this->faker->dateTimeThisYear(),

@@ -7,4 +7,5 @@ enum RolesEnum : string
     case SUPER_ADMIN    = 'Super Admin';
     case ADMIN          = 'Admin';
     case LIBRARIAN      = 'Librarian';
+    case IMMERSION      = 'Immersion';
 }
