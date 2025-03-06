@@ -5,6 +5,8 @@ namespace App\Http\Controllers\Report;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Book;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class BookCirculationController extends Controller
 {
@@ -13,129 +15,42 @@ class BookCirculationController extends Controller
         $barcode        = "";
         $title          = "";
         $availability   = "";
-        $data           = array();
+        $data           = Book::select('accession', 'call_number', 'title', 'barcode', 'availability_status', 'condition_status')->get();
         return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability'));
     }
-    public function retrieve(Request $request)
+    public function search(Request $request)
     {
         $barcode        = $request->input('barcode');
         $title          = $request->input('title');
         $availability   = $request->input('availability');
-        $findBtn        = $request->input('findBtn');
-        $findAllBtn     = $request->input('findAllBtn');
-        $data           = array();
-        if($findBtn == 'activated'){
-            if(strlen($barcode) == 0 && strlen($title) == 0 && $availability == 'Choose availability status'){
-                return redirect()->route('report.book-circulation')->with('toast-warning', 'Please enter at least one search criteria.');
-            } else if(strlen($barcode) != 0 || strlen($title) != 0 || strlen($availability) != 0){
-                $data = $this->generateData($request);
-            }
-        } else if($findAllBtn == 'activated'){
-            $barcode        = "";
-            $title          = "";
-            $availability   = "";
-            $data = Book::join('copies as c', 'c.book_id', '=','book.book_id')
-                    ->select('c.book_id',
-                            'c.copy_id', 
-                            'book.title',
-                            'c.barcode', 
-                            'c.availability_status',
-                            'c.condition_status')
-                    ->orderBy('book.title', 'asc')
-                    ->get();
+        $validator = Validator::make($request->all(), [
+            'availability'  => 'sometimes',
+            'title'         => 'sometimes',
+            'barcode'       => 'sometimes',
+        ]);
+        if($validator->fails()){
+            return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
+        $data = $this->generateData($request);
         if(!count($data)) return redirect()->route('report.book-circulation')->with('toast-error', 'No data found.');
         return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability'));
     }
     private function generateData(Request $request)
     {
         $barcode        = $request->input('barcode');
-        $title          = $request->input('title');
+        $title          = strtolower($request->input('title'));
         $availability   = $request->input('availability');
-        $data           = array();
-        if(strlen($barcode) > 0 && strlen($title) > 0 && strlen($availability) > 0 && $availability != 'Choose availability status'){
-            $data = Book::join('copies as c', 'c.book_id', '=','book.book_id')
-                    ->select('c.book_id',
-                            'c.copy_id', 
-                            'book.title',
-                            'c.barcode', 
-                            'c.availability_status',
-                            'c.condition_status')
-                    ->where('book.title', 'like', '%'.$title.'%')
-                    ->where('c.barcode', $barcode)
-                    ->where('c.availability_status', $availability)
-                    ->orderBy('book.title', 'asc')
-                    ->get();
-        } else if(strlen($barcode) > 0 && strlen($title) > 0){
-            $data = Book::join('copies as c', 'c.book_id', '=','book.book_id')
-                    ->select('c.book_id',
-                            'c.copy_id', 
-                            'book.title',
-                            'c.barcode', 
-                            'c.availability_status',
-                            'c.condition_status')
-                    ->where('book.title', 'like', '%'.$title.'%')
-                    ->where('c.barcode', $barcode)
-                    ->orderBy('book.title', 'asc')
-                    ->get();
-        } else if(strlen($title) > 0 && strlen($availability) > 0 && $availability != 'Choose availability status'){
-            $data = Book::join('copies as c', 'c.book_id', '=','book.book_id')
-                    ->select('c.book_id',
-                            'c.copy_id', 
-                            'book.title',
-                            'c.barcode', 
-                            'c.availability_status',
-                            'c.condition_status')
-                    ->where('book.title', 'like', '%'.$title.'%')
-                    ->where('c.availability_status', $availability)
-                    ->orderBy('book.title', 'asc')
-                    ->get();
-        } else if(strlen($barcode) > 0 && strlen($availability) > 0 && $availability != 'Choose availability status'){
-            $data = Book::join('copies as c', 'c.book_id', '=','book.book_id')
-                    ->select('c.book_id',
-                            'c.copy_id', 
-                            'book.title',
-                            'c.barcode', 
-                            'c.availability_status',
-                            'c.condition_status')
-                    ->where('c.barcode', $barcode)
-                    ->where('c.availability_status', $availability)
-                    ->orderBy('book.title', 'asc')
-                    ->get();
-        } else if(strlen($title) > 0){
-            $data = Book::join('copies as c', 'c.book_id', '=','book.book_id')
-                    ->select('c.book_id',
-                            'c.copy_id', 
-                            'book.title',
-                            'c.barcode', 
-                            'c.availability_status',
-                            'c.condition_status')
-                    ->where('book.title', 'like', '%'.$title.'%')
-                    ->orderBy('book.title', 'asc')
-                    ->get();
-        } else if(strlen($barcode) > 0){
-            $data = Book::join('copies as c', 'c.book_id', '=','book.book_id')
-                    ->select('c.book_id',
-                            'c.copy_id', 
-                            'book.title',
-                            'c.barcode', 
-                            'c.availability_status',
-                            'c.condition_status')
-                    ->where('c.barcode', $barcode)
-                    ->orderBy('book.title', 'asc')
-                    ->get();
-        } else if(strlen($availability) > 0 && $availability != 'Choose availability status'){
-            $data = Book::join('copies as c', 'c.book_id', '=','book.book_id')
-                    ->select('c.book_id',
-                            'c.copy_id', 
-                            'book.title',
-                            'c.barcode', 
-                            'c.availability_status',
-                            'c.condition_status')
-                    ->where('c.availability_status', $availability)
-                    ->orderBy('book.title', 'asc')
-                    ->get();
+        $query          = Book::select('accession', 'call_number', 'title', 'barcode', 'availability_status', 'condition_status');
+        if (strlen($barcode) > 0) {
+            $query->where('barcode', 'like', '%' . $barcode . '%');
         }
+        if (strlen($title) > 0) {
+            $query->where(DB::raw('lower(title)'), 'like', '%' . $title . '%');
+        }
+        if (strlen($availability) > 0 && $availability != 'Choose availability status') {
+            $query->where('availability_status', $availability);
+        }
+        $data = $query->get();
         return $data;
     }
 }

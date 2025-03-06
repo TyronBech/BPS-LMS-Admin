@@ -56,7 +56,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::get('transaction',       [TransactionController::class, 'index'])        ->name('report.transaction');
         Route::post('transaction',      [TransactionController::class, 'search'])       ->name('report.transaction-search');
         Route::get('book-circulation',  [BookCirculationController::class, 'index'])    ->name('report.book-circulation');
-        Route::post('book-circulation', [BookCirculationController::class, 'retrieve']) ->name('report.book-circulation-retrieve');
+        Route::post('book-circulation', [BookCirculationController::class, 'search'])   ->name('report.book-circulation-search');
         });
     /*
     Route::group(['prefix' => 'import'], function () {
