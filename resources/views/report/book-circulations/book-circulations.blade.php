@@ -20,9 +20,9 @@
         <label for="availability" class="block mb-2 text-sm font-medium mr-2 ml-4">Select:</label>
         <select id="availability" name="availability" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
           <option selected>Choose availability status</option>
-          <option value="available">Available</option>
-          <option value="borrowed">Borrowed</option>
-          <option value="reserved">Reserved</option>
+          @foreach($availability as $item)
+            <option value="{{ $item }}">{{ $item }}</option>
+          @endforeach
         </select>
       </div>
       <div class="sm:col-span-2 sm:col-start-1 flex items-center">

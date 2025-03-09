@@ -14,7 +14,7 @@ class BookCirculationController extends Controller
     {
         $barcode        = "";
         $title          = "";
-        $availability   = "";
+        $availability   = $this->extract_enums('books', 'availability_status');
         $data           = Book::select('accession', 'call_number', 'title', 'barcode', 'availability_status', 'condition_status')->get();
         return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability'));
     }
@@ -32,6 +32,7 @@ class BookCirculationController extends Controller
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
         $data = $this->generateData($request);
+        $availability = $this->extract_enums('books', 'availability_status');
         if(!count($data)) return redirect()->route('report.book-circulation')->with('toast-error', 'No data found.');
         return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability'));
     }
@@ -52,5 +53,21 @@ class BookCirculationController extends Controller
         }
         $data = $query->get();
         return $data;
+    }
+    private function extract_enums($table, $columnName){
+        $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";
+        $column = DB::select($query);
+        if (empty($column)) {
+            return ['N/A'];
+        }
+        $type = $column[0]->Type;
+        // Extract enum values
+        preg_match('/enum\((.*)\)$/', $type, $matches);
+        $enumValues = [];
+
+        if (isset($matches[1])) {
+            $enumValues = str_getcsv($matches[1], ',', "'");
+        }
+        return $enumValues;
     }
 }
