@@ -9,7 +9,15 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 class Category extends Model
 {
     use HasFactory;
-    protected $fillable = [ 'name' ];
+    protected $fillable = [
+        'legend',
+        'name',
+        'previous_inventory',
+        'discarded',
+        'newly_acquired',
+        'present_inventory',
+
+    ];
 
     public function books() : HasMany
     {

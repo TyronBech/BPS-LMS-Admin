@@ -17,6 +17,7 @@ use App\Http\Controllers\Maintenance\BookMaintenanceController;
 use App\Http\Controllers\Maintenance\UsersMaintenanceController;
 use App\Http\Controllers\Roles_Permissions\RolesController;
 use App\Http\Controllers\Inventory\InventoryController;
+use App\Http\Controllers\Report\CategoriesController;
 use App\Http\Middleware\SuperAdminAuthentication;
 
 Route::get('/', function () {
@@ -58,7 +59,8 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::post('transaction',      [TransactionController::class, 'search'])       ->name('report.transaction-search');
         Route::get('book-circulation',  [BookCirculationController::class, 'index'])    ->name('report.book-circulation');
         Route::post('book-circulation', [BookCirculationController::class, 'search'])   ->name('report.book-circulation-search');
-        });
+        Route::get('summary',           [CategoriesController::class, 'index'])         ->name('report.summary');
+    });
     /*
     Route::group(['prefix' => 'import'], function () {
         Route::get('students',          [StudentImportController::class, 'index'])  ->name('import.import-students');
