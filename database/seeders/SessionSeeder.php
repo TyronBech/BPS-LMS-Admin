@@ -14,8 +14,9 @@ class SessionSeeder extends Seeder
      */
     public function run(): void
     {
-        Session::flush(); // Removes all session data for the current session.
-        Session::regenerateToken(); // Regenerates the CSRF token.
-        DB::table('sessions')->truncate();
+        // Session::flush(); // Removes all session data for the current session.
+        // Session::regenerateToken(); // Regenerates the CSRF token.
+        // DB::table('sessions')->truncate();
+        DB::rollBack();
     }
 }

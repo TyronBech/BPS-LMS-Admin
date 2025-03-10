@@ -37,4 +37,8 @@ class Book extends Model
     {
         return $this->hasMany(Transaction::class, 'book_id', 'id');
     }
+    public function inventory() : HasMany
+    {
+        return $this->hasMany(Inventory::class, 'book_id', 'id');
+    }
 }

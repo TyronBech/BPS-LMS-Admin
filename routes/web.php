@@ -69,7 +69,8 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::put('insert-data',       [BookImportController::class, 'store'])     ->name('import.store-books');
     });*/
     Route::group(['prefix' => 'inventory'], function () {
-        Route::get('inventory',         [InventoryController::class, 'index'])    ->name('inventory.inventory');
+        Route::get('inventory', [InventoryController::class, 'index'])  ->name('inventory.inventory');
+        Route::post('search',   [InventoryController::class, 'search']) ->name('inventory.search');
     });
     Route::group(['prefix' => 'maintenance'], function () {
         Route::group(['prefix' => 'books'], function () {
