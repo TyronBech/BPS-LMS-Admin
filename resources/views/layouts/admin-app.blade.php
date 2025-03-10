@@ -10,7 +10,7 @@
 </head>
 <body class="relative bg-blue-50 dark:bg-gray-900 text-gray-900 dark:text-white">
   @include('layouts.admin-header')
-  <main class="container relative mx-auto px-2 font-sans flex-col">
+  <main class="container relative mx-auto px-2 font-sans flex flex-col items-center">
     @include('layouts.toast')
     @yield('content')
   </main>

@@ -16,6 +16,7 @@ use App\Http\Controllers\Maintenance\AdminMaintenanceController;
 use App\Http\Controllers\Maintenance\BookMaintenanceController;
 use App\Http\Controllers\Maintenance\UsersMaintenanceController;
 use App\Http\Controllers\Roles_Permissions\RolesController;
+use App\Http\Controllers\Inventory\InventoryController;
 use App\Http\Middleware\SuperAdminAuthentication;
 
 Route::get('/', function () {
@@ -67,6 +68,9 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::post('books-data',       [BookImportController::class, 'upload'])    ->name('import.upload-books');
         Route::put('insert-data',       [BookImportController::class, 'store'])     ->name('import.store-books');
     });*/
+    Route::group(['prefix' => 'inventory'], function () {
+        Route::get('inventory',         [InventoryController::class, 'index'])    ->name('inventory.inventory');
+    });
     Route::group(['prefix' => 'maintenance'], function () {
         Route::group(['prefix' => 'books'], function () {
             Route::get('books',             [BookMaintenanceController::class, 'index'])    ->name('maintenance.books');
