@@ -14,8 +14,7 @@ class BookMaintenanceController extends Controller
     public function index()
     {
         $books = Book::with('category')
-                    ->orderBy(DB::raw('DATE(updated_at)'), 'desc')
-                    ->orderBy(DB::raw('TIME(updated_at)'), 'desc')
+                    ->orderBy('id', 'asc')
                     ->get();
         return view('maintenance.books.books', compact('books'));
     }
@@ -150,14 +149,14 @@ class BookMaintenanceController extends Controller
     {
         DB::beginTransaction();
         try{
-            $id = array_keys($request->all())[0];
+            $id = $request->input('id');
             Book::find($id)->delete();
         }catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();
-            return redirect()->route('books')->with('toast-error', 'Something went wrong!');
+            return redirect()->route('maintenance.books')->with('toast-error', 'Something went wrong!');
         }
         DB::commit();
-        return redirect()->route('books')->with('toast-success', 'Book deleted successfully');
+        return redirect()->route('maintenance.books')->with('toast-success', 'Book deleted successfully');
     }
     private function extract_enums($table, $columnName){
         $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";

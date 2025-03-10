@@ -18,8 +18,8 @@ class UsersMaintenanceController extends Controller
     public function index()
     {
         $users = User::with('students', 'employees', 'visitors', 'groups')
-                    ->orderBy(DB::raw('DATE(users.updated_at)'), 'desc')
-                    ->orderBy(DB::raw('TIME(users.updated_at)'), 'desc')->get();
+                    ->orderBy('id', 'asc')
+                    ->get();
         //dd($users->toArray());
         return view('maintenance.users.users', compact('users'));
     }
@@ -105,7 +105,9 @@ class UsersMaintenanceController extends Controller
         DB::commit();
         DB::beginTransaction();
         try{
+            DB::statement('SET SQL_SAFE_UPDATES = 0');
             DB::statement('CALL DistributeStagingUsers()');
+            DB::statement('SET SQL_SAFE_UPDATES = 1');
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
         }
