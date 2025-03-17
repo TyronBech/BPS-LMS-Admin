@@ -15,15 +15,15 @@
     <tbody class="text-center">
       @forelse($inventory as $item)
       <tr>
-        <td class="pb-1">{{ $item->accession }}</td>
-        <td class="pb-1">{{ $item->call_number }}</td>
-        <td class="pb-1">{{ $item->barcode }}</td>
-        <td class="pb-1">{{ $item->title }}</td>
-        <td class="pb-1">{{ $item->author }}</td>
+        <td class="pb-1">{{ $item->book->accession }}</td>
+        <td class="pb-1">{{ $item->book->call_number }}</td>
+        <td class="pb-1">{{ $item->book->barcode }}</td>
+        <td class="pb-1">{{ $item->book->title }}</td>
+        <td class="pb-1">{{ $item->book->author }}</td>
         <td class="pb-1 mx-2">
-          <select id="availability" name="availability" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+          <select id="availability" name="availability[{{ $item->book->accession }}]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
             @foreach($availability as $value)
-            @if($item->availability == $value)
+            @if($item->book->availability_status == $value)
             <option value="{{ $value }}" selected>{{ $value }}</option>
             @else
             <option value="{{ $value }}">{{ $value }}</option>
@@ -32,9 +32,9 @@
           </select>
         </td>
         <td class="pb-1 mx-2">
-          <select id="condition" name="condition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+          <select id="condition" name="condition[{{ $item->book->accession }}]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
             @foreach($conditions as $value)
-            @if($item->condition == $value)
+            @if($item->book->condition_status == $value)
             <option value="{{ $value }}" selected>{{ $value }}</option>
             @else
             <option value="{{ $value }}">{{ $value }}</option>

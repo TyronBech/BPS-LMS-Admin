@@ -40,7 +40,28 @@ class InventoryController extends Controller
     }
     public function update(Request $request)
     {
-        dd($request->all());
+        $availability = $request->input('availability');
+        $condition    = $request->input('condition');
+        DB::beginTransaction();
+        try{
+            foreach($availability as $key => $value){
+                $cond = $condition[$key];
+                $book = Book::where('accession', $key)->first();
+                Inventory::create([
+                    'book_id'             => $book->id,
+                    'checked_at'          => now(),
+                ]);
+                $book->update([
+                    'availability_status' => $value,
+                    'condition_status'    => $cond,
+                ]);
+            }
+        } catch(\Illuminate\Database\QueryException $e){
+            DB::rollBack();
+            return redirect()->back()->with('toast-error', 'Something went wrong!');
+        }
+        DB::commit();
+        return redirect()->route('inventory.inventory')->with('toast-success', 'Inventory updated successfully!');
     }
     private function extract_enums($table, $columnName)
     {
