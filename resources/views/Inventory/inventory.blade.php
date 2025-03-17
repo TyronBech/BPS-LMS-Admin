@@ -20,11 +20,6 @@
   window.onload = function() {
     document.getElementById('barcode').focus();
   };
-  // $(document).ready(function() {
-  //   $('#barcode').on('input', function() {
-  //     console.log($(this).val());
-  //   });
-  // })
   const form = document.getElementById('search-form');
   $(function() {
     $(form).on('submit', function(e) {
@@ -40,6 +35,7 @@
           'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
         },
         success: function(response) {
+          console.log(response);
           showData(response);
           document.getElementById('barcode').value = '';
           document.getElementById('barcode').focus();
@@ -53,21 +49,43 @@
     })
   })
 
-  function showData(data) {
+  function showData(response) {
+    var data = response.data;
+    var availability = response.availability;
+    var conditions = response.conditions;
+
     var row = '<tr>';
     row += '<td class="pb-1">' + data.accession + '</td>';
     row += '<td class="pb-1">' + data.call_number + '</td>';
     row += '<td class="pb-1">' + data.barcode + '</td>';
     row += '<td class="pb-1">' + data.title + '</td>';
     row += '<td class="pb-1">' + data.author + '</td>';
-    // code not functional
-    row += '<td class="pb-1 mx-2">' +
-          '<select id="availability" name="availability" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">' +
-            '<option value="{{ $value }}">{{ $value }}</option>' +
-          '</select>' +
-        '</td>'
+
+    row += '<td class="pb-1 mx-2">';
+    row += '<select id="availability" name="availability[' + data.accession + ']" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">';
+
+    // Populate availability options
+    for (var i = 0; i < availability.length; i++) {
+      var selected = (availability[i] === data.availability_status) ? 'selected' : '';
+      row += '<option name="availability[' + i + ']" value="' + availability[i] + '" ' + selected + '>' + availability[i] + '</option>';
+    }
+
+    row += '</select></td>';
+
+
+    row += '<td class="pb-1 mx-2">';
+    row += '<select id="condition" name="condition[' + data.accession + ']" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">';
+
+    for (var i = 0; i < conditions.length; i++) {
+      var selected = (conditions[i] === data.condition_status) ? 'selected' : '';
+      row += '<option value="' + conditions[i] + '" ' + selected + '>' + conditions[i] + '</option>';
+    }
+
+    row += '</select></td>';
+
     row += '</tr>';
-    if($('#no-data').length > 0) {
+
+    if ($('#no-data').length > 0) {
       $('#no-data').remove();
     }
     $('#inventory-record').find('tbody').prepend(row);
