@@ -73,6 +73,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     Route::group(['prefix' => 'inventory'], function () {
         Route::get('inventory', [InventoryController::class, 'index'])  ->name('inventory.inventory');
         Route::post('search',   [InventoryController::class, 'search']) ->name('inventory.search');
+        Route::patch('update',  [InventoryController::class, 'update']) ->name('inventory.update');
     });
     Route::group(['prefix' => 'maintenance'], function () {
         Route::group(['prefix' => 'books'], function () {

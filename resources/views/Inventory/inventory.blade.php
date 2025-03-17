@@ -54,16 +54,22 @@
   })
 
   function showData(data) {
-    console.log(data.checked_at);
     var row = '<tr>';
-    row += '<td class="pb-1">' + data.checked_at + '</td>';
-    row += '<td class="pb-1">' + data.book.accession + '</td>';
-    row += '<td class="pb-1">' + data.book.call_number + '</td>';
-    row += '<td class="pb-1">' + data.book.barcode + '</td>';
-    row += '<td class="pb-1">' + data.book.title + '</td>';
-    row += '<td class="pb-1">' + data.book.author + '</td>';
-    row += '<td class="pb-1">' + data.book.condition_status + '</td>';
+    row += '<td class="pb-1">' + data.accession + '</td>';
+    row += '<td class="pb-1">' + data.call_number + '</td>';
+    row += '<td class="pb-1">' + data.barcode + '</td>';
+    row += '<td class="pb-1">' + data.title + '</td>';
+    row += '<td class="pb-1">' + data.author + '</td>';
+    // code not functional
+    row += '<td class="pb-1 mx-2">' +
+          '<select id="availability" name="availability" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">' +
+            '<option value="{{ $value }}">{{ $value }}</option>' +
+          '</select>' +
+        '</td>'
     row += '</tr>';
+    if($('#no-data').length > 0) {
+      $('#no-data').remove();
+    }
     $('#inventory-record').find('tbody').prepend(row);
   }
 </script>

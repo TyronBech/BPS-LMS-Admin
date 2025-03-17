@@ -11,13 +11,14 @@ use Illuminate\Support\Facades\DB;
 class InventoryController extends Controller
 {
     public function index(){
-        $inventory = Inventory::with('book')->get();
-        return view('inventory.inventory', compact('inventory'));
+        $inventory      = Inventory::with('book')->get();
+        $availability   = $this->extract_enums('books', 'availability_status');
+        $conditions     = $this->extract_enums('books', 'condition_status');
+        return view('inventory.inventory', compact('inventory', 'availability', 'conditions'));
     }
     public function search(Request $request)
     {
         $data       = null;
-        $response   = null;
         $validator  = Validator::make($request->all(), [
             'barcode' => 'required',
         ]);
@@ -27,21 +28,33 @@ class InventoryController extends Controller
         DB::beginTransaction();
         try{
             $barcode = $request->input('barcode');
-            $book = Book::where('barcode', $barcode)->first();
-            if($book){
-                $response = Inventory::create([
-                    'book_id'       => $book->id,
-                    'checked_at'    => now(),
-                ]);
-            }
+            $data = Book::where('barcode', $barcode)->first();
         } catch (\Illuminate\Database\QueryException $e){
             DB::rollBack();
             return redirect()->route('inventory.inventory')->with('toast-error', $e->getMessage());
         }
         DB::commit();
-        if($response){
-            $data = Inventory::with('book')->find($response->id);
-        }
         return $data;
+    }
+    public function update(Request $request)
+    {
+        dd($request->all());
+    }
+    private function extract_enums($table, $columnName)
+    {
+        $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";
+        $column = DB::select($query);
+        if (empty($column)) {
+            return ['N/A'];
+        }
+        $type = $column[0]->Type;
+        // Extract enum values
+        preg_match('/enum\((.*)\)$/', $type, $matches);
+        $enumValues = [];
+
+        if (isset($matches[1])) {
+            $enumValues = str_getcsv($matches[1], ',', "'");
+        }
+        return $enumValues;
     }
 }
