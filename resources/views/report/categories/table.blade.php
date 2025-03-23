@@ -13,7 +13,7 @@
       @forelse($data as $item)
         <tr class="text-center">
           <td class="pb-1">{{ $item->legend }}</td>
-          <td class="pb-1 text-center border-r">{{ $item->name }}</td>
+          <td class="pb-1 text-center border-r border-slate-900 dark:border-gray-600">{{ $item->name }}</td>
           <td class="pb-1 text-center">{{ $item->previous_inventory }}</td>
           <td class="pb-1 text-center">{{ $item->newly_acquired }}</td>
           <td class="pb-1 text-center">{{ $item->discarded }}</td>
@@ -24,8 +24,8 @@
           <td colspan="8" class="text-center">No data found.</td>
         </tr>
         @endforelse
-        <tr class="border-t">
-          <td class="pb-1 text-right border-r pr-3" colspan="2">Total:</td>
+        <tr class="border-t border-slate-900 dark:border-gray-600">
+          <td class="pb-1 text-right border-r pr-3 border-slate-900 dark:border-gray-600" colspan="2">Total:</td>
           <td class="pb-1 text-center">{{ $data->sum('previous_inventory') }}</td>
           <td class="pb-1 text-center">{{ $data->sum('newly_acquired') }}</td>
           <td class="pb-1 text-center">{{ $data->sum('discarded') }}</td>

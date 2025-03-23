@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Inventory extends Model
 {
     protected $primaryKey = 'id';
-    protected $table = 'inventory';
+    protected $table = 'inventories ';
     protected $fillable = [
         'book_id',
         'checked_at',
