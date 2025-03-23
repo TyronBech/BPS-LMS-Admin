@@ -9,7 +9,7 @@
       <th>Barcode</th>
       <th>Title</th>
       <th>Author</th>
-      <th>Availability</th>
+      <th>Remarks</th>
       <th>Condition</th>
     </thead>
     <tbody class="text-center">
@@ -21,9 +21,9 @@
         <td class="pb-1">{{ $item->book->title }}</td>
         <td class="pb-1">{{ $item->book->author }}</td>
         <td class="pb-1 mx-2">
-          <select id="availability" name="availability[{{ $item->book->accession }}]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-            @foreach($availability as $value)
-            @if($item->book->availability_status == $value)
+          <select id="remarks" name="remarks[{{ $item->book->accession }}]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+            @foreach($remarks as $value)
+            @if($item->book->remarks == $value)
             <option value="{{ $value }}" selected>{{ $value }}</option>
             @else
             <option value="{{ $value }}">{{ $value }}</option>

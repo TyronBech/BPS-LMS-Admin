@@ -12,15 +12,15 @@ class InventoryController extends Controller
 {
     public function index(){
         $inventory      = Inventory::with('book')->get();
-        $availability   = $this->extract_enums('books', 'availability_status');
+        $remarks   = $this->extract_enums('books', 'remarks');
         $conditions     = $this->extract_enums('books', 'condition_status');
-        return view('inventory.inventory', compact('inventory', 'availability', 'conditions'));
+        return view('inventory.inventory', compact('inventory', 'remarks', 'conditions'));
     }
     public function search(Request $request)
     {
-        $data           = null;
-        $availability   = $this->extract_enums('books', 'availability_status');
-        $conditions     = $this->extract_enums('books', 'condition_status');
+        $data       = null;
+        $remarks    = $this->extract_enums('books', 'remarks');
+        $conditions = $this->extract_enums('books', 'condition_status');
         $validator  = Validator::make($request->all(), [
             'barcode' => 'required',
         ]);
@@ -36,15 +36,15 @@ class InventoryController extends Controller
             return redirect()->route('inventory.inventory')->with('toast-error', $e->getMessage());
         }
         DB::commit();
-        return response()->json(['data' => $data, 'availability' => $availability, 'conditions' => $conditions]);
+        return response()->json(['data' => $data, 'remarks' => $remarks, 'conditions' => $conditions]);
     }
     public function update(Request $request)
     {
-        $availability = $request->input('availability');
+        $remarks = $request->input('remarks');
         $condition    = $request->input('condition');
         DB::beginTransaction();
         try{
-            foreach($availability as $key => $value){
+            foreach($remarks as $key => $value){
                 $cond = $condition[$key];
                 $book = Book::where('accession', $key)->first();
                 Inventory::create([
@@ -52,8 +52,8 @@ class InventoryController extends Controller
                     'checked_at'          => now(),
                 ]);
                 $book->update([
-                    'availability_status' => $value,
-                    'condition_status'    => $cond,
+                    'remarks'           => $value,
+                    'condition_status'  => $cond,
                 ]);
             }
         } catch(\Illuminate\Database\QueryException $e){
