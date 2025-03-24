@@ -23,6 +23,7 @@ use App\Http\Middleware\SuperAdminAuthentication;
 Route::get('/', function () {
     return view('main-welcome');
 });
+Route::get('/transactions', [TransactionController::class, 'test'])->name('transactions');
 
 // Route::get('/dashboard', function () {
 //     return view('dashboard');

@@ -21,8 +21,18 @@ class TransactionController extends Controller
         $toInputDate    = "";
         $inputName      = "";
         $inputLastName  = "";
-        $data           = Transaction::with('books', 'users')->get();
+        $data           = Transaction::with('books', 'users')
+            ->orderBy(DB::raw('DATE(date_borrowed)'), 'desc')
+            ->orderBy(DB::raw('TIME(date_borrowed)'), 'desc')
+            ->get();
         return view('report.transactions.transactions' , compact('data', 'inputName', 'inputLastName', 'fromInputDate', 'toInputDate'));
+    }
+    public function test(){
+        $data           = Transaction::with('books', 'users')
+            ->orderBy(DB::raw('DATE(date_borrowed)'), 'desc')
+            ->orderBy(DB::raw('TIME(date_borrowed)'), 'desc')
+            ->get();
+            return view('pdf.transaction-pdf-report-format', compact('data'));
     }
     public function search(Request $request)
     {
@@ -39,15 +49,15 @@ class TransactionController extends Controller
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
-        // if($request->input('submit') == 'pdf'){
-        //     $data = $this->generateData($request);
-        //     $this->generatePDF($data);
-        //     return redirect()->route('report.user')->with('toast-success', 'Successfully exported to PDF');
-        // } else if($request->input('submit') == 'excel'){
-        //     $data = $this->generateData($request);
-        //     $this->exportExcel($data);
-        //     return redirect()->route('report.user')->with('toast-success', 'Successfully exported to Excel');
-        // }
+        if($request->input('submit') == 'pdf'){
+            $data = $this->generateData($request);
+            $this->generatePDF($data);
+            return redirect()->route('report.transactions.transactions')->with('toast-success', 'Successfully exported to PDF');
+        } else if($request->input('submit') == 'excel'){
+            // $data = $this->generateData($request);
+            // $this->exportExcel($data);
+            return redirect()->route('report.transactions.transactions')->with('toast-success', 'Successfully exported to Excel');
+        }
         $data = $this->generateData($request);
         return view('report.transactions.transactions' , compact('data', 'inputName', 'inputLastName', 'fromInputDate', 'toInputDate'));
     }
@@ -55,9 +65,9 @@ class TransactionController extends Controller
     {
         $chunk      = $data->chunk(25);
         $arrayPdf   = array( 'data' => $chunk );
-        $pdf        = Pdf::loadView('pdf.user-pdf-report-format', $arrayPdf);
+        $pdf        = Pdf::loadView('pdf.transaction-pdf-report-format', $arrayPdf);
         $directory  = 'C:/Users/tyron/Downloads';
-        $pdf->save($directory . '/users-report_' . date('Y-m-d') . '.pdf');
+        $pdf->save($directory . '/transactions-report_' . date('Y-m-d') . '.pdf');
     }
     private function exportExcel($data)
     {

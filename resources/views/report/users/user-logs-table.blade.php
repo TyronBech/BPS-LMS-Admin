@@ -11,7 +11,7 @@
     <tbody id="students-activity">
       @forelse($data as $item)
         <tr class="text-center">
-          <td class="pb-1 min-w-20">{{ $item->users->last_name }}, {{ $item->users->first_name }} {{ $item->users->middle_name }}</td>
+          <td class="pb-1 min-w-20">{{ $item->users->last_name ? $item->users->last_name : '-' }}, {{ $item->users->first_name }} {{ $item->users->middle_name }}</td>
           <td class="pb-1">{{ \Carbon\Carbon::parse($item->timestamp)->format('Y-m-d') }}</td>
           <td class="pb-1">{{ \Carbon\Carbon::parse($item->timestamp)->format('H:i:s') }}</td>
           <td class="pb-1">{{ $item->computer_use }}</td>

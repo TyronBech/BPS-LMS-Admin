@@ -21,7 +21,8 @@ class UserLogsController extends Controller
         $fromInputDate  = "";
         $toInputDate    = "";
         $peak_hour      = "00:00";
-        $data           = Log::with('users')->orderBy(DB::raw('time(timestamp)'), 'asc')->get();
+        $data           = Log::with('users')->orderBy(DB::raw('date(timestamp)'), 'desc')
+        ->orderBy(DB::raw('time(timestamp)'), 'desc')->get();
         return view('report.users.user-logs', compact('data', 'inputName', 'fromInputDate', 'toInputDate', 'peak_hour'));
     }
     public function search(Request $request)
