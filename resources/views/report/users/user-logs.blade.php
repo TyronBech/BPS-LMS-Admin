@@ -30,12 +30,6 @@
         </div>
       </div>
       <div class="sm:col-span-2 sm:col-start-1 flex items-center">
-        <label for="last-name" class="block text-sm/6 font-medium mr-2 ml-4">Surname:</label>
-        <div class="">
-          <input type="text" name="last-name" id="last-name" placeholder="Dela Cruz" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value="<?php echo $inputLastName; ?>">
-        </div>
-      </div>
-      <div class="sm:col-span-2 sm:col-start-1 flex items-center">
         <button type="submit" id="submit" name="submit" value="find" class="bg-blue-500 hover:bg-blue-700 active:bg-blue-900 text-white text-sm font-bold py-1 px-4 rounded h-12 mt-2 mb-2 ml-4 mr-4 w-20">Find</button>
         <button type="submit" id="submit" name="submit" value="pdf" class="bg-red-500 hover:bg-red-700 active:bg-red-900 text-white text-sm font-bold py-1 px-4 rounded h-12 mt-2 mb-2 ml-4 mr-4 w-20">Export PDF</button>
         <button type="submit" id="submit" name="submit" value="excel" class="bg-green-500 hover:bg-green-700 active:bg-green-900 text-white text-sm font-bold py-1 px-4 rounded h-12 mt-2 mb-2 ml-4 mr-4 w-20">Export Excel</button>

@@ -18,17 +18,15 @@ class UserLogsController extends Controller
     public function index()
     {
         $inputName      = "";
-        $inputLastName  = "";
         $fromInputDate  = "";
         $toInputDate    = "";
         $peak_hour      = "00:00";
         $data           = Log::with('users')->orderBy(DB::raw('time(timestamp)'), 'asc')->get();
-        return view('report.users.user-logs', compact('data', 'inputName', 'inputLastName', 'fromInputDate', 'toInputDate', 'peak_hour'));
+        return view('report.users.user-logs', compact('data', 'inputName', 'fromInputDate', 'toInputDate', 'peak_hour'));
     }
     public function search(Request $request)
     {
         $inputName      = $request->input('first-name');
-        $inputLastName  = $request->input('last-name');
         $fromInputDate  = $request->input('start');
         $toInputDate    = $request->input('end');
         $peak_hour      = "00:00";
@@ -65,7 +63,7 @@ class UserLogsController extends Controller
         } else {
             $peak_hour = $hour . ":00 AM";
         }
-        return view('report.users.user-logs', compact('data', 'inputName', 'inputLastName', 'fromInputDate', 'toInputDate', 'peak_hour'));
+        return view('report.users.user-logs', compact('data', 'inputName', 'fromInputDate', 'toInputDate', 'peak_hour'));
     }
     private function findPeakHour($times)
     {
@@ -124,7 +122,6 @@ class UserLogsController extends Controller
         $fromInputDate  = $request->input('start');
         $toInputDate    = $request->input('end');
         $inputName      = strtolower($request->input('first-name'));
-        $inputLastName  = strtolower($request->input('last-name'));
 
         $query = Log::with('users');
 
@@ -136,13 +133,7 @@ class UserLogsController extends Controller
 
         if (strlen($inputName) > 0) {
             $query->whereHas('users', function ($q) use ($inputName) {
-                $q->where(DB::raw('lower(first_name)'), 'like', '%' . $inputName . '%');
-            });
-        }
-
-        if (strlen($inputLastName) > 0) {
-            $query->whereHas('users', function ($q) use ($inputLastName) {
-                $q->where(DB::raw('lower(last_name)'), 'like', '%' . $inputLastName . '%');
+                $q->where(DB::raw('lower(first_name)'), 'like', '%' . $inputName . '%')->orWhere(DB::raw('lower(last_name)'), 'like', '%' . $inputName . '%');
             });
         }
 
