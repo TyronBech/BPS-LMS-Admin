@@ -48,13 +48,17 @@
           <td class="pb-1">{{ $item->groups->group_name }}</td>
           <td class="pb-1 px-5">{{ $item->email }}</td>
           <td class="pb-1 flex justify-center">
+            @can(PermissionsEnum::EDIT_USER, 'admin')
             <a href="{{ route('maintenance.edit-student', $item->id) }}" id="editBtn" name="editBtn" class="text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2">Edit</a>
+            @endcan
             @php
             $userID = ['id' => $item->id];
             @endphp
+            @can(PermissionsEnum::DELETE_USER, 'admin')
             <button data-modal-target="popup-modal" data-modal-toggle="popup-modal" class="focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2" type="button">
               Delete
             </button>
+            @endcan
           </td>
         </tr>
         @empty

@@ -1,5 +1,6 @@
 @extends('layouts.admin-app')
 @section('content')
+@use('App\Enum\PermissionsEnum')
 <h1 class="font-semibold text-center text-4xl p-5">Maintenance</h1>
 <div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
   <div class="flex justify-between">
@@ -22,7 +23,9 @@
         <span class="sr-only">Search</span>
       </button>
     </form>
+    @can(PermissionsEnum::CREATE_USER, 'admin')
     <a href="{{ route('maintenance.create-student') }}" class="inline-flex items-center px-3 py-1 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">Add new user</a>
+    @endcan
   </div>
   <hr class="h-px my-3 bg-gray-200 border-0">
   @include('maintenance.users.table')
