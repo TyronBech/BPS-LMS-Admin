@@ -1,3 +1,4 @@
+@use('App\Enum\PermissionsEnum')
 <div class="mx-auto px-2 font-sans flex-col">
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
     <table class="w-full text-sm text-left rtl:text-right whitespace-nowrap table-auto">
@@ -19,7 +20,7 @@
       <tbody>
         @forelse($books as $item)
         <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
-          <td class="min-w-40">{{ $item->accession }}</td>
+          <td class="min-w-40 h-14">{{ $item->accession }}</td>
           <td class="min-w-36">{{ $item->call_number }}</td>
           <td class="min-w-72">{{ $item->title }}</td>
           <td class="min-w-80">{{ $item->author }}</td>
@@ -30,13 +31,17 @@
           <td class="min-w-40">{{ $item->copyrights }}</td>
           <td class="min-w-36">{{ $item->remarks }}</td>
           <td class="pb-1 flex justify-center">
-            <a href="{{ route('maintenance.edit-book', $item->accession) }}" id="editBtn" name="editBtn" class="text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2">Edit</a>
+            @can(PermissionsEnum::EDIT_BOOKS, 'admin')
+              <a href="{{ route('maintenance.edit-book', $item->accession) }}" id="editBtn" name="editBtn" class="text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2">Edit</a>
+            @endcan
             @php
             $bookID = ['id' => $item->id];
             @endphp
-            <button data-modal-target="popup-modal" data-modal-toggle="popup-modal" class="focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2" type="button">
-              Delete
-            </button>
+            @can(PermissionsEnum::DELETE_BOOKS, 'admin')
+              <button data-modal-target="popup-modal" data-modal-toggle="popup-modal" class="focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2" type="button">
+                Delete
+              </button>
+            @endcan
           </td>
         </tr>
         @empty
