@@ -52,7 +52,7 @@ class InventoryController extends Controller
                     'checked_at'          => now(),
                 ]);
                 $book->update([
-                    'remarks'           => $value,
+                    'remarks'           => "On Shelf",
                     'condition_status'  => $cond,
                 ]);
             }
