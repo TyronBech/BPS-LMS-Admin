@@ -94,8 +94,10 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::post('add-student',      [UsersMaintenanceController::class, 'store_student'])   ->name('maintenance.store-student');
             Route::get('add-employee',      [UsersMaintenanceController::class, 'create_employee']) ->name('maintenance.create-employee');
             Route::post('add-employee',     [UsersMaintenanceController::class, 'store_employee'])  ->name('maintenance.store-employee');
-            Route::get('edit-user',         [UsersMaintenanceController::class, 'edit'])            ->name('maintenance.edit-user');
-            Route::put('edit-user',         [UsersMaintenanceController::class, 'update'])          ->name('maintenance.update-user');
+            Route::get('edit-student',      [UsersMaintenanceController::class, 'edit_student'])    ->name('maintenance.edit-student');
+            Route::put('update-student',    [UsersMaintenanceController::class, 'update_student'])  ->name('maintenance.update-student');
+            Route::get('edit-employee',     [UsersMaintenanceController::class, 'edit_employee'])   ->name('maintenance.edit-employee');
+            Route::put('update-employee',   [UsersMaintenanceController::class, 'update_employee']) ->name('maintenance.update-employee');
             Route::get('show-users',        [UsersMaintenanceController::class, 'show'])            ->name('maintenance.show-users');
             Route::delete('delete-user',    [UsersMaintenanceController::class, 'destroy'])         ->name('maintenance.delete-user');
         });

@@ -1,4 +1,7 @@
 @use('App\Enum\PermissionsEnum')
+@php
+$employeeID = null;
+@endphp
 <div class="container mx-auto px-2 font-sans flex-col">
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
     <table class="w-full text-sm text-left rtl:text-right whitespace-nowrap table-auto">
@@ -29,10 +32,10 @@
           <td class="pb-1 px-5">{{ $item->email }}</td>
           <td class="pb-1 flex justify-center">
             @can(PermissionsEnum::EDIT_USERS, 'admin')
-            <a href="{{ route('maintenance.edit-user', $item->id) }}" id="editBtn" name="editBtn" class="text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2">Edit</a>
+            <a href="{{ route('maintenance.edit-employee', $item->id) }}" id="editBtn" name="editBtn" class="text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2">Edit</a>
             @endcan
             @php
-            $userID = ['id' => $item->id];
+            $employeeID = ['id' => $item->id];
             @endphp
             @can(PermissionsEnum::DELETE_USERS, 'admin')
             <button data-modal-target="popup-modal" data-modal-toggle="popup-modal" class="focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2" type="button">
@@ -65,7 +68,7 @@
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
         </svg>
         <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete this user?</h3>
-        <form action="{{ route('maintenance.delete-user', $userID) }}" method="POST" class="flex items-center justify-center">
+        <form action="{{ route('maintenance.delete-user', $employeeID) }}" method="POST" class="flex items-center justify-center">
           @csrf
           @method('DELETE')
           <button data-modal-hide="popup-modal" type="submit" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
