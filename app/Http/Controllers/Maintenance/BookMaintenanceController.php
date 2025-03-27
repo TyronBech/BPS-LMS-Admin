@@ -93,7 +93,22 @@ class BookMaintenanceController extends Controller
     }
     public function show(Request $request)
     {
-        $books = Book::where('accession', $request->input('search-accession'))->get();
+        $search = strtolower($request->input('search'));
+
+        $books = Book::where('accession', 'like', '%' . $search . '%')
+            ->orWhere('title', 'like', '%' . $search . '%')
+            ->orWhere('author', 'like', '%' . $search . '%')
+            ->orWhere('publisher', 'like', '%' . $search . '%')
+            ->orWhere('place_of_publication', 'like', '%' . $search . '%')
+            ->orWhere('edition', 'like', '%' . $search . '%')
+            ->orWhere('call_number', 'like', '%' . $search . '%')
+            ->orWhere('copyrights', 'like', '%' . $search . '%')
+            ->orWhere('digital_copy_url', 'like', '%' . $search . '%')
+            ->orWhere('remarks', 'like', '%' . $search . '%')
+            ->orWhereHas('category', function ($q) use ($search) {
+                $q->where('name', 'like', '%' . $search . '%');
+            })
+            ->get();
         return view('maintenance.books.books', compact('books'));
     }
     public function update(Request $request)

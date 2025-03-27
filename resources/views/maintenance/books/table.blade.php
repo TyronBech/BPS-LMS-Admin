@@ -1,4 +1,7 @@
 @use('App\Enum\PermissionsEnum')
+@php
+$bookID = null;
+@endphp
 <div class="mx-auto px-2 font-sans flex-col">
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
     <table class="w-full text-sm text-left rtl:text-right whitespace-nowrap table-auto">
@@ -46,7 +49,7 @@
         </tr>
         @empty
         <tr>
-          <td colspan="10" class="text-center py-1.5">No data found.</td>
+          <td colspan="11" class="text-center py-1.5">No data found.</td>
         </tr>
         @endforelse
       </tbody>
