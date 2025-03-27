@@ -36,8 +36,7 @@ class TransactionController extends Controller
     }
     public function search(Request $request)
     {
-        $inputName      = $request->input('first-name');
-        $inputLastName  = $request->input('last-name');
+        $inputName      = $request->input('name');
         $fromInputDate  = $request->input('start');
         $toInputDate    = $request->input('end');
         $validator = Validator::make($request->all(), [
@@ -59,7 +58,7 @@ class TransactionController extends Controller
             return redirect()->route('report.transactions.transactions')->with('toast-success', 'Successfully exported to Excel');
         }
         $data = $this->generateData($request);
-        return view('report.transactions.transactions' , compact('data', 'inputName', 'inputLastName', 'fromInputDate', 'toInputDate'));
+        return view('report.transactions.transactions' , compact('data', 'inputName', 'fromInputDate', 'toInputDate'));
     }
     private function generatePDF($data)
     {
@@ -100,8 +99,7 @@ class TransactionController extends Controller
     {
         $fromInputDate  = $request->input('start');
         $toInputDate    = $request->input('end');
-        $inputName      = strtolower($request->input('first-name'));
-        $inputLastName  = strtolower($request->input('last-name'));
+        $inputName      = strtolower($request->input('name'));
 
         $query = Transaction::with('books', 'users');
         if (strlen($fromInputDate) > 0) {
@@ -112,14 +110,13 @@ class TransactionController extends Controller
 
         if (strlen($inputName) > 0) {
             $query->whereHas('users', function ($q) use ($inputName) {
-                $q->where(DB::raw('lower(first_name)'), 'like', '%' . $inputName . '%');
-            });
-        }
-
-        if (strlen($inputLastName) > 0) {
-            $query->whereHas('users', function ($q) use ($inputLastName) {
-                $q->where(DB::raw('lower(last_name)'), 'like', '%' . $inputLastName . '%');
-            });
+                $q->where('first_name', 'like', '%' . $inputName . '%');
+                $q->orWhere('middle_name', 'like', '%' . $inputName . '%');
+                $q->orWhere('last_name', 'like', '%' . $inputName . '%');
+            })->orWhereHas('books', function ($q) use ($inputName) {
+                $q->where('title', 'like', '%' . $inputName . '%')
+                ->orWhere('accession', 'like', '%' . $inputName . '%');
+            })->orWhere('transaction_type', 'like', '%' . $inputName . '%');
         }
         $data = $query->orderBy(DB::raw('DATE(date_borrowed)'), 'asc')
             ->get();

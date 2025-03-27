@@ -24,15 +24,9 @@
         </div>
       </div>
       <div class="sm:col-span-2 sm:col-start-1 flex items-center">
-        <label for="first-name" class="block text-sm/6 font-medium mr-2 ml-4">Name:</label>
+        <label for="name" class="block text-sm/6 font-medium mr-2 ml-4">Search:</label>
         <div class="">
-          <input type="text" name="first-name" id="first-name" placeholder="Juan" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value="<?php echo $inputName; ?>">
-        </div>
-      </div>
-      <div class="sm:col-span-2 sm:col-start-1 flex items-center">
-        <label for="last-name" class="block text-sm/6 font-medium mr-2 ml-4">Surname:</label>
-        <div class="">
-          <input type="text" name="last-name" id="last-name" placeholder="Dela Cruz" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value="<?php echo $inputLastName; ?>">
+          <input type="text" name="name" id="name" placeholder="Name..." class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value="<?php echo $inputName; ?>">
         </div>
       </div>
       <div class="sm:col-span-2 sm:col-start-1 flex items-center">
