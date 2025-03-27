@@ -89,13 +89,15 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::delete('delete-book',    [BookMaintenanceController::class, 'destroy'])  ->name('maintenance.delete-book');
         });
         Route::prefix('users')->middleware(UserAuthentication::class)->group(function () {
-            Route::get('students',          [UsersMaintenanceController::class, 'index'])   ->name('maintenance.students');
-            Route::get('add-student',       [UsersMaintenanceController::class, 'create'])  ->name('maintenance.create-student');
-            Route::post('add-student',      [UsersMaintenanceController::class, 'store'])   ->name('maintenance.store-student');
-            Route::get('edit-student',      [UsersMaintenanceController::class, 'edit'])    ->name('maintenance.edit-student');
-            Route::put('edit-student',      [UsersMaintenanceController::class, 'update'])  ->name('maintenance.update-student');
-            Route::get('show-students',     [UsersMaintenanceController::class, 'show'])    ->name('maintenance.show-students');
-            Route::delete('delete-student', [UsersMaintenanceController::class, 'destroy']) ->name('maintenance.delete-student');
+            Route::get('users',             [UsersMaintenanceController::class, 'index'])           ->name('maintenance.users');
+            Route::get('add-student',       [UsersMaintenanceController::class, 'create_student'])  ->name('maintenance.create-student');
+            Route::post('add-student',      [UsersMaintenanceController::class, 'store_student'])   ->name('maintenance.store-student');
+            Route::get('add-employee',      [UsersMaintenanceController::class, 'create_employee']) ->name('maintenance.create-employee');
+            Route::post('add-employee',     [UsersMaintenanceController::class, 'store_employee'])  ->name('maintenance.store-employee');
+            Route::get('edit-user',         [UsersMaintenanceController::class, 'edit'])            ->name('maintenance.edit-user');
+            Route::put('edit-user',         [UsersMaintenanceController::class, 'update'])          ->name('maintenance.update-user');
+            Route::get('show-users',        [UsersMaintenanceController::class, 'show'])            ->name('maintenance.show-users');
+            Route::delete('delete-user',    [UsersMaintenanceController::class, 'destroy'])         ->name('maintenance.delete-user');
         });
         Route::prefix('admin-management')->middleware(SuperAdminAuthentication::class)->group(function () {
             Route::get('admins',            [AdminMaintenanceController::class, 'index'])   ->name('maintenance.admins');

@@ -5,7 +5,7 @@
 <div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
   <div class="flex justify-between">
     <h5 class="mb-1 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Users</h5>
-    <form action="{{ route('maintenance.show-students') }}" method="GET" class="flex items-center">
+    <form action="{{ route('maintenance.show-users') }}" method="GET" class="flex items-center">
       @csrf
       <label for="search-users" class="sr-only">Search</label>
       <div class="relative w-full">
@@ -23,11 +23,18 @@
         <span class="sr-only">Search</span>
       </button>
     </form>
-    @can(PermissionsEnum::CREATE_USER, 'admin')
-    <a href="{{ route('maintenance.create-student') }}" class="inline-flex items-center px-3 py-1 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">Add new user</a>
+    @can(PermissionsEnum::CREATE_USERS, 'admin')
+    <div class="flex items-center space-x-2">
+      <a href="{{ route('maintenance.create-employee') }}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">Add new employee</a>
+      <a href="{{ route('maintenance.create-student') }}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">Add new student</a>
+    </div>
     @endcan
   </div>
   <hr class="h-px my-3 bg-gray-200 border-0">
-  @include('maintenance.users.table')
+  <h5 class="mb-1 text-lg font-bold tracking-tight text-gray-900 dark:text-white">Students</h5>
+  @include('maintenance.users.students-table')
+  <div class="h-px my-5"></div>
+  <h5 class="mb-1 text-lg font-bold tracking-tight text-gray-900 dark:text-white">Employees</h5>
+  @include('maintenance.users.employees-table')
 </div>
 @endsection

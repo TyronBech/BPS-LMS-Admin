@@ -17,12 +17,26 @@ class UserLogsController extends Controller
 {
     public function index()
     {
-        $inputName      = "";
-        $fromInputDate  = "";
-        $toInputDate    = "";
+        $inputName      = null;
+        $fromInputDate  = null;
+        $toInputDate    = null;
         $peak_hour      = "00:00";
         $data           = Log::with('users')->orderBy(DB::raw('date(timestamp)'), 'desc')
-        ->orderBy(DB::raw('time(timestamp)'), 'desc')->get();
+                            ->orderBy(DB::raw('time(timestamp)'), 'desc')->get();
+        $hours = $data->map(function ($item) {
+            $item = Carbon::parse($item->timestamp)->format('H:i:s');
+            return $item;
+        });
+        $hour = $this->findPeakHour($hours);
+        if($hour == 12){
+            $peak_hour = "12:00 PM";
+        } else if($hour == 0){
+            $peak_hour = "12:00 AM";
+        } else if($hour > 12){
+            $peak_hour = $hour - 12 . ":00 PM";
+        } else {
+            $peak_hour = $hour . ":00 AM";
+        }
         return view('report.users.user-logs', compact('data', 'inputName', 'fromInputDate', 'toInputDate', 'peak_hour'));
     }
     public function search(Request $request)
@@ -134,7 +148,9 @@ class UserLogsController extends Controller
 
         if (strlen($inputName) > 0) {
             $query->whereHas('users', function ($q) use ($inputName) {
-                $q->where(DB::raw('lower(first_name)'), 'like', '%' . $inputName . '%')->orWhere(DB::raw('lower(last_name)'), 'like', '%' . $inputName . '%');
+                $q->where(DB::raw('lower(first_name)'), 'like', '%' . $inputName . '%')
+                ->orWhere(DB::raw('lower(last_name)'), 'like', '%' . $inputName . '%')
+                ->orWhere(DB::raw('lower(middle_name)'), 'like', '%' . $inputName . '%');
             });
         }
 
