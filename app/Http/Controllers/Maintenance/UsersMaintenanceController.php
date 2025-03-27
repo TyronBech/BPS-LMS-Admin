@@ -34,7 +34,24 @@ class UsersMaintenanceController extends Controller
     }
     public function show(Request $request)
     {
-        $users = User::where('rfid_tag', $request->input('search-users'))->get();
+        $search = strtolower($request->input('search-users'));
+        $users = User::where('first_name', 'like', '%'.$search.'%')
+                    ->orWhere('middle_name', 'like', '%'.$search.'%')
+                    ->orWhere('last_name', 'like', '%'.$search.'%')
+                    ->orWhere('email', 'like', '%'.$search.'%')
+                    ->orWhere('rfid', 'like', '%'.$search.'%')
+                    ->orWhereHas('students', function ($q) use ($search) {
+                        $q->where('lrn', 'like', '%'.$search.'%')
+                          ->orWhere('grade_level', 'like', '%'.$search.'%')
+                          ->orWhere('section', 'like', '%'.$search.'%');
+                    })
+                    ->orWhereHas('employees', function ($q) use ($search) {
+                        $q->where('employee_id', 'like', '%'.$search.'%');
+                    })
+                    ->orWhereHas('groups', function ($q) use ($search) {
+                        $q->where('group_name', 'like', '%'.$search.'%');
+                    })
+                    ->get();
         return view('maintenance.users.users', compact('users'));
     }
     public function store_student(Request $request)
