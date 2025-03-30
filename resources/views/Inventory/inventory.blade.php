@@ -61,17 +61,6 @@
     row += '<td class="pb-1">' + data.title + '</td>';
     row += '<td class="pb-1">' + data.author + '</td>';
 
-    row += '<td class="pb-1 mx-2">';
-    row += '<select id="remarks" name="remarks[' + data.accession + ']" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">';
-
-    // Populate remarks options
-    for (var i = 0; i < remarks.length; i++) {
-      var selected = (remarks[i] === data.remarks_status) ? 'selected' : '';
-      row += '<option name="remarks[' + i + ']" value="' + remarks[i] + '" ' + selected + '>' + remarks[i] + '</option>';
-    }
-
-    row += '</select></td>';
-
 
     row += '<td class="pb-1 mx-2">';
     row += '<select id="condition" name="condition[' + data.accession + ']" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">';
