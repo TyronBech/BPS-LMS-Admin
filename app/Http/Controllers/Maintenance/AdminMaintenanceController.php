@@ -25,40 +25,39 @@ class AdminMaintenanceController extends Controller
     }
     public function create()
     {
+        $searched = array();
         $roles = Role::where('guard_name', 'admin')
-                    ->where('name', '!=', 'Super Admin')
                     ->get();
-        return view('maintenance.admins.create', compact('roles'));
+        return view('maintenance.admins.create', compact('searched', 'roles'));
+    }
+    public function search(Request $request){
+        $search = strtolower($request->input('user-info'));
+        $searched = User::select('first_name', 'middle_name', 'last_name', 'email', 'rfid')
+                    ->where('first_name', 'like', '%'.$search.'%')
+                    ->where(DB::raw('NOT EXISTS (SELECT 1 FROM model_has_roles WHERE model_has_roles.model_id = users.id)'))
+                    ->orWhere('middle_name', 'like', '%'.$search.'%')
+                    ->orWhere('last_name', 'like', '%'.$search.'%')
+                    ->orWhere('email', 'like', '%'.$search.'%')
+                    ->orWhere('rfid', 'like', '%'.$search.'%')
+                    ->get();
+        $roles = Role::where('guard_name', 'admin')
+                    ->get();
+        return view('maintenance.admins.create', compact('searched', 'roles'));
     }
     public function store(Request $request){
-        $request->validate([
-            'first-name'    => 'required|string|max:50',            
-            'middle-name'   => 'required|string|max:50',
-            'last-name'     => 'required|string|max:50',
-            'email'         => 'required|email',            
-            'password'      => 'required|min:8',
-            'role'          => 'required',
-        ]);
-        if($this->has_invalid_characters($request->input('first-name'))){
-            return redirect()->back()->with('toast-warning', 'Admin\'s name contains invalid characters');
-        } else if($this->has_invalid_characters($request->input('middle-name'))){
-            return redirect()->back()->with('toast-warning', 'Admin\'s middle name contains invalid characters');
-        } else if($this->has_invalid_characters($request->input('last-name'))){
-            return redirect()->back()->with('toast-warning', 'Admin\'s last name contains invalid characters');
+        if(request()->input('adminID') == null){
+            return redirect()->route('maintenance.create-admin')->with('toast-warning', 'Please select an admin');
+        }
+        if(request()->input('role') == 'None'){
+            return redirect()->route('maintenance.create-admin')->with('toast-warning', 'Please select a role');
         }
         DB::beginTransaction();
         try {
-            $admin = User::create([
-                'first_name'    => $request->input('first-name'),
-                'middle_name'   => $request->input('middle-name'),
-                'last_name'     => $request->input('last-name'),
-                'email'         => $request->input('email'),
-                'password'      => Hash::make($request->input('password')),
-            ]);
-            $admin->assignRole(Role::findById($request->input('role'), 'admin'));
+            $admin = User::where('rfid', $request->input('adminID'))->first();
+            $admin->assignRole(Role::findById($request->input('role')), 'admin');
         } catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();
-            return redirect()->back()->with('toast-error', $e->getMessage());
+            return redirect()->route('maintenance.create-admin')->with('toast-error', $e->getMessage());
         }
         DB::commit();
         return redirect()->route('maintenance.admins')->with('toast-success', 'Admin created successfully');
@@ -76,7 +75,6 @@ class AdminMaintenanceController extends Controller
                                 ->first();
             }
             $roles = Role::where('guard_name', 'admin')
-                    ->where('name', '!=', 'Super Admin')
                     ->get();
         } catch(\Illuminate\Database\QueryException $e){
             return redirect()->back()->with('toast-error', 'Something went wrong!');

@@ -48,13 +48,10 @@
     <div class="mb-5">
       <label for="role" class="block mb-2 text-sm font-medium">Select Role:</label>
       <select id="role" name="role" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
-        @if(auth()->user()->hasRole(RolesEnum::SUPER_ADMIN) && auth()->user()->id == $admin->id)
-        <option value="{{ $super_admin->id }}">{{ $super_admin->name }}</option>
-        @else
+        <option value="None" selected disabled>Select Role</option>
         @foreach($roles as $role)
         <option value="{{ $role->id }}">{{ $role->name }}</option>
         @endforeach
-        @endif
       </select>
       @error('role')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">

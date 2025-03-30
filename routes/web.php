@@ -105,6 +105,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::get('admins',            [AdminMaintenanceController::class, 'index'])   ->name('maintenance.admins');
             Route::get('add-admin',         [AdminMaintenanceController::class, 'create'])  ->name('maintenance.create-admin');
             Route::post('add-admin',        [AdminMaintenanceController::class, 'store'])   ->name('maintenance.store-admin');
+            Route::post('search-admin',     [AdminMaintenanceController::class, 'search'])  ->name('maintenance.search-admin');
             Route::get('edit-admin',        [AdminMaintenanceController::class, 'edit'])    ->name('maintenance.edit-admin');
             Route::put('edit-admin',        [AdminMaintenanceController::class, 'update'])  ->name('maintenance.update-admin');
             Route::get('show-admins',       [AdminMaintenanceController::class, 'show'])    ->name('maintenance.show-admins');
