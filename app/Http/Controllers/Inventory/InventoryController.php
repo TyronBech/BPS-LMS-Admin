@@ -11,9 +11,6 @@ use Illuminate\Support\Facades\DB;
 class InventoryController extends Controller
 {
     public function index(){
-        // $inventory  = array();
-        // $remarks    = null;
-        // $conditions = null;
         return view('inventory.inventory');
     }
     public function search(Request $request)

@@ -18,6 +18,7 @@ use App\Http\Controllers\Maintenance\UsersMaintenanceController;
 use App\Http\Controllers\Roles_Permissions\RolesController;
 use App\Http\Controllers\Inventory\InventoryController;
 use App\Http\Controllers\Report\CategoriesController;
+use App\Http\Controllers\Report\InventoriesController;
 use App\Http\Middleware\BookAuthentication;
 use App\Http\Middleware\SuperAdminAuthentication;
 use App\Http\Middleware\UserAuthentication;
@@ -63,6 +64,8 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::get('book-circulation',  [BookCirculationController::class, 'index'])    ->name('report.book-circulation');
         Route::post('book-circulation', [BookCirculationController::class, 'search'])   ->name('report.book-circulation-search');
         Route::get('summary',           [CategoriesController::class, 'index'])         ->name('report.summary');
+        Route::get('inventory-report',  [InventoriesController::class, 'index'])        ->name('report.inventory');
+        Route::post('inventory-report', [InventoriesController::class, 'search'])       ->name('report.inventory-search');
     });
     /*
     Route::group(['prefix' => 'import'], function () {
