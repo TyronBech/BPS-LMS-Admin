@@ -11,10 +11,10 @@ use Illuminate\Support\Facades\DB;
 class InventoryController extends Controller
 {
     public function index(){
-        $inventory      = Inventory::with('book')->get();
-        $remarks   = $this->extract_enums('books', 'remarks');
-        $conditions     = $this->extract_enums('books', 'condition_status');
-        return view('inventory.inventory', compact('inventory', 'remarks', 'conditions'));
+        // $inventory  = array();
+        // $remarks    = null;
+        // $conditions = null;
+        return view('inventory.inventory');
     }
     public function search(Request $request)
     {
@@ -40,12 +40,10 @@ class InventoryController extends Controller
     }
     public function update(Request $request)
     {
-        $remarks = $request->input('remarks');
-        $condition    = $request->input('condition');
+        $condition = $request->input('condition');
         DB::beginTransaction();
         try{
-            foreach($remarks as $key => $value){
-                $cond = $condition[$key];
+            foreach($condition as $key => $value){
                 $book = Book::where('accession', $key)->first();
                 Inventory::create([
                     'book_id'             => $book->id,
@@ -53,7 +51,7 @@ class InventoryController extends Controller
                 ]);
                 $book->update([
                     'remarks'           => "On Shelf",
-                    'condition_status'  => $cond,
+                    'condition_status'  => $value,
                 ]);
             }
         } catch(\Illuminate\Database\QueryException $e){
