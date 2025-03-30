@@ -33,13 +33,15 @@ class AdminMaintenanceController extends Controller
     public function search(Request $request){
         $search = strtolower($request->input('user-info'));
         $searched = User::select('first_name', 'middle_name', 'last_name', 'email', 'rfid')
-                    ->where('first_name', 'like', '%'.$search.'%')
-                    ->where(DB::raw('NOT EXISTS (SELECT 1 FROM model_has_roles WHERE model_has_roles.model_id = users.id)'))
-                    ->orWhere('middle_name', 'like', '%'.$search.'%')
-                    ->orWhere('last_name', 'like', '%'.$search.'%')
-                    ->orWhere('email', 'like', '%'.$search.'%')
-                    ->orWhere('rfid', 'like', '%'.$search.'%')
-                    ->get();
+            ->where(function ($query) use ($search) {
+                $query->where('first_name', 'like', '%' . $search . '%')
+                    ->orWhere('middle_name', 'like', '%' . $search . '%')
+                    ->orWhere('last_name', 'like', '%' . $search . '%')
+                    ->orWhere('email', 'like', '%' . $search . '%')
+                    ->orWhere('rfid', 'like', '%' . $search . '%');
+            })
+            ->doesntHave('roles')
+            ->get();
         $roles = Role::where('guard_name', 'admin')
                     ->get();
         return view('maintenance.admins.create', compact('searched', 'roles'));
@@ -104,7 +106,7 @@ class AdminMaintenanceController extends Controller
                 $admin->update([
                     'first_name'    => $request->input('first-name'),
                     'middle_name'   => $request->input('middle-name'),
-                    'last_name'     => $request->input('last-name'),                
+                    'last_name'     => $request->input('last-name'),
                     'email'         => $request->input('email'),
                 ]);
                 $admin->syncRoles(Role::findById($request->input('role'), 'admin'));

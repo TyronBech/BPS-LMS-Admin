@@ -44,6 +44,9 @@
       </thead>
       <tbody>
         @forelse($searched as $item)
+        @php
+          $adminID = $item->rfid;
+        @endphp
         <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
           <td>{{ $item->rfid }}</td>
           <td>{{ $item->last_name }}, {{ $item->first_name }} {{ $item->middle_name }}</td>
@@ -52,10 +55,7 @@
             <select name="role" id="role" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
               <option value="None" selected>Select Role</option>
               @foreach($roles as $role)
-              @php
-                $adminID = $item->rfid;
-              @endphp
-              @if($item->hasAnyRole(Role::where('name', $role->name)->get()))
+              @if($item->hasRole($role->name))
               <option value="{{ $role->id }}" selected>{{ $role->name }}</option>
               @else
               <option value="{{ $role->id }}">{{ $role->name }}</option>
