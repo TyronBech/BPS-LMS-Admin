@@ -1,5 +1,5 @@
 <header class="sticky top-0 z-50">
-  <nav class="bg-blue-700 border-gray-200 dark:bg-blue-950">
+  <nav class="bg-bpsBlue border-gray-200 dark:bg-bpsBlue">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto">
       <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 rtl:space-x-reverse">
         <img class="rounded-full xl:w-36 xl:h-36 max-w-36 max-h-36 lg:h-34 lg:w-34 md:h-28 md:w-28 sm:h-20 sm:w-20" src="{{ asset('img/School Logo.png') }}" alt="School Logo">
@@ -16,12 +16,12 @@
         </svg>
       </button>
       <div class="hidden w-full lg:block lg:w-auto pt-4" id="navbar-dropdown">
-        <ul class="flex flex-col font-medium p-4 lg:p-0 mt-4 mx-8 mb-4 border border-gray-100 rounded-lg bg-blue-700 lg:space-x-8 rtl:space-x-reverse lg:flex-row lg:mt-0 lg:border-0 lg:bg-blue-700 dark:bg-blue-950">
+        <ul class="flex flex-col font-medium p-4 lg:p-0 mt-4 mx-8 mb-4 border border-gray-100 rounded-lg bpsBlue lg:space-x-8 rtl:space-x-reverse lg:flex-row lg:mt-0 lg:border-0 lg:bpsBlue dark:bg-blue-950">
           <li>
-            <a href="{{ route('dashboard') }}" class="block py-2 px-3 text-white bg-blue-700 rounded hover:underline lg:bg-transparent lg:text-white lg:p-0" aria-current="page">Home</a>
+            <a href="{{ route('dashboard') }}" class="block py-2 px-3 text-white bpsBlue rounded hover:underline lg:bg-transparent lg:text-white lg:p-0" aria-current="page">Home</a>
           </li>
           <li>
-            <a href="{{ route('report.inventory') }}" class="block py-2 px-3 text-white bg-blue-700 rounded hover:underline lg:bg-transparent lg:text-white lg:p-0" aria-current="page">Inventory</a>
+            <a href="{{ route('report.inventory') }}" class="block py-2 px-3 text-white bpsBlue rounded hover:underline lg:bg-transparent lg:text-white lg:p-0" aria-current="page">Inventory</a>
           </li>
           <li>
             <button id="dropdownNavbarLink" data-dropdown-toggle="navbarReport" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:underline lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-100 lg:p-0 lg:w-auto">Reports <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
