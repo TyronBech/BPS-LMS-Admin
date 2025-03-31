@@ -67,7 +67,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::get('inventory-report',  [InventoriesController::class, 'index'])        ->name('report.inventory');
         Route::post('inventory-report', [InventoriesController::class, 'search'])       ->name('report.inventory-search');
     });
-    /*
+    
     Route::group(['prefix' => 'import'], function () {
         Route::get('students',          [StudentImportController::class, 'index'])  ->name('import.import-students');
         Route::post('students-data',    [StudentImportController::class, 'upload']) ->name('import.upload-students');
@@ -75,7 +75,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::get('books',             [BookImportController::class, 'index'])     ->name('import.import-books');
         Route::post('books-data',       [BookImportController::class, 'upload'])    ->name('import.upload-books');
         Route::put('insert-data',       [BookImportController::class, 'store'])     ->name('import.store-books');
-    });*/
+    });
     Route::group(['prefix' => 'inventory'], function () {
         Route::get('inventory', [InventoryController::class, 'index'])  ->name('inventory.inventory');
         Route::post('search',   [InventoryController::class, 'search']) ->name('inventory.search');
