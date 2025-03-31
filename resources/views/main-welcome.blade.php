@@ -10,6 +10,6 @@
     <h1 class="lg:text-2xl md:text-lg text-black font-semibold text-center dark:text-white">OwlQuery Group</h1>
   </div>
   <img class="w-60 h-60 block dark:hidden" src="{{ asset('img/OwlQuery.png') }}" alt="OwlQuery">
-  <img class="hidden dark:block" src="{{ asset('img/OwlQuery Dark.png') }}" alt="OwlQuery">
+  <img class="hidden dark:block w-60 h-60" src="{{ asset('img/OwlQuery Dark.png') }}" alt="OwlQuery">
 </div>
 @endsection
