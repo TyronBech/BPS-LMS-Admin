@@ -21,7 +21,7 @@
             <a href="{{ route('dashboard') }}" class="block py-2 px-3 text-white bpsBlue rounded hover:underline lg:bg-transparent lg:text-white lg:p-0" aria-current="page">Home</a>
           </li>
           <li>
-            <a href="{{ route('report.inventory') }}" class="block py-2 px-3 text-white bpsBlue rounded hover:underline lg:bg-transparent lg:text-white lg:p-0" aria-current="page">Inventory</a>
+            <a href="{{ route('inventory.inventory') }}" class="block py-2 px-3 text-white bpsBlue rounded hover:underline lg:bg-transparent lg:text-white lg:p-0" aria-current="page">Inventory</a>
           </li>
           <li>
             <button id="dropdownNavbarLink" data-dropdown-toggle="navbarReport" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:underline lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-100 lg:p-0 lg:w-auto">Reports <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
