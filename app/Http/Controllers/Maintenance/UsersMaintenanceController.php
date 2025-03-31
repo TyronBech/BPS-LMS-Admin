@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Maintenance;
 
+use App\Enum\PermissionsEnum;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;

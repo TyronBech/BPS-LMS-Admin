@@ -8,6 +8,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Enum\PermissionsEnum; // Ensure PermissionsEnum is correctly imported
+use Spatie\Permission\Models\Permission;
 
 class UserAuthentication
 {
@@ -20,7 +21,7 @@ class UserAuthentication
     {
         if(!Auth::guard('admin')->check()) return redirect()->route('dashboard')->with('toast-error', 'You are not authenticated');
         $authAdmin = User::findOrFail(Auth::guard('admin')->user()->id);
-        if(!$authAdmin->hasPermissionTo(PermissionsEnum::CREATE_USERS) && 
+        if(!$authAdmin->hasPermissionTo(PermissionsEnum::ADD_USERS) && 
             !$authAdmin->hasPermissionTo(PermissionsEnum::EDIT_USERS) && 
             !$authAdmin->hasPermissionTo(PermissionsEnum::DELETE_USERS)) return redirect()->route('dashboard')->with('toast-error', 'You are unable to access this page');
         return $next($request);

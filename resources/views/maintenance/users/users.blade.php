@@ -23,7 +23,7 @@
         <span class="sr-only">Search</span>
       </button>
     </form>
-    @can(PermissionsEnum::CREATE_USERS, 'admin')
+    @can(PermissionsEnum::ADD_USERS, 'admin')
     <div class="flex items-center space-x-2">
       <a href="{{ route('maintenance.create-employee') }}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">Add new employee</a>
       <a href="{{ route('maintenance.create-student') }}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">Add new student</a>

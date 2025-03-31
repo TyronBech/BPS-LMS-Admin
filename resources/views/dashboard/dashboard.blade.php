@@ -20,8 +20,8 @@
     @can(PermissionsEnum::MODIFY_ADMIN)
     <p class="font-normal text-gray-700 dark:text-gray-300">You can modify admins.</p>
     @endcan
-    @can(PermissionsEnum::CREATE_USERS)
-    <p class="font-normal text-gray-700 dark:text-gray-300">You can create users.</p>
+    @can(PermissionsEnum::ADD_USERS)
+    <p class="font-normal text-gray-700 dark:text-gray-300">You can add users.</p>
     @endcan
     @can(PermissionsEnum::EDIT_USERS)
     <p class="font-normal text-gray-700 dark:text-gray-300">You can edit users.</p>
@@ -29,8 +29,8 @@
     @can(PermissionsEnum::DELETE_USERS)
     <p class="font-normal text-gray-700 dark:text-gray-300">You can delete users.</p>
     @endcan
-    @can(PermissionsEnum::CREATE_BOOKS)
-    <p class="font-normal text-gray-700 dark:text-gray-300">You can create books.</p>
+    @can(PermissionsEnum::ADD_BOOKS)
+    <p class="font-normal text-gray-700 dark:text-gray-300">You can add books.</p>
     @endcan
     @can(PermissionsEnum::EDIT_BOOKS)
     <p class="font-normal text-gray-700 dark:text-gray-300">You can edit books.</p>

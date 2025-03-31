@@ -20,7 +20,7 @@ class BookAuthentication
     {
         if(!Auth::guard('admin')->check()) return redirect()->route('dashboard')->with('toast-error', 'You are not authenticated');
         $authAdmin = User::findOrFail(Auth::guard('admin')->user()->id);
-        if(!$authAdmin->hasPermissionTo(PermissionsEnum::CREATE_BOOKS) && 
+        if(!$authAdmin->hasPermissionTo(PermissionsEnum::ADD_BOOKS) && 
             !$authAdmin->hasPermissionTo(PermissionsEnum::EDIT_BOOKS) && 
             !$authAdmin->hasPermissionTo(PermissionsEnum::DELETE_BOOKS)) return redirect()->route('dashboard')->with('toast-error', 'You are unable to access this page');
         return $next($request);
