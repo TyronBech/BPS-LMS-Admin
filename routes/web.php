@@ -105,15 +105,15 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::delete('delete-user',    [UsersMaintenanceController::class, 'destroy'])         ->name('maintenance.delete-user');
         });
         Route::prefix('admin-management')->middleware(SuperAdminAuthentication::class)->group(function () {
-            Route::get('admins',            [AdminMaintenanceController::class, 'index'])   ->name('maintenance.admins');
-            Route::get('add-admin',         [AdminMaintenanceController::class, 'create'])  ->name('maintenance.create-admin');
-            Route::post('add-admin',        [AdminMaintenanceController::class, 'store'])   ->name('maintenance.store-admin');
-            Route::post('search-admin',     [AdminMaintenanceController::class, 'search_user'])  ->name('maintenance.search-user');
-            Route::post('search',           [AdminMaintenanceController::class, 'search_admin'])  ->name('maintenance.search-admin');
-            Route::get('edit-admin',        [AdminMaintenanceController::class, 'edit'])    ->name('maintenance.edit-admin');
-            Route::put('edit-admin',        [AdminMaintenanceController::class, 'update'])  ->name('maintenance.update-admin');
-            Route::get('show-admins',       [AdminMaintenanceController::class, 'show'])    ->name('maintenance.show-admins');
-            Route::delete('delete-admin',   [AdminMaintenanceController::class, 'destroy']) ->name('maintenance.delete-admin');
+            Route::get('admins',            [AdminMaintenanceController::class, 'index'])           ->name('maintenance.admins');
+            Route::get('add-admin',         [AdminMaintenanceController::class, 'create'])          ->name('maintenance.create-admin');
+            Route::post('add-admin',        [AdminMaintenanceController::class, 'store'])           ->name('maintenance.store-admin');
+            Route::post('search-admin',     [AdminMaintenanceController::class, 'search_user'])     ->name('maintenance.search-user');
+            Route::post('search',           [AdminMaintenanceController::class, 'search_admin'])    ->name('maintenance.search-admin');
+            Route::get('edit-admin',        [AdminMaintenanceController::class, 'edit'])            ->name('maintenance.edit-admin');
+            Route::put('edit-admin',        [AdminMaintenanceController::class, 'update'])          ->name('maintenance.update-admin');
+            Route::get('show-admins',       [AdminMaintenanceController::class, 'show'])            ->name('maintenance.show-admins');
+            Route::delete('delete-admin',   [AdminMaintenanceController::class, 'destroy'])         ->name('maintenance.delete-admin');
             Route::prefix('roles-and-permissions')->group(function () {
                 Route::get('management',        [RolesController::class, 'index'])      ->name('maintenance.roles-and-permissions.management');
                 Route::get('add-role',          [RolesController::class, 'create'])     ->name('maintenance.roles-and-permissions.create-role');

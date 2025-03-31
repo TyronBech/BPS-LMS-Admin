@@ -6,12 +6,14 @@
         <th>Accession</th>
         <th>Call Number</th>
         <th>Title</th>
+        <th>Authors</th>
         <th>Edition</th>
         <th>Publication</th>
         <th>Publisher</th>
         <th>Copyright</th>
-        <th>Remarks</th>
-        <th>Authors</th>
+        <th>Category</th>
+        <th>Barcode</th>
+        <th>URL</th>
       </tr>
     </thead>
     <tbody class="text-center">
@@ -20,12 +22,14 @@
           <td>{{ $item['accession'] }}</td>
           <td>{{ $item['call_number'] }}</td>
           <td>{{ $item['title'] }}</td>
-          <td>{{ $item['edition'] }}</td>
-          <td>{{ $item['publication'] }}</td>
+          <td>{{ $item['authors'] }}</td>
+          <td>{{ $item['edition'] ?? '-' }}</td>
+          <td>{{ $item['place_of_publication'] }}</td>
           <td>{{ $item['publisher'] }}</td>
           <td>{{ $item['copyrights'] }}</td>
-          <td>{{ $item['remarks'] }}</td>
-          <td>{{ $item['authors'] }}</td>
+          <td>{{ $item['category'] }}</td>
+          <td>{{ $item['barcode'] }}</td>
+          <td>{{ $item['digital_copy_url'] ?? '-' }}</td>
         </tr>
       @empty
         <tr>

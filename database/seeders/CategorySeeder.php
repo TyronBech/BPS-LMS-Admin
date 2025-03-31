@@ -14,6 +14,6 @@ class CategorySeeder extends Seeder
     protected $model = Category::class;
     public function run(): void
     {
-        Category::factory()->count(5)->create();   
+        Category::factory()->count(2)->create();   
     }
 }
