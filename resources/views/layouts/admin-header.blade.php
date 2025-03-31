@@ -1,8 +1,8 @@
 <header class="sticky top-0 z-50">
-  <nav class="bg-bpsBlue border-gray-200 dark:bg-bpsBlue">
-    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto">
+  <nav class="bg-bpsBlue border-gray-200 dark:bg-bpsBlue min-h-36">
+    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto pt-5">
       <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 rtl:space-x-reverse">
-        <img class="rounded-full xl:w-36 xl:h-36 max-w-36 max-h-36 lg:h-34 lg:w-34 md:h-28 md:w-28 sm:h-20 sm:w-20" src="{{ asset('img/School Logo.png') }}" alt="School Logo">
+        <img class="rounded-full w-24 h-24" src="{{ asset('img/BPSLogo.png') }}" alt="School Logo">
         <div class="flex flex-col justify-center">
           <h1 class="xl:2xl lg:text-xl md:text-md text-xs text-white font-semibold text-start">Bicutan Parochial School</h1>
           <hr class="h-px bg-gray-200 border-0">
@@ -83,7 +83,7 @@
             <div id="navbarImport" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
               <ul class="py-2 text-sm text-gray-900" aria-labelledby="dropdownLargeButton">
                 <li>
-                  <a href="#" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
+                  <a href="{{ route('import.import-students') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
                     <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                       <path fill-rule="evenodd" d="M8 4a4 4 0 1 0 0 8 4 4 0 0 0 0-8Zm-2 9a4 4 0 0 0-4 4v1a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2v-1a4 4 0 0 0-4-4H6Zm7.25-2.095c.478-.86.75-1.85.75-2.905a5.973 5.973 0 0 0-.75-2.906 4 4 0 1 1 0 5.811ZM15.466 20c.34-.588.535-1.271.535-2v-1a5.978 5.978 0 0 0-1.528-4H18a4 4 0 0 1 4 4v1a2 2 0 0 1-2 2h-4.535Z" clip-rule="evenodd" />
                     </svg>
