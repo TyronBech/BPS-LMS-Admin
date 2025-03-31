@@ -16,7 +16,7 @@
     </a>
   </div>
   <hr class="h-px my-3 bg-gray-200 border-0">
-  <form action="{{ route('maintenance.search-admin') }}" class="max-w-2xl mx-auto" method="POST">
+  <form action="{{ route('maintenance.search-user') }}" class="max-w-2xl mx-auto" method="POST">
     @csrf
     <div class="mb-5">
       <label for="user-info" class="block mb-2 text-sm font-medium">Search for the user</label>

@@ -1,5 +1,8 @@
 @use('App\Enum\RolesEnum')
 @use('Spatie\Permission\Models\Role')
+@php
+  $adminID = null;
+@endphp
 <div class="mx-auto px-2 font-sans flex-col">
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
     <table class="w-full text-sm text-left rtl:text-right">
@@ -41,7 +44,7 @@
         </tr>
         @empty
         <tr>
-          <td colspan="5" class="text-center py-1.5">No data found.</td>
+          <td colspan="6" class="text-center py-1.5">No data found.</td>
         </tr>
         @endforelse
       </tbody>
