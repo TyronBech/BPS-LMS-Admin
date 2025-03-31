@@ -78,7 +78,6 @@ class StudentImportController extends Controller
             if($rows[0][0] == null){
                 return redirect()->route('import.import-students')->with('toast-error', "Excel file is empty.");
             } else if(count($rows[0]) > 12 || count($rows[0]) < 12){
-                dd(count($rows[0]));
                 return redirect()->route('import.import-students')->with('toast-error', "An error occurred while saving student: Wrong number of columns.");
             }
             for($i = 1; $i < count($rows); $i++){
