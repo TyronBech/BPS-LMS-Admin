@@ -8,7 +8,7 @@
   <form action="{{ route('import.upload-books') }}" method="POST" enctype="multipart/form-data">
     @csrf
     <label class="block mt-4 text-sm font-medium text-gray-600 for=" file_input">Upload a file in CSV or Excel format</label>
-    <input class="block w-full text-sm text-gray-600 border border-gray-900 rounded-md cursor-pointer bg-gray-100 focus:outline-none" id="file_input" name="file" type="file">
+    <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" id="file_input" name="file" type="file">
     <button type="submit" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-2 focus:ring-green-300 font-medium rounded-lg text-md px-4 py-2 me-2 mb-2 mt-4">Import</button>
   </form>
 </div>

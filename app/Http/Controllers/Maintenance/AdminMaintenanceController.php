@@ -161,7 +161,7 @@ class AdminMaintenanceController extends Controller
         if($admin == null){
             return redirect()->back()->with('toast-warning', 'Admin not found');
         }
-        return redirect()->route('maintenance.admins')->with('toast-success', 'you reached this page');
+        return redirect()->route('maintenance.admins')->with('toast-success', 'Admin deleted successfully');
     }
     private function has_invalid_characters($name) {
         $pattern = '/^[a-zA-ZáéíóúñÁÉÍÓÚÑ]+$/';

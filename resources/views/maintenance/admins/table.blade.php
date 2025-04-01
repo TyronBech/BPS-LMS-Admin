@@ -20,7 +20,7 @@
         @forelse($admins as $admin)
         <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
           <td>{{ $admin->first_name }}</td>
-          <td>{{ $admin->middle_name }}</td>
+          <td>{{ $admin->middle_name ?? '-' }}</td>
           <td>{{ $admin->last_name }}</td>
           <td>{{ $admin->email }}</td>
           <td>{{ implode(', ', $admin->getRoleNames()->toArray()) }}</td>

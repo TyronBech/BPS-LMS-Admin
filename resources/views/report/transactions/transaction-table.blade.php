@@ -12,6 +12,7 @@
     </thead>
     <tbody id="students-activity" class="text-center">
       @forelse($data as $item)
+      @if($item->users && $item->books)
         <tr>
           <td class="pb-1">{{ $item->books->accession }}</td>
           <td class="pb-1">{{ $item->books->title }}</td>
@@ -25,6 +26,7 @@
           <td class="pb-1">{{ $item->due_date }}</td>
           <td class="pb-1">{{ $item->return_date ? $item->return_date : '-' }}</td>
         </tr>
+      @endif
       @empty
         <tr>
           <td colspan="8">No data found.</td>
