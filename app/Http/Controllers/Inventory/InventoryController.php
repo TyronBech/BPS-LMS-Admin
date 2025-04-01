@@ -16,7 +16,6 @@ class InventoryController extends Controller
     public function search(Request $request)
     {
         $data       = null;
-        $remarks    = $this->extract_enums('books', 'remarks');
         $conditions = $this->extract_enums('books', 'condition_status');
         $validator  = Validator::make($request->all(), [
             'barcode' => 'required',
@@ -24,16 +23,13 @@ class InventoryController extends Controller
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
-        DB::beginTransaction();
         try{
             $barcode = $request->input('barcode');
-            $data = Book::with('inventory')->where('barcode', $barcode)->first();
+            $data = Book::where('barcode', $barcode)->first();
         } catch (\Illuminate\Database\QueryException $e){
-            DB::rollBack();
             return redirect()->route('inventory.inventory')->with('toast-error', $e->getMessage());
         }
-        DB::commit();
-        return response()->json(['data' => $data, 'remarks' => $remarks, 'conditions' => $conditions]);
+        return response()->json(['data' => $data, 'conditions' => $conditions]);
     }
     public function update(Request $request)
     {

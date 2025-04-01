@@ -51,7 +51,6 @@
 
   function showData(response) {
     var data = response.data;
-    var remarks = response.remarks;
     var conditions = response.conditions;
 
     var row = '<tr>';
