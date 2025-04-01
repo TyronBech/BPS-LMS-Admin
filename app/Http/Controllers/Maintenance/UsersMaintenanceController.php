@@ -111,19 +111,14 @@ class UsersMaintenanceController extends Controller
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
-            return redirect()->back()->with('toast-error', 'Something went wrong!');
+            return redirect()->back()->with('toast-error', 'User with RFID or email ' . $request->input('rfid') . ' already exists. Error code: ' . $e->getMessage());
         }
         DB::commit();
-        DB::beginTransaction();
         try{
-            DB::statement('SET SQL_SAFE_UPDATES = 0');
             DB::statement('CALL DistributeStagingUsers()');
-            DB::statement('SET SQL_SAFE_UPDATES = 1');
         } catch (\Illuminate\Database\QueryException $e) {
-            DB::rollBack();
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage());
         }
-        DB::commit();
         return redirect()->back()->with('toast-success', 'User added successfully');
     }
     public function store_employee(Request $request)
@@ -171,18 +166,14 @@ class UsersMaintenanceController extends Controller
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
-            return redirect()->back()->with('toast-error', 'Something went wrong!');
+            return redirect()->back()->with('toast-error', 'User with RFID or email ' . $request->input('rfid') . ' already exists. Error code: ' . $e->getMessage());
         }
         DB::commit();
-        DB::beginTransaction();
         try{
-            DB::statement('SET SQL_SAFE_UPDATES = 0');
             DB::statement('CALL DistributeStagingUsers()');
-            DB::statement('SET SQL_SAFE_UPDATES = 1');
         } catch (\Illuminate\Database\QueryException $e) {
-            DB::rollBack();
+            return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage());
         }
-        DB::commit();
         return redirect()->back()->with('toast-success', 'User added successfully');
     }
     public function edit_student(Request $request)
@@ -310,7 +301,7 @@ class UsersMaintenanceController extends Controller
         DB::beginTransaction();
         try{
             $id = $request->input('id');
-            dd($id);
+            dd($request->all());
             User::find($id)->delete();
         } catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();
