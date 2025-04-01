@@ -42,9 +42,13 @@ $increment = 0;
             $employeeID = ['id' => $item->id];
             @endphp
             @can(PermissionsEnum::DELETE_USERS, 'admin')
-            <button data-modal-target="popup-modal" data-modal-toggle="popup-modal" class="focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2" type="button">
-              Delete
-            </button>
+            <form action="{{ route('maintenance.delete-user', $employeeID) }}" method="POST" class="flex items-center justify-center">
+              @csrf
+              @method('DELETE')
+              <button class="focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2" type="submit">
+                Delete
+              </button>
+            </form>
             @endcan
           </td>
           @endif
