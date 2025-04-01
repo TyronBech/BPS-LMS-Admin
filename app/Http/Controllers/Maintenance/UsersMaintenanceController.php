@@ -30,7 +30,9 @@ class UsersMaintenanceController extends Controller
     }
     public function create_employee()
     {
-        $groups = UserGroup::all()->pluck('group_name');
+        $groups = UserGroup::where(DB::raw('lower(group_name)'), '!=', 'visitor')
+                            ->where(DB::raw('lower(group_name)'), '!=', 'student')
+                            ->pluck('group_name');
         return view('maintenance.users.create-employee', compact('groups'));
     }
     public function show(Request $request)
@@ -109,7 +111,7 @@ class UsersMaintenanceController extends Controller
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
-            return redirect()->back()->with('toast-error', 'User with RFID or email ' . $request->input('rfid') . ' already exists. Error code: ' . $e->getMessage());
+            return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         DB::commit();
         DB::beginTransaction();
@@ -169,7 +171,7 @@ class UsersMaintenanceController extends Controller
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
-            return redirect()->back()->with('toast-error', 'User with RFID or email ' . $request->input('rfid') . ' already exists. Error code: ' . $e->getMessage());
+            return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         DB::commit();
         DB::beginTransaction();
@@ -308,6 +310,7 @@ class UsersMaintenanceController extends Controller
         DB::beginTransaction();
         try{
             $id = $request->input('id');
+            dd($id);
             User::find($id)->delete();
         } catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();

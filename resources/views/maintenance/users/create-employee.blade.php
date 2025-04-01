@@ -83,7 +83,7 @@
       <label for="group" class="block mb-2 text-sm font-medium">Select Group:</label>
       <select id="group" name="group" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         @foreach($groups as $group)
-        @if($group != "Student")
+        @if($group != "Student" && $group != "Visitor")
         <option class="text-sm dark:text-white" value="{{ $group }}">{{ $group }}</option>
         @endif
         @endforeach

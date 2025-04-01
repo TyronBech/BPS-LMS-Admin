@@ -1,6 +1,7 @@
 @use('App\Enum\PermissionsEnum')
 @php
 $studentID = null;
+$increment = 0;
 @endphp
 <div class="container mx-auto px-2 font-sans flex-col">
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
@@ -23,6 +24,9 @@ $studentID = null;
         @forelse($users as $item)
         <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
           @if($item->students)
+          @php
+          $increment++;
+          @endphp
           <td class="pb-1 pl-2">{{ $item->rfid }}</td>
           <td class="pb-1">{{ $item->first_name }}</td>
           <td class="pb-1">{{ $item->middle_name ? $item->middle_name : '-' }}</td>
@@ -52,6 +56,11 @@ $studentID = null;
           <td colspan="10" class="text-center py-1.5">No data found.</td>
         </tr>
         @endforelse
+        @if($increment == 0)
+        <tr>
+          <td colspan="10" class="text-center py-1.5">No data found.</td>
+        </tr>
+        @endif
       </tbody>
     </table>
   </div>
