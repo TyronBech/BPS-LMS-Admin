@@ -10,11 +10,14 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Enum\RolesEnum;
 use App\Models\User;
+use Spatie\Permission\Models\Permission;
+
 
 class AdminMaintenanceController extends Controller
 {
     public function index()
     {
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
         $admins = User::join('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
                     ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
                     ->where('model_has_roles.model_type', 'App\Models\User')
@@ -41,6 +44,7 @@ class AdminMaintenanceController extends Controller
                     ->orWhere('rfid', 'like', '%' . $search . '%');
             })
             ->doesntHave('roles')
+            ->limit(1)
             ->get();
         $roles = Role::where('guard_name', 'admin')
                     ->get();
@@ -65,21 +69,19 @@ class AdminMaintenanceController extends Controller
         return view('maintenance.admins.admins', compact('admins'));
     }
     public function store(Request $request){
-        if(request()->input('adminID') == null){
+        if($request->input('adminID') == null){
             return redirect()->route('maintenance.create-admin')->with('toast-warning', 'Please select an admin');
         }
-        if(request()->input('role') == 'None'){
+        if($request->input('role') == 'None'){
             return redirect()->route('maintenance.create-admin')->with('toast-warning', 'Please select a role');
         }
-        DB::beginTransaction();
         try {
+            $role = $request->input('role');
             $admin = User::where('rfid', $request->input('adminID'))->first();
-            $admin->assignRole(Role::findById($request->input('role')), 'admin');
+            $admin->assignRole($role);
         } catch(\Illuminate\Database\QueryException $e){
-            DB::rollBack();
             return redirect()->route('maintenance.create-admin')->with('toast-error', $e->getMessage());
         }
-        DB::commit();
         return redirect()->route('maintenance.admins')->with('toast-success', 'Admin created successfully');
     }
     public function edit(Request $request){
@@ -139,7 +141,26 @@ class AdminMaintenanceController extends Controller
         return redirect()->route('maintenance.admins')->with('toast-success', 'Admin updated successfully');
     }
     public function destroy(Request $request){
-        dd($request->all());
+        DB::beginTransaction();
+        try{
+            $admin = User::findOrFail($request->input('id'));
+            if($admin->hasRole(RolesEnum::ADMIN)){
+                $admin->removeRole(RolesEnum::ADMIN);
+            } else if($admin->hasRole(RolesEnum::LIBRARIAN)){
+                $admin->removeRole(RolesEnum::LIBRARIAN);
+            } else if($admin->hasRole(RolesEnum::IMMERSION)){
+                $admin->removeRole(RolesEnum::IMMERSION);
+            } else if($admin->hasRole(RolesEnum::ENCODER)){
+                $admin->removeRole(RolesEnum::ENCODER);
+            }
+        } catch(\Illuminate\Database\QueryException $e){
+            DB::rollBack();
+            return redirect()->back()->with('toast-error', 'Something went wrong!');
+        }
+        DB::commit();
+        if($admin == null){
+            return redirect()->back()->with('toast-warning', 'Admin not found');
+        }
         return redirect()->route('maintenance.admins')->with('toast-success', 'you reached this page');
     }
     private function has_invalid_characters($name) {

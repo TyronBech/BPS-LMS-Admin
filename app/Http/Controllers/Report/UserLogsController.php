@@ -12,6 +12,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use DateTime;
 use Carbon\Carbon;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class UserLogsController extends Controller
 {
@@ -22,17 +23,17 @@ class UserLogsController extends Controller
         $toInputDate    = null;
         $peak_hour      = "00:00";
         $data           = Log::with('users')->orderBy(DB::raw('date(timestamp)'), 'desc')
-                            ->orderBy(DB::raw('time(timestamp)'), 'desc')->get();
+            ->orderBy(DB::raw('time(timestamp)'), 'desc')->get();
         $hours = $data->map(function ($item) {
             $item = Carbon::parse($item->timestamp)->format('H:i:s');
             return $item;
         });
         $hour = $this->findPeakHour($hours);
-        if($hour == 12){
+        if ($hour == 12) {
             $peak_hour = "12:00 PM";
-        } else if($hour == 0){
+        } else if ($hour == 0) {
             $peak_hour = "12:00 AM";
-        } else if($hour > 12){
+        } else if ($hour > 12) {
             $peak_hour = $hour - 12 . ":00 PM";
         } else {
             $peak_hour = $hour . ":00 AM";
@@ -51,14 +52,14 @@ class UserLogsController extends Controller
             'last-name'     => 'sometimes',
             'first-name'    => 'sometimes',
         ]);
-        if($validator->fails()){
+        if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
-        if($request->input('submit') == 'pdf'){
+        if ($request->input('submit') == 'pdf') {
             $data = $this->generateData($request);
             $this->generatePDF($data);
             return redirect()->route('report.user')->with('toast-success', 'Successfully exported to PDF');
-        } else if($request->input('submit') == 'excel'){
+        } else if ($request->input('submit') == 'excel') {
             $data = $this->generateData($request);
             $this->exportExcel($data);
             return redirect()->route('report.user')->with('toast-success', 'Successfully exported to Excel');
@@ -69,11 +70,11 @@ class UserLogsController extends Controller
             return $item;
         });
         $hour = $this->findPeakHour($hours);
-        if($hour == 12){
+        if ($hour == 12) {
             $peak_hour = "12:00 PM";
-        } else if($hour == 0){
+        } else if ($hour == 0) {
             $peak_hour = "12:00 AM";
-        } else if($hour > 12){
+        } else if ($hour > 12) {
             $peak_hour = $hour - 12 . ":00 PM";
         } else {
             $peak_hour = $hour . ":00 AM";
@@ -87,7 +88,7 @@ class UserLogsController extends Controller
             $hour = substr($time, 0, 2);
             $hourCounts[$hour] = isset($hourCounts[$hour]) ? $hourCounts[$hour] + 1 : 1;
         }
-        if(count($hourCounts) == 0) return "00";
+        if (count($hourCounts) == 0) return "00";
         $maxCount = 0;
         foreach ($hourCounts as $hour => $count) {
             if ($count > $maxCount) {
@@ -99,25 +100,27 @@ class UserLogsController extends Controller
     }
     private function generatePDF($data)
     {
-        $chunk      = $data->chunk(25);
-        $arrayPdf   = array( 'data' => $chunk );
-        $pdf        = Pdf::loadView('pdf.user-pdf-report-format', $arrayPdf);
-        $directory  = 'C:/Users/tyron/Downloads';
-        $pdf->save($directory . '/users-report_' . date('Y-m-d') . '.pdf');
+        $chunk    = $data->chunk(25);
+        $arrayPdf = ['data' => $chunk];
+        $pdf = Pdf::loadView('pdf.user-pdf-report-format', $arrayPdf);
+        return $pdf->download('users-report_' . date('Y-m-d') . '.pdf');
     }
     private function exportExcel($data)
     {
-        $spreadsheet    = new Spreadsheet(); 
-        $sheet          = $spreadsheet->getActiveSheet();
-        $sheet->setCellValue('A1', 'Log ID');
-        $sheet->setCellValue('B1', 'RFID');
-        $sheet->setCellValue('C1', 'Name');
-        $sheet->setCellValue('D1', 'Date');
-        $sheet->setCellValue('E1', 'Time');
-        $sheet->setCellValue('F1', 'Compute Use');
-        $sheet->setCellValue('G1', 'Action');
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set column headers
+        $headers = ['Log ID', 'RFID', 'Name', 'Date', 'Time', 'Compute Use', 'Action'];
+        $columnLetters = range('A', 'G');
+
+        foreach ($headers as $index => $header) {
+            $sheet->setCellValue($columnLetters[$index] . '1', $header);
+        }
+
+        // Fill data rows
         $row = 2;
-        foreach($data as $item){
+        foreach ($data as $item) {
             $sheet->setCellValue('A' . $row, $item->id);
             $sheet->setCellValue('B' . $row, $item->users->rfid);
             $sheet->setCellValue('C' . $row, $item->users->last_name . ', ' . $item->users->first_name . ' ' . $item->users->middle_name);
@@ -127,10 +130,15 @@ class UserLogsController extends Controller
             $sheet->setCellValue('G' . $row, $item->action);
             $row++;
         }
-        $writer     = new WriterXlsx($spreadsheet);
-        $directory  = 'C:/Users/tyron/Downloads';
-        $filename   = $directory . '/student-report_' . date('Y-m-d') . '.xlsx';
-        $writer->save($filename);
+
+        // Generate file and force download
+        return new StreamedResponse(function () use ($spreadsheet) {
+            $writer = new WriterXlsx($spreadsheet);
+            $writer->save('php://output');
+        }, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="student-report_' . date('Y-m-d') . '.xlsx"',
+        ]);
     }
     private function generateData(Request $request)
     {
@@ -149,8 +157,8 @@ class UserLogsController extends Controller
         if (strlen($inputName) > 0) {
             $query->whereHas('users', function ($q) use ($inputName) {
                 $q->where(DB::raw('lower(first_name)'), 'like', '%' . $inputName . '%')
-                ->orWhere(DB::raw('lower(last_name)'), 'like', '%' . $inputName . '%')
-                ->orWhere(DB::raw('lower(middle_name)'), 'like', '%' . $inputName . '%');
+                    ->orWhere(DB::raw('lower(last_name)'), 'like', '%' . $inputName . '%')
+                    ->orWhere(DB::raw('lower(middle_name)'), 'like', '%' . $inputName . '%');
             });
         }
 

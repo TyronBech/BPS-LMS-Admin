@@ -56,9 +56,9 @@
               <option value="None" selected>Select Role</option>
               @foreach($roles as $role)
               @if($item->hasRole($role->name))
-              <option value="{{ $role->id }}" selected>{{ $role->name }}</option>
+              <option value="{{ $role->name }}" selected>{{ $role->name }}</option>
               @else
-              <option value="{{ $role->id }}">{{ $role->name }}</option>
+              <option value="{{ $role->name }}">{{ $role->name }}</option>
               @endif
               @endforeach
             </select>

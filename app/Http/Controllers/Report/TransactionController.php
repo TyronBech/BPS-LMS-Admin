@@ -12,6 +12,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TransactionController extends Controller
 {
@@ -25,14 +26,15 @@ class TransactionController extends Controller
             ->orderBy(DB::raw('DATE(date_borrowed)'), 'desc')
             ->orderBy(DB::raw('TIME(date_borrowed)'), 'desc')
             ->get();
-        return view('report.transactions.transactions' , compact('data', 'inputName', 'inputLastName', 'fromInputDate', 'toInputDate'));
+        return view('report.transactions.transactions', compact('data', 'inputName', 'inputLastName', 'fromInputDate', 'toInputDate'));
     }
-    public function test(){
+    public function test()
+    {
         $data           = Transaction::with('books', 'users')
             ->orderBy(DB::raw('DATE(date_borrowed)'), 'desc')
             ->orderBy(DB::raw('TIME(date_borrowed)'), 'desc')
             ->get();
-            return view('pdf.transaction-pdf-report-format', compact('data'));
+        return view('pdf.transaction-pdf-report-format', compact('data'));
     }
     public function search(Request $request)
     {
@@ -45,33 +47,34 @@ class TransactionController extends Controller
             'last-name'     => 'sometimes',
             'first-name'    => 'sometimes',
         ]);
-        if($validator->fails()){
+        if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
-        if($request->input('submit') == 'pdf'){
+        if ($request->input('submit') == 'pdf') {
             $data = $this->generateData($request);
             $this->generatePDF($data);
-            return redirect()->route('report.transactions.transactions')->with('toast-success', 'Successfully exported to PDF');
-        } else if($request->input('submit') == 'excel'){
+            return redirect()->route('report.transaction')->with('toast-success', 'Successfully exported to PDF');
+        } else if ($request->input('submit') == 'excel') {
             // $data = $this->generateData($request);
             // $this->exportExcel($data);
-            return redirect()->route('report.transactions.transactions')->with('toast-success', 'Successfully exported to Excel');
+            return redirect()->route('report.transaction')->with('toast-success', 'Successfully exported to Excel');
         }
         $data = $this->generateData($request);
-        return view('report.transactions.transactions' , compact('data', 'inputName', 'fromInputDate', 'toInputDate'));
+        return view('report.transactions.transactions', compact('data', 'inputName', 'fromInputDate', 'toInputDate'));
     }
     private function generatePDF($data)
     {
         $chunk      = $data->chunk(25);
-        $arrayPdf   = array( 'data' => $chunk );
+        $arrayPdf   = array('data' => $chunk);
         $pdf        = Pdf::loadView('pdf.transaction-pdf-report-format', $arrayPdf);
-        $directory  = 'C:/Users/tyron/Downloads';
-        $pdf->save($directory . '/transactions-report_' . date('Y-m-d') . '.pdf');
+        $pdf->download('transactions-report_' . date('Y-m-d') . '.pdf');
     }
     private function exportExcel($data)
     {
-        $spreadsheet    = new Spreadsheet(); 
-        $sheet          = $spreadsheet->getActiveSheet();
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set column headers
         $sheet->setCellValue('A1', 'Log ID');
         $sheet->setCellValue('B1', 'RFID');
         $sheet->setCellValue('C1', 'Name');
@@ -79,8 +82,10 @@ class TransactionController extends Controller
         $sheet->setCellValue('E1', 'Time');
         $sheet->setCellValue('F1', 'Compute Use');
         $sheet->setCellValue('G1', 'Action');
+
+        // Fill data rows
         $row = 2;
-        foreach($data as $item){
+        foreach ($data as $item) {
             $sheet->setCellValue('A' . $row, $item->id);
             $sheet->setCellValue('B' . $row, $item->users->rfid);
             $sheet->setCellValue('C' . $row, $item->users->last_name . ', ' . $item->users->first_name . ' ' . $item->users->middle_name);
@@ -90,10 +95,15 @@ class TransactionController extends Controller
             $sheet->setCellValue('G' . $row, $item->action);
             $row++;
         }
-        $writer     = new WriterXlsx($spreadsheet);
-        $directory  = 'C:/Users/tyron/Downloads';
-        $filename   = $directory . '/student-report_' . date('Y-m-d') . '.xlsx';
-        $writer->save($filename);
+
+        // Generate and return as a downloadable file
+        return new StreamedResponse(function () use ($spreadsheet) {
+            $writer = new WriterXlsx($spreadsheet);
+            $writer->save('php://output');
+        }, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment; filename="student-report_' . date('Y-m-d') . '.xlsx"',
+        ]);
     }
     private function generateData(Request $request)
     {
@@ -115,7 +125,7 @@ class TransactionController extends Controller
                 $q->orWhere('last_name', 'like', '%' . $inputName . '%');
             })->orWhereHas('books', function ($q) use ($inputName) {
                 $q->where('title', 'like', '%' . $inputName . '%')
-                ->orWhere('accession', 'like', '%' . $inputName . '%');
+                    ->orWhere('accession', 'like', '%' . $inputName . '%');
             })->orWhere('transaction_type', 'like', '%' . $inputName . '%');
         }
         $data = $query->orderBy(DB::raw('DATE(date_borrowed)'), 'asc')

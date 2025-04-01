@@ -16,7 +16,7 @@ class RolePermissionSeeder extends Seeder
      */
     public function run(): void
     {
-        //app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
         // Permission::create(['name' => 'Edit Users',     'guard_name' => 'admin']);
         // Permission::create(['name' => 'Delete Users',   'guard_name' => 'admin']);
         // Permission::create(['name' => 'Create Users',   'guard_name' => 'admin']);
@@ -40,7 +40,7 @@ class RolePermissionSeeder extends Seeder
         // $admin1->assignRole('Super Admin');
         // $admin2 = User::find(2);
         // $admin2->assignRole('Admin');
-        $user = User::find(18);
-        $user->removeRole(RolesEnum::SUPER_ADMIN);
+        //$user = User::find(18);
+        //$user->removeRole(RolesEnum::SUPER_ADMIN);
     }
 }
