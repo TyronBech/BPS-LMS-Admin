@@ -36,7 +36,9 @@
         @php
         $roleID = ['id' => $role->id];
         @endphp
-        <button data-modal-target="popup-modal" data-modal-toggle="popup-modal" class="focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2" type="button">Delete</button>
+        @if($role->name != 'Super Admin')
+          <button data-modal-target="popup-modal" data-modal-toggle="popup-modal" class="focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2" type="button">Delete</button>
+        @endif
       </div>
     </div>
     @endforeach

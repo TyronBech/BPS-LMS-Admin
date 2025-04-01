@@ -13,8 +13,16 @@ class RolesController extends Controller
 {
     public function index()
     {
-        $roles_with_permissions = Role::with('permissions')->get();
-        $permissions_with_roles = Permission::with('roles')->get();
+        $roles_with_permissions = Role::with('permissions')
+                                    ->whereHas('permissions', function ($query) {
+                                        $query->where('guard_name', 'admin')
+                                                ->where('name', '!=', 'Modify Admins');
+                                    })
+                                    ->get();
+        $permissions_with_roles = Permission::with('roles')
+                                    ->where('guard_name', 'admin')
+                                    ->where('name', '!=', 'Modify Admins')
+                                    ->get();
         $admins = User::all();
         return view('roles_permissions.roles', compact('roles_with_permissions', 'permissions_with_roles', 'admins'));
     }
@@ -50,7 +58,10 @@ class RolesController extends Controller
         $role_id = array_keys($request->all())[0];
         try{
             $role = Role::findById($role_id);
-            $permissions = Permission::all();
+            $permissions = Permission::with('roles')
+                            ->where('guard_name', 'admin')
+                            ->where('name', '!=', 'Modify Admins')
+                            ->get();
         } catch(\Illuminate\Database\QueryException $e){
             return redirect()->back()->with('toast-error', 'Something went wrong');
         }
