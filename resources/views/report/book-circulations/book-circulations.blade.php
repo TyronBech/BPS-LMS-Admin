@@ -35,5 +35,4 @@
   @include('report.book-circulations.book-circulations-table')
 @endsection
 @section('scripts')
-@vite('resources/js/report-buttons.js')
 @endsection

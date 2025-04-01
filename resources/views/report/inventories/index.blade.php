@@ -33,5 +33,4 @@
   @include('report.inventories.table')
 @endsection
 @section('scripts')
-@vite('resources/js/report-buttons.js')
 @endsection

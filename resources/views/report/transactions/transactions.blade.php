@@ -39,5 +39,4 @@
   @include('report.transactions.transaction-table')
 @endsection
 @section('scripts')
-@vite('resources/js/report-buttons.js')
 @endsection
