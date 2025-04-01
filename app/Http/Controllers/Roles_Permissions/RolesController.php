@@ -13,6 +13,7 @@ class RolesController extends Controller
 {
     public function index()
     {
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
         $roles_with_permissions = Role::with('permissions')
                                     ->whereHas('permissions', function ($query) {
                                         $query->where('guard_name', 'admin')
