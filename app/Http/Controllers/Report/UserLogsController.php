@@ -121,8 +121,6 @@ class UserLogsController extends Controller
         // Fill data rows
         $row = 2;
         foreach ($data as $item) {
-            $sheet->setCellValue('A' . $row, $item->id);
-            $sheet->setCellValue('B' . $row, $item->users->rfid);
             $sheet->setCellValue('C' . $row, $item->users->last_name . ', ' . $item->users->first_name . ' ' . $item->users->middle_name);
             $sheet->setCellValue('D' . $row, Carbon::parse($item->timestamp)->format('Y-m-d'));
             $sheet->setCellValue('E' . $row, Carbon::parse($item->timestamp)->format('H:i:s'));

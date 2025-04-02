@@ -56,9 +56,7 @@
       <table class="{{ !$loop->last ? 'page-break' : ''}}">
         <thead>
           <tr>
-            <th>Log ID</th>
-            <th>RFID</th>
-            <th>Name</th>>
+            <th>Name</th>
             <th>Date</th>
             <th>Time</th>
             <th>Computer Use</th>
@@ -67,15 +65,15 @@
         </thead>
         <tbody>
           @forelse($items as $item)
+          @if($item->users)
             <tr>
-              <td>{{ $item->id }}</td>
-              <td>{{ $item->users->rfid }}</td>
               <td>{{ $item->users->last_name }}, {{ $item->users->first_name }} {{ $item->users->middle_name }}</td>
               <td>{{ \Carbon\Carbon::parse($item->timestamp)->format('Y-m-d') }}</td>
               <td>{{ \Carbon\Carbon::parse($item->timestamp)->format('H:i:s') }}</td>
               <td>{{ $item->computer_use }}</td>
               <td>{{ $item->action }}</td>
             </tr>
+          @endif
           @empty
             <tr>
               <td colspan="8">No data found.</td>
