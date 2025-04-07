@@ -5,10 +5,10 @@
       <th>Accession</th>
       <th>Title</th>
       <th>Name</th>
-      <th>Transaction</th>
       <th>Borrowed</th>
       <th>Due</th>
       <th>Returned</th>
+      <th>Status</th>
     </thead>
     <tbody id="students-activity" class="text-center">
       @forelse($data as $item)
@@ -17,14 +17,14 @@
           <td class="pb-1">{{ $item->books->accession }}</td>
           <td class="pb-1">{{ $item->books->title }}</td>
           <td class="pb-1">{{ $item->users->last_name }}, {{ $item->users->first_name }} {{ $item->users->middle_name }}</td>
+          <td class="pb-1">{{ $item->date_borrowed }}</td>
+          <td class="pb-1">{{ $item->due_date }}</td>
+          <td class="pb-1">{{ $item->return_date ? $item->return_date : '-' }}</td>
           @if($item->transaction_type == 'Borrow')
             <td class="text-red-600 pb-1 dark:text-red-400">{{ $item->transaction_type }}</td>
           @elseif($item->transaction_type == 'Return')
             <td class="text-green-600 pb-1 dark:text-green-400">{{ $item->transaction_type }}</td> 
           @endif
-          <td class="pb-1">{{ $item->date_borrowed }}</td>
-          <td class="pb-1">{{ $item->due_date }}</td>
-          <td class="pb-1">{{ $item->return_date ? $item->return_date : '-' }}</td>
         </tr>
       @endif
       @empty

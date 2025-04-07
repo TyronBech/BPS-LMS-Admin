@@ -100,43 +100,37 @@ class UserLogsController extends Controller
     }
     private function generatePDF($data)
     {
-        $chunk    = $data->chunk(25);
-        $arrayPdf = ['data' => $chunk];
-        $pdf = Pdf::loadView('pdf.user-pdf-report-format', $arrayPdf);
-        return $pdf->download('users-report_' . date('Y-m-d') . '.pdf');
+        $chunk      = $data->chunk(25);
+        $arrayPdf   = array('data' => $chunk);
+        $pdf        = Pdf::loadView('pdf.user-pdf-report-format', $arrayPdf);
+        $directory  = 'C:/Users/tyron/Downloads';
+        $pdf->save($directory . '/users-report_' . date('Y-m-d') . '.pdf');
     }
     private function exportExcel($data)
     {
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-
-        // Set column headers
-        $headers = ['Log ID', 'RFID', 'Name', 'Date', 'Time', 'Compute Use', 'Action'];
-        $columnLetters = range('A', 'G');
-
-        foreach ($headers as $index => $header) {
-            $sheet->setCellValue($columnLetters[$index] . '1', $header);
-        }
-
-        // Fill data rows
+        $spreadsheet    = new Spreadsheet();
+        $sheet          = $spreadsheet->getActiveSheet();
+        $sheet->setCellValue('A1', 'Name');
+        $sheet->setCellValue('B1', 'Date');
+        $sheet->setCellValue('C1', 'Time');
+        $sheet->setCellValue('D1', 'Compute Use');
+        $sheet->setCellValue('E1', 'Action');
         $row = 2;
         foreach ($data as $item) {
-            $sheet->setCellValue('C' . $row, $item->users->last_name . ', ' . $item->users->first_name . ' ' . $item->users->middle_name);
-            $sheet->setCellValue('D' . $row, Carbon::parse($item->timestamp)->format('Y-m-d'));
-            $sheet->setCellValue('E' . $row, Carbon::parse($item->timestamp)->format('H:i:s'));
-            $sheet->setCellValue('F' . $row, $item->computer_use);
-            $sheet->setCellValue('G' . $row, $item->action);
+            if(!$item->users) {
+                continue; // Skip if users relationship is not loaded
+            }
+            $sheet->setCellValue('A' . $row, $item->users->last_name . ', ' . $item->users->first_name . ' ' . $item->users->middle_name);
+            $sheet->setCellValue('B' . $row, Carbon::parse($item->timestamp)->format('Y-m-d'));
+            $sheet->setCellValue('C' . $row, Carbon::parse($item->timestamp)->format('H:i:s'));
+            $sheet->setCellValue('D' . $row, $item->computer_use);
+            $sheet->setCellValue('E' . $row, $item->action);
             $row++;
         }
-
-        // Generate file and force download
-        return new StreamedResponse(function () use ($spreadsheet) {
-            $writer = new WriterXlsx($spreadsheet);
-            $writer->save('php://output');
-        }, 200, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="student-report_' . date('Y-m-d') . '.xlsx"',
-        ]);
+        $writer     = new WriterXlsx($spreadsheet);
+        $directory  = 'C:/Users/tyron/Downloads';
+        $filename   = $directory . '/student-report_' . date('Y-m-d') . '.xlsx';
+        $writer->save($filename);
     }
     private function generateData(Request $request)
     {
