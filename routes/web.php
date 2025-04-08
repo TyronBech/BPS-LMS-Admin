@@ -22,6 +22,8 @@ use App\Http\Controllers\Report\InventoriesController;
 use App\Http\Middleware\BookAuthentication;
 use App\Http\Middleware\SuperAdminAuthentication;
 use App\Http\Middleware\UserAuthentication;
+use App\Http\Middleware\InventoryAuthentication;
+use App\Http\Middleware\ReportAuthentication;
 
 Route::get('/', function () {
     return view('main-welcome');
@@ -54,7 +56,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     Route::get('dashboard', function(){
         return view('dashboard.dashboard');
     })->name('dashboard');
-    Route::group(['prefix' => 'report'], function () {
+    Route::prefix('report')->middleware(ReportAuthentication::class)->group(function () {
         Route::get('user-report',       [UserLogsController::class, 'index'])           ->name('report.user');
         Route::post('user-report',      [UserLogsController::class, 'search'])          ->name('report.user-search');
         Route::get('visitor-report',    [VisitorLogsController::class, 'index'])        ->name('report.visitor');
@@ -68,7 +70,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::post('inventory-report', [InventoriesController::class, 'search'])       ->name('report.inventory-search');
     });
     
-    Route::group(['prefix' => 'import'], function () {
+    Route::prefix('import')->group(function () {
         Route::get('students',          [StudentImportController::class, 'index'])  ->name('import.import-students');
         Route::post('students-data',    [StudentImportController::class, 'upload']) ->name('import.upload-students');
         Route::post('insert-data',      [StudentImportController::class, 'store'])  ->name('import.store-students');
@@ -76,12 +78,12 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::post('books-data',       [BookImportController::class, 'upload'])    ->name('import.upload-books');
         Route::put('insert-data',       [BookImportController::class, 'store'])     ->name('import.store-books');
     });
-    Route::group(['prefix' => 'inventory'], function () {
+    Route::prefix('inventory')->middleware(InventoryAuthentication::class)->group(function () {
         Route::get('inventory', [InventoryController::class, 'index'])  ->name('inventory.inventory');
         Route::post('search',   [InventoryController::class, 'search']) ->name('inventory.search');
         Route::patch('update',  [InventoryController::class, 'update']) ->name('inventory.update');
     });
-    Route::group(['prefix' => 'maintenance'], function () {
+    Route::prefix('maintenance')->group(function () {
         Route::prefix('books')->middleware(BookAuthentication::class)->group(function () {
             Route::get('books',             [BookMaintenanceController::class, 'index'])    ->name('maintenance.books');
             Route::get('add-book',          [BookMaintenanceController::class, 'create'])   ->name('maintenance.create-book');

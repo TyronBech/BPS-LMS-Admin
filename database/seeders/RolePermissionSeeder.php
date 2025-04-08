@@ -43,10 +43,14 @@ class RolePermissionSeeder extends Seeder
         //$user = User::find(18);
         //$user->removeRole(RolesEnum::SUPER_ADMIN);
         
-        // Permission::create(['name' => 'View Reports',   'guard_name' => 'admin']);
-        // Permission::create(['name' => 'Create Reports', 'guard_name' => 'admin']);
-        // Permission::create(['name' => 'Book Inventory', 'guard_name' => 'admin']);
-        // Permission::create(['name' => 'Import Users', 'guard_name' => 'admin']);
-        // Permission::create(['name' => 'Import Books', 'guard_name' => 'admin']);
+        // Permission::create(['name' => 'View User Reports',   'guard_name' => 'admin']);
+        // Permission::create(['name' => 'Create Reports',      'guard_name' => 'admin']);
+        // Permission::create(['name' => 'Book Inventory',      'guard_name' => 'admin']);
+        // Permission::create(['name' => 'Import Users',        'guard_name' => 'admin']);
+        // Permission::create(['name' => 'Import Books',        'guard_name' => 'admin']);
+        Permission::create(['name' => 'View Summary Reports',           'guard_name' => 'admin']);
+        Permission::create(['name' => 'View Inventory Reports',         'guard_name' => 'admin']);
+        Permission::create(['name' => 'View Transaction Reports',       'guard_name' => 'admin']);
+        Permission::create(['name' => 'View Book Circulation Reports',  'guard_name' => 'admin']);
     }
 }

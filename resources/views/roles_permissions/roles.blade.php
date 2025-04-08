@@ -10,10 +10,10 @@
   </form>
   <div class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-3">
     @foreach($roles_with_permissions as $role)
-    <div class="flex flex-col w-full p-6 bg-white border-2 border-gray-300 rounded-lg shadow dark:bg-gray-700 dark:border-gray-500">
+    <div class="flex flex-col w-full p-6 max-h-96 bg-white border-2 border-gray-300 rounded-lg shadow dark:bg-gray-700 dark:border-gray-500">
       <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">{{ $role->name }}</h5>
       <hr class="mb-2 border-gray-600 dark:border-gray-500">
-      <ul class="font-normal text-gray-700 dark:text-gray-400">
+      <ul class="font-normal overflow-y-auto text-gray-700 dark:text-gray-400">
         @foreach($role->permissions as $permission)
         <li class="flex flex-row my-2 font-normal text-gray-700 dark:text-gray-200">
           {{ $permission->name }}
