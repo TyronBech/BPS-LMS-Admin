@@ -128,4 +128,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     });
     Route::post('logout', [AdminLoginController::class, 'destroy'])->name('admin.logout');
 });
+Route::fallback(function () {
+    return view('layouts.fallback');
+});
 require __DIR__.'/auth.php';

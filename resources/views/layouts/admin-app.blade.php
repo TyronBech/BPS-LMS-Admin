@@ -6,7 +6,7 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>BPS Library Management System</title>
   @vite(['resources/css/app.css', 'resources/js/app.js'])
-  <link rel="icon" href="{{ asset('img/BPSLogo.png') }}"> 
+  <link rel="icon" href="{{ asset('img/BPSLogo.png') }}">
 </head>
 <body class="relative bg-blue-50 dark:bg-gray-900 text-gray-900 dark:text-white">
   @include('layouts.admin-header')
