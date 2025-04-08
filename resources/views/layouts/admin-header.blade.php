@@ -129,6 +129,9 @@
             <!-- Dropdown menu -->
             <div id="navbarMaintenance" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
               <ul class="py-2 text-sm text-gray-900" aria-labelledby="dropdownLargeButton">
+                @if(auth()->user()->can(PermissionsEnum::ADD_USERS) 
+                || auth()->user()->can(PermissionsEnum::EDIT_USERS) 
+                || auth()->user()->can(PermissionsEnum::DELETE_USERS))
                 <li>
                   <a href="{{ route('maintenance.users') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
                     <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
@@ -137,6 +140,10 @@
                     <span class="ms-2">Users</span>
                   </a>
                 </li>
+                @endif
+                @if(auth()->user()->can(PermissionsEnum::ADD_BOOKS) 
+                || auth()->user()->can(PermissionsEnum::EDIT_BOOKS) 
+                || auth()->user()->can(PermissionsEnum::DELETE_BOOKS))
                 <li>
                   <a href="{{ route('maintenance.books') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
                     <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
@@ -145,6 +152,7 @@
                     <span class="ms-2">Books</span>
                   </a>
                 </li>
+                @endif
                 <li aria-labelledby="dropdownNavbarLink">
                   @if(auth()->user()->hasRole(App\Enum\RolesEnum::SUPER_ADMIN))
                   <button id="doubleDropdownButton" data-dropdown-toggle="doubleDropdown" data-dropdown-placement="right-start" type="button" class="flex items-center w-full px-4 pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
