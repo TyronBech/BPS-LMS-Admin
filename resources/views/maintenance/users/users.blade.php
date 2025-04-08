@@ -34,7 +34,7 @@
   <h5 class="mb-1 text-lg font-bold tracking-tight text-gray-900 dark:text-white">Students</h5>
   @include('maintenance.users.students-table')
   <div class="h-px my-5"></div>
-  <h5 class="mb-1 text-lg font-bold tracking-tight text-gray-900 dark:text-white">Employees</h5>
+  <h5 class="mb-1 text-lg font-bold tracking-tight text-gray-900 dark:text-white">Faculty & Staff</h5>
   @include('maintenance.users.employees-table')
 </div>
 @endsection

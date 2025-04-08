@@ -60,7 +60,7 @@ class UsersMaintenanceController extends Controller
     public function store_student(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|max:10',
+            'rfid'          => 'required|string|max:10|min:10',
             'first-name'    => 'required|string|max:50',
             'middle-name'   => 'sometimes|max:50',
             'last-name'     => 'required|string|max:50',
@@ -124,7 +124,7 @@ class UsersMaintenanceController extends Controller
     public function store_employee(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|max:10',
+            'rfid'          => 'required|string|max:10|min:10',
             'first-name'    => 'required|string|max:50',
             'middle-name'   => 'sometimes|max:50',
             'last-name'     => 'required|string|max:50',
@@ -202,7 +202,7 @@ class UsersMaintenanceController extends Controller
     public function update_student(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|max:10',
+            'rfid'          => 'required|string|max:10|min:10',
             'first-name'    => 'required|string|max:50',
             'middle-name'   => 'sometimes|max:50',
             'last-name'     => 'required|string|max:50',
@@ -251,7 +251,7 @@ class UsersMaintenanceController extends Controller
     public function update_employee(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|max:10',
+            'rfid'          => 'required|string|max:10|min:10',
             'first-name'    => 'required|string|max:50',
             'middle-name'   => 'sometimes|max:50',
             'last-name'     => 'required|string|max:50',
