@@ -9,13 +9,11 @@ $increment = 0;
       <thead class="text-xs py-2 text-gray-700 uppercase bg-gray-300 text-center dark:bg-gray-500 dark:text-white">
         <tr class="">
           <th scope="col" class="p-2 text-center min-w-32">RFID</th>
-          <th scope="col" class="p-2 text-center min-w-36">First Name</th>
-          <th scope="col" class="p-2 text-center min-w-36">Middle Name</th>
-          <th scope="col" class="p-2 text-center min-w-36">Last Name</th>
+          <th scope="col" class="p-2 text-center min-w-44">Name</th>
           <th scope="col" class="p-2 text-center min-w-30">Suffix</th>
           <th scope="col" class="p-2 text-center min-w-32">LRN</th>
           <th scope="col" class="p-2 text-center min-w-24">Grade</th>
-          <th scope="col" class="p-2 text-center min-w-24">Section</th>
+          <th scope="col" class="p-2 text-center min-w-11">Section</th>
           <th scope="col" class="p-2 text-center min-w-60">Email</th>
           <th scope="col" class="p-2 text-center">Actions</th>
         </tr>
@@ -28,9 +26,7 @@ $increment = 0;
           $increment++;
           @endphp
           <td class="py-4 pl-2">{{ $item->rfid }}</td>
-          <td class="py-4">{{ $item->first_name }}</td>
-          <td class="py-4">{{ $item->middle_name ? $item->middle_name : '-' }}</td>
-          <td class="py-4">{{ $item->last_name }}</td>
+          <td class="py-4">{{ $item->first_name }} {{ $item->middle_name ? $item->middle_name : '' }} {{ $item->last_name }}</td>
           <td class="py-4">{{ $item->suffix ? $item->suffix : '-' }}</td>
           <td class="py-4">{{ $item->students->lrn }}</td>
           <td class="py-4">{{ $item->students->grade_level }}</td>
