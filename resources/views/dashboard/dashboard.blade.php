@@ -16,28 +16,60 @@
     @role(RolesEnum::ADMIN)
     <p class="font-normal text-gray-700 dark:text-gray-300">You are a admin.</p>
     @endrole
+    @role(RolesEnum::LIBRARIAN)
+    <p class="font-normal text-gray-700 dark:text-gray-300">You are a librarian.</p>
+    @endrole
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Permissions</h5>
-    @can(PermissionsEnum::MODIFY_ADMIN)
-    <p class="font-normal text-gray-700 dark:text-gray-300">You can modify admins.</p>
-    @endcan
-    @can(PermissionsEnum::ADD_USERS)
-    <p class="font-normal text-gray-700 dark:text-gray-300">You can add users.</p>
-    @endcan
-    @can(PermissionsEnum::EDIT_USERS)
-    <p class="font-normal text-gray-700 dark:text-gray-300">You can edit users.</p>
-    @endcan
-    @can(PermissionsEnum::DELETE_USERS)
-    <p class="font-normal text-gray-700 dark:text-gray-300">You can delete users.</p>
-    @endcan
-    @can(PermissionsEnum::ADD_BOOKS)
-    <p class="font-normal text-gray-700 dark:text-gray-300">You can add books.</p>
-    @endcan
-    @can(PermissionsEnum::EDIT_BOOKS)
-    <p class="font-normal text-gray-700 dark:text-gray-300">You can edit books.</p>
-    @endcan
-    @can(PermissionsEnum::DELETE_BOOKS)
-    <p class="font-normal text-gray-700 dark:text-gray-300">You can delete books.</p>
-    @endcan
+    <div class="overflow-y-auto max-h-48">
+      @can(PermissionsEnum::MODIFY_ADMIN)
+      <p class="font-normal text-gray-700 dark:text-gray-300">You can modify admins.</p>
+      @endcan
+      @can(PermissionsEnum::ADD_USERS)
+      <p class="font-normal text-gray-700 dark:text-gray-300">You can add users.</p>
+      @endcan
+      @can(PermissionsEnum::EDIT_USERS)
+      <p class="font-normal text-gray-700 dark:text-gray-300">You can edit users.</p>
+      @endcan
+      @can(PermissionsEnum::DELETE_USERS)
+      <p class="font-normal text-gray-700 dark:text-gray-300">You can delete users.</p>
+      @endcan
+      @can(PermissionsEnum::ADD_BOOKS)
+      <p class="font-normal text-gray-700 dark:text-gray-300">You can add books.</p>
+      @endcan
+      @can(PermissionsEnum::EDIT_BOOKS)
+      <p class="font-normal text-gray-700 dark:text-gray-300">You can edit books.</p>
+      @endcan
+      @can(PermissionsEnum::DELETE_BOOKS)
+      <p class="font-normal text-gray-700 dark:text-gray-300">You can delete books.</p>
+      @endcan
+      @can(PermissionsEnum::CREATE_REPORTS)
+      <p class="font-normal text-gray-700 dark:text-gray-300">You can create reports.</p>
+      @endcan
+      @can(PermissionsEnum::BOOK_INVENTORY)
+      <p class="font-normal text-gray-700 dark:text-gray-300">You can view create inventory.</p>
+      @endcan
+      @can(PermissionsEnum::IMPORT_USERS)
+      <p class="font-normal text-gray-700 dark:text-gray-300">You can import users.</p>
+      @endcan
+      @can(PermissionsEnum::IMPORT_BOOKS)
+      <p class="font-normal text-gray-700 dark:text-gray-300">You can import books.</p>
+      @endcan
+      @can(PermissionsEnum::VIEW_USER_REPORTS)
+      <p class="font-normal text-gray-700 dark:text-gray-300">You can view user reports.</p>
+      @endcan
+      @can(PermissionsEnum::VIEW_SUMMARY_REPORTS)
+      <p class="font-normal text-gray-700 dark:text-gray-300">You can view summary reports.</p>
+      @endcan
+      @can(PermissionsEnum::VIEW_INVENTORY_REPORTS)
+      <p class="font-normal text-gray-700 dark:text-gray-300">You can view inventory reports.</p>
+      @endcan
+      @can(PermissionsEnum::VIEW_TRANSACTION_REPORTS)
+      <p class="font-normal text-gray-700 dark:text-gray-300">You can view transaction reports.</p>
+      @endcan
+      @can(PermissionsEnum::VIEW_BOOK_CIRCULATION_REPORTS)
+      <p class="font-normal text-gray-700 dark:text-gray-300">You can view book circulation reports.</p>
+      @endcan
+    </div>
   </a>
 </div>
 @endsection
