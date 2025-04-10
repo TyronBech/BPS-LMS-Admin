@@ -12,7 +12,7 @@ $increment = 0;
           <th scope="col" class="p-2 text-center min-w-36">Name</th>
           <th scope="col" class="p-2 text-center min-w-30">Suffix</th>
           <th scope="col" class="p-2 text-center  min-w-32">Employee ID</th>
-          <th scope="col" class="p-2 text-center min-w-24">Group</th>
+          <th scope="col" class="p-2 text-center min-w-24">Position</th>
           <th scope="col" class="p-2 text-center min-w-60">Email</th>
           <th scope="col" class="p-2 text-center">Actions</th>
         </tr>
@@ -28,7 +28,7 @@ $increment = 0;
           <td class="py-4">{{ $item->first_name }} {{ $item->middle_name ? $item->middle_name : '' }} {{ $item->last_name }}</td>
           <td class="py-4">{{ $item->suffix ? $item->suffix : '-' }}</td>
           <td class="py-4 px-5">{{ $item->employees->employee_id }}</td>
-          <td class="py-4 px-5">{{ $item->groups->group_name }}</td>
+          <td class="py-4 px-5">{{ $item->privileges->user_type ?? '-' }}</td>
           <td class="py-4 px-5">{{ $item->email }}</td>
           <td class="py-4 flex justify-center">
             @can(PermissionsEnum::EDIT_USERS, 'admin')

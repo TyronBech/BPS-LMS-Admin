@@ -18,11 +18,11 @@ class AdminMaintenanceController extends Controller
     public function index()
     {
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
-        $admins = User::join('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
+        $admins = User::join('model_has_roles', 'usr_users.id', '=', 'model_has_roles.model_id')
                     ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
                     ->where('model_has_roles.model_type', 'App\Models\User')
                     ->where('roles.guard_name', 'admin')
-                    ->select('users.*', 'roles.name as role')
+                    ->select('usr_users.*', 'roles.name as role')
                     ->get();
         return view('maintenance.admins.admins', compact('admins'));
     }

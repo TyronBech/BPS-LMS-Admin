@@ -24,6 +24,7 @@ class RolesController extends Controller
                                     ->where('guard_name', 'admin')
                                     ->where('name', '!=', 'Modify Admins')
                                     ->get();
+        //dd($roles_with_permissions, $permissions_with_roles);
         $admins = User::all();
         return view('roles_permissions.roles', compact('roles_with_permissions', 'permissions_with_roles', 'admins'));
     }

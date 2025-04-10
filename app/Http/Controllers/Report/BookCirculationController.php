@@ -14,7 +14,7 @@ class BookCirculationController extends Controller
     {
         $barcode        = "";
         $title          = "";
-        $availability   = $this->extract_enums('books', 'availability_status');
+        $availability   = $this->extract_enums('bk_books', 'availability_status');
         $data           = Book::select('accession', 'call_number', 'title', 'barcode', 'availability_status', 'condition_status')->get();
         return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability'));
     }

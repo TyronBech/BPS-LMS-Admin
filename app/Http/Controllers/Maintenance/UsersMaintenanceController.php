@@ -18,7 +18,7 @@ class UsersMaintenanceController extends Controller
 {
     public function index()
     {
-        $users = User::with('students', 'employees', 'groups')
+        $users = User::with('students', 'employees', 'privileges')
                     ->orderBy('id', 'asc')
                     ->get();
         //dd($users->toArray());
