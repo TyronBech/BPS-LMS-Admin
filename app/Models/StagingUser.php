@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class StagingUser extends Model
 {
+    protected $table = 'usr_staging_users';
     protected $fillable = [
         'rfid',
         'first_name',
@@ -15,11 +16,10 @@ class StagingUser extends Model
         'email',
         'password',
         'profile_image',
-        'penalty_total',
         'user_type',
-        'group_name',
-        'lrn',
-        'grade_level',
+        'employee_role',
+        'id_number',
+        'level',
         'section',
         'employee_id',
         'visitor_id',

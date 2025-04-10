@@ -1,5 +1,6 @@
 @extends('layouts.admin-app')
 @section('content')
+@use('App\Enum\RolesEnum')
 <h1 class="font-semibold text-center text-4xl p-5">Maintenance</h1>
 <div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow  dark:bg-gray-900 dark:border-gray-600">
   <div class="flex justify-between">
@@ -18,8 +19,14 @@
     <input type="hidden" name="role_id" value="{{ $role->id }}">
     <h6 class="mb-1 text-xl font-semibold tracking-tight text-gray-800 dark:text-white">Role Information</h6>
     <div class="mb-5">
-      <label for="role"class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Role Name:</label>
+      <label for="role" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Role Name:</label>
+      @if($role->name == RolesEnum::SUPER_ADMIN->value)
+      <div class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+        <p>{{ $role->name }}</p>
+      </div>
+      @else
       <input type="text" id="role" name="role" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Admin" value="{{ $role->name }}">
+      @endif
       @error('role')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -34,7 +41,7 @@
         @else
         <input id="{{ $permission->id }}" name="permissions[]" type="checkbox" value="{{ $permission->name }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
         @endif
-        <label for="{{ $permission->id }}"class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">{{ $permission->name }}</label>
+        <label for="{{ $permission->id }}" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">{{ $permission->name }}</label>
       </div>
       @error('permissions.' . $loop->index)
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
