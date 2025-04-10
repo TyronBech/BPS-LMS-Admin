@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class StudentDetail extends Model
 {
     use HasFactory;
+    protected $table = 'usr_student_details';
     protected $fillable = [
         'user_id',
         'lrn',

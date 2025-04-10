@@ -11,6 +11,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Book extends Model
 {
     use HasFactory, SoftDeletes;
+    protected $table = 'bk_books';
     protected $primaryKey = 'id';
     protected $fillable = [
         'accession',

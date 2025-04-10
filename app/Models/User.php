@@ -16,7 +16,7 @@ class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles, SoftDeletes;
-
+    protected $table = 'usr_users';
     protected $guarded = 'admin';
     /**
      * The attributes that are mass assignable.
@@ -69,9 +69,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(VisitorDetail::class, 'user_id', 'id');
     }
-    public function groups() : BelongsTo
+    public function privileges() : BelongsTo
     {
-        return $this->belongsTo(UserGroup::class, 'group_id', 'id');
+        return $this->belongsTo(UserGroup::class, 'privilege_id', 'id');
     }
     public function logs() : HasMany
     {

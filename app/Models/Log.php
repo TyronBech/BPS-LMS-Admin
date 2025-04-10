@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class Log extends Model
 {
     use HasFactory;
-    protected $table = 'user_logs';
+    protected $table = 'log_user_logs';
     protected $fillable = [
         'user_id',
         'computer_use',

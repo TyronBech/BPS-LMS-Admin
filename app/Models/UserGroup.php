@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class UserGroup extends Model
 {
+    protected $table = 'privileges';
     protected $fillable = [
         'group_name',
         'category',
@@ -18,6 +19,6 @@ class UserGroup extends Model
     ];
     public function users() : HasMany
     {
-        return $this->hasMany(User::class, 'group_id', 'id');
+        return $this->hasMany(User::class, 'privilege_id', 'id');
     }
 }
