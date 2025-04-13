@@ -26,10 +26,10 @@
             <a href="{{ route('inventory.inventory') }}" class="block py-2 px-3 text-white bpsBlue rounded hover:underline lg:bg-transparent lg:text-white lg:p-0" aria-current="page">Inventory</a>
           </li>
           @endcan
-          @if(auth()->user()->can(PermissionsEnum::VIEW_USER_REPORTS) 
-          || auth()->user()->can(PermissionsEnum::VIEW_SUMMARY_REPORTS) 
-          || auth()->user()->can(PermissionsEnum::VIEW_INVENTORY_REPORTS) 
-          || auth()->user()->can(PermissionsEnum::VIEW_TRANSACTION_REPORTS) 
+          @if(auth()->user()->can(PermissionsEnum::VIEW_USER_REPORTS)
+          || auth()->user()->can(PermissionsEnum::VIEW_SUMMARY_REPORTS)
+          || auth()->user()->can(PermissionsEnum::VIEW_INVENTORY_REPORTS)
+          || auth()->user()->can(PermissionsEnum::VIEW_TRANSACTION_REPORTS)
           || auth()->user()->can(PermissionsEnum::VIEW_BOOK_CIRCULATION_REPORTS))
           <li>
             <button id="dropdownNavbarLink" data-dropdown-toggle="navbarReport" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:underline lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-100 lg:p-0 lg:w-auto">Reports <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
@@ -129,8 +129,8 @@
             <!-- Dropdown menu -->
             <div id="navbarMaintenance" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
               <ul class="py-2 text-sm text-gray-900" aria-labelledby="dropdownLargeButton">
-                @if(auth()->user()->can(PermissionsEnum::ADD_USERS) 
-                || auth()->user()->can(PermissionsEnum::EDIT_USERS) 
+                @if(auth()->user()->can(PermissionsEnum::ADD_USERS)
+                || auth()->user()->can(PermissionsEnum::EDIT_USERS)
                 || auth()->user()->can(PermissionsEnum::DELETE_USERS))
                 <li>
                   <a href="{{ route('maintenance.users') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
@@ -141,8 +141,8 @@
                   </a>
                 </li>
                 @endif
-                @if(auth()->user()->can(PermissionsEnum::ADD_BOOKS) 
-                || auth()->user()->can(PermissionsEnum::EDIT_BOOKS) 
+                @if(auth()->user()->can(PermissionsEnum::ADD_BOOKS)
+                || auth()->user()->can(PermissionsEnum::EDIT_BOOKS)
                 || auth()->user()->can(PermissionsEnum::DELETE_BOOKS))
                 <li>
                   <a href="{{ route('maintenance.books') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
@@ -153,6 +153,14 @@
                   </a>
                 </li>
                 @endif
+                <li>
+                  <a href="{{ route('maintenance.categories') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7.99999 10.8571 12 13.1428m-4.00001-2.2857L4 13.1428m3.99999-2.2857.00004-4.57139M12 13.1428v4.5715m0-4.5715-4.00001 2.2857M12 13.1428l4-2.2857m-4 2.2857V8.57143m0 4.57137 4 2.2858m-4 2.2857L7.99999 20M12 17.7143 16 20m-8.00001 0L4 17.7143v-4.5715M7.99999 20v-4.5715M4 13.1428l3.99999 2.2857M16 6.28571 12 4 8.00003 6.28571m7.99997 0v4.57139m0-4.57139-4 2.28572m4 2.28567 4 2.2858M8.00003 6.28571 12 8.57143m8 4.57147v4.5714L16 20m4-6.8571-4 2.2857M16 20v-4.5714" />
+                    </svg>
+                    <span class="ms-2">Book Categories</span>
+                  </a>
+                </li>
                 <li aria-labelledby="dropdownNavbarLink">
                   @if(auth()->user()->hasRole(App\Enum\RolesEnum::SUPER_ADMIN))
                   <button id="doubleDropdownButton" data-dropdown-toggle="doubleDropdown" data-dropdown-placement="right-start" type="button" class="flex items-center w-full px-4 pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">

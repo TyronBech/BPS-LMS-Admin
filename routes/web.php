@@ -15,6 +15,7 @@ use App\Http\Controllers\Import\BookImportController;
 use App\Http\Controllers\Maintenance\AdminMaintenanceController;
 use App\Http\Controllers\Maintenance\BookMaintenanceController;
 use App\Http\Controllers\Maintenance\UsersMaintenanceController;
+use App\Http\Controllers\Maintenance\CategoryMaintenanceController;
 use App\Http\Controllers\Roles_Permissions\RolesController;
 use App\Http\Controllers\Inventory\InventoryController;
 use App\Http\Controllers\Report\CategoriesController;
@@ -92,6 +93,16 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::put('edit-book',         [BookMaintenanceController::class, 'update'])   ->name('maintenance.update-book');
             Route::post('show-books',       [BookMaintenanceController::class, 'show'])     ->name('maintenance.show-books');
             Route::delete('delete-book',    [BookMaintenanceController::class, 'destroy'])  ->name('maintenance.delete-book');
+            Route::prefix('categories')->group(function () {
+                Route::get('categories',    [CategoryMaintenanceController::class, 'index'])    ->name('maintenance.categories');
+                Route::post('add-category', [CategoryMaintenanceController::class, 'store'])    ->name('maintenance.store-category');
+                // Route::get('add-category',  [CategoryMaintenanceController::class, 'create'])->name('maintenance.create-category');
+                // Route::get('edit-category', [CategoryMaintenanceController::class, 'edit']) ->name('maintenance.edit-category');
+                // Route::put('edit-category', [CategoryMaintenanceController::class, 'update'])->name('maintenance.update-category');
+                // Route::delete('delete-category', [CategoryMaintenanceController::class, 'destroy'])->name('maintenance.delete-category');
+                // Route::post('search-category', [CategoryMaintenanceController::class, 'search'])->name('maintenance.search-category');
+                // Route::post('search',       [CategoryMaintenanceController::class, 'search'])->name('maintenance.search');
+            });
         });
         Route::prefix('users')->middleware(UserAuthentication::class)->group(function () {
             Route::get('users',             [UsersMaintenanceController::class, 'index'])           ->name('maintenance.users');
