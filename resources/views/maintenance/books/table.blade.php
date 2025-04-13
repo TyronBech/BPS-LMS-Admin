@@ -8,7 +8,7 @@ $bookID = null;
       <thead class="text-xs py-2 text-gray-700 uppercase bg-gray-300 text-center dark:bg-gray-500 dark:text-white">
         <tr>
           <th scope="col" class="p-2 text-center">Accession</th>
-          <th scope="col" class="p-2 text-center">Call Number</th>
+          <!-- <th scope="col" class="p-2 text-center">Call Number</th> -->
           <th scope="col" class="p-2 text-center">Title</th>
           <!-- <th scope="col" class="p-2 text-center">Authors</th>
           <th scope="col" class="p-2 text-center">Category</th>
@@ -16,6 +16,7 @@ $bookID = null;
           <th scope="col" class="p-2 text-center">Publication</th>
           <th scope="col" class="p-2 text-center">Publisher</th>
           <th scope="col" class="p-2 text-center">Copyright</th> -->
+          <th scope="col" class="p-2 text-center">Barcode</th>
           <th scope="col" class="p-2 text-center">Remarks</th>
           <th scope="col" class="p-2 text-center">Actions</th>
         </tr>
@@ -23,16 +24,20 @@ $bookID = null;
       <tbody>
         @forelse($books as $item)
         <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
-          <td class="min-w-40 h-14">{{ $item->accession }}</td>
-          <td class="min-w-36">{{ $item->call_number }}</td>
-          <td class="min-w-72">{{ $item->title }}</td>
-          <!-- <td class="min-w-80">{{ $item->author }}</td>
-          <td class="min-w-40">{{ $item->category->name }}</td>
-          <td class="min-w-36">{{ $item->edition }}</td>
-          <td class="min-w-72">{{ $item->place_of_publication }}</td>
-          <td class="min-w-80">{{ $item->publisher }}</td>
-          <td class="min-w-40">{{ $item->copyrights }}</td> -->
-          <td class="min-w-36">{{ $item->remarks }}</td>
+          <td class="max-w-40 h-14">{{ $item->accession }}</td>
+          <!-- <td class="max-w-36 overflow-hidden text-ellipsis">{{ $item->call_number }}</td> -->
+          <td class="max-w-72 overflow-hidden text-ellipsis">{{ $item->title }}</td>
+          <!-- <td class="max-w-80">{{ $item->author }}</td>
+          <td class="max-w-40">{{ $item->category->name }}</td>
+          <td class="max-w-36">{{ $item->edition }}</td>
+          <td class="max-w-72">{{ $item->place_of_publication }}</td>
+          <td class="max-w-80">{{ $item->publisher }}</td>
+          <td class="max-w-40">{{ $item->copyrights }}</td> -->
+          <td class="max-w-60 text-start bg-white text-black">
+            {!! DNS1D::getBarcodeHTML("$item->accession", 'C128A', 2.29, 50) !!}
+            {{ $item->accession }}
+          </td>
+          <td class="max-w-36">{{ $item->remarks }}</td>
           <td class="pb-1 flex justify-center">
             <button type="button" class="focus:outline-none text-white bg-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2 dark:focus:ring-yellow-900">View</button>
             @can(PermissionsEnum::EDIT_BOOKS, 'admin')

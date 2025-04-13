@@ -21,9 +21,9 @@ class BookMaintenanceController extends Controller
     public function create()
     {
         $categories     = Category::all()->pluck('name', 'id');
-        $condition      = $this->extract_enums('books', 'condition_status');
-        $availability   = $this->extract_enums('books', 'availability_status');     
-        $remarks        = $this->extract_enums('books', 'remarks'); 
+        $condition      = $this->extract_enums('bk_books', 'condition_status');
+        $availability   = $this->extract_enums('bk_books', 'availability_status');     
+        $remarks        = $this->extract_enums('bk_books', 'remarks'); 
         return view('maintenance.books.create', compact('categories', 'condition', 'availability', 'remarks'));
     }
     public function store(Request $request)
@@ -31,7 +31,7 @@ class BookMaintenanceController extends Controller
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string|max:50',
             'call_number'       => 'required|string|max:50',
-            'barcode'           => 'sometimes',
+            // 'barcode'           => 'sometimes',
             'title'             => 'required|string|max:255',
             'authors'           => 'sometimes',
             'edition'           => 'sometimes',
@@ -42,8 +42,8 @@ class BookMaintenanceController extends Controller
             'digital_copy_url'  => 'sometimes',
             'remarks'           => 'required',
             'category'          => 'required|in:'.implode(',', Category::all()->pluck('id')->toArray()),
-            'condition'         => 'required|in:'.implode(',', $this->extract_enums('books', 'condition_status')),
-            'availability'      => 'required|in:'.implode(',', $this->extract_enums('books', 'availability_status')),
+            'condition'         => 'required|in:'.implode(',', $this->extract_enums('bk_books', 'condition_status')),
+            'availability'      => 'required|in:'.implode(',', $this->extract_enums('bk_books', 'availability_status')),
         ]);
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -53,7 +53,7 @@ class BookMaintenanceController extends Controller
             Book::create([
                 'accession'             => $request->input('accession'),
                 'call_number'           => $request->input('call_number'),
-                'barcode'               => $request->input('barcode'),
+                // 'barcode'               => $request->input('barcode'),
                 'title'                 => $request->input('title'),
                 'author'                => $request->input('authors'),
                 'edition'               => $request->input('edition'),
@@ -83,9 +83,9 @@ class BookMaintenanceController extends Controller
             $accession = array_keys($request->all())[0]; 
             $book = Book::where('accession', $accession)->first();
             $categories     = Category::all()->pluck('name', 'id');
-            $condition      = $this->extract_enums('books', 'condition_status');
-            $availability   = $this->extract_enums('books', 'availability_status');     
-            $remarks        = $this->extract_enums('books', 'remarks');
+            $condition      = $this->extract_enums('bk_books', 'condition_status');
+            $availability   = $this->extract_enums('bk_books', 'availability_status');     
+            $remarks        = $this->extract_enums('bk_books', 'remarks');
         } catch(\Exception $e){
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
@@ -116,7 +116,7 @@ class BookMaintenanceController extends Controller
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string|max:50',
             'call_number'       => 'required|string|max:50',
-            'barcode'           => 'sometimes',
+            // 'barcode'           => 'sometimes',
             'title'             => 'required|string|max:255',
             'authors'           => 'sometimes',
             'edition'           => 'sometimes',
@@ -127,8 +127,8 @@ class BookMaintenanceController extends Controller
             'digital_copy_url'  => 'sometimes',
             'remarks'           => 'required',
             'category'          => 'required|in:'.implode(',', Category::all()->pluck('id')->toArray()),
-            'condition'         => 'required|in:'.implode(',', $this->extract_enums('books', 'condition_status')),
-            'availability'      => 'required|in:'.implode(',', $this->extract_enums('books', 'availability_status')),
+            'condition'         => 'required|in:'.implode(',', $this->extract_enums('bk_books', 'condition_status')),
+            'availability'      => 'required|in:'.implode(',', $this->extract_enums('bk_books', 'availability_status')),
         ]);
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -139,6 +139,7 @@ class BookMaintenanceController extends Controller
             $book->update([
                 'accession'             => $request->input('accession'),
                 'call_number'           => $request->input('call_number'),
+                // 'barcode'               => $request->input('barcode'),
                 'title'                 => $request->input('title'),
                 'author'                => $request->input('authors'),
                 'edition'               => $request->input('edition'),

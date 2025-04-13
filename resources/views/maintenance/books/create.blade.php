@@ -33,7 +33,7 @@
       </div>
       @enderror
     </div>
-    <div class="mb-5">
+    <!-- <div class="mb-5">
       <label for="barcode" class="block mb-2 text-sm font-medium">Barcode:</label>
       <input type="text" id="barcode" name="barcode" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="1234 5678">
       @error('barcode')
@@ -41,7 +41,7 @@
         <span class="font-medium">{{ $message }}</span>
       </div>
       @enderror
-    </div>
+    </div> -->
     <div class="mb-5">
       <label for="title" class="block mb-2 text-sm font-medium">Title:</label>
       <input type="text" id="title" name="title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Title...">
