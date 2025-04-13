@@ -8,6 +8,7 @@ use App\Models\Book;
 use App\Models\Category;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Milon\Barcode\DNS1D;
 
 class BookMaintenanceController extends Controller
 {
@@ -31,7 +32,6 @@ class BookMaintenanceController extends Controller
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string|max:50',
             'call_number'       => 'required|string|max:50',
-            // 'barcode'           => 'sometimes',
             'title'             => 'required|string|max:255',
             'authors'           => 'sometimes',
             'edition'           => 'sometimes',
@@ -50,10 +50,11 @@ class BookMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try{
+            $barcode = new DNS1D();
             Book::create([
                 'accession'             => $request->input('accession'),
                 'call_number'           => $request->input('call_number'),
-                // 'barcode'               => $request->input('barcode'),
+                'barcode'               => $barcode->getBarcodeJPG($request->input('accession'), 'C39+', 2, 70, array(0, 0, 0, 0), true),
                 'title'                 => $request->input('title'),
                 'author'                => $request->input('authors'),
                 'edition'               => $request->input('edition'),
@@ -116,7 +117,6 @@ class BookMaintenanceController extends Controller
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string|max:50',
             'call_number'       => 'required|string|max:50',
-            // 'barcode'           => 'sometimes',
             'title'             => 'required|string|max:255',
             'authors'           => 'sometimes',
             'edition'           => 'sometimes',
@@ -135,11 +135,12 @@ class BookMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try{
+            $barcode = new DNS1D();
             $book = Book::findOrFail($request->input('id'));
             $book->update([
                 'accession'             => $request->input('accession'),
                 'call_number'           => $request->input('call_number'),
-                // 'barcode'               => $request->input('barcode'),
+                'barcode'               => $barcode->getBarcodeJPG($request->input('accession'), 'C39+', 2, 70, array(0, 0, 0, 0), true),
                 'title'                 => $request->input('title'),
                 'author'                => $request->input('authors'),
                 'edition'               => $request->input('edition'),
