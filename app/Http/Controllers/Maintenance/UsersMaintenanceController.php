@@ -60,7 +60,7 @@ class UsersMaintenanceController extends Controller
     public function store_student(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|max:10|min:10',
+            'rfid'          => 'required|string|max:10',
             'first-name'    => 'required|string|max:50',
             'middle-name'   => 'sometimes|max:50',
             'last-name'     => 'required|string|max:50',
@@ -72,9 +72,9 @@ class UsersMaintenanceController extends Controller
             'password'      => 'required',
         ]);
         if($validator->fails()){
-            return redirect()->back()->with('toast-warning', 'Please fill up the required fields');
+            return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
-        if(!preg_match('/^[0-9]+$/', $request->input('rfid') && strlen($request->input('rfid')) != 10)){
+        if(!preg_match('/^[0-9]+$/', $request->input('rfid') || strlen($request->input('rfid')) != 10)){
             return redirect()->back()->with('toast-warning', 'RFID number is invalid');
         } else if($this->has_invalid_characters($request->input('first-name'))){
             return redirect()->back()->with('toast-warning', 'User\'s name contains invalid characters');
@@ -124,7 +124,7 @@ class UsersMaintenanceController extends Controller
     public function store_employee(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|max:10|min:10',
+            'rfid'          => 'required|string|max:10',
             'first-name'    => 'required|string|max:50',
             'middle-name'   => 'sometimes|max:50',
             'last-name'     => 'required|string|max:50',
@@ -135,9 +135,9 @@ class UsersMaintenanceController extends Controller
             'password'      => 'required',
         ]);
         if($validator->fails()){
-            return redirect()->back()->with('toast-warning', 'Please fill up the required fields');
+            return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
-        if(!preg_match('/^[0-9]+$/', $request->input('rfid')) && strlen($request->input('rfid')) != 10){
+        if(!preg_match('/^[0-9]+$/', $request->input('rfid')) || strlen($request->input('rfid')) != 10){
             return redirect()->back()->with('toast-warning', 'RFID number is invalid');
         } else if($this->has_invalid_characters($request->input('first-name'))){
             return redirect()->back()->with('toast-warning', 'User\'s name contains invalid characters');
@@ -192,17 +192,17 @@ class UsersMaintenanceController extends Controller
         $user = null;
         try{
             $id = array_keys($request->all())[0];
-            $user = User::with('employees', 'groups')->where('id', $id)->first();
-            $groups = UserGroup::all()->pluck('group_name');
+            $user = User::with('employees', 'privileges')->where('id', $id)->first();
+            $privileges = UserGroup::all()->pluck('group_name');
         } catch(\Illuminate\Database\QueryException $e){
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
-        return view('maintenance.users.edit-employee', compact('user', 'groups'));
+        return view('maintenance.users.edit-employee', compact('user', 'privileges'));
     }
     public function update_student(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|max:10|min:10',
+            'rfid'          => 'required|string|max:10',
             'first-name'    => 'required|string|max:50',
             'middle-name'   => 'sometimes|max:50',
             'last-name'     => 'required|string|max:50',
@@ -210,9 +210,9 @@ class UsersMaintenanceController extends Controller
             'email'         => 'required|email',
         ]);
         if($validator->fails()){
-            return redirect()->back()->with('toast-warning', 'Please fill up the required fields');
+            return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
-        if(!preg_match('/^[0-9]+$/', $request->input('rfid') && strlen($request->input('rfid')) != 10)){
+        if(!preg_match('/^[0-9]+$/', $request->input('rfid') || strlen($request->input('rfid')) != 10)){
             return redirect()->back()->with('toast-warning', 'RFID number is invalid');
         } else if($this->has_invalid_characters($request->input('first-name'))){
             return redirect()->back()->with('toast-warning', 'User\'s name contains invalid characters');
@@ -251,7 +251,7 @@ class UsersMaintenanceController extends Controller
     public function update_employee(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|max:10|min:10',
+            'rfid'          => 'required|string|max:10',
             'first-name'    => 'required|string|max:50',
             'middle-name'   => 'sometimes|max:50',
             'last-name'     => 'required|string|max:50',
@@ -260,9 +260,9 @@ class UsersMaintenanceController extends Controller
             'employee_id'   => 'required|string|max:50',
         ]);
         if($validator->fails()){
-            return redirect()->back()->with('toast-warning', 'Please fill up the required fields');
+            return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
-        if(!preg_match('/^[0-9]+$/', $request->input('rfid') && strlen($request->input('rfid')) != 10)){
+        if(!preg_match('/^[0-9]+$/', $request->input('rfid') || strlen($request->input('rfid')) != 10)){
             return redirect()->back()->with('toast-warning', 'RFID number is invalid');
         } else if($this->has_invalid_characters($request->input('first-name'))){
             return redirect()->back()->with('toast-warning', 'User\'s name contains invalid characters');
@@ -272,6 +272,12 @@ class UsersMaintenanceController extends Controller
             return redirect()->back()->with('toast-warning', 'User\'s last name contains invalid characters');
         } elseif(!in_array($request->input('suffix'), ['Jr.', 'Sr.', 'II', 'III', 'IV', ''])){
             return redirect()->back()->with('toast-warning', 'User\'s suffix is invalid');
+        }
+        if($request->hasFile('profile-image')){
+            $image = $request->file('profile-image');
+            $imageContent = file_get_contents($image->getRealPath());
+            $base64Image = base64_encode($imageContent);
+            $request->merge(['profile-image' => $base64Image]);
         }
         DB::beginTransaction();
         try{

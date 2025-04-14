@@ -12,11 +12,10 @@
     </a>
   </div>
   <hr class="h-px my-3 bg-gray-200 border-0">
-  <form action="{{ route('maintenance.update-employee') }}" class="max-w-2xl mx-auto" method="POST">
+  <form action="{{ route('maintenance.update-employee') }}" class="max-w-2xl mx-auto" method="POST" enctype="multipart/form-data">
     @csrf
     @method('PUT')
     <!-- Hidden input field for user group -->
-    <input type="hidden" id="group" name="group" value="{{ $user->groups->group_name }}">
     <input type="hidden" id="id" name="id" value="{{ $user->id }}">
     <h6 class="mb-1 text-xl font-semibold tracking-tight">User Information</h6>
     <hr class="h-px my-1 bg-gray-200 border-0">
