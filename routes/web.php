@@ -58,6 +58,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         return view('dashboard.dashboard');
     })->name('dashboard');
     Route::get('profile',   [ProfileController::class, 'index']) ->name('profile');
+    Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::prefix('report')->middleware(ReportAuthentication::class)->group(function () {
         Route::get('user-report',       [UserLogsController::class, 'index'])           ->name('report.user');
         Route::post('user-report',      [UserLogsController::class, 'search'])          ->name('report.user-search');
