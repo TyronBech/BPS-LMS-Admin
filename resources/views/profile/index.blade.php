@@ -5,8 +5,16 @@
   <div class="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-2 sm:grid-cols-1">
     <div>
       <img class="rounded-full w-72 h-72 m-auto my-8" src="data:image/jpeg;base64, {{ $user->profile_image }}" alt="Profile Image">
-      <h2 class="text-xl font-bold mb-2 text-center">{{ $user->first_name }} {{ $user->last_name }}</h2>
-      <h2 class="text-md font-semibold mb-2 text-center">{{ $user->employees->employee_id }}</h2>
+      <div class="flex flex-col justify-center m-auto w-7/12 mb-2">
+        <span><h2 class="text-2xl font-bold text-center">{{ $user->first_name }} {{ $user->last_name }}</h2></span>
+        <hr class="h-px bg-gray-200 border-0 dark:bg-gray-700">
+        <span><h2 class="text-xs font-semibold text-center">Name</h2></span>
+      </div>
+      <div class="flex flex-col justify-center m-auto w-5/12">
+        <h2 class="text-lg font-semibold text-center">{{ $user->employees->employee_id }}</h2>
+        <hr class="h-px bg-gray-200 border-0 dark:bg-gray-700">
+        <span><h2 class="text-xs font-semibold text-center">Employee ID</h2></span>
+      </div>
     </div>
     <div class="flex flex-col justify-center m-auto py-5 w-11/12">
       <h6 class="mb-5 text-lg font-bold tracking-tight">Personal Information</h6>
