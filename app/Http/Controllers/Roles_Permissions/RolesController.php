@@ -70,17 +70,21 @@ class RolesController extends Controller
         return view('roles_permissions.edit', compact('role', 'permissions'));
     }
     public function update(Request $request){
-        $request->validate([
-            'role' => 'required|string|max:50',
-        ]);
+        if(!$request->input('role_id') == 1){
+            $request->validate([
+                'role' => 'required|string|max:50',
+            ]);
+        }
         if($request->input('permissions') == null){
             return redirect()->back()->with('toast-warning', 'Please select at least one permission');
         }
         DB::beginTransaction();
         try{
             $role = Role::findById($request->input('role_id'));
-            $role->name = $request->input('role');
-            $role->save();
+            if(!$request->input('role_id') == 1){
+                $role->name = $request->input('role');
+                $role->save();
+            }
             $role->syncPermissions($request->input('permissions'));
         } catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();
