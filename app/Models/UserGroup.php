@@ -9,13 +9,11 @@ class UserGroup extends Model
 {
     protected $table = 'privileges';
     protected $fillable = [
-        'group_name',
+        'user_type',
         'category',
         'max_book_allowed',
         'borrow_duration_days',
         'renewal_limit',
-        'is_unlimited',
-        'can_have_role',
     ];
     public function users() : HasMany
     {
