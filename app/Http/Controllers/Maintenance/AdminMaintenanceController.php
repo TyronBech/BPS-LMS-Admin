@@ -6,12 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Enum\RolesEnum;
 use App\Mail\RoleEmailMessage;
 use App\Models\User;
-use Spatie\Permission\Models\Permission;
 use Illuminate\Support\Facades\Mail;
 
 
@@ -147,15 +145,7 @@ class AdminMaintenanceController extends Controller
         DB::beginTransaction();
         try{
             $admin = User::findOrFail($request->input('id'));
-            if($admin->hasRole(RolesEnum::ADMIN)){
-                $admin->removeRole(RolesEnum::ADMIN);
-            } else if($admin->hasRole(RolesEnum::LIBRARIAN)){
-                $admin->removeRole(RolesEnum::LIBRARIAN);
-            } else if($admin->hasRole(RolesEnum::IMMERSION)){
-                $admin->removeRole(RolesEnum::IMMERSION);
-            } else if($admin->hasRole(RolesEnum::ENCODER)){
-                $admin->removeRole(RolesEnum::ENCODER);
-            }
+            $admin->syncRoles([]);
         } catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();
             return redirect()->back()->with('toast-error', 'Something went wrong!');
