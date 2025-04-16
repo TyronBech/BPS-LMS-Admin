@@ -92,6 +92,12 @@ class UsersMaintenanceController extends Controller
         } else if($request->input('lrn') == null || !preg_match('/^[0-9]+$/', $request->input('lrn'))){
             return redirect()->back()->with('toast-warning', 'User\'s LRN is invalid');
         }
+        if($request->hasFile('profile-image')){
+            $image = $request->file('profile-image');
+            $imageContent = file_get_contents($image->getRealPath());
+            $base64Image = base64_encode($imageContent);
+            $request->merge(['profile-image' => $base64Image]);
+        }
         DB::beginTransaction();
         try{
             StagingUser::create([
@@ -149,6 +155,12 @@ class UsersMaintenanceController extends Controller
         } else if(!in_array($request->input('suffix'), ['Jr.', 'Sr.', 'II', 'III', 'IV', ''])){
             return redirect()->back()->with('toast-warning', 'User\'s suffix is invalid');
         }
+        if($request->hasFile('profile-image')){
+            $image = $request->file('profile-image');
+            $imageContent = file_get_contents($image->getRealPath());
+            $base64Image = base64_encode($imageContent);
+            $request->merge(['profile-image' => $base64Image]);
+        }
         DB::beginTransaction();
         try{
             StagingUser::create([
@@ -159,7 +171,7 @@ class UsersMaintenanceController extends Controller
                 'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
                 'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
                 'employee_id'   => $request->input('employee_id'),
-                'user_type'    => $request->input('group'),
+                'user_type'     => $request->input('group'),
                 'email'         => $request->input('email'),
                 'password'      => Hash::make($request->input('password')),
                 'penalty_total' => 0,
@@ -175,10 +187,6 @@ class UsersMaintenanceController extends Controller
         } catch (\Illuminate\Database\QueryException $e) {
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage());
         }
-        // $user = User::where('rfid', $request->input('rfid'))
-        //             ->where('email', $request->input('email'))
-        //             ->first();
-        // event(new Registered($user));
         return redirect()->back()->with('toast-success', 'User added successfully');
     }
     public function edit_student(Request $request)
@@ -227,6 +235,12 @@ class UsersMaintenanceController extends Controller
             return redirect()->back()->with('toast-warning', 'User\'s last name contains invalid characters');
         } elseif(!in_array($request->input('suffix'), ['Jr.', 'Sr.', 'II', 'III', 'IV', ''])){
             return redirect()->back()->with('toast-warning', 'User\'s suffix is invalid');
+        }
+        if($request->hasFile('profile-image')){
+            $image = $request->file('profile-image');
+            $imageContent = file_get_contents($image->getRealPath());
+            $base64Image = base64_encode($imageContent);
+            $request->merge(['profile-image' => $base64Image]);
         }
         DB::beginTransaction();
         try{

@@ -48,6 +48,12 @@ class BookMaintenanceController extends Controller
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
+        if($request->hasFile('cover_image')){
+            $image = $request->file('cover_image');
+            $imageContent = file_get_contents($image->getRealPath());
+            $base64Image = base64_encode($imageContent);
+            $request->merge(['cover_image' => $base64Image]);
+        }
         DB::beginTransaction();
         try{
             $barcode = new DNS1D();
@@ -112,6 +118,14 @@ class BookMaintenanceController extends Controller
             ->get();
         return view('maintenance.books.books', compact('books'));
     }
+    public function view(Request $request){
+        $accession = $request->input('accession');
+        $book = Book::with('category')->where('accession', $accession)->first();
+        if(!$book){
+            return redirect()->back()->with('toast-error', 'Book not found!');
+        }
+        return view('maintenance.books.view', compact('book'));
+    }
     public function update(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -132,6 +146,12 @@ class BookMaintenanceController extends Controller
         ]);
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
+        }
+        if($request->hasFile('cover_image')){
+            $image = $request->file('cover_image');
+            $imageContent = file_get_contents($image->getRealPath());
+            $base64Image = base64_encode($imageContent);
+            $request->merge(['cover_image' => $base64Image]);
         }
         DB::beginTransaction();
         try{
