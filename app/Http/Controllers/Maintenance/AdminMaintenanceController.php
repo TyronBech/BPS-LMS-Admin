@@ -9,8 +9,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use App\Enum\RolesEnum;
+use App\Mail\RoleEmailMessage;
 use App\Models\User;
 use Spatie\Permission\Models\Permission;
+use Illuminate\Support\Facades\Mail;
 
 
 class AdminMaintenanceController extends Controller
@@ -79,6 +81,7 @@ class AdminMaintenanceController extends Controller
             $role = $request->input('role');
             $admin = User::where('rfid', $request->input('adminID'))->first();
             $admin->assignRole($role);
+            $this->notification($admin, $role);
         } catch(\Illuminate\Database\QueryException $e){
             return redirect()->route('maintenance.create-admin')->with('toast-error', $e->getMessage());
         }
@@ -162,6 +165,9 @@ class AdminMaintenanceController extends Controller
             return redirect()->back()->with('toast-warning', 'Admin not found');
         }
         return redirect()->route('maintenance.admins')->with('toast-success', 'Admin deleted successfully');
+    }
+    public function notification(User $user, $role){
+        Mail::to($user->email)->send(new RoleEmailMessage($user, $role));
     }
     private function has_invalid_characters($name) {
         $pattern = '/^[a-zA-ZáéíóúñÁÉÍÓÚÑ]+$/';

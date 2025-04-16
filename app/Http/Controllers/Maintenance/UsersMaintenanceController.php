@@ -175,10 +175,10 @@ class UsersMaintenanceController extends Controller
         } catch (\Illuminate\Database\QueryException $e) {
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage());
         }
-        $user = User::where('rfid', $request->input('rfid'))
-                    ->where('email', $request->input('email'))
-                    ->first();
-        event(new Registered($user));
+        // $user = User::where('rfid', $request->input('rfid'))
+        //             ->where('email', $request->input('email'))
+        //             ->first();
+        // event(new Registered($user));
         return redirect()->back()->with('toast-success', 'User added successfully');
     }
     public function edit_student(Request $request)
