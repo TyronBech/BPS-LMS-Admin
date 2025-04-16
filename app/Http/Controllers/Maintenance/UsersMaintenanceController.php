@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\UserGroup;
 use Illuminate\Support\Facades\Validator;
 use App\Models\StagingUser;
+use Illuminate\Auth\Events\Registered;
 use App\Models\StudentDetail;
 use App\Models\EmployeeDetail;
 
@@ -30,9 +31,9 @@ class UsersMaintenanceController extends Controller
     }
     public function create_employee()
     {
-        $groups = UserGroup::where(DB::raw('lower(group_name)'), '!=', 'visitor')
-                            ->where(DB::raw('lower(group_name)'), '!=', 'student')
-                            ->pluck('group_name');
+        $groups = UserGroup::where(DB::raw('lower(user_type)'), '!=', 'visitor')
+                            ->where(DB::raw('lower(user_type)'), '!=', 'student')
+                            ->pluck('user_type');
         return view('maintenance.users.create-employee', compact('groups'));
     }
     public function show(Request $request)
@@ -52,7 +53,7 @@ class UsersMaintenanceController extends Controller
                         $q->where('employee_id', 'like', '%'.$search.'%');
                     })
                     ->orWhereHas('groups', function ($q) use ($search) {
-                        $q->where('group_name', 'like', '%'.$search.'%');
+                        $q->where('user_type', 'like', '%'.$search.'%');
                     })
                     ->get();
         return view('maintenance.users.users', compact('users'));
@@ -103,7 +104,7 @@ class UsersMaintenanceController extends Controller
                 'lrn'           => $request->input('lrn')           == '' ? null : $request->input('lrn'),
                 'grade_level'   => $request->input('grade')         == '' ? null : $request->input('grade'),
                 'section'       => $request->input('section')       == '' ? null : $request->input('section'),
-                'group_name'    => "Student",
+                'user_type'    => "Student",
                 'email'         => $request->input('email'),
                 'password'      => Hash::make($request->input('password')),
                 'penalty_total' => 0,
@@ -158,7 +159,7 @@ class UsersMaintenanceController extends Controller
                 'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
                 'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
                 'employee_id'   => $request->input('employee_id'),
-                'group_name'    => $request->input('group'),
+                'user_type'    => $request->input('group'),
                 'email'         => $request->input('email'),
                 'password'      => Hash::make($request->input('password')),
                 'penalty_total' => 0,
@@ -174,6 +175,10 @@ class UsersMaintenanceController extends Controller
         } catch (\Illuminate\Database\QueryException $e) {
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage());
         }
+        $user = User::where('rfid', $request->input('rfid'))
+                    ->where('email', $request->input('email'))
+                    ->first();
+        event(new Registered($user));
         return redirect()->back()->with('toast-success', 'User added successfully');
     }
     public function edit_student(Request $request)
@@ -193,7 +198,7 @@ class UsersMaintenanceController extends Controller
         try{
             $id = array_keys($request->all())[0];
             $user = User::with('employees', 'privileges')->where('id', $id)->first();
-            $privileges = UserGroup::all()->pluck('group_name');
+            $privileges = UserGroup::all()->pluck('user_type');
         } catch(\Illuminate\Database\QueryException $e){
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
