@@ -20,9 +20,9 @@
           <td class="pb-1">{{ $item->date_borrowed }}</td>
           <td class="pb-1">{{ $item->due_date }}</td>
           <td class="pb-1">{{ $item->return_date ? $item->return_date : '-' }}</td>
-          @if($item->transaction_type == 'Borrow')
+          @if($item->transaction_type == 'Borrowed')
             <td class="text-red-600 pb-1 dark:text-red-400">{{ $item->transaction_type }}</td>
-          @elseif($item->transaction_type == 'Return')
+          @elseif($item->transaction_type == 'Returned')
             <td class="text-green-600 pb-1 dark:text-green-400">{{ $item->transaction_type }}</td> 
           @endif
         </tr>
