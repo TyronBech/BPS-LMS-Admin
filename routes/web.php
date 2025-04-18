@@ -2,10 +2,7 @@
 
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Middleware\RedirectIfAuthenticated;
-use Illuminate\Foundation\Auth\EmailVerificationRequest;
 use App\Http\Middleware\AdminAuthentication;
 use App\Http\Controllers\Admin\Auth\AdminLoginController;
 use App\Http\Controllers\Admin\Auth\RegisterAdminController;
@@ -32,37 +29,6 @@ use App\Http\Middleware\ReportAuthentication;
 Route::get('/', function () {
     return view('main-welcome');
 });
-//Route::get('/transactions', [TransactionController::class, 'test'])->name('transactions');
-// Route::get('/emailNotif', function(){
-//     $user = Auth::user();
-//     $role = $user->getRoleNames()->first();
-//     return view('mail.roleMsg', compact('user', 'role'));
-// })->name('emailNotif');
-// Route::get('/email/verify', function () {
-//     return view('auth.verify-email');
-// })->middleware('auth')->name('verification.notice');
-// Route::get('/email/verify/{id}/{hash}', function (EmailVerificationRequest $request) {
-//     $request->fulfill();
-//     return redirect('main-welcome')->with('toast-success', 'Email verified successfully!');
-// })->middleware(['auth', 'signed'])->name('verification.verify');
-// Route::post('/email/verification-notification', function (Request $request) {
-//     $request->user()->sendEmailVerificationNotification();
-//     return back()->with('message', 'Verification link sent!');
-// })->middleware(['auth', 'throttle:6,1'])->name('verification.send');
-
-// Route::get('/dashboard', function () {
-//     return view('dashboard');
-// })->middleware(['auth', 'verified'])->name('dashboard');
-
-// Route::middleware('auth')->group(function () {
-//     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-//     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-//     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-// });
-
-// Route::prefix('roles_and_permissions')->group(function(){
-//     Route::get('permissions', [PermissionsController::class, 'index'])->name('permissions.index');
-// });
 Route::middleware('guest', RedirectIfAuthenticated::class)->group(function () {
     Route::get('/', function () {
         return view('main-welcome');
@@ -76,7 +42,6 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     Route::get('dashboard', function(){
         return view('dashboard.dashboard');
     })->name('dashboard');
-    // Only verified users may access this route...
     Route::get('profile',   [ProfileController::class, 'index']) ->name('profile');
     Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::prefix('report')->middleware(ReportAuthentication::class)->group(function () {
@@ -92,7 +57,6 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::get('inventory-report',  [InventoriesController::class, 'index'])        ->name('report.inventory');
         Route::post('inventory-report', [InventoriesController::class, 'search'])       ->name('report.inventory-search');
     });
-    
     Route::prefix('import')->group(function () {
         Route::get('students',          [StudentImportController::class, 'index'])  ->name('import.import-students');
         Route::post('students-data',    [StudentImportController::class, 'upload']) ->name('import.upload-students');
@@ -121,10 +85,6 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
                 Route::post('add-category',         [CategoryMaintenanceController::class, 'store'])    ->name('maintenance.store-category');
                 Route::put('edit-category',         [CategoryMaintenanceController::class, 'update'])   ->name('maintenance.update-category');
                 Route::delete('delete-category',    [CategoryMaintenanceController::class, 'destroy'])  ->name('maintenance.delete-category');
-                // Route::get('add-category',  [CategoryMaintenanceController::class, 'create'])->name('maintenance.create-category');
-                // Route::get('edit-category', [CategoryMaintenanceController::class, 'edit']) ->name('maintenance.edit-category');
-                // Route::post('search-category', [CategoryMaintenanceController::class, 'search'])->name('maintenance.search-category');
-                // Route::post('search',       [CategoryMaintenanceController::class, 'search'])->name('maintenance.search');
             });
         });
         Route::prefix('users')->middleware(UserAuthentication::class)->group(function () {
@@ -165,5 +125,4 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
 Route::fallback(function () {
     return view('layouts.fallback');
 });
-//Auth::routes(['verify' => true]);
 require __DIR__.'/auth.php';
