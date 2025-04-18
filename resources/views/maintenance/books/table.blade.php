@@ -39,12 +39,12 @@ $bookID = null;
           </td> -->
           <td class="max-w-60 text-start">
           <!-- <img src="data:image/jpeg;base64,{{ DNS1D::getBarcodeJPG($item->accession, 'C39+', 2, 70, array(0, 0, 0, 0), true) }}" alt="barcode" /></td> -->
-          <img src="data:image/jpeg;base64,{{ $item->barcode }}" alt="barcode" /></td>
+          <img src="data:image/jpg;base64,{{ $item->barcode }}" alt="barcode" /></td>
           <td class="max-w-36">{{ $item->remarks }}</td>
           <td class="pb-1 flex justify-center">
             <a href="{{ route('maintenance.view-book', ['accession' => $item->accession]) }}" id="viewBtn" name="viewBtn" class="focus:outline-none text-white bg-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2 dark:focus:ring-yellow-900">View</a>
             @can(PermissionsEnum::EDIT_BOOKS, 'admin')
-              <a href="{{ route('maintenance.edit-book', $item->accession) }}" id="editBtn" name="editBtn" class="text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2">Edit</a>
+              <a href="{{ route('maintenance.edit-book', ['id' => $item->id]) }}" id="editBtn" name="editBtn" class="text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2">Edit</a>
             @endcan
             @php
             $bookID = ['id' => $item->id];

@@ -78,7 +78,11 @@ class BookMaintenanceController extends Controller
             ]);
         }catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();
-            return redirect()->back()->with('toast-error', $e->getMessage());
+            if($e->getCode() == 23000){
+                return redirect()->back()->with('toast-error', 'Book with this accession number already exists!');
+            } else {
+                return redirect()->back()->with('toast-error', $e->getMessage());
+            }
         }
         DB::commit();
         return redirect()->back()->with('toast-success', 'Book added successfully');
@@ -87,8 +91,8 @@ class BookMaintenanceController extends Controller
     {
         $book = null;
         try{
-            $accession = array_keys($request->all())[0]; 
-            $book = Book::where('accession', $accession)->first();
+            $id = $request->input('id');
+            $book = Book::findOrFail($id);
             $categories     = Category::all()->pluck('name', 'id');
             $condition      = $this->extract_enums('bk_books', 'condition_status');
             $availability   = $this->extract_enums('bk_books', 'availability_status');     

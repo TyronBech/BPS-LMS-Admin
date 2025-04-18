@@ -12,10 +12,9 @@
     </a>
   </div>
   <hr class="h-px my-3 bg-gray-200 border-0">
-  <form action="{{ route('maintenance.update-book') }}" class="max-w-2xl mx-auto" method="POST">
+  <form action="{{ route('maintenance.update-book', ['id' => $book->id]) }}" class="max-w-2xl mx-auto" method="POST">
     @csrf
     @method('PUT')
-    <input type="hidden" name="id" value="{{ $book->id }}">
     <h6 class="mb-1 text-xl font-semibold tracking-tight">Book Information</h6>
     <div class="mb-5">
       <label for="accession" class="block mb-2 text-sm font-medium">Accession Number:</label>
