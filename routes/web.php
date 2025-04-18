@@ -117,12 +117,12 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::get('show-book',         [BookMaintenanceController::class, 'view'])     ->name('maintenance.view-book');
             Route::delete('delete-book',    [BookMaintenanceController::class, 'destroy'])  ->name('maintenance.delete-book');
             Route::prefix('categories')->group(function () {
-                Route::get('categories',    [CategoryMaintenanceController::class, 'index'])    ->name('maintenance.categories');
-                Route::post('add-category', [CategoryMaintenanceController::class, 'store'])    ->name('maintenance.store-category');
+                Route::get('categories',            [CategoryMaintenanceController::class, 'index'])    ->name('maintenance.categories');
+                Route::post('add-category',         [CategoryMaintenanceController::class, 'store'])    ->name('maintenance.store-category');
+                Route::put('edit-category',         [CategoryMaintenanceController::class, 'update'])   ->name('maintenance.update-category');
+                Route::delete('delete-category',    [CategoryMaintenanceController::class, 'destroy'])  ->name('maintenance.delete-category');
                 // Route::get('add-category',  [CategoryMaintenanceController::class, 'create'])->name('maintenance.create-category');
                 // Route::get('edit-category', [CategoryMaintenanceController::class, 'edit']) ->name('maintenance.edit-category');
-                // Route::put('edit-category', [CategoryMaintenanceController::class, 'update'])->name('maintenance.update-category');
-                // Route::delete('delete-category', [CategoryMaintenanceController::class, 'destroy'])->name('maintenance.delete-category');
                 // Route::post('search-category', [CategoryMaintenanceController::class, 'search'])->name('maintenance.search-category');
                 // Route::post('search',       [CategoryMaintenanceController::class, 'search'])->name('maintenance.search');
             });
