@@ -17,6 +17,7 @@ use App\Http\Controllers\Maintenance\BookMaintenanceController;
 use App\Http\Controllers\Maintenance\UsersMaintenanceController;
 use App\Http\Controllers\Maintenance\CategoryMaintenanceController;
 use App\Http\Controllers\Roles_Permissions\RolesController;
+use App\Http\Controllers\Maintenance\PrivilegeMaintenanceController;
 use App\Http\Controllers\Inventory\InventoryController;
 use App\Http\Controllers\Report\CategoriesController;
 use App\Http\Controllers\Report\InventoriesController;
@@ -25,6 +26,8 @@ use App\Http\Middleware\SuperAdminAuthentication;
 use App\Http\Middleware\UserAuthentication;
 use App\Http\Middleware\InventoryAuthentication;
 use App\Http\Middleware\ReportAuthentication;
+use App\Http\Middleware\PrivilegeAuthentication;
+use App\Http\Middleware\BookCategoriesAuthentication;
 
 Route::get('/', function () {
     return view('main-welcome');
@@ -80,7 +83,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::post('show-books',       [BookMaintenanceController::class, 'show'])     ->name('maintenance.show-books');
             Route::get('show-book',         [BookMaintenanceController::class, 'view'])     ->name('maintenance.view-book');
             Route::delete('delete-book',    [BookMaintenanceController::class, 'destroy'])  ->name('maintenance.delete-book');
-            Route::prefix('categories')->group(function () {
+            Route::prefix('categories')->middleware(BookCategoriesAuthentication::class)->group(function () {
                 Route::get('categories',            [CategoryMaintenanceController::class, 'index'])    ->name('maintenance.categories');
                 Route::post('add-category',         [CategoryMaintenanceController::class, 'store'])    ->name('maintenance.store-category');
                 Route::put('edit-category',         [CategoryMaintenanceController::class, 'update'])   ->name('maintenance.update-category');
@@ -99,6 +102,16 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::put('update-employee',   [UsersMaintenanceController::class, 'update_employee']) ->name('maintenance.update-employee');
             Route::get('show-users',        [UsersMaintenanceController::class, 'show'])            ->name('maintenance.show-users');
             Route::delete('delete-user',    [UsersMaintenanceController::class, 'destroy'])         ->name('maintenance.delete-user');
+        });
+        Route::prefix('privileges')->middleware(PrivilegeAuthentication::class)->group(function () {
+            Route::get('privileges',            [PrivilegeMaintenanceController::class, 'index'])               ->name('maintenance.privileges');
+            Route::get('add-privilege',         [PrivilegeMaintenanceController::class, 'create'])              ->name('maintenance.create-privilege');
+            Route::post('add-privilege',        [PrivilegeMaintenanceController::class, 'store'])               ->name('maintenance.store-privilege');
+            Route::post('search-privilege',     [PrivilegeMaintenanceController::class, 'search_privilege'])    ->name('maintenance.search-privilege');
+            Route::get('edit-privilege',        [PrivilegeMaintenanceController::class, 'edit'])                ->name('maintenance.edit-privilege');
+            Route::put('edit-privilege',        [PrivilegeMaintenanceController::class, 'update'])              ->name('maintenance.update-privilege');
+            Route::get('show-privileges',       [PrivilegeMaintenanceController::class, 'show'])                ->name('maintenance.show-privileges');
+            Route::delete('delete-privilege',   [PrivilegeMaintenanceController::class, 'destroy'])             ->name('maintenance.delete-privilege');
         });
         Route::prefix('admin-management')->middleware(SuperAdminAuthentication::class)->group(function () {
             Route::get('admins',            [AdminMaintenanceController::class, 'index'])           ->name('maintenance.admins');
