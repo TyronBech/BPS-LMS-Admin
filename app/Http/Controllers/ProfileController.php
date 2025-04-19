@@ -14,6 +14,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ChangePasswordMail;
 
 class ProfileController extends Controller
 {
@@ -64,7 +66,12 @@ class ProfileController extends Controller
             return redirect()->back()->with('toast-error', 'Failed to update information. Please try again.');
         }
         DB::commit();
+        // Send email notification
+        $this->changePasswordMail($user);
         return redirect()->back()->with('toast-success', 'Information updated successfully!');
+    }
+    private function changePasswordMail($user) {
+        Mail::to($user->email)->send(new ChangePasswordMail($user));
     }
     // public function edit(Request $request): View
     // {
