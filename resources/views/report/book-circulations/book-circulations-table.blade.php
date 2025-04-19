@@ -4,7 +4,6 @@
     <thead id="today-header" class="bg-blue-400 font-bold text-slate-200">
       <th>Accession</th>
       <th>Call Number</th>
-      <th>Barcode</th>
       <th>Title</th>
       <th>Availability</th>
       <th>Condition</th>
@@ -14,7 +13,6 @@
         <tr>
           <td class="pb-1">{{ $item->accession }}</td>
           <td class="pb-1">{{ $item->call_number }}</td>
-          <td class="pb-1">{{ $item->barcode }}</td>
           <td class="pb-1">{{ $item->title }}</td>
           @if($item->availability_status == 'Available')
             <td class="pb-1 text-green-500 dark:text-green-400">{{ $item->availability_status }}</td>
@@ -37,7 +35,7 @@
         </tr>
       @empty
         <tr>
-          <td colspan="6">No data found.</td>
+          <td colspan="5">No data found.</td>
         </tr>
       @endforelse
     </tbody>
