@@ -167,6 +167,20 @@
                   </a>
                 </li>
                 @endif
+                @if(auth()->user()->can(PermissionsEnum::ADD_PRIVILEGES)
+                || auth()->user()->can(PermissionsEnum::EDIT_PRIVILEGES)
+                || auth()->user()->can(PermissionsEnum::DELETE_PRIVILEGES))
+                <li>
+                  <a href="{{ route('maintenance.privileges') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M6 2c-1.10457 0-2 .89543-2 2v4c0 .55228.44772 1 1 1s1-.44772 1-1V4h12v7h-2c-.5523 0-1 .4477-1 1v2h-1c-.5523 0-1 .4477-1 1s.4477 1 1 1h5c.5523 0 1-.4477 1-1V3.85714C20 2.98529 19.3667 2 18.268 2H6Z" />
+                      <path d="M6 11.5C6 9.567 7.567 8 9.5 8S13 9.567 13 11.5 11.433 15 9.5 15 6 13.433 6 11.5ZM4 20c0-2.2091 1.79086-4 4-4h3c2.2091 0 4 1.7909 4 4 0 1.1046-.8954 2-2 2H6c-1.10457 0-2-.8954-2-2Z" />
+                    </svg>
+
+                    <span class="ms-2">Privileges</span>
+                  </a>
+                </li>
+                @endif
                 <li aria-labelledby="dropdownNavbarLink">
                   @if(auth()->user()->hasRole(App\Enum\RolesEnum::SUPER_ADMIN))
                   <button id="doubleDropdownButton" data-dropdown-toggle="doubleDropdown" data-dropdown-placement="right-start" type="button" class="flex items-center w-full px-4 pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
