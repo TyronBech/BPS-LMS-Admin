@@ -4,9 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserGroup extends Model
 {
+    use SoftDeletes;
     protected $table = 'privileges';
     protected $fillable = [
         'user_type',

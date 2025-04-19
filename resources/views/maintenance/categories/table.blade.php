@@ -101,14 +101,14 @@
   const editButtons = document.querySelectorAll('.editBtn');
   const editInputID = document.getElementById('edit_category_id');
   const inputLegend = document.getElementById('legend');
-  const inputName = document.getElementById('name');
+  const inputName   = document.getElementById('name');
   editButtons.forEach(btn => {
     btn.addEventListener('click', function(event) {
-      const categoryId = event.target.value;
+      const categoryId        = event.target.value;
       editInputID.textContent = categoryId;
-      editInputID.value = categoryId;
-      inputLegend.value = event.target.parentElement.parentElement.children[0].textContent;
-      inputName.value = event.target.parentElement.parentElement.children[1].textContent;
+      editInputID.value       = categoryId;
+      inputLegend.value       = event.target.parentElement.parentElement.children[0].textContent;
+      inputName.value         = event.target.parentElement.parentElement.children[1].textContent;
     });
   });
   const deleteButtons = document.querySelectorAll('.deleteBtn');
