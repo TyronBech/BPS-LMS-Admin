@@ -14,8 +14,12 @@
           <td class="min-w-40 h-14">{{ $item->legend }}</td>
           <td class="min-w-40 h-14">{{ $item->name }}</td>
           <td class="pb-1 flex justify-center">
+            @if(auth()->user()->can(PermissionsEnum::EDIT_CATEGORIES))
             <button type="button" data-modal-target="edit-category-modal" data-modal-toggle="edit-category-modal" value="{{ $item->id }}" class="editBtn focus:outline-none text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2">Edit</button>
+            @endif
+            @if(auth()->user()->can(PermissionsEnum::DELETE_CATEGORIES))
             <button type="button" data-modal-target="delete-category-modal" data-modal-toggle="delete-category-modal" value="{{ $item->id }}" class="deleteBtn focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2">Delete</button>
+            @endif
           </td>
         </tr>
         @empty

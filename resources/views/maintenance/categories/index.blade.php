@@ -5,7 +5,9 @@
   <div class="flex justify-between">
     <h5 class="mb-1 text-2xl font-bold tracking-tight">Categories</h5>
     <div>
+      @if(auth()->user()->can(PermissionsEnum::ADD_CATEGORIES))
       <button data-modal-target="static-modal" data-modal-toggle="static-modal" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">Add new category</button>
+      @endif
     </div>
   </div>
   <hr class="h-px my-3 bg-gray-200 border-0">
