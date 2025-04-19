@@ -1,3 +1,4 @@
+@use('App\Enum\PermissionsEnum')
 <div class="mx-auto px-2 font-sans flex-col">
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
     <table class="w-full text-sm text-left rtl:text-right whitespace-nowrap table-auto">
