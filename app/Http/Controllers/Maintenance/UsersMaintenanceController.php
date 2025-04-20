@@ -110,10 +110,8 @@ class UsersMaintenanceController extends Controller
                 'lrn'           => $request->input('lrn')           == '' ? null : $request->input('lrn'),
                 'grade_level'   => $request->input('grade')         == '' ? null : $request->input('grade'),
                 'section'       => $request->input('section')       == '' ? null : $request->input('section'),
-                'user_type'    => "Student",
                 'email'         => $request->input('email'),
                 'password'      => Hash::make($request->input('password')),
-                'penalty_total' => 0,
                 'user_type'     => "Student",
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
@@ -171,11 +169,10 @@ class UsersMaintenanceController extends Controller
                 'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
                 'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
                 'employee_id'   => $request->input('employee_id'),
-                'user_type'     => $request->input('group'),
+                'employee_role' => $request->input('group'),
                 'email'         => $request->input('email'),
                 'password'      => Hash::make($request->input('password')),
-                'penalty_total' => 0,
-                'user_type'     => "Employee",
+                'user_type'     => "employee",
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
