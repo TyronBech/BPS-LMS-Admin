@@ -31,9 +31,9 @@ class UsersMaintenanceController extends Controller
     }
     public function create_employee()
     {
-        $groups = UserGroup::where(DB::raw('lower(user_type)'), '!=', 'visitor')
-                            ->where(DB::raw('lower(user_type)'), '!=', 'student')
-                            ->pluck('user_type');
+        $groups = UserGroup::where(DB::raw('lower(category)'), '!=', 'visitor')
+                            ->where(DB::raw('lower(category)'), '!=', 'student')
+                            ->pluck('category');
         return view('maintenance.users.create-employee', compact('groups'));
     }
     public function show(Request $request)
@@ -112,7 +112,7 @@ class UsersMaintenanceController extends Controller
                 'section'       => $request->input('section')       == '' ? null : $request->input('section'),
                 'email'         => $request->input('email'),
                 'password'      => Hash::make($request->input('password')),
-                'user_type'     => "Student",
+                'user_type'     => "student",
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
@@ -203,7 +203,7 @@ class UsersMaintenanceController extends Controller
         try{
             $id = array_keys($request->all())[0];
             $user = User::with('employees', 'privileges')->where('id', $id)->first();
-            $privileges = UserGroup::all()->pluck('user_type');
+            $privileges = UserGroup::all()->pluck('category');
         } catch(\Illuminate\Database\QueryException $e){
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }

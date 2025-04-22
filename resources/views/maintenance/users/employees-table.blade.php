@@ -28,7 +28,7 @@ $increment = 0;
           <td class="py-4">{{ $item->first_name }} {{ $item->middle_name ? $item->middle_name : '' }} {{ $item->last_name }}</td>
           <td class="py-4">{{ $item->suffix ? $item->suffix : '-' }}</td>
           <td class="py-4 px-5">{{ $item->employees->employee_id }}</td>
-          <td class="py-4 px-5">{{ $item->privileges->user_type ?? '-' }}</td>
+          <td class="py-4 px-5">{{ $item->privileges->category ?? '-' }}</td>
           <td class="py-4 px-5">{{ $item->email }}</td>
           <td class="py-4 flex justify-center">
             @can(PermissionsEnum::EDIT_USERS, 'admin')
