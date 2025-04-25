@@ -15,8 +15,6 @@
   <form action="{{ route('maintenance.update-student') }}" class="max-w-2xl mx-auto" method="POST">
     @csrf
     @method('PUT')
-    <!-- Hidden input field for user group -->
-    <input type="hidden" id="group" name="group" value="{{ $user->groups->group_name }}">
     <input type="hidden" id="id" name="id" value="{{ $user->id }}">
     <h6 class="mb-1 text-xl font-semibold tracking-tight">User Information</h6>
     <hr class="h-px my-1 bg-gray-200 border-0">
@@ -74,23 +72,21 @@
       </div>
       @enderror
     </div>
-    <!-- Input fields for student credentials -->
-    @if($user->students)
-    <h6 class="mb-1 text-md font-bold tracking-tight">Student Credentials <span class="text-sm font-normal">(If the user is a student)</span></h6>
+    <h6 class="mb-1 text-md font-bold tracking-tight">Student Credentials</h6>
     <hr class="h-px my-1 bg-gray-200 border-0">
     <div class="mb-5">
-      <label for="lrn" class="block mb-2 text-sm font-medium">LRN Number:</label>
-      <input type="text" id="lrn" name="lrn" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="0123456789" value="{{ $user->students->lrn }}">
-      @error('lrn')
+      <label for="id_number" class="block mb-2 text-sm font-medium">LRN:</label>
+      <input type="text" id="id_number" name="id_number" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="0123456789" value="{{ $user->students->id_number }}">
+      @error('id_number')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
       </div>
       @enderror
     </div>
     <div class="mb-5">
-      <label for="grade" class="block mb-2 text-sm font-medium">Grade:</label>
-      <input type="text" id="grade" name="grade" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="12" value="{{ $user->students->grade_level }}">
-      @error('grade')
+      <label for="level" class="block mb-2 text-sm font-medium">level:</label>
+      <input type="text" id="level" name="level" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="12" value="{{ $user->students->level }}">
+      @error('level')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
       </div>
@@ -105,21 +101,6 @@
       </div>
       @enderror
     </div>
-    @endif
-    <!-- Input fields for employee credentials -->
-    @if($user->employees)
-    <div class="mb-5">
-      <h6 class="mb-1 text-md font-bold tracking-tight">Employee Credential <span class="text-sm font-normal">(If the user is an employee)</span></h6>
-      <hr class="h-px my-1 bg-gray-200 border-0">
-      <label for="employee_id" class="block mb-2 text-sm font-medium">Employee ID:</label>
-      <input type="text" id="employee_id" name="employee_id" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="0123456789" value="{{ $user->employees->employee_id }}">
-      @error('employee_id')
-      <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
-        <span class="font-medium">{{ $message }}</span>
-      </div>
-      @enderror
-    </div>
-    @endif
     <h6 class="mb-1 text-md font-bold tracking-tight">User Account</h6>
     <hr class="h-px my-1 bg-gray-200 border-0">
     <div class="mb-5">

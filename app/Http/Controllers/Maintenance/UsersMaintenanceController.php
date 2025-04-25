@@ -45,8 +45,8 @@ class UsersMaintenanceController extends Controller
                     ->orWhere('email', 'like', '%'.$search.'%')
                     ->orWhere('rfid', 'like', '%'.$search.'%')
                     ->orWhereHas('students', function ($q) use ($search) {
-                        $q->where('lrn', 'like', '%'.$search.'%')
-                          ->orWhere('grade_level', 'like', '%'.$search.'%')
+                        $q->where('id_number', 'like', '%'.$search.'%')
+                          ->orWhere('level', 'like', '%'.$search.'%')
                           ->orWhere('section', 'like', '%'.$search.'%');
                     })
                     ->orWhereHas('employees', function ($q) use ($search) {
@@ -66,7 +66,7 @@ class UsersMaintenanceController extends Controller
             'middle-name'   => 'sometimes|max:50',
             'last-name'     => 'required|string|max:50',
             'suffix'        => 'sometimes|max:10',
-            'lrn'           => 'sometimes|max:50',
+            'id_number'     => 'sometimes|max:50',
             'grade'         => 'sometimes|max:10',
             'section'       => 'sometimes|max:50',
             'email'         => 'required|email',
@@ -89,7 +89,7 @@ class UsersMaintenanceController extends Controller
             return redirect()->back()->with('toast-warning', 'User\'s grade is invalid');
         } else if($request->input('section') != null && !preg_match('/^[A-Z]$/', $request->input('section'))){
             return redirect()->back()->with('toast-warning', 'User\'s section contains invalid characters');
-        } else if($request->input('lrn') == null || !preg_match('/^[0-9]+$/', $request->input('lrn'))){
+        } else if($request->input('id_number') == null || !preg_match('/^[0-9]+$/', $request->input('id_number'))){
             return redirect()->back()->with('toast-warning', 'User\'s LRN is invalid');
         }
         if($request->hasFile('profile-image')){
@@ -107,8 +107,8 @@ class UsersMaintenanceController extends Controller
                 'last_name'     => $request->input('last-name'),
                 'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
                 'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
-                'lrn'           => $request->input('lrn')           == '' ? null : $request->input('lrn'),
-                'grade_level'   => $request->input('grade')         == '' ? null : $request->input('grade'),
+                'id_number'     => $request->input('id_number')     == '' ? null : $request->input('id_number'),
+                'level'         => $request->input('grade')         == '' ? null : $request->input('grade'),
                 'section'       => $request->input('section')       == '' ? null : $request->input('section'),
                 'email'         => $request->input('email'),
                 'password'      => Hash::make($request->input('password')),
@@ -253,12 +253,12 @@ class UsersMaintenanceController extends Controller
             ]);
             $studentDetails = StudentDetail::where('user_id', $user->id)->first();
             $studentDetails->update([
-                'lrn'           => $request->input('lrn'),
-                'grade_level'   => $request->input('grade'),
+                'id_number'     => $request->input('id_number'),
+                'level'         => $request->input('level'),
                 'section'       => $request->input('section'),
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
-            DB::rollBack();
+            DB::rollBack(); 
             return redirect()->back()->with('toast-error', $e->getMessage());
         }
         DB::commit();
