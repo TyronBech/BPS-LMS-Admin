@@ -31,13 +31,13 @@ class StudentImportController extends Controller
                     'middle_name'   => $item['middle_name'],
                     'last_name'     => $item['last_name'],
                     'suffix'        => $item['suffix'],
+                    'gender'        => $item['gender'],
                     'email'         => $item['email'],
                     'password'      => Hash::make($item['password']),
-                    'lrn'           => $item['lrn'],
-                    'grade_level'   => $item['grade_level'],
+                    'id_number'     => $item['lrn'],
+                    'level'         => $item['grade_level'],
                     'section'       => $item['section'],
-                    'user_type'     => $item['user_type'],
-                    'group_name'    => $item['group_name'],
+                    'user_type'     => 'student',
                 ]);
             } catch (\Illuminate\Database\QueryException $e) {
                 DB::rollBack();
@@ -52,16 +52,11 @@ class StudentImportController extends Controller
             }
             DB::commit();
         }
-        DB::beginTransaction();
         try{
-            DB::statement('SET SQL_SAFE_UPDATES = 0');
             DB::statement('CALL DistributeStagingUsers()');
-            DB::statement('SET SQL_SAFE_UPDATES = 1');
         } catch (\Illuminate\Database\QueryException $e) {
-            DB::rollBack();
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage());
         }
-        DB::commit();
         return redirect()->route('import.import-students')->with('toast-success', 'Students imported successfully');
     }
     public function upload(Request $request)
@@ -87,13 +82,12 @@ class StudentImportController extends Controller
                     'middle_name'   => $rows[$i][2],
                     'last_name'     => $rows[$i][3],
                     'suffix'        => $rows[$i][4],
-                    'email'         => $rows[$i][5],
-                    'password'      => $rows[$i][6],
-                    'lrn'           => $rows[$i][7],
-                    'grade_level'   => $rows[$i][8],
-                    'section'       => $rows[$i][9],
-                    'user_type'     => $rows[$i][10],
-                    'group_name'    => $rows[$i][11],    
+                    'gender'        => $rows[$i][5],
+                    'email'         => $rows[$i][6],
+                    'password'      => $rows[$i][7],
+                    'lrn'           => $rows[$i][8],
+                    'grade_level'   => $rows[$i][9],
+                    'section'       => $rows[$i][10],   
                 );
             }
         } catch(\Exception $e){
