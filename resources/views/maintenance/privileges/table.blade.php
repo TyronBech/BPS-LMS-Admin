@@ -4,8 +4,8 @@
     <table class="w-full text-sm text-left rtl:text-right whitespace-nowrap table-auto">
       <thead class="text-xs py-2 text-gray-700 uppercase bg-gray-300 text-center dark:bg-gray-500 dark:text-white">
         <tr>
-          <th scope="col" class="p-2 text-center">User Type</th>
           <th scope="col" class="p-2 text-center">Category</th>
+          <th scope="col" class="p-2 text-center">User Type</th>
           <th scope="col" class="p-2 text-center">Max Book Allowed</th>
           <th scope="col" class="p-2 text-center">Borrow Limit</th>
           <th scope="col" class="p-2 text-center">Renewal Limit</th>
@@ -15,8 +15,8 @@
       <tbody>
         @forelse($privileges as $item)
         <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
-          <td class="min-w-40 h-14">{{ $item->user_type }}</td>
           <td class="min-w-40 h-14">{{ $item->category }}</td>
+          <td class="min-w-40 h-14">{{ $item->user_type }}</td>
           <td class="min-w-40 h-14">{{ $item->max_book_allowed }}</td>
           <td class="min-w-40 h-14">{{ $item->borrow_duration_days }}</td>
           <td class="min-w-40 h-14">{{ $item->renewal_limit }}</td>
