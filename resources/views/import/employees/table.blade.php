@@ -1,0 +1,37 @@
+<div class="container flex flex-col border-collapse overflow-x-auto border-2 border-slate-900 mt-2 mb-4 rounded-lg bg-white dark:bg-slate-800 dark:border-slate-700">
+  <h2 class="text-center mb-2 mt-4 font-semibold text-2xl">Spreadsheet Contents</h2>
+  <table class="table-fixed m-4 bg-white dark:bg-gray-800">
+    <thead class="bg-blue-400 font-bold text-slate-200">
+      <tr>
+        <th>RFID</th>
+        <th>First Name</th>
+        <th>Middle Name</th>
+        <th>Last Name</th>
+        <th>Suffix</th>
+        <th>Gender</th>
+        <th>Email</th>
+        <th>Employee ID</th>
+        <th>Position</th>
+      </tr>
+    </thead>
+    <tbody class="text-center">
+      @forelse($data as $item)
+        <tr>
+          <td>{{ $item['rfid'] }}</td>
+          <td>{{ $item['first_name'] }}</td>
+          <td>{{ $item['middle_name'] ?? '-' }}</td>
+          <td>{{ $item['last_name'] }}</td>
+          <td>{{ $item['suffix'] ?? '-' }}</td>
+          <td>{{ $item['gender'] }}</td>
+          <td>{{ $item['email'] }}</td>
+          <td>{{ $item['employee_id'] }}</td>
+          <td>{{ $item['employee_role'] }}</td>
+        </tr>
+      @empty
+        <tr>
+          <td colspan="10">No data found.</td>
+        </tr>
+      @endforelse
+    </tbody>
+  </table>
+</div>
