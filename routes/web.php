@@ -12,6 +12,7 @@ use App\Http\Controllers\Report\TransactionController;
 use App\Http\Controllers\Report\BookCirculationController;
 use App\Http\Controllers\Import\StudentImportController;
 use App\Http\Controllers\Import\BookImportController;
+use App\Http\Controllers\Import\FacultyStaffImportController;
 use App\Http\Controllers\Maintenance\AdminMaintenanceController;
 use App\Http\Controllers\Maintenance\BookMaintenanceController;
 use App\Http\Controllers\Maintenance\UsersMaintenanceController;
@@ -61,12 +62,15 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::post('inventory-report', [InventoriesController::class, 'search'])       ->name('report.inventory-search');
     });
     Route::prefix('import')->group(function () {
-        Route::get('students',          [StudentImportController::class, 'index'])  ->name('import.import-students');
-        Route::post('students-data',    [StudentImportController::class, 'upload']) ->name('import.upload-students');
-        Route::post('insert-data',      [StudentImportController::class, 'store'])  ->name('import.store-students');
-        Route::get('books',             [BookImportController::class, 'index'])     ->name('import.import-books');
-        Route::post('books-data',       [BookImportController::class, 'upload'])    ->name('import.upload-books');
-        Route::put('insert-data',       [BookImportController::class, 'store'])     ->name('import.store-books');
+        Route::get('students',                  [StudentImportController::class, 'index'])          ->name('import.import-students');
+        Route::post('students',                 [StudentImportController::class, 'upload'])         ->name('import.upload-students');
+        Route::post('store-students',           [StudentImportController::class, 'store'])          ->name('import.store-students');
+        Route::get('faculties-staffs',          [FacultyStaffImportController::class, 'index'])     ->name('import.import-faculties-staffs');
+        Route::post('faculties-staffs',         [FacultyStaffImportController::class, 'upload'])    ->name('import.upload-faculties-staffs');
+        Route::post('store-faculties-staffs',   [FacultyStaffImportController::class, 'store'])     ->name('import.store-faculties-staffs');
+        Route::get('books',                     [BookImportController::class, 'index'])             ->name('import.import-books');
+        Route::post('books',                    [BookImportController::class, 'upload'])            ->name('import.upload-books');
+        Route::post('store-books',              [BookImportController::class, 'store'])             ->name('import.store-books');
     });
     Route::prefix('inventory')->middleware(InventoryAuthentication::class)->group(function () {
         Route::get('inventory', [InventoryController::class, 'index'])  ->name('inventory.inventory');
@@ -138,4 +142,4 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
 Route::fallback(function () {
     return view('layouts.fallback');
 });
-require __DIR__.'/auth.php';
+//require __DIR__.'/auth.php';
