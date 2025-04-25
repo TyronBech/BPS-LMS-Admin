@@ -12,8 +12,8 @@ class StudentDetail extends Model
     protected $table = 'usr_student_details';
     protected $fillable = [
         'user_id',
-        'lrn',
-        'grade_level',
+        'id_number',
+        'level',
         'section',
     ];
     public function users() : BelongsTo
