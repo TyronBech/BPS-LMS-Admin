@@ -1,6 +1,6 @@
-<div class="container flex flex-col border-collapse overflow-x-auto border-2 border-slate-900 mt-2 mb-4 rounded-lg bg-white">
+<div class="container flex flex-col border-collapse overflow-x-auto border-2 border-slate-900 mt-2 mb-4 rounded-lg bg-white dark:bg-slate-800 dark:border-slate-700">
   <h2 class="text-center mb-2 mt-4 font-semibold text-2xl">Spreadsheet Contents</h2>
-  <table class="table-fixed m-4 bg-white">
+  <table class="table-fixed m-4 bg-white dark:bg-gray-800">
     <thead class="bg-blue-400 font-bold text-slate-200">
       <tr>
         <th>Accession</th>
@@ -12,7 +12,6 @@
         <th>Publisher</th>
         <th>Copyright</th>
         <th>Category</th>
-        <th>Barcode</th>
         <th>URL</th>
       </tr>
     </thead>
@@ -28,12 +27,11 @@
           <td>{{ $item['publisher'] }}</td>
           <td>{{ $item['copyrights'] }}</td>
           <td>{{ $item['category'] }}</td>
-          <td>{{ $item['barcode'] }}</td>
           <td>{{ $item['digital_copy_url'] ?? '-' }}</td>
         </tr>
       @empty
         <tr>
-          <td colspan="9">No data found.</td>
+          <td colspan="10">No data found.</td>
         </tr>
       @endforelse
     </tbody>
