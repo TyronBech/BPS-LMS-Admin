@@ -6,6 +6,8 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use App\Models\Log;
+use Illuminate\Support\Facades\DB;
+use App\Models\Book;
 
 class FetchDataController extends Controller
 {
@@ -22,5 +24,21 @@ class FetchDataController extends Controller
             })
             ->count();
         return response()->json(['active_count' => $activeCount]);
+    }
+    public function fetchMonthlyUsers(){
+        $monthlyRecord = Log::select(
+            DB::raw("DATE_FORMAT(timestamp, '%Y %M') as month"),
+            DB::raw('COUNT(*) as count')
+        )
+        ->where('action', 'Time in')
+        ->groupBy(DB::raw("DATE_FORMAT(timestamp, '%Y %M')"))
+        ->orderBy(DB::raw("MIN(timestamp)")) // optional: to order correctly from oldest to newest
+        ->limit(12)
+        ->get();
+        return response()->json($monthlyRecord);
+    }
+    public function totalBooks(){
+        $totalBooks = Book::count();
+        return response()->json(['total_books' => $totalBooks]);
     }
 }
