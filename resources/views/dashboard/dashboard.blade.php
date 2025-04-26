@@ -2,13 +2,13 @@
 @section('content')
 <h1 class="font-semibold text-center text-4xl p-5">Home</h1>
 <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-  <div class="flex flex-col h-full justify-between max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col min-h-96 justify-between max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <div>
       <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Current Users</h5>
       <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Total number of users currently timed-in in the library.</p>
     </div>
     <div>
-      <h1 id="timed-in-count" class="text-9xl text-center font-extrabold dark:text-gray-300"></h1>
+      <h1 id="timed-in-count" class="text-8xl text-center font-extrabold dark:text-gray-300"></h1>
     </div>
     <button type="button" onclick="fetchActiveCount()" class="inline-flex justify-center items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
       Refresh
@@ -17,7 +17,7 @@
       </svg>
     </button>
   </div>
-  <div class="flex flex-col h-full col-span-3 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col min-h-96 col-span-3 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Monthly Logs</h5>
     <div>
       <canvas id="monthly-logs" width="" height="84"></canvas>
@@ -29,13 +29,13 @@
       </svg>
     </button>
   </div>
-  <div class="flex flex-col h-full justify-between max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col min-h-96 justify-between max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <div>
       <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Recorded Books</h5>
       <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Total number of books in the database.</p>
     </div>
     <div>
-      <h1 id="book-count" class="text-9xl text-center font-extrabold dark:text-gray-300"></h1>
+      <h1 id="book-count" class="text-8xl text-center font-extrabold dark:text-gray-300"></h1>
     </div>
     <button type="button" onclick="fetchBookCount()" class="inline-flex justify-center items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
       Refresh
