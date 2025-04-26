@@ -22,6 +22,7 @@ use App\Http\Controllers\Maintenance\PrivilegeMaintenanceController;
 use App\Http\Controllers\Inventory\InventoryController;
 use App\Http\Controllers\Report\CategoriesController;
 use App\Http\Controllers\Report\InventoriesController;
+use App\Http\Controllers\Analytics\FetchDataController;
 use App\Http\Middleware\BookAuthentication;
 use App\Http\Middleware\SuperAdminAuthentication;
 use App\Http\Middleware\UserAuthentication;
@@ -48,6 +49,9 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     })->name('dashboard');
     Route::get('profile',   [ProfileController::class, 'index']) ->name('profile');
     Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::prefix('analytics')->group(function () {
+        Route::get('current-users', [FetchDataController::class, 'fetchCurrentTimeInUsers'])->name('fetch-current-count');
+    });
     Route::prefix('report')->middleware(ReportAuthentication::class)->group(function () {
         Route::get('user-report',       [UserLogsController::class, 'index'])           ->name('report.user');
         Route::post('user-report',      [UserLogsController::class, 'search'])          ->name('report.user-search');
