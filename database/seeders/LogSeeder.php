@@ -15,7 +15,7 @@ class LogSeeder extends Seeder
     {
         Log::factory()->count(100)->create();
         // Log::create([
-        //     'user_id'       => 35,
+        //     'user_id'       => 5,
         //     'computer_use'  => 'Yes',
         //     'timestamp'     => now(),
         //     'action'        => 'Time in',
