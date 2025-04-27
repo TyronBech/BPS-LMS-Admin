@@ -5,7 +5,7 @@
 <p class="mt-1 text-sm/relaxed text-slate-500 text-center">Please ensure that the data is in the correct format.</p>
 @if(!$showTable)
 <div class="border-2 border-slate-700 rounded-lg flex flex-col text-center items-center mb-4 mt-2 w-full">
-  <form action="{{ route('import.books') }}" method="POST" enctype="multipart/form-data">
+  <form action="{{ route('import.import-books') }}" method="POST" enctype="multipart/form-data">
     @csrf
     <label class="block mt-4 text-sm font-medium text-gray-600 for=" file_input">Upload a file in CSV or Excel format</label>
     <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" id="file_input" name="file" type="file">

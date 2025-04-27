@@ -8,6 +8,7 @@ use PhpOffice\PhpSpreadsheet\Reader\Xlsx as ReaderXlsx;
 use Illuminate\Support\Facades\DB;
 use App\Models\Book;
 use App\Models\Category;
+use Milon\Barcode\DNS1D;
 
 class BookImportController extends Controller
 {
@@ -25,10 +26,10 @@ class BookImportController extends Controller
             $spreadsheet    = $reader->load($file);
             $sheet          = $spreadsheet->getActiveSheet();
             $rows           = $sheet->toArray();
-            $data           = array();    
+            $data           = array();
             if($rows[0][0] == null){
                 return redirect()->route('import.import-books')->with('toast-error', "Excel file is empty.");
-            } else if(count($rows[0]) > 11 || count($rows[0]) < 11){
+            } else if(count($rows[0]) > 12 || count($rows[0]) < 12){
                 return redirect()->route('import.import-books')->with('toast-error', "An error occurred while saving book: Wrong number of columns.");
             }
             for($i = 1; $i < count($rows); $i++){
@@ -42,8 +43,7 @@ class BookImportController extends Controller
                     'publisher'             => $rows[$i][6],
                     'copyrights'            => $rows[$i][7],
                     'category'              => $rows[$i][8],
-                    'barcode'               => $rows[$i][9],
-                    'digital_copy_url'      => $rows[$i][10],
+                    'digital_copy_url'      => $rows[$i][9],
                 );
             }
         } catch(\Exception $e){
@@ -64,6 +64,7 @@ class BookImportController extends Controller
                 if($category == null){
                     return redirect()->route('import.import-books')->with('toast-error', "An error occurred while saving book: Category not found.");
                 }
+                $barcode = new DNS1D();
                 Book::create([
                     'accession'             => $item['accession'],
                     'call_number'           => $item['call_number'],
@@ -74,7 +75,7 @@ class BookImportController extends Controller
                     'publisher'             => $item['publisher'],
                     'copyrights'            => $item['copyrights'],
                     'category_id'           => $category->id,
-                    'barcode'               => $item['barcode'],
+                    'barcode'               => $barcode->getBarcodeJPG($item['accession'], 'C39+', 2, 70, array(0, 0, 0, 0), true),
                     'digital_copy_url'      => $item['digital_copy_url'] ?? null,
                     'remarks'               => 'On Shelf',
                     'availability_status'   => 'Available',
