@@ -30,7 +30,10 @@ class RolesController extends Controller
     }
     public function create()
     {
-        $permissions = Permission::all();
+        $permissions = Permission::select('name')
+                            ->where('guard_name', 'admin')
+                            ->where('name', '!=', 'Modify Admins')
+                            ->get();
         return view('roles_permissions.create', compact('permissions'));
     }
     public function store(Request $request){
