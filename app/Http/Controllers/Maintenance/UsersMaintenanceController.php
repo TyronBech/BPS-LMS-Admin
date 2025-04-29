@@ -251,23 +251,24 @@ class UsersMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try{
-            $user = User::findOrFail($request->input('id'));
-            $user->update([
-                'rfid'          => $request->input('rfid'),
-                'first_name'    => $request->input('first-name'),
-                'middle_name'   => $request->input('middle-name')   == '' ? null : $request->input('middle-name'),
-                'last_name'     => $request->input('last-name'),
-                'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
-                'gender'        => $request->input('gender'),
-                'email'         => $request->input('email'),
-                'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
-            ]);
-            $studentDetails = StudentDetail::where('user_id', $user->id)->first();
-            $studentDetails->update([
-                'id_number'     => $request->input('id_number'),
-                'level'         => $request->input('level'),
-                'section'       => $request->input('section'),
-            ]);
+            $student = User::with('students')->where('id', $request->input('id'))->first();
+            if($student){
+                $student->update([
+                    'rfid'          => $request->input('rfid'),
+                    'first_name'    => $request->input('first-name'),
+                    'middle_name'   => $request->input('middle-name')   == '' ? null : $request->input('middle-name'),
+                    'last_name'     => $request->input('last-name'),
+                    'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
+                    'gender'        => $request->input('gender'),
+                    'email'         => $request->input('email'),
+                    'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
+                ]);
+                $student->students()->update([
+                    'id_number'     => $request->input('id_number'),
+                    'level'         => $request->input('level'),
+                    'section'       => $request->input('section'),
+                ]);
+            }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack(); 
             return redirect()->back()->with('toast-error', $e->getMessage());
@@ -310,8 +311,8 @@ class UsersMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try{
-            $user = User::findOrFail($request->input('id'));
-            $user->update([
+            $employee = User::with('employees')->where('id', $request->input('id'))->first();
+            $employee->update([
                 'rfid'          => $request->input('rfid'),
                 'first_name'    => $request->input('first-name'),
                 'middle_name'   => $request->input('middle-name')   == '' ? null : $request->input('middle-name'),
@@ -321,8 +322,7 @@ class UsersMaintenanceController extends Controller
                 'email'         => $request->input('email'),
                 'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
             ]);
-            $employeeDetails = EmployeeDetail::where('user_id', $user->id)->first();
-            $employeeDetails->update([
+            $employee->employees()->update([
                 'employee_id'   => $request->input('employee_id'),
                 'employee_role' => $request->input('employee_role'),
             ]);

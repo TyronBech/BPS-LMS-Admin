@@ -22,12 +22,14 @@ class StudentImportController extends Controller
         $data       = $request->input('data');
         $dataArray  = json_decode($data, true);
         $errors     = "";
+        DB::beginTransaction();
         foreach ($dataArray as $item) {
-            DB::beginTransaction();
             try {
-                $existingStudent = User::with('students')->where('id_number', $item['lrn'])->first();
+                $existingStudent = User::whereHas('students', function ($query) use ($item) {
+                    $query->where('id_number', $item['id_number']);
+                })->with('students')->first();
                 if($existingStudent){
-                    User::update([
+                    $existingStudent->update([
                         'rfid'          => $item['rfid'],
                         'first_name'    => $item['first_name'],
                         'middle_name'   => $item['middle_name'],
@@ -50,7 +52,7 @@ class StudentImportController extends Controller
                         'gender'        => $item['gender'],
                         'email'         => $item['email'],
                         'password'      => Hash::make($item['password']),
-                        'id_number'     => $item['lrn'],
+                        'id_number'     => $item['id_number'],
                         'level'         => $item['grade_level'],
                         'section'       => $item['section'],
                         'user_type'     => 'student',
@@ -67,8 +69,8 @@ class StudentImportController extends Controller
                 }
                 return redirect()->route('import.import-students')->with('toast-error', $errors);
             }
-            DB::commit();
         }
+        DB::commit();
         try{
             DB::statement('CALL DistributeStagingUsers()');
         } catch (\Illuminate\Database\QueryException $e) {
@@ -89,8 +91,6 @@ class StudentImportController extends Controller
             $data           = array();
             if($rows[0][0] == null){
                 return redirect()->route('import.import-students')->with('toast-error', "Excel file is empty.");
-            } else if(count($rows[0]) > 12 || count($rows[0]) < 12){
-                return redirect()->route('import.import-students')->with('toast-error', "An error occurred while saving student: Wrong number of columns.");
             }
             for($i = 1; $i < count($rows); $i++){
                 $data[] = array(
@@ -102,7 +102,7 @@ class StudentImportController extends Controller
                     'gender'        => $rows[$i][5],
                     'email'         => $rows[$i][6],
                     'password'      => $rows[$i][7],
-                    'lrn'           => $rows[$i][8],
+                    'id_number'     => $rows[$i][8],
                     'grade_level'   => $rows[$i][9],
                     'section'       => $rows[$i][10],   
                 );
