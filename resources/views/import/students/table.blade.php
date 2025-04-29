@@ -10,7 +10,7 @@
         <th>Suffix</th>
         <th>Gender</th>
         <th>Email</th>
-        <th>LRN</th>
+        <th>ID Number</th>
         <th>Level</th>
         <th>Section</th>
       </tr>
@@ -25,7 +25,7 @@
           <td>{{ $item['suffix'] ?? '-' }}</td>
           <td>{{ $item['gender'] }}</td>
           <td>{{ $item['email'] }}</td>
-          <td>{{ $item['lrn'] }}</td>
+          <td>{{ $item['id_number'] }}</td>
           <td>{{ $item['grade_level'] }}</td>
           <td>{{ $item['section'] }}</td>
         </tr>

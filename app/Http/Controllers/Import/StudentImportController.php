@@ -25,20 +25,37 @@ class StudentImportController extends Controller
         foreach ($dataArray as $item) {
             DB::beginTransaction();
             try {
-                StagingUser::create([
-                    'rfid'          => $item['rfid'],
-                    'first_name'    => $item['first_name'],
-                    'middle_name'   => $item['middle_name'],
-                    'last_name'     => $item['last_name'],
-                    'suffix'        => $item['suffix'],
-                    'gender'        => $item['gender'],
-                    'email'         => $item['email'],
-                    'password'      => Hash::make($item['password']),
-                    'id_number'     => $item['lrn'],
-                    'level'         => $item['grade_level'],
-                    'section'       => $item['section'],
-                    'user_type'     => 'student',
-                ]);
+                $existingStudent = User::with('students')->where('id_number', $item['lrn'])->first();
+                if($existingStudent){
+                    User::update([
+                        'rfid'          => $item['rfid'],
+                        'first_name'    => $item['first_name'],
+                        'middle_name'   => $item['middle_name'],
+                        'last_name'     => $item['last_name'],
+                        'suffix'        => $item['suffix'],
+                        'gender'        => $item['gender'],
+                        'email'         => $item['email'],
+                    ]);
+                    $existingStudent->students()->update([
+                        'level'         => $item['grade_level'],
+                        'section'       => $item['section'],
+                    ]);
+                } else {
+                    StagingUser::create([
+                        'rfid'          => $item['rfid'],
+                        'first_name'    => $item['first_name'],
+                        'middle_name'   => $item['middle_name'],
+                        'last_name'     => $item['last_name'],
+                        'suffix'        => $item['suffix'],
+                        'gender'        => $item['gender'],
+                        'email'         => $item['email'],
+                        'password'      => Hash::make($item['password']),
+                        'id_number'     => $item['lrn'],
+                        'level'         => $item['grade_level'],
+                        'section'       => $item['section'],
+                        'user_type'     => 'student',
+                    ]);
+                }
             } catch (\Illuminate\Database\QueryException $e) {
                 DB::rollBack();
                 if ($e->getCode() == 23000) {
