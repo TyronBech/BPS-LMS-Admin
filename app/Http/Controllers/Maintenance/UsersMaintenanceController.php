@@ -19,7 +19,7 @@ class UsersMaintenanceController extends Controller
 {
     public function index()
     {
-        $users = User::with('students', 'employees', 'privileges')
+        $users = User::with('students', 'employees')
                     ->orderBy('id', 'asc')
                     ->get();
         //dd($users->toArray());
@@ -66,11 +66,12 @@ class UsersMaintenanceController extends Controller
             'middle-name'   => 'sometimes|max:50',
             'last-name'     => 'required|string|max:50',
             'suffix'        => 'sometimes|max:10',
-            'id_number'     => 'sometimes|max:50',
-            'grade'         => 'sometimes|max:10',
-            'section'       => 'sometimes|max:50',
+            'gender'        => 'required|in:Male,Female,Prefer not to say',
+            'id_number'     => 'required|max:50',
+            'level'         => 'required|in:7,8,9,10,11,12',
+            'section'       => 'required|max:50',
             'email'         => 'required|email',
-            'password'      => 'required',
+            'password'      => 'required|min:8',
         ]);
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -106,10 +107,11 @@ class UsersMaintenanceController extends Controller
                 'middle_name'   => $request->input('middle-name')   == '' ? null : $request->input('middle-name'),
                 'last_name'     => $request->input('last-name'),
                 'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
+                'gender'        => $request->input('gender'),
                 'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
-                'id_number'     => $request->input('id_number')     == '' ? null : $request->input('id_number'),
-                'level'         => $request->input('grade')         == '' ? null : $request->input('grade'),
-                'section'       => $request->input('section')       == '' ? null : $request->input('section'),
+                'id_number'     => $request->input('id_number'),
+                'level'         => $request->input('level'),
+                'section'       => $request->input('section'),
                 'email'         => $request->input('email'),
                 'password'      => Hash::make($request->input('password')),
                 'user_type'     => "student",
@@ -134,8 +136,9 @@ class UsersMaintenanceController extends Controller
             'middle-name'   => 'sometimes|max:50',
             'last-name'     => 'required|string|max:50',
             'suffix'        => 'sometimes|max:10',
+            'gender'        => 'required|in:Male,Female,Prefer not to say',
             'employee_id'   => 'required|string|max:50',
-            'group'         => 'required',
+            'employee_role' => 'required',
             'email'         => 'required|email',
             'password'      => 'required',
         ]);
@@ -167,9 +170,10 @@ class UsersMaintenanceController extends Controller
                 'middle_name'   => $request->input('middle-name')   == '' ? null : $request->input('middle-name'),
                 'last_name'     => $request->input('last-name'),
                 'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
+                'gender'        => $request->input('gender'),
                 'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
                 'employee_id'   => $request->input('employee_id'),
-                'employee_role' => $request->input('group'),
+                'employee_role' => $request->input('employee_role'),
                 'email'         => $request->input('email'),
                 'password'      => Hash::make($request->input('password')),
                 'user_type'     => "employee",
@@ -203,7 +207,9 @@ class UsersMaintenanceController extends Controller
         try{
             $id = array_keys($request->all())[0];
             $user = User::with('employees', 'privileges')->where('id', $id)->first();
-            $privileges = UserGroup::all()->pluck('category');
+            $privileges = UserGroup::where(DB::raw('lower(category)'), '!=', 'visitor')
+                        ->where(DB::raw('lower(category)'), '!=', 'student')
+                        ->pluck('category');
         } catch(\Illuminate\Database\QueryException $e){
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
@@ -217,6 +223,10 @@ class UsersMaintenanceController extends Controller
             'middle-name'   => 'sometimes|max:50',
             'last-name'     => 'required|string|max:50',
             'suffix'        => 'sometimes|max:10',
+            'gender'        => 'required|in:Male,Female,Prefer not to say',
+            'id_number'     => 'required|max:50',
+            'level'         => 'required|in:7,8,9,10,11,12',
+            'section'       => 'required|max:50',
             'email'         => 'required|email',
         ]);
         if($validator->fails()){
@@ -248,6 +258,7 @@ class UsersMaintenanceController extends Controller
                 'middle_name'   => $request->input('middle-name')   == '' ? null : $request->input('middle-name'),
                 'last_name'     => $request->input('last-name'),
                 'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
+                'gender'        => $request->input('gender'),
                 'email'         => $request->input('email'),
                 'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
             ]);
@@ -272,8 +283,10 @@ class UsersMaintenanceController extends Controller
             'middle-name'   => 'sometimes|max:50',
             'last-name'     => 'required|string|max:50',
             'suffix'        => 'sometimes|max:10',
-            'email'         => 'required|email',
+            'gender'        => 'required|in:Male,Female,Prefer not to say',
             'employee_id'   => 'required|string|max:50',
+            'employee_role' => 'required',
+            'email'         => 'required|email',
         ]);
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -304,12 +317,14 @@ class UsersMaintenanceController extends Controller
                 'middle_name'   => $request->input('middle-name')   == '' ? null : $request->input('middle-name'),
                 'last_name'     => $request->input('last-name'),
                 'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
+                'gender'        => $request->input('gender'),
                 'email'         => $request->input('email'),
                 'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
             ]);
             $employeeDetails = EmployeeDetail::where('user_id', $user->id)->first();
             $employeeDetails->update([
                 'employee_id'   => $request->input('employee_id'),
+                'employee_role' => $request->input('employee_role'),
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();

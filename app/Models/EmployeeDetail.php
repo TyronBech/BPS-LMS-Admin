@@ -12,6 +12,7 @@ class EmployeeDetail extends Model
     protected $fillable = [
         'user_id',
         'employee_id',
+        'employee_role',
     ];
     public function users() : BelongsTo
     {
