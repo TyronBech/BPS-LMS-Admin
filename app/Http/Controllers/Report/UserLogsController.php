@@ -143,7 +143,7 @@ class UserLogsController extends Controller
         if (strlen($fromInputDate) > 0) {
             $fromInputDate = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
             $toInputDate = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
-            $query->whereBetween(DB::raw('DATE(user_logs.timestamp)'), [$fromInputDate, $toInputDate]); // Corrected table name
+            $query->whereBetween(DB::raw('DATE(log_user_logs.timestamp)'), [$fromInputDate, $toInputDate]); // Corrected table name
         }
 
         if (strlen($inputName) > 0) {
@@ -154,7 +154,7 @@ class UserLogsController extends Controller
             });
         }
 
-        $data = $query->orderBy(DB::raw('DATE(user_logs.timestamp)'), 'asc') // Corrected table name
+        $data = $query->orderBy(DB::raw('DATE(log_user_logs.timestamp)'), 'asc') // Corrected table name
             ->get();
         return $data;
     }
