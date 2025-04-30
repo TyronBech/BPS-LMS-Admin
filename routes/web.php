@@ -23,6 +23,7 @@ use App\Http\Controllers\Inventory\InventoryController;
 use App\Http\Controllers\Report\CategoriesController;
 use App\Http\Controllers\Report\InventoriesController;
 use App\Http\Controllers\Analytics\FetchDataController;
+use App\Http\Controllers\Report\ComputerUseController;
 use App\Http\Middleware\BookAuthentication;
 use App\Http\Middleware\SuperAdminAuthentication;
 use App\Http\Middleware\UserAuthentication;
@@ -58,6 +59,8 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     Route::prefix('report')->middleware(ReportAuthentication::class)->group(function () {
         Route::get('user-report',       [UserLogsController::class, 'index'])           ->name('report.user');
         Route::post('user-report',      [UserLogsController::class, 'search'])          ->name('report.user-search');
+        Route::get('computer-use',      [ComputerUseController::class, 'index'])        ->name('report.computer-use');
+        Route::post('computer-use',     [ComputerUseController::class, 'search'])       ->name('report.computer-use-search');
         Route::get('visitor-report',    [VisitorLogsController::class, 'index'])        ->name('report.visitor');
         Route::post('visitor-report',   [VisitorLogsController::class, 'retrieve'])     ->name('report.visitor-retrieve');
         Route::get('transaction',       [TransactionController::class, 'index'])        ->name('report.transaction');
