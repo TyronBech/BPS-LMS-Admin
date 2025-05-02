@@ -16,7 +16,12 @@ class Transaction extends Model
         'transaction_type',
         'date_borrowed',
         'due_date',
-        'returned_date',
+        'return_date',
+        'status',
+        'book_condition',
+        'penalty_total',
+        'penalty_status',
+        'remarks',
     ];
     public function books() : BelongsTo
     {

@@ -14,6 +14,7 @@ class TransactionSeeder extends Seeder
     protected $model = Transaction::class;
     public function run(): void
     {
-        Transaction::factory()->count(100)->create();
+        Transaction::factory()->count(50)->create();
+        
     }
 }
