@@ -63,10 +63,8 @@
     try {
       const response = await fetch("{{ route('fetch-current-count') }}");
       const data = await response.json();
-      console.log('New active count:', data.active_count);
       document.getElementById('timed-in-count').textContent = data.active_count;
     } catch (error) {
-      console.error('Error fetching active count:', error);
       document.getElementById('timed-in-count').textContent = 'ERR';
     }
   }
@@ -98,7 +96,6 @@
     try {
       const response = await fetch("{{ route('fetch-transaction-history') }}");
       const data = await response.json();
-      console.log('Transaction history:', data);
       const labels = data.transaction_history.map(item => item.month);
       const counts = data.transaction_history.map(item => item.count);
       const borrowed = data.borrowed.map(item => item.count);
@@ -145,9 +142,7 @@
     });
   }
   // Check if dark mode is enabled
-  // This is used to set the chart theme
   const isDarkMode = window.matchMedia('(prefers-color-scheme: dark)').matches;
-  console.log('Dark mode:', isDarkMode);
   // Set chart colors based on dark mode
   const chartColors = isDarkMode ? {
     totalBg: 'rgba(54, 162, 235, 0.2)',
