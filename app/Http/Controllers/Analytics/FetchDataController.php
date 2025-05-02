@@ -8,6 +8,7 @@ use Carbon\Carbon;
 use App\Models\Log;
 use Illuminate\Support\Facades\DB;
 use App\Models\Book;
+use App\Models\Transaction;
 
 class FetchDataController extends Controller
 {
@@ -40,5 +41,36 @@ class FetchDataController extends Controller
     public function totalBooks(){
         $totalBooks = Book::count();
         return response()->json(['total_books' => $totalBooks]);
+    }
+    public function fetchTransactionHistory(){
+        $monthlyRecord = Transaction::select(
+            DB::raw("DATE_FORMAT(date_borrowed, '%Y %M') as month"),
+            DB::raw('COUNT(*) as count')
+        )->
+        groupBy(DB::raw("DATE_FORMAT(date_borrowed, '%Y %M')"))
+        ->orderBy(DB::raw("MIN(date_borrowed)")) // optional: to order correctly from oldest to newest
+        ->limit(12)
+        ->get();
+        $borrowed = Transaction::select(
+            DB::raw('COUNT(*) as count')
+        )
+        ->where('transaction_type', 'Borrowed')
+        ->groupBy(DB::raw("DATE_FORMAT(date_borrowed, '%Y %M')"))
+        ->orderBy(DB::raw("MIN(date_borrowed)")) // optional: to order correctly from oldest to newest
+        ->limit(12)
+        ->get();
+        $returned = Transaction::select(
+            DB::raw('COUNT(*) as count')
+        )
+        ->where('transaction_type', 'Returned')
+        ->groupBy(DB::raw("DATE_FORMAT(date_borrowed, '%Y %M')"))
+        ->orderBy(DB::raw("MIN(date_borrowed)")) // optional: to order correctly from oldest to newest
+        ->limit(12)
+        ->get();
+        return response()->json([
+            'transaction_history' => $monthlyRecord,
+            'borrowed' => $borrowed,
+            'returned' => $returned
+        ]);
     }
 }
