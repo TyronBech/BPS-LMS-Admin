@@ -99,8 +99,9 @@
       const labels = data.transaction_history.map(item => item.month);
       const counts = data.transaction_history.map(item => item.count);
       const borrowed = data.borrowed.map(item => item.count);
+      const reserved = data.reserved.map(item => item.count);
       const returned = data.returned.map(item => item.count);
-      transactionHistoryBarGraph(labels, counts, borrowed, returned);
+      transactionHistoryBarGraph(labels, counts, borrowed, reserved, returned);
     } catch (error) {
       console.error('Error fetching transaction history:', error);
     }
@@ -149,6 +150,8 @@
     totalBorder: 'rgba(54, 162, 235, 1)',
     borrowedBg: 'rgba(255, 114, 118, 0.2)',
     borrowedBorder: 'rgba(255, 114, 118, 1)',
+    reservedBg: 'rgba(254, 221, 0, 0.2)',
+    reservedBorder: 'rgba(254, 221, 0, 1)',
     returnedBg: 'rgba(75, 192, 192, 0.2)',
     returnedBorder: 'rgba(75, 192, 192, 1)',
     fontColor: '#fff',
@@ -157,13 +160,15 @@
     totalBorder: 'rgba(54, 162, 235, 1)',
     borrowedBg: 'rgba(255, 114, 118, 0.6)',
     borrowedBorder: 'rgba(255, 114, 118, 1)',
+    reservedBg: 'rgba(254, 221, 0, 0.6)',
+    reservedBorder: 'rgba(254, 221, 0, 1)',
     returnedBg: 'rgba(75, 192, 192, 0.6)',
     returnedBorder: 'rgba(75, 192, 192, 1)',
     fontColor: '#111',
   };
 
   // Create a bar graph for transaction history
-  function transactionHistoryBarGraph(labels, counts, borrowed, returned) {
+  function transactionHistoryBarGraph(labels, counts, borrowed, reserved, returned) {
     const ctx = document.getElementById('transaction-history').getContext('2d');
 
     if (transactionHistoryChart) {
@@ -188,6 +193,15 @@
           data: borrowed,
           backgroundColor: chartColors.borrowedBg,
           borderColor: chartColors.borrowedBorder,
+          borderWidth: 2,
+          pointBackgroundColor: 'white',
+          tension: 0.3,
+          fill: true,
+        }, {
+          label: 'Total Reserved',
+          data: reserved,
+          backgroundColor: chartColors.reservedBg,
+          borderColor: chartColors.reservedBorder,  
           borderWidth: 2,
           pointBackgroundColor: 'white',
           tension: 0.3,

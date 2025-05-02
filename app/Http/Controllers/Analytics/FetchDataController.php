@@ -67,10 +67,19 @@ class FetchDataController extends Controller
         ->orderBy(DB::raw("MIN(date_borrowed)")) // optional: to order correctly from oldest to newest
         ->limit(12)
         ->get();
+        $reserved = Transaction::select(
+            DB::raw('COUNT(*) as count')
+        )
+        ->where('transaction_type', 'Reserved')
+        ->groupBy(DB::raw("DATE_FORMAT(date_borrowed, '%Y %M')"))
+        ->orderBy(DB::raw("MIN(date_borrowed)")) // optional: to order correctly from oldest to newest
+        ->limit(12)
+        ->get();
         return response()->json([
             'transaction_history' => $monthlyRecord,
             'borrowed' => $borrowed,
-            'returned' => $returned
+            'returned' => $returned,
+            'reserved' => $reserved
         ]);
     }
 }
