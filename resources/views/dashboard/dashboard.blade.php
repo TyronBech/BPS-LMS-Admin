@@ -321,8 +321,13 @@
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
+          legend: {
+            labels: {
+              color: chartColors.fontColor,
+            },
+          },
           datalabels: {
-            color: '#000',
+            color: chartColors.fontColor,
             formatter: (value, context) => {
               const label = context.chart.data.labels[context.dataIndex];
               return `${label}: ${value} books`;
@@ -357,8 +362,13 @@
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
+          legend: {
+            labels: {
+              color: chartColors.fontColor,
+            },
+          },
           datalabels: {
-            color: '#000',
+            color: chartColors.fontColor,
             formatter: (value, context) => {
               const label = context.chart.data.labels[context.dataIndex];
               return `${label}: ${value}`;
