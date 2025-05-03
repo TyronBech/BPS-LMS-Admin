@@ -9,6 +9,7 @@ use App\Models\Log;
 use Illuminate\Support\Facades\DB;
 use App\Models\Book;
 use App\Models\Transaction;
+use App\Models\User;
 
 class FetchDataController extends Controller
 {
@@ -80,6 +81,29 @@ class FetchDataController extends Controller
             'borrowed' => $borrowed,
             'returned' => $returned,
             'reserved' => $reserved
+        ]);
+    }
+    public function fetchYearlyAquiredBooks(){
+        $yearlyRecord = Book::select(
+            DB::raw("DATE_FORMAT(created_at, '%Y') as year"),
+            DB::raw('COUNT(*) as count')
+        )
+        ->groupBy(DB::raw("DATE_FORMAT(created_at, '%Y')"))
+        ->orderBy(DB::raw("MIN(created_at)")) // optional: to order correctly from oldest to newest
+        ->get();
+        return response()->json($yearlyRecord);
+    }
+    public function fetchRegisteredUsers(){
+        $students = User::whereHas('privileges', function ($query) {
+            $query->where('user_type', 'student');
+        })->count();
+        
+        $employees = User::whereHas('privileges', function ($query) {
+            $query->where('user_type', 'employee');
+        })->count();
+        return response()->json([
+            'students' => $students,
+            'employees' => $employees
         ]);
     }
 }

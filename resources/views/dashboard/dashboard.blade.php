@@ -56,6 +56,30 @@
       </svg>
     </button>
   </div>
+  <div class="flex flex-col min-h-96 col-span-2 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Yearly Book Acquisition</h5>
+    <div class="mb-5">
+      <canvas id="yearly-books" width="" height=""></canvas>
+    </div>
+    <button type="button" onclick="fetchYearlyAquiredBooks()" class="inline-flex justify-center items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+      Refresh
+      <svg class="w-4 h-4 ml-1 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4" />
+      </svg>
+    </button>
+  </div>
+  <div class="flex flex-col min-h-96 col-span-2 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Registered Users</h5>
+    <div class="mb-5">
+      <canvas id="registered-users" width="" height=""></canvas>
+    </div>
+    <button type="button" onclick="fetchRegisteredUsers()" class="inline-flex justify-center items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+      Refresh
+      <svg class="w-4 h-4 ml-1 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4" />
+      </svg>
+    </button>
+  </div>
 </div>
 <script>
   // Fetch the current count of active users
@@ -106,13 +130,41 @@
       console.error('Error fetching transaction history:', error);
     }
   }
+  // Fetch the yearly acquired books
+  async function fetchYearlyAquiredBooks() {
+    try {
+      const response = await fetch("{{ route('fetch-yearly-aquired-books') }}");
+      const data = await response.json();
+      const labels = data.map(item => item.year);
+      const counts = data.map(item => item.count);
+      YearlyBooksDoughnutGraph(labels, counts);
+    } catch (error) {
+      console.error('Error fetching yearly acquired books:', error);
+    }
+  }
+  // Fetch the registered users
+  async function fetchRegisteredUsers() {
+    try {
+      const response = await fetch("{{ route('fetch-registered-users') }}");
+      const data = await response.json();
+      const student = data.students;
+      const employees = data.employees;
+      const labels = ['Students', 'Faculty & Staff'];
+      const counts = [student, employees];
+      RegisteredUsersPieGraph(labels, counts);
+    } catch (error) {
+      console.error('Error fetching registered users:', error);
+    }
+  }
   // Initialize the chart variable
   let transactionHistoryChart = null;
   let monthlyLogsChart = null;
+  let yearlyBooksChart = null;
+  let registeredUsersChart = null;
   // Create a line graph for monthly logs
   function monthlyLogsLineGraph(labels, counts) {
     const ctx = document.getElementById('monthly-logs').getContext('2d');
-
+    // Check if the chart already exists
     if (monthlyLogsChart) {
       monthlyLogsChart.destroy(); // 👈 Destroy old chart if exists
     }
@@ -138,7 +190,10 @@
           y: {
             beginAtZero: true
           }
-        }
+        },
+        plugins: {
+          datalabels: false,
+        },
       }
     });
   }
@@ -170,7 +225,7 @@
   // Create a bar graph for transaction history
   function transactionHistoryBarGraph(labels, counts, borrowed, reserved, returned) {
     const ctx = document.getElementById('transaction-history').getContext('2d');
-
+    // Check if the chart already exists
     if (transactionHistoryChart) {
       transactionHistoryChart.destroy(); // 👈 Destroy old chart if exists
     }
@@ -201,7 +256,7 @@
           label: 'Total Reserved',
           data: reserved,
           backgroundColor: chartColors.reservedBg,
-          borderColor: chartColors.reservedBorder,  
+          borderColor: chartColors.reservedBorder,
           borderWidth: 2,
           pointBackgroundColor: 'white',
           tension: 0.3,
@@ -225,6 +280,7 @@
               color: chartColors.fontColor,
             },
           },
+          datalabels: false
         },
         scales: {
           x: {
@@ -242,14 +298,101 @@
       }
     });
   }
+  // Create a doughnut graph for yearly acquired books
+  function YearlyBooksDoughnutGraph(labels, counts) {
+    const ctx = document.getElementById('yearly-books').getContext('2d');
+    // Check if the chart already exists
+    if (yearlyBooksChart) {
+      yearlyBooksChart.destroy(); // 👈 Destroy old chart if exists
+    }
+    const colors = generateRandomColors(labels.length);
+    yearlyBooksChart = new Chart(ctx, {
+      type: 'doughnut',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Yearly Acquired Books',
+          data: counts,
+          backgroundColor: colors,
+          hoverOffset: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          datalabels: {
+            color: '#000',
+            formatter: (value, context) => {
+              const label = context.chart.data.labels[context.dataIndex];
+              return `${label}: ${value} books`;
+            },
+            anchor: 'end',
+            align: 'start',
+          }
+        },
+      },
+    });
+  }
+  // Create a pie graph for registered users
+  function RegisteredUsersPieGraph(labels, counts) {
+    const ctx = document.getElementById('registered-users').getContext('2d');
+    // Check if the chart already exists
+    if (registeredUsersChart) {
+      registeredUsersChart.destroy(); // 👈 Destroy old chart if exists
+    }
+    const colors = generateRandomColors(labels.length);
+    registeredUsersChart = new Chart(ctx, {
+      type: 'pie',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Registered Users',
+          data: counts,
+          backgroundColor: colors,
+          hoverOffset: 4,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          datalabels: {
+            color: '#000',
+            formatter: (value, context) => {
+              const label = context.chart.data.labels[context.dataIndex];
+              return `${label}: ${value}`;
+            },
+            anchor: 'end',
+            align: 'start',
+          }
+        }
+      },
+    });
+  }
+  // Generate random colors for the chart
+  function generateRandomColors(count) {
+    const colors = [];
+    for (let i = 0; i < count; i++) {
+      const r = Math.floor(Math.random() * 255);
+      const g = Math.floor(Math.random() * 255);
+      const b = Math.floor(Math.random() * 255);
+      colors.push(`rgb(${r}, ${g}, ${b})`);
+    }
+    return colors;
+  }
 
   setInterval(fetchActiveCount, 5000);
   setInterval(fetchBookCount, 60000);
   setInterval(fetchTransactionHistory, 60000);
+  setInterval(fetchYearlyAquiredBooks, 60000);
+  setInterval(fetchRegisteredUsers, 60000);
 
   document.addEventListener('DOMContentLoaded', fetchActiveCount);
   document.addEventListener('DOMContentLoaded', fetchMonthlyCount);
   document.addEventListener('DOMContentLoaded', fetchBookCount);
   document.addEventListener('DOMContentLoaded', fetchTransactionHistory);
+  document.addEventListener('DOMContentLoaded', fetchYearlyAquiredBooks);
+  document.addEventListener('DOMContentLoaded', fetchRegisteredUsers);
 </script>
 @endsection

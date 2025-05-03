@@ -56,6 +56,8 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::get('monthly-users',         [FetchDataController::class, 'fetchMonthlyUsers'])          ->name('fetch-monthly-count');
         Route::get('total-books',           [FetchDataController::class, 'totalBooks'])                 ->name('fetch-book-count');
         Route::get('transaction-history',   [FetchDataController::class, 'fetchTransactionHistory'])    ->name('fetch-transaction-history');
+        Route::get('yearly-aquired-books',  [FetchDataController::class, 'fetchYearlyAquiredBooks'])    ->name('fetch-yearly-aquired-books');
+        Route::get('registered-users',      [FetchDataController::class, 'fetchRegisteredUsers'])       ->name('fetch-registered-users');
     });
     Route::prefix('report')->middleware(ReportAuthentication::class)->group(function () {
         Route::get('user-report',       [UserLogsController::class, 'index'])           ->name('report.user');
