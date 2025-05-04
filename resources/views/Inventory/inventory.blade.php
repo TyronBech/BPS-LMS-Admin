@@ -9,7 +9,7 @@
     <form action="{{ route('inventory.search') }}" id="search-form" method="POST" class="flex flex-col items-center">
       @csrf
       <input type="text" name="barcode" id="barcode" class="w-full p-2 mb-2 border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300" placeholder="Barcode" required>
-      <button type="submit" class="w-full p-2 mb-2 text-white bg-blue-500 border border-blue-500 rounded-lg shadow-sm hover:bg-blue-600 dark:border-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800">Check</button>
+      <button type="submit" class="w-full p-2 mb-2 text-white bg-blue-500 border border-blue-500 rounded-lg shadow-sm hover:bg-blue-600 dark:border-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800">Add</button>
     </form>
   </div>
 </div>
@@ -54,21 +54,20 @@
     var conditions = response.conditions;
 
     var row = '<tr>';
-    row += '<td class="pb-1">' + data.accession + '</td>';
-    row += '<td class="pb-1">' + data.call_number + '</td>';
-    row += '<td class="pb-1">' + data.barcode + '</td>';
-    row += '<td class="pb-1">' + data.title + '</td>';
-    row += '<td class="pb-1">' + data.author + '</td>';
+    row += '<td class="mt-1">' + data.accession + '</td>';
+    row += '<td class="mt-1">' + data.call_number + '</td>';
+    row += '<td class="mt-1">' + data.title + '</td>';
+    row += '<td class="mt-1">' + data.author + '</td>';
 
 
-    row += '<td class="pb-1 mx-2">';
+    row += '<td class="mt-1 mx-2">';
     row += '<select id="condition" name="condition[' + data.accession + ']" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">';
 
     for (var i = 0; i < conditions.length; i++) {
       var selected = (conditions[i] === data.condition_status) ? 'selected' : '';
       row += '<option value="' + conditions[i] + '" ' + selected + '>' + conditions[i] + '</option>';
     }
-
+    row += '<td class="mt-1 mx-2"><button type="submit" class="deleteBtn focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">Delete</button></td>'
     row += '</select></td>';
 
     row += '</tr>';

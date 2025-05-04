@@ -11,12 +11,19 @@ use Illuminate\Support\Facades\DB;
 class InventoryController extends Controller
 {
     public function index(){
-        return view('inventory.inventory');
+        $conditions = $this->extract_enums('bk_books', 'condition_status');
+        $books = Book::with('inventory')
+            ->whereHas('inventory', function($query){
+                $query->where('checked_at', null);
+            })
+            ->orderBy('created_at', 'desc')
+            ->get();
+        return view('inventory.inventory', compact('books', 'conditions'));
     }
     public function search(Request $request)
     {
         $data       = null;
-        $conditions = $this->extract_enums('books', 'condition_status');
+        $conditions = $this->extract_enums('bk_books', 'condition_status');
         $validator  = Validator::make($request->all(), [
             'barcode' => 'required',
         ]);
@@ -25,7 +32,14 @@ class InventoryController extends Controller
         }
         try{
             $barcode = $request->input('barcode');
-            $data = Book::where('barcode', $barcode)->first();
+            $data = Book::where('accession', $barcode)->first();
+            if (!$data) {
+                return redirect()->back()->with('toast-warning', 'No book found with this barcode!');
+            }
+            Inventory::create([
+                'book_id'             => $data->id,
+                'checked_at'          => null,
+            ]);
         } catch (\Illuminate\Database\QueryException $e){
             return redirect()->route('inventory.inventory')->with('toast-error', $e->getMessage());
         }
@@ -38,9 +52,12 @@ class InventoryController extends Controller
         try{
             foreach($condition as $key => $value){
                 $book = Book::where('accession', $key)->first();
-                Inventory::create([
-                    'book_id'             => $book->id,
-                    'checked_at'          => now(),
+                $inventory = Inventory::where('book_id', $book->id)->where('checked_at', null)->first();
+                if (!$inventory) {
+                    return redirect()->back()->with('toast-warning', 'No inventory found for this book!');
+                }
+                $inventory->update([
+                    'checked_at' => now(),
                 ]);
                 $book->update([
                     'remarks'           => "On Shelf",
