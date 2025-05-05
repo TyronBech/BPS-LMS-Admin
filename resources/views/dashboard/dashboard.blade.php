@@ -307,13 +307,13 @@
     }
     const colors = generateRandomColors(labels.length);
     yearlyBooksChart = new Chart(ctx, {
-      type: 'doughnut',
+      type: 'line',
       data: {
         labels: labels,
         datasets: [{
           label: 'Yearly Acquired Books',
           data: counts,
-          backgroundColor: colors,
+          backgroundColor: "rgba(54, 162, 235, 1)",
           hoverOffset: 4,
         }]
       },
@@ -326,15 +326,16 @@
               color: chartColors.fontColor,
             },
           },
-          datalabels: {
-            color: chartColors.fontColor,
-            formatter: (value, context) => {
-              const label = context.chart.data.labels[context.dataIndex];
-              return `${label}: ${value} books`;
-            },
-            anchor: 'end',
-            align: 'start',
-          }
+          datalabels: false,
+          // datalabels: {
+          //   color: chartColors.fontColor,
+          //   formatter: (value, context) => {
+          //     const label = context.chart.data.labels[context.dataIndex];
+          //     return `${label}: ${value} books`;
+          //   },
+          //   anchor: 'end',
+          //   align: 'start',
+          // }
         },
       },
     });
@@ -354,7 +355,10 @@
         datasets: [{
           label: 'Registered Users',
           data: counts,
-          backgroundColor: colors,
+          backgroundColor: [
+            "rgba(75, 192, 192, 1)",
+            "rgba(54, 162, 235, 1)",
+          ],
           hoverOffset: 4,
         }]
       },
