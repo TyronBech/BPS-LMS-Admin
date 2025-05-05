@@ -40,7 +40,7 @@ $roleID = null;
         $roleID = ['id' => $role->id];
         @endphp
         @if($role->name != 'Super Admin')
-          <button data-modal-target="popup-modal" data-modal-toggle="popup-modal" class="focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2" type="button">Delete</button>
+          <button data-modal-target="popup-modal" data-modal-toggle="popup-modal" class="deleteBtn focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2" type="button" value="{{ $role->id }}">Delete</button>
         @endif
       </div>
     </div>
@@ -78,10 +78,10 @@ $roleID = null;
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
         </svg>
         <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete this role?</h3>
-        <form action="{{ route('maintenance.roles-and-permissions.delete-role', $roleID) }}" method="POST" class="flex items-center justify-center">
+        <form action="{{ route('maintenance.roles-and-permissions.delete-role') }}" method="POST" class="flex items-center justify-center">
           @csrf
           @method('DELETE')
-          <button data-modal-hide="popup-modal" type="submit" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
+          <button data-modal-hide="popup-modal" type="submit" id="deleteRole" name="deleteRole" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
             Yes, I'm sure
           </button>
           <button data-modal-hide="popup-modal" type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">No, cancel</button>
@@ -90,4 +90,14 @@ $roleID = null;
     </div>
   </div>
 </div>
+<script>
+  const deleteBtn = document.querySelectorAll('.deleteBtn');
+  deleteBtn.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const roleID = btn.value;
+      const deleteRoleInput = document.getElementById('deleteRole');
+      deleteRoleInput.value = roleID;
+    });
+  });
+</script>
 @endsection

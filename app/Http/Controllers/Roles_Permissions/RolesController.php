@@ -99,7 +99,11 @@ class RolesController extends Controller
     public function destroy(Request $request){
         DB::beginTransaction();
         try{
-            $role = Role::findById($request->input('id'));
+            $role = Role::findById($request->input('deleteRole'));
+            if($role->users()->count() > 0){
+                DB::rollBack();
+                return redirect()->back()->with('toast-warning', 'Role cannot be deleted because it is assigned to users');
+            }
             $role->revokePermissionTo($role->permissions);
             $role->delete();
         } catch(\Illuminate\Database\QueryException $e){
