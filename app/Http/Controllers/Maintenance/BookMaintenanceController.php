@@ -31,8 +31,8 @@ class BookMaintenanceController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string|max:50',
-            'call_number'       => 'required|string|max:50',
-            'title'             => 'required|string|max:255',
+            'call_number'       => 'sometimes|max:50',
+            'title'             => 'required|string|max:1024',
             'authors'           => 'sometimes',
             'edition'           => 'sometimes',
             'publication'       => 'required|string|max:255',
@@ -59,16 +59,16 @@ class BookMaintenanceController extends Controller
             $barcode = new DNS1D();
             Book::create([
                 'accession'             => $request->input('accession'),
-                'call_number'           => $request->input('call_number'),
+                'call_number'           => $request->input('call_number') ?? null,
                 'barcode'               => $barcode->getBarcodeJPG($request->input('accession'), 'C39+', 2, 70, array(0, 0, 0, 0), true),
                 'title'                 => $request->input('title'),
-                'author'                => $request->input('authors'),
-                'edition'               => $request->input('edition'),
+                'author'                => $request->input('authors') ?? null,
+                'edition'               => $request->input('edition') ?? null,
                 'place_of_publication'  => $request->input('publication'),
                 'publisher'             => $request->input('publisher'),
                 'copyrights'            => $request->input('copyright'),
-                'cover_image'           => $request->input('cover_image'),
-                'digital_copy_url'      => $request->input('digital_copy_url'),
+                'cover_image'           => $request->input('cover_image') ?? null,
+                'digital_copy_url'      => $request->input('digital_copy_url') ?? null,
                 'remarks'               => $request->input('remarks'),
                 'category_id'           => $request->input('category'),
                 'condition_status'      => $request->input('condition'),
@@ -134,8 +134,8 @@ class BookMaintenanceController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string|max:50',
-            'call_number'       => 'required|string|max:50',
-            'title'             => 'required|string|max:255',
+            'call_number'       => 'sometimes|max:50',
+            'title'             => 'required|string|max:1024',
             'authors'           => 'sometimes',
             'edition'           => 'sometimes',
             'publication'       => 'required|string|max:255',

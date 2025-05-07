@@ -67,9 +67,9 @@ class BookImportController extends Controller
                 $barcode = new DNS1D();
                 Book::create([
                     'accession'             => $item['accession'],
-                    'call_number'           => $item['call_number'],
+                    'call_number'           => $item['call_number'] ?? null,
                     'title'                 => $item['title'],
-                    'author'                => $item['authors'],
+                    'author'                => $item['authors'] ?? null,
                     'edition'               => $item['edition'] ?? null,
                     'place_of_publication'  => $item['place_of_publication'],
                     'publisher'             => $item['publisher'],
