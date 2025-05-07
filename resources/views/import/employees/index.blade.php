@@ -4,7 +4,7 @@
 <p class="mt-1 text-md/relaxed text-center">Import employee's data to be used in the application using the CSV or Excel format</p>
 <p class="mt-1 text-sm/relaxed text-slate-500 text-center">ex. newly hired employees or staff can be imported.</p>
 @if(!$showTable)
-<div class="border-2 border-slate-700 rounded-lg flex flex-col text-center items-center mb-4 mt-2 w-full dark:bg-slate-800 bg-white">
+<div class="border-2 border-slate-700 rounded-lg flex flex-col text-center items-center mb-4 mt-2 w-full">
   <form action="{{ route('import.import-faculties-staffs') }}" method="POST" enctype="multipart/form-data">
     @csrf
     <label class="block mt-4 text-sm font-medium text-gray-600" for="file_input">Upload a file in CSV or Excel format</label>
