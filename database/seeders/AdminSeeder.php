@@ -51,7 +51,7 @@ class AdminSeeder extends Seeder
         //     $user1->last_name = "Bechayda";
         //     $user1->suffix = null;
         //     $user1->email = "superadmin@gmail.com";
-        //     $user1->password = Hash::make('Super@admin');
+        //     $user1->password = Hash::make('Super@admin1');
         //     $user1->profile_image = null;
         //     $user1->user_type = "employee";
         //     $user1->employee_role = "Part-time Faculty";
@@ -88,7 +88,7 @@ class AdminSeeder extends Seeder
         //     DB::rollBack();
         // }
         // DB::commit();
-        //calling procedure
+        // //calling procedure
         // try{
         //     DB::statement('CALL DistributeStagingUsers()');
         // } catch(\Illuminate\Database\QueryException $e){
