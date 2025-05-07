@@ -201,8 +201,8 @@
                   </a>
                 </li>
                 @endif
+                @if(auth()->user()->hasRole(App\Enum\RolesEnum::SUPER_ADMIN))
                 <li aria-labelledby="dropdownNavbarLink">
-                  @if(auth()->user()->hasRole(App\Enum\RolesEnum::SUPER_ADMIN))
                   <button id="doubleDropdownButton" data-dropdown-toggle="doubleDropdown" data-dropdown-placement="right-start" type="button" class="flex items-center w-full px-4 pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
                     <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                       <path d="M16 10c0-.55228-.4477-1-1-1h-3v2h3c.5523 0 1-.4477 1-1Z" />
@@ -234,8 +234,8 @@
                       </li>
                     </ul>
                   </div>
-                  @endif
                 </li>
+                @endif
               </ul>
             </div>
           </li>
