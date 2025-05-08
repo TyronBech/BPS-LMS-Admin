@@ -1,6 +1,6 @@
 @extends('layouts.welcome-layout')
 @section('content')
-<div class="flex justify-between items-center my-20">
+<div class="flex justify-between items-center my-20 mx-16">
   <img class="rounded-full w-72 h-72" src="{{ asset('img/BPSLogo.png') }}" alt="School Logo">
   <div class="flex flex-col justify-evenly">
     <h1 class="lg:text-2xl md:text-lg text-black font-semibold text-center dark:text-white">Bicutan Parochial School</h1>
