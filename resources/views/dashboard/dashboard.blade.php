@@ -7,75 +7,47 @@
       <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Current Users</h5>
       <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Total number of users currently timed-in in the library.</p>
     </div>
-    <div>
+    <div class="mb-20">
       <h1 id="timed-in-count" class="text-8xl text-center font-extrabold dark:text-gray-300"></h1>
     </div>
-    <button type="button" onclick="fetchActiveCount()" class="inline-flex justify-center items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-      Refresh
-      <svg class="w-4 h-4 ml-1 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4" />
-      </svg>
-    </button>
   </div>
   <div class="flex flex-col min-h-96 col-span-3 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Monthly Logs</h5>
     <div>
       <canvas id="monthly-logs" width="" height="84"></canvas>
     </div>
-    <button type="button" onclick="fetchMonthlyCount()" class="inline-flex justify-center items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-      Refresh
-      <svg class="w-4 h-4 ml-1 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4" />
-      </svg>
-    </button>
   </div>
   <div class="flex flex-col min-h-96 justify-between max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <div>
       <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Total Books</h5>
       <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Total number of books in the database.</p>
     </div>
-    <div>
+    <div class="mb-20">
       <h1 id="book-count" class="text-8xl text-center font-extrabold dark:text-gray-300"></h1>
     </div>
-    <button type="button" onclick="fetchBookCount()" class="inline-flex justify-center items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-      Refresh
-      <svg class="w-4 h-4 ml-1 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4" />
-      </svg>
-    </button>
   </div>
   <div class="flex flex-col min-h-96 col-span-3 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Transaction History</h5>
     <div>
       <canvas id="transaction-history" width="" height="84"></canvas>
     </div>
-    <button type="button" onclick="fetchTransactionHistory()" class="inline-flex justify-center items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-      Refresh
-      <svg class="w-4 h-4 ml-1 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4" />
-      </svg>
-    </button>
   </div>
   <div class="flex flex-col min-h-96 col-span-2 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Yearly Book Acquisition</h5>
     <div class="mb-5">
-      <canvas id="yearly-books" width="" height=""></canvas>
+      <canvas id="yearly-books" width="" height="84"></canvas>
     </div>
-    <button type="button" onclick="fetchYearlyAquiredBooks()" class="inline-flex justify-center items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-      Refresh
-      <svg class="w-4 h-4 ml-1 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4" />
-      </svg>
-    </button>
   </div>
   <div class="flex flex-col min-h-96 col-span-2 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Registered Users</h5>
     <div class="mb-5">
-      <canvas id="registered-users" width="" height=""></canvas>
+      <canvas id="registered-users" width="250" height="250"></canvas>
     </div>
-    <button type="button" onclick="fetchRegisteredUsers()" class="inline-flex justify-center items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
-      Refresh
-      <svg class="w-4 h-4 ml-1 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  </div>
+  <div class="sticky z-index-100 bottom-10 left-20">
+    <button type="button" id="refresh" class="flex text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
+      <span class="">Refresh</span>
+      <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4" />
       </svg>
     </button>
@@ -313,31 +285,25 @@
         datasets: [{
           label: 'Yearly Acquired Books',
           data: counts,
-          backgroundColor: "rgba(54, 162, 235, 1)",
-          hoverOffset: 4,
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 2,
+          pointBackgroundColor: 'white',
+          tension: 0.3,
+          fill: true,
         }]
       },
       options: {
         responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          legend: {
-            labels: {
-              color: chartColors.fontColor,
-            },
-          },
-          datalabels: false,
-          // datalabels: {
-          //   color: chartColors.fontColor,
-          //   formatter: (value, context) => {
-          //     const label = context.chart.data.labels[context.dataIndex];
-          //     return `${label}: ${value} books`;
-          //   },
-          //   anchor: 'end',
-          //   align: 'start',
-          // }
+        scales: {
+          y: {
+            beginAtZero: true
+          }
         },
-      },
+        plugins: {
+          datalabels: false,
+        },
+      }
     });
   }
   // Create a pie graph for registered users
@@ -395,6 +361,16 @@
     }
     return colors;
   }
+  const refreshButton = document.getElementById('refresh');
+  // Add event listener to the refresh button
+  refreshButton.addEventListener('click', () => {
+    fetchActiveCount();
+    fetchMonthlyCount();
+    fetchBookCount();
+    fetchTransactionHistory();
+    fetchYearlyAquiredBooks();
+    fetchRegisteredUsers();
+  });
 
   setInterval(fetchActiveCount, 5000);
   setInterval(fetchBookCount, 60000);
