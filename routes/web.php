@@ -24,6 +24,8 @@ use App\Http\Controllers\Report\CategoriesController;
 use App\Http\Controllers\Report\InventoriesController;
 use App\Http\Controllers\Analytics\FetchDataController;
 use App\Http\Controllers\Report\ComputerUseController;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Middleware\BookAuthentication;
 use App\Http\Middleware\SuperAdminAuthentication;
 use App\Http\Middleware\UserAuthentication;
@@ -43,9 +45,12 @@ Route::middleware('guest', RedirectIfAuthenticated::class)->group(function () {
     Route::post('login',    [AdminLoginController::class, 'store'])     ->name('login');
     Route::get('register',  [RegisterAdminController::class, 'create']) ->name('register');
     Route::post('register', [RegisterAdminController::class, 'store']);
+    Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
+    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email');
+    Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
+    Route::post('reset-password', [NewPasswordController::class, 'store'])->name('password.store');
 });
 Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->group(function () {
-    Route::get('monthly-users1', [FetchDataController::class, 'fetchMonthlyUsers'])          ->name('fetch-monthly-count');
     Route::get('dashboard', function(){
         return view('dashboard.dashboard');
     })->name('dashboard');
