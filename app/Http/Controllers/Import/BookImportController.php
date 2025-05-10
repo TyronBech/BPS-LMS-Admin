@@ -60,9 +60,11 @@ class BookImportController extends Controller
         foreach ($dataArray as $item) {
             DB::beginTransaction();
             try {
-                $category = Category::select('id')->where('name', $item['category'])->first();
+                $category = Category::select('id')->where(DB::raw('lower(name)'), strtolower($item['category']))->first();
+
                 if($category == null){
-                    return redirect()->route('import.import-books')->with('toast-error', "An error occurred while saving book: Category not found.");
+                    DB::rollBack();
+                    return redirect()->route('import.import-books')->with('toast-warning', 'Category not found: ' . $item['category']);
                 }
                 $barcode = new DNS1D();
                 Book::create([
