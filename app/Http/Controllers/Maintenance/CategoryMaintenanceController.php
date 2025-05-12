@@ -38,7 +38,7 @@ class CategoryMaintenanceController extends Controller
             return redirect()->back()->with('toast-error', 'Error occurred while creating category.');
         }
         DB::commit();
-        return redirect()->route('maintenance.categories')->with('success', 'Category updated successfully.');
+        return redirect()->route('maintenance.categories')->with('toast-success', 'Category updated successfully.');
     }
     public function update(Request $request)
     {
