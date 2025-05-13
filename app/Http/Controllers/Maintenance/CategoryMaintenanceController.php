@@ -52,7 +52,7 @@ class CategoryMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try{
-            $category = Category::findOrFail($request->input('category_id'));
+            $category = Category::findOrFail($request->input('edit_category_id'));
             $category->name     = $request->input('name');
             $category->legend   = $request->input('legend');
             $category->save();
