@@ -160,7 +160,7 @@ class AdminMaintenanceController extends Controller
         Mail::to($user->email)->send(new RoleEmailMessage($user, $role));
     }
     private function has_invalid_characters($name) {
-        $pattern = '/^[a-zA-ZáéíóúñÁÉÍÓÚÑ]+$/';
+        $pattern = '/^[a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+$/';
         return !(bool) preg_match($pattern, $name); 
     }
 }
