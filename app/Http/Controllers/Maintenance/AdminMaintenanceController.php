@@ -107,14 +107,14 @@ class AdminMaintenanceController extends Controller
     public function update(Request $request){
         $request->validate([
             'first-name'    => 'required|string|max:50',            
-            'middle-name'   => 'required|string|max:50',
+            'middle-name'   => 'sometimes|max:50',
             'last-name'     => 'required|string|max:50',
             'email'         => 'required|email',            
             'role'          => 'required',
         ]);
         if($this->has_invalid_characters($request->input('first-name'))){
             return redirect()->back()->with('toast-warning', 'Admin\'s name contains invalid characters');
-        } else if($this->has_invalid_characters($request->input('middle-name'))){
+        } else if($request->input('middle-name') != null && $this->has_invalid_characters($request->input('middle-name'))){
             return redirect()->back()->with('toast-warning', 'Admin\'s middle name contains invalid characters');
         } else if($this->has_invalid_characters($request->input('last-name'))){
             return redirect()->back()->with('toast-warning', 'Admin\'s last name contains invalid characters');
