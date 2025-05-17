@@ -112,12 +112,27 @@ class UserLogsController extends Controller
         $dompdf->loadHtml(view('pdf.user-pdf-report-format', $items));
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
-        $dompdf->stream('users-report.pdf', array('Attachment' => true));
+        $dompdf->stream('users-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
     }
     private function exportExcel($data)
     {
         $spreadsheet    = new Spreadsheet();
         $sheet          = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Users Report');
+        $sheet->getColumnDimension('A')->setWidth(30);
+        $sheet->getColumnDimension('B')->setWidth(20);
+        $sheet->getColumnDimension('C')->setWidth(20);
+        $sheet->getColumnDimension('D')->setWidth(20);
+        $sheet->getColumnDimension('E')->setWidth(20);
+        $sheet->getStyle('A1:E1')->getFont()->setBold(true);
+        $sheet->getStyle('A1:E1')->getFont()->setSize(12);
+        $sheet->getStyle('A1:E1')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A1:E1')->getAlignment()->setVertical('center');
+        $sheet->getStyle('A1:E1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
+        $sheet->getStyle('A1:E1')->getFill()->getStartColor()->setARGB('FFCCCCCC');
+        $sheet->getStyle('A1:E1')->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+        $sheet->getStyle('A1:E1')->getBorders()->getAllBorders()->getColor()->setARGB('FF000000');
+        $sheet->getStyle('A1:E1')->getAlignment()->setWrapText(true);
         $sheet->setCellValue('A1', 'Name');
         $sheet->setCellValue('B1', 'Date');
         $sheet->setCellValue('C1', 'Time');
@@ -136,10 +151,11 @@ class UserLogsController extends Controller
             $row++;
         }
         $writer     = new WriterXlsx($spreadsheet);
-        $home = getenv('USERPROFILE') ?: getenv('HOME');
-        $directory = $home . DIRECTORY_SEPARATOR . 'Downloads';
-        $filename = $directory . DIRECTORY_SEPARATOR . 'student-report_' . date('Y-m-d') . '.xlsx';
-        return $writer->save($filename);
+        $fileName = 'users-report ' . date('Y-m-d');
+        header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        header("Content-Disposition: attachment;filename=\"$fileName\"");
+        $writer->save("php://output");
+        exit();
     }
     private function generateData(Request $request)
     {
