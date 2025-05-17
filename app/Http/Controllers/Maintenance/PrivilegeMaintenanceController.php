@@ -18,11 +18,11 @@ class PrivilegeMaintenanceController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'user_type'             => 'required|string|max:50',
-            'category'              => 'required|string|max:50',
-            'max_book_allowed'      => 'required|integer|min:0|max:999',
-            'borrow_duration_days'  => 'required|integer|min:0|max:999',
-            'renewal_limit'         => 'required|integer|min:0|max:999',
+            'user_type'                 => 'required|string|max:50',
+            'category'                  => 'required|string|max:50',
+            'max_book_allowed_add'      => 'required|integer|min:0|max:999',
+            'borrow_duration_days_add'  => 'required|integer|min:0|max:999',
+            'renewal_limit_add'         => 'required|integer|min:0|max:999',
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -32,7 +32,7 @@ class PrivilegeMaintenanceController extends Controller
             UserGroup::create([
                 'user_type'             => $request->input('user_type'),
                 'category'              => $request->input('category'),
-                'max_book_allowed'      => $request->input('max_book_allowed'),
+                'max_book_allowed'      => $request->input('max_book_allowed_add'),
                 'borrow_duration_days'  => $request->input('borrow_duration_days'),
                 'renewal_limit'         => $request->input('renewal_limit'),
             ]);
@@ -46,11 +46,11 @@ class PrivilegeMaintenanceController extends Controller
     public function update(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'user_type'             => 'required|string|max:50',
-            'category'              => 'required|string|max:50',
-            'max_book_allowed'      => 'required|integer|min:0|max:999',
-            'borrow_duration_days'  => 'required|integer|min:0|max:999',
-            'renewal_limit'         => 'required|integer|min:0|max:999',
+            'user_type'                     => 'required|string|max:50',
+            'category'                      => 'required|string|max:50',
+            'max_book_allowed_update'       => 'required|integer|min:0|max:999',
+            'borrow_duration_days_update'   => 'required|integer|min:0|max:999',
+            'renewal_limit_update'          => 'required|integer|min:0|max:999',
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -61,9 +61,9 @@ class PrivilegeMaintenanceController extends Controller
             $privilege->update([
                 'user_type'             => $request->input('user_type'),
                 'category'              => $request->input('category'),
-                'max_book_allowed'      => $request->input('max_book_allowed'),
-                'borrow_duration_days'  => $request->input('borrow_duration_days'),
-                'renewal_limit'         => $request->input('renewal_limit'),
+                'max_book_allowed'      => $request->input('max_book_allowed_update'),
+                'borrow_duration_days'  => $request->input('borrow_duration_days_updare'),
+                'renewal_limit'         => $request->input('renewal_limit_update'),
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
