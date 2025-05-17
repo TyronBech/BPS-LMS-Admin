@@ -32,7 +32,7 @@ class BookCirculationController extends Controller
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
         $data = $this->generateData($request);
-        $availability = $this->extract_enums('books', 'availability_status');
+        $availability = $this->extract_enums('bk_books', 'availability_status');
         if(!count($data)) return redirect()->route('report.book-circulation')->with('toast-error', 'No data found.');
         return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability'));
     }
