@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Log;
 use Illuminate\Support\Facades\Validator;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Dompdf\Dompdf;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use DateTime;
@@ -100,11 +101,18 @@ class UserLogsController extends Controller
     }
     private function generatePDF($data)
     {
-        $chunk      = $data->chunk(25);
-        $arrayPdf   = array('data' => $chunk);
-        $pdf        = Pdf::loadView('pdf.user-pdf-report-format', $arrayPdf);
-        $directory  = 'C:/Users/tyron/Downloads';
-        $pdf->save($directory . '/users-report_' . date('Y-m-d') . '.pdf');
+        $items = [
+            'title' => 'Users Report',
+            'date' => date('m/d/y'),
+            'data' => $data,
+            'totalCount' => $data->count(),
+        ];
+
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml(view('pdf.user-pdf-report-format', $items));
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+        $dompdf->stream('users-report.pdf', array('Attachment' => true));
     }
     private function exportExcel($data)
     {
@@ -128,9 +136,10 @@ class UserLogsController extends Controller
             $row++;
         }
         $writer     = new WriterXlsx($spreadsheet);
-        $directory  = 'C:/Users/tyron/Downloads';
-        $filename   = $directory . '/student-report_' . date('Y-m-d') . '.xlsx';
-        $writer->save($filename);
+        $home = getenv('USERPROFILE') ?: getenv('HOME');
+        $directory = $home . DIRECTORY_SEPARATOR . 'Downloads';
+        $filename = $directory . DIRECTORY_SEPARATOR . 'student-report_' . date('Y-m-d') . '.xlsx';
+        return $writer->save($filename);
     }
     private function generateData(Request $request)
     {
