@@ -131,6 +131,7 @@ class AdminMaintenanceController extends Controller
                     'email'         => $request->input('email'),
                 ]);
                 $admin->syncRoles(Role::findById($request->input('role'), 'admin'));
+                $this->notification($admin, $request->input('role'));
             } else {
                 return redirect()->back()->with('toast-error', 'You do not have permission to modify admin');
             }
