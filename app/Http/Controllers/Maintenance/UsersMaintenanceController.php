@@ -61,13 +61,13 @@ class UsersMaintenanceController extends Controller
     public function store_student(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|max:10',
+            'rfid'          => 'required|string|min:10',
             'first-name'    => 'required|string|max:50',
             'middle-name'   => 'sometimes|max:50',
             'last-name'     => 'required|string|max:50',
             'suffix'        => 'sometimes|max:10',
             'gender'        => 'required|in:Male,Female,Prefer not to say',
-            'id_number'     => 'required|max:50',
+            'id_number'     => 'required|min:12',
             'level'         => 'required|in:7,8,9,10,11,12',
             'section'       => 'required|max:50',
             'email'         => 'required|email',
@@ -86,10 +86,8 @@ class UsersMaintenanceController extends Controller
             return redirect()->back()->with('toast-warning', 'User\'s last name contains invalid characters');
         } else if(!in_array($request->input('suffix'), ['Jr.', 'Sr.', 'II', 'III', 'IV', ''])){
             return redirect()->back()->with('toast-warning', 'User\'s suffix is invalid');
-        } else if($request->input('grade') != null && !in_array($request->input('grade'), ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', ''])){
-            return redirect()->back()->with('toast-warning', 'User\'s grade is invalid');
-        } else if($request->input('section') != null && !preg_match('/^[A-Z]$/', $request->input('section'))){
-            return redirect()->back()->with('toast-warning', 'User\'s section contains invalid characters');
+        } else if($request->input('level') != null && !preg_match('/^(?:[7-9]|1[0-2])$/', $request->input('level'))){
+            return redirect()->back()->with('toast-warning', 'User\'s grade level is invalid');
         } else if($request->input('id_number') == null || !preg_match('/^[0-9]+$/', $request->input('id_number'))){
             return redirect()->back()->with('toast-warning', 'User\'s LRN is invalid');
         }
@@ -131,7 +129,7 @@ class UsersMaintenanceController extends Controller
     public function store_employee(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|max:10',
+            'rfid'          => 'required|string|min:10',
             'first-name'    => 'required|string|max:50',
             'middle-name'   => 'sometimes|max:50',
             'last-name'     => 'required|string|max:50',
@@ -218,13 +216,13 @@ class UsersMaintenanceController extends Controller
     public function update_student(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|max:10',
+            'rfid'          => 'required|string|min:10',
             'first-name'    => 'required|string|max:50',
             'middle-name'   => 'sometimes|max:50',
             'last-name'     => 'required|string|max:50',
             'suffix'        => 'sometimes|max:10',
             'gender'        => 'required|in:Male,Female,Prefer not to say',
-            'id_number'     => 'required|max:50',
+            'id_number'     => 'required|min:12',
             'level'         => 'required|in:7,8,9,10,11,12',
             'section'       => 'required|max:50',
             'email'         => 'required|email',
@@ -240,8 +238,12 @@ class UsersMaintenanceController extends Controller
             return redirect()->back()->with('toast-warning', 'User\'s middle name contains invalid characters');
         } else if($this->has_invalid_characters($request->input('last-name'))){
             return redirect()->back()->with('toast-warning', 'User\'s last name contains invalid characters');
-        } elseif(!in_array($request->input('suffix'), ['Jr.', 'Sr.', 'II', 'III', 'IV', ''])){
+        } else if(!in_array($request->input('suffix'), ['Jr.', 'Sr.', 'II', 'III', 'IV', ''])){
             return redirect()->back()->with('toast-warning', 'User\'s suffix is invalid');
+        } else if($request->input('level') != null && !preg_match('/^(?:[7-9]|1[0-2])$/', $request->input('level'))){
+            return redirect()->back()->with('toast-warning', 'User\'s grade level is invalid');
+        } else if($request->input('id_number') == null || !preg_match('/^[0-9]+$/', $request->input('id_number'))){
+            return redirect()->back()->with('toast-warning', 'User\'s LRN is invalid');
         }
         if($request->hasFile('profile-image')){
             $image = $request->file('profile-image');
