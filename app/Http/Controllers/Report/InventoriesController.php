@@ -21,7 +21,7 @@ class InventoriesController extends Controller
         $toInputDate    = $request->input('end');
         $start          = DateTime::createFromFormat('m/d/Y', $request->input('start'))->format('Y-m-d');
         $end            = DateTime::createFromFormat('m/d/Y', $request->input('end'))->format('Y-m-d');
-        $data           = Inventory::with('book')->whereBetween(DB::raw('DATE(inventories.checked_at)'), [$start, $end])->get();
+        $data           = Inventory::with('book')->whereBetween(DB::raw('DATE(bk_inventories.checked_at)'), [$start, $end])->get();
         return view('report.inventories.index', compact('fromInputDate', 'toInputDate', 'data'));
     }
 }
