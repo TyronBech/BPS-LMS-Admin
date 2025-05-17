@@ -20,7 +20,7 @@
     <h6 class="mb-1 text-xl font-semibold tracking-tight">Admin Information</h6>
     <div class="mb-5">
       <label for="first-name" class="block mb-2 text-sm font-medium">First Name:</label>
-      <input type="text" id="first-name" name="first-name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Juan" value="{{ $admin->first_name }}">
+      <input type="text" id="first-name" name="first-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Juan" value="{{ $admin->first_name }}">
       @error('first-name')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -29,7 +29,7 @@
     </div>
     <div class="mb-5">
       <label for="middle-name" class="block mb-2 text-sm font-medium">Middle Name:</label>
-      <input type="text" id="middle-name" name="middle-name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Santos" value="{{ $admin->middle_name }}">
+      <input type="text" id="middle-name" name="middle-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Santos" value="{{ $admin->middle_name }}">
       @error('middle-name')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -38,7 +38,7 @@
     </div>
     <div class="mb-5">
       <label for="last-name" class="block mb-2 text-sm font-medium">Last Name:</label>
-      <input type="text" id="last-name" name="last-name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Dela Cruz" value="{{ $admin->last_name }}">
+      <input type="text" id="last-name" name="last-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Dela Cruz" value="{{ $admin->last_name }}">
       @error('last-name')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -47,7 +47,7 @@
     </div>
     <div class="mb-5">
       <label for="role" class="block mb-2 text-sm font-medium">Select Role:</label>
-      <select id="role" name="role" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+      <select id="role" name="role" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         <option value="None" selected disabled>Select Role</option>
         @foreach($roles as $role)
         <option value="{{ $role->id }}">{{ $role->name }}</option>
@@ -68,7 +68,7 @@
             <path d="M11.241 9.817c-.36.275-.801.425-1.255.427-.428 0-.845-.138-1.187-.395L0 2.6V14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V2.5l-8.759 7.317Z" />
           </svg>
         </div>
-        <input type="email" id="email" name="email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5" placeholder="juandelacruz@gmail.com" value="{{ $admin->email }}">
+        <input type="email" id="email" name="email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="juandelacruz@gmail.com" value="{{ $admin->email }}">
       </div>
       @error('email')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
