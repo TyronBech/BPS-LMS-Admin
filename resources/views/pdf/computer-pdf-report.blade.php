@@ -101,7 +101,7 @@
         </tr>
       </thead>
       <tbody>
-        @foreach($data as $item)
+        @forelse($data as $item)
         <tr>
           <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
           <td>{{ $item->user->students->level }}</td>
@@ -109,7 +109,11 @@
           <td>{{ \Carbon\Carbon::parse($item->timestamp)->format('Y-m-d') }}</td>
           <td>{{ \Carbon\Carbon::parse($item->timestamp)->format('H:i:s') }}</td>
         </tr>
-        @endforeach
+        @empty
+        <tr>
+          <td colspan="5" class="text-center">No data found.</td>
+        </tr>
+        @endforelse
       </tbody>
     </table>
   </div>
