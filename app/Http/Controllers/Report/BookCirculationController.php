@@ -7,6 +7,10 @@ use Illuminate\Http\Request;
 use App\Models\Book;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
+use Carbon\Carbon;
+use Dompdf\Dompdf;
 
 class BookCirculationController extends Controller
 {
@@ -32,9 +36,61 @@ class BookCirculationController extends Controller
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
         $data = $this->generateData($request);
+        if($request->input('submit') == 'pdf'){
+            $this->generatePDF($data);
+            return redirect()->route('report.book-circulation')->with('toast-success', 'Successfully exported to PDF');
+        } else if($request->input('submit') == 'excel'){
+            $this->exportExcel($data);
+            return redirect()->route('report.book-circulation')->with('toast-success', 'Successfully exported to Excel');
+        }
         $availability = $this->extract_enums('bk_books', 'availability_status');
         if(!count($data)) return redirect()->route('report.book-circulation')->with('toast-error', 'No data found.');
         return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability'));
+    }
+    private function generatePDF($data)
+    {
+        $items = [
+            'title' => 'Book Report',
+            'date'  => date('m/d/y'),
+            'data'  => $data,
+            'totalCount' => $data->count(),
+        ];
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml(view('pdf.book-pdf-report', $items));
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+        $dompdf->stream('book-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
+    }
+    private function exportExcel($data)
+    {
+        $spreadsheet    = new Spreadsheet();
+        $sheet          = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Book Report');
+        $sheet->getColumnDimension('A')->setWidth(20);
+        $sheet->getColumnDimension('B')->setWidth(20);
+        $sheet->getColumnDimension('C')->setWidth(30);
+        $sheet->getColumnDimension('D')->setWidth(20);
+        $sheet->getColumnDimension('E')->setWidth(20);
+        $sheet->setCellValue('A1', 'Accession');
+        $sheet->setCellValue('B1', 'Call Number');
+        $sheet->setCellValue('C1', 'Title');
+        $sheet->setCellValue('D1', 'Availability');
+        $sheet->setCellValue('E1', 'Condition');
+        $row = 2;
+        foreach ($data as $item) {
+            $sheet->setCellValue('A' . $row, $item->accession);
+            $sheet->setCellValue('B' . $row, $item->call_number ?? 'N/A');
+            $sheet->setCellValue('C' . $row, $item->title);
+            $sheet->setCellValue('D' . $row, $item->availability_status);
+            $sheet->setCellValue('E' . $row, $item->condition_status);
+            $row++;
+        }
+        $writer     = new WriterXlsx($spreadsheet);
+        $fileName = 'book-report ' . date('Y-m-d') . '.xlsx';
+        header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        header("Content-Disposition: attachment;filename=\"$fileName\"");
+        $writer->save("php://output");
+        exit();
     }
     private function generateData(Request $request)
     {
