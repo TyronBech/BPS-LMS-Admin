@@ -16,7 +16,7 @@ class Log extends Model
         'timestamp',
         'action',
     ];
-    public function users() : BelongsTo
+    public function user() : BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
