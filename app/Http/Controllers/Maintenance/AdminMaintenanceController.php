@@ -17,7 +17,6 @@ class AdminMaintenanceController extends Controller
 {
     public function index()
     {
-        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
         $admins = User::join('model_has_roles', 'usr_users.id', '=', 'model_has_roles.model_id')
                     ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
                     ->where('model_has_roles.model_type', 'App\Models\User')
@@ -146,15 +145,22 @@ class AdminMaintenanceController extends Controller
         DB::beginTransaction();
         try{
             $admin = User::findOrFail($request->input('id'));
+            if($admin == null){
+                return redirect()->back()->with('toast-warning', 'Admin not found');
+            }
+            $authAdmin = User::findOrFail(Auth::guard('admin')->user()->id);
+            if($admin->hasRole(RolesEnum::SUPER_ADMIN) && $authAdmin->hasRole(RolesEnum::SUPER_ADMIN)){
+                return redirect()->back()->with('toast-warning', 'You cannot delete an authenticated super admin');
+            }
+            if($admin->hasRole(RolesEnum::SUPER_ADMIN) && !$authAdmin->hasRole(RolesEnum::SUPER_ADMIN)){
+                return redirect()->back()->with('toast-warning', 'You cannot delete a super admin');
+            }
             $admin->syncRoles([]);
         } catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         DB::commit();
-        if($admin == null){
-            return redirect()->back()->with('toast-warning', 'Admin not found');
-        }
         return redirect()->route('maintenance.admins')->with('toast-success', 'Admin deleted successfully');
     }
     public function notification(User $user, $role){
