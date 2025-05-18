@@ -103,7 +103,7 @@
       <tbody>
         @foreach($data as $item)
         <tr>
-          <td>{{ $item->users->last_name }}, {{ $item->users->first_name }} {{ $item->users->middle_name }}</td>
+          <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
           <td>{{ \Carbon\Carbon::parse($item->timestamp)->format('Y-m-d') }}</td>
           <td>{{ \Carbon\Carbon::parse($item->timestamp)->format('H:i:s') }}</td>
           <td>{{ $item->computer_use }}</td>

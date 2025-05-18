@@ -23,7 +23,7 @@ class UserLogsController extends Controller
         $fromInputDate  = null;
         $toInputDate    = null;
         $peak_hour      = "00:00";
-        $data           = Log::with('users')->orderBy(DB::raw('date(timestamp)'), 'desc')
+        $data           = Log::with('user')->orderBy(DB::raw('date(timestamp)'), 'desc')
             ->orderBy(DB::raw('time(timestamp)'), 'desc')->get();
         $hours = $data->map(function ($item) {
             $item = Carbon::parse($item->timestamp)->format('H:i:s');
@@ -124,15 +124,6 @@ class UserLogsController extends Controller
         $sheet->getColumnDimension('C')->setWidth(20);
         $sheet->getColumnDimension('D')->setWidth(20);
         $sheet->getColumnDimension('E')->setWidth(20);
-        $sheet->getStyle('A1:E1')->getFont()->setBold(true);
-        $sheet->getStyle('A1:E1')->getFont()->setSize(12);
-        $sheet->getStyle('A1:E1')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('A1:E1')->getAlignment()->setVertical('center');
-        $sheet->getStyle('A1:E1')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID);
-        $sheet->getStyle('A1:E1')->getFill()->getStartColor()->setARGB('FFCCCCCC');
-        $sheet->getStyle('A1:E1')->getBorders()->getAllBorders()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
-        $sheet->getStyle('A1:E1')->getBorders()->getAllBorders()->getColor()->setARGB('FF000000');
-        $sheet->getStyle('A1:E1')->getAlignment()->setWrapText(true);
         $sheet->setCellValue('A1', 'Name');
         $sheet->setCellValue('B1', 'Date');
         $sheet->setCellValue('C1', 'Time');
@@ -140,10 +131,10 @@ class UserLogsController extends Controller
         $sheet->setCellValue('E1', 'Action');
         $row = 2;
         foreach ($data as $item) {
-            if(!$item->users) {
+            if(!$item->user) {
                 continue; // Skip if users relationship is not loaded
             }
-            $sheet->setCellValue('A' . $row, $item->users->last_name . ', ' . $item->users->first_name . ' ' . $item->users->middle_name);
+            $sheet->setCellValue('A' . $row, $item->user->last_name . ', ' . $item->user->first_name . ' ' . $item->user->middle_name);
             $sheet->setCellValue('B' . $row, Carbon::parse($item->timestamp)->format('Y-m-d'));
             $sheet->setCellValue('C' . $row, Carbon::parse($item->timestamp)->format('H:i:s'));
             $sheet->setCellValue('D' . $row, $item->computer_use);
@@ -151,7 +142,7 @@ class UserLogsController extends Controller
             $row++;
         }
         $writer     = new WriterXlsx($spreadsheet);
-        $fileName = 'users-report ' . date('Y-m-d');
+        $fileName = 'users-report ' . date('Y-m-d') . '.xlsx';
         header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         header("Content-Disposition: attachment;filename=\"$fileName\"");
         $writer->save("php://output");
@@ -163,7 +154,7 @@ class UserLogsController extends Controller
         $toInputDate    = $request->input('end');
         $inputName      = strtolower($request->input('first-name'));
 
-        $query = Log::with('users');
+        $query = Log::with('user');
 
         if (strlen($fromInputDate) > 0) {
             $fromInputDate = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
@@ -172,7 +163,7 @@ class UserLogsController extends Controller
         }
 
         if (strlen($inputName) > 0) {
-            $query->whereHas('users', function ($q) use ($inputName) {
+            $query->whereHas('user', function ($q) use ($inputName) {
                 $q->where(DB::raw('lower(first_name)'), 'like', '%' . $inputName . '%')
                     ->orWhere(DB::raw('lower(last_name)'), 'like', '%' . $inputName . '%')
                     ->orWhere(DB::raw('lower(middle_name)'), 'like', '%' . $inputName . '%');
