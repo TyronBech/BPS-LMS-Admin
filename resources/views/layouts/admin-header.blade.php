@@ -144,6 +144,19 @@
             </div>
           </li>
           @endif
+          @if(auth()->user()->can(PermissionsEnum::ADD_USERS)
+          || auth()->user()->can(PermissionsEnum::EDIT_USERS)
+          || auth()->user()->can(PermissionsEnum::DELETE_USERS)
+          || auth()->user()->can(PermissionsEnum::ADD_BOOKS)
+          || auth()->user()->can(PermissionsEnum::EDIT_BOOKS)
+          || auth()->user()->can(PermissionsEnum::DELETE_BOOKS)
+          || auth()->user()->can(PermissionsEnum::ADD_CATEGORIES)
+          || auth()->user()->can(PermissionsEnum::EDIT_CATEGORIES)
+          || auth()->user()->can(PermissionsEnum::DELETE_CATEGORIES)
+          || auth()->user()->can(PermissionsEnum::ADD_PRIVILEGES)
+          || auth()->user()->can(PermissionsEnum::EDIT_PRIVILEGES)
+          || auth()->user()->can(PermissionsEnum::DELETE_PRIVILEGES)
+          || auth()->user()->hasRole(App\Enum\RolesEnum::SUPER_ADMIN))
           <li>
             <button id="dropdownNavbarLink" data-dropdown-toggle="navbarMaintenance" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:underline lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-100 lg:p-0 lg:w-auto">Maintenance <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
@@ -239,6 +252,7 @@
               </ul>
             </div>
           </li>
+          @endif
           <li>
             <button id="dropdownNavbarLink" data-dropdown-toggle="userSettings" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:underline lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-100 lg:p-0 lg:w-auto">{{ auth()->user()->first_name }} <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
