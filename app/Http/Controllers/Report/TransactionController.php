@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Dompdf\Dompdf;
 
 class TransactionController extends Controller
 {
@@ -22,7 +23,7 @@ class TransactionController extends Controller
         $toInputDate    = "";
         $inputName      = "";
         $inputLastName  = "";
-        $data           = Transaction::with('books', 'users')
+        $data           = Transaction::with('book', 'user')
             ->orderBy(DB::raw('DATE(date_borrowed)'), 'desc')
             ->orderBy(DB::raw('TIME(date_borrowed)'), 'desc')
             ->get();
@@ -30,7 +31,7 @@ class TransactionController extends Controller
     }
     public function test()
     {
-        $data           = Transaction::with('books', 'users')
+        $data           = Transaction::with('book', 'user')
             ->orderBy(DB::raw('DATE(date_borrowed)'), 'desc')
             ->orderBy(DB::raw('TIME(date_borrowed)'), 'desc')
             ->get();
@@ -55,8 +56,8 @@ class TransactionController extends Controller
             $this->generatePDF($data);
             return redirect()->route('report.transaction')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {
-            // $data = $this->generateData($request);
-            // $this->exportExcel($data);
+            $data = $this->generateData($request);
+            $this->exportExcel($data);
             return redirect()->route('report.transaction')->with('toast-success', 'Successfully exported to Excel');
         }
         $data = $this->generateData($request);
@@ -64,46 +65,55 @@ class TransactionController extends Controller
     }
     private function generatePDF($data)
     {
-        $chunk      = $data->chunk(25);
-        $arrayPdf   = array('data' => $chunk);
-        $pdf        = Pdf::loadView('pdf.transaction-pdf-report-format', $arrayPdf);
-        $pdf->download('transactions-report_' . date('Y-m-d') . '.pdf');
+        $items = [
+            'title' => 'Transaction Report',
+            'date' => date('m/d/y'),
+            'data' => $data,
+            'totalCount' => $data->count(),
+        ];
+
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml(view('pdf.transaction-pdf-report', $items));
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+        $dompdf->stream('transaction-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
     }
     private function exportExcel($data)
     {
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
-
-        // Set column headers
-        $sheet->setCellValue('A1', 'Log ID');
-        $sheet->setCellValue('B1', 'RFID');
+        $spreadsheet    = new Spreadsheet();
+        $sheet          = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Transaction Report');
+        $sheet->getColumnDimension('A')->setWidth(20);
+        $sheet->getColumnDimension('B')->setWidth(30);
+        $sheet->getColumnDimension('C')->setWidth(20);
+        $sheet->getColumnDimension('D')->setWidth(20);
+        $sheet->getColumnDimension('E')->setWidth(20);
+        $sheet->getColumnDimension('F')->setWidth(20);
+        $sheet->setCellValue('A1', 'Accession');
+        $sheet->setCellValue('B1', 'Title');
         $sheet->setCellValue('C1', 'Name');
-        $sheet->setCellValue('D1', 'Date');
-        $sheet->setCellValue('E1', 'Time');
-        $sheet->setCellValue('F1', 'Compute Use');
-        $sheet->setCellValue('G1', 'Action');
-
-        // Fill data rows
+        $sheet->setCellValue('D1', 'Borrowed');
+        $sheet->setCellValue('E1', 'Due');
+        $sheet->setCellValue('F1', 'Returned');
         $row = 2;
         foreach ($data as $item) {
-            $sheet->setCellValue('A' . $row, $item->id);
-            $sheet->setCellValue('B' . $row, $item->users->rfid);
-            $sheet->setCellValue('C' . $row, $item->users->last_name . ', ' . $item->users->first_name . ' ' . $item->users->middle_name);
-            $sheet->setCellValue('D' . $row, Carbon::parse($item->timestamp)->format('Y-m-d'));
-            $sheet->setCellValue('E' . $row, Carbon::parse($item->timestamp)->format('H:i:s'));
-            $sheet->setCellValue('F' . $row, $item->computer_use);
-            $sheet->setCellValue('G' . $row, $item->action);
+            if(!$item->book || !$item->user) {
+                continue; // Skip if book or user relationship is not loaded
+            }
+            $sheet->setCellValue('A' . $row, $item->book->accession);
+            $sheet->setCellValue('B' . $row, $item->book->title);
+            $sheet->setCellValue('C' . $row, $item->user->last_name . ', ' . $item->user->first_name . ' ' . $item->user->middle_name);
+            $sheet->setCellValue('D' . $row, $item->date_borrowed);
+            $sheet->setCellValue('E' . $row, $item->due_date);
+            $sheet->setCellValue('F' . $row, $item->return_date ?? 'Not Returned');
             $row++;
         }
-
-        // Generate and return as a downloadable file
-        return new StreamedResponse(function () use ($spreadsheet) {
-            $writer = new WriterXlsx($spreadsheet);
-            $writer->save('php://output');
-        }, 200, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="student-report_' . date('Y-m-d') . '.xlsx"',
-        ]);
+        $writer     = new WriterXlsx($spreadsheet);
+        $fileName = 'transaction-report ' . date('Y-m-d') . '.xlsx';
+        header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        header("Content-Disposition: attachment;filename=\"$fileName\"");
+        $writer->save("php://output");
+        exit();
     }
     private function generateData(Request $request)
     {
@@ -111,7 +121,7 @@ class TransactionController extends Controller
         $toInputDate    = $request->input('end');
         $inputName      = strtolower($request->input('name'));
 
-        $query = Transaction::with('books', 'users');
+        $query = Transaction::with('book', 'user');
         if (strlen($fromInputDate) > 0) {
             $fromInputDate = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
             $toInputDate = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
@@ -119,11 +129,11 @@ class TransactionController extends Controller
         }
 
         if (strlen($inputName) > 0) {
-            $query->whereHas('users', function ($q) use ($inputName) {
+            $query->whereHas('user', function ($q) use ($inputName) {
                 $q->where('first_name', 'like', '%' . $inputName . '%');
                 $q->orWhere('middle_name', 'like', '%' . $inputName . '%');
                 $q->orWhere('last_name', 'like', '%' . $inputName . '%');
-            })->orWhereHas('books', function ($q) use ($inputName) {
+            })->orWhereHas('book', function ($q) use ($inputName) {
                 $q->where('title', 'like', '%' . $inputName . '%')
                     ->orWhere('accession', 'like', '%' . $inputName . '%');
             })->orWhere('transaction_type', 'like', '%' . $inputName . '%');

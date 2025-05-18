@@ -12,11 +12,11 @@
     </thead>
     <tbody id="students-activity" class="text-center">
       @forelse($data as $item)
-      @if($item->users && $item->books)
+      @if($item->user && $item->book)
         <tr>
-          <td class="pb-1">{{ $item->books->accession }}</td>
-          <td class="pb-1">{{ $item->books->title }}</td>
-          <td class="pb-1">{{ $item->users->last_name }}, {{ $item->users->first_name }} {{ $item->users->middle_name }}</td>
+          <td class="pb-1">{{ $item->book->accession }}</td>
+          <td class="pb-1">{{ $item->book->title }}</td>
+          <td class="pb-1">{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name }}</td>
           <td class="pb-1">{{ $item->date_borrowed }}</td>
           <td class="pb-1">{{ $item->due_date }}</td>
           <td class="pb-1">{{ $item->return_date ? $item->return_date : '-' }}</td>
