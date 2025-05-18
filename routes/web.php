@@ -33,6 +33,7 @@ use App\Http\Middleware\InventoryAuthentication;
 use App\Http\Middleware\ReportAuthentication;
 use App\Http\Middleware\PrivilegeAuthentication;
 use App\Http\Middleware\BookCategoriesAuthentication;
+use App\Models\Category;
 
 Route::get('/', function () {
     return view('main-welcome');
@@ -54,6 +55,16 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     Route::get('dashboard', function(){
         return view('dashboard.dashboard');
     })->name('dashboard');
+    Route::get('test', function(){
+        // $data = Category::all();
+        // $items = [
+        //     'title' => 'Summary Report',
+        //     'date' => date('m/d/y'),
+        //     'data' => $data,
+        //     'totalCount' => $data->count(),
+        // ];
+        // return view('pdf.summary-pdf-report', $items);
+    })->name('test');
     Route::get('profile',   [ProfileController::class, 'index']) ->name('profile');
     Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::prefix('analytics')->group(function () {
@@ -76,6 +87,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::get('book-circulation',  [BookCirculationController::class, 'index'])    ->name('report.book-circulation');
         Route::post('book-circulation', [BookCirculationController::class, 'search'])   ->name('report.book-circulation-search');
         Route::get('summary',           [CategoriesController::class, 'index'])         ->name('report.summary');
+        Route::post('summary',          [CategoriesController::class, 'export'])        ->name('report.summary-export');
         Route::get('inventory-report',  [InventoriesController::class, 'index'])        ->name('report.inventory');
         Route::post('inventory-report', [InventoriesController::class, 'search'])       ->name('report.inventory-search');
     });
