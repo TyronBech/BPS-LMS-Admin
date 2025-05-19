@@ -51,19 +51,24 @@ class AdminMaintenanceController extends Controller
     }
     public function search_admin(Request $request){
         $search = strtolower($request->input('admin-info'));
-        $admins = User::join('model_has_roles', 'users.id', '=', 'model_has_roles.model_id')
+        $admins = User::join('model_has_roles', 'usr_users.id', '=', 'model_has_roles.model_id')
                     ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
                     ->where('model_has_roles.model_type', 'App\Models\User')
                     ->where('roles.guard_name', 'admin')
                     ->where(function ($query) use ($search) {
-                        $query->where('users.first_name', 'like', '%' . $search . '%')
-                            ->orWhere('users.middle_name', 'like', '%' . $search . '%')
-                            ->orWhere('users.last_name', 'like', '%' . $search . '%')
-                            ->orWhere('users.email', 'like', '%' . $search . '%')
-                            ->orWhere('users.rfid', 'like', '%' . $search . '%');
+                        $query->where('usr_users.first_name', 'like', '%' . $search . '%')
+                            ->orWhere('usr_users.middle_name', 'like', '%' . $search . '%')
+                            ->orWhere('usr_users.last_name', 'like', '%' . $search . '%')
+                            ->orWhere('usr_users.email', 'like', '%' . $search . '%')
+                            ->orWhere('usr_users.rfid', 'like', '%' . $search . '%')
+                            ->orWhere(DB::raw('lower(concat(usr_users.first_name, " ", usr_users.middle_name, " ", usr_users.last_name))'), 'like', '%' . $search . '%')
+                            ->orWhere(DB::raw('lower(concat(usr_users.middle_name, " ", usr_users.last_name, ", ", usr_users.first_name))'), 'like', '%' . $search . '%')
+                            ->orWhere(DB::raw('lower(concat(usr_users.last_name, ", ", usr_users.first_name, " ", usr_users.middle_name))'), 'like', '%' . $search . '%')
+                            ->orWhere(DB::raw('lower(concat(usr_users.last_name, ", ", usr_users.first_name))'), 'like', '%' . $search . '%')
+                            ->orWhere(DB::raw('lower(concat(usr_users.first_name, " ", usr_users.last_name))'), 'like', '%' . $search . '%');
                     })
                     ->orWhere('roles.name', 'like', '%' . $search . '%')
-                    ->select('users.*', 'roles.name as role')
+                    ->select('usr_users.*', 'roles.name as role')
                     ->get();
         return view('maintenance.admins.admins', compact('admins'));
     }
