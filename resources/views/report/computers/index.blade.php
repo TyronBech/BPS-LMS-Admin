@@ -1,5 +1,6 @@
 @extends('layouts.admin-app')
 @section('content')
+@use('App\Enum\PermissionsEnum')
 <h1 class="font-semibold text-center text-4xl p-5">Report Document</h1>
   <form action="{{ route('report.computer-use-search') }}" method="POST">
     @csrf
@@ -31,8 +32,10 @@
       </div>
       <div class="sm:col-span-2 sm:col-start-1 flex items-center">
         <button type="submit" id="submit" name="submit" value="find" class="bg-blue-500 hover:bg-blue-700 active:bg-blue-900 text-white text-sm font-bold py-1 px-4 rounded h-12 mt-2 mb-2 ml-4 mr-4 w-20">Find</button>
+        @if(auth()->user()->can(PermissionsEnum::CREATE_REPORTS))
         <button type="submit" id="submit" name="submit" value="pdf" class="bg-red-500 hover:bg-red-700 active:bg-red-900 text-white text-sm font-bold py-1 px-4 rounded h-12 mt-2 mb-2 ml-4 mr-4 w-20">Export PDF</button>
         <button type="submit" id="submit" name="submit" value="excel" class="bg-green-500 hover:bg-green-700 active:bg-green-900 text-white text-sm font-bold py-1 px-4 rounded h-12 mt-2 mb-2 ml-4 mr-4 w-20">Export Excel</button>
+        @endif
       </div>
     </div>
   </form>
