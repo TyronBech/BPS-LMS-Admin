@@ -133,6 +133,11 @@ class TransactionController extends Controller
                 $q->where('first_name', 'like', '%' . $inputName . '%');
                 $q->orWhere('middle_name', 'like', '%' . $inputName . '%');
                 $q->orWhere('last_name', 'like', '%' . $inputName . '%');
+                $q->orWhere(DB::raw('lower(concat(first_name, " ", middle_name, " ", last_name))'), 'like', '%' . $inputName . '%');
+                $q->orWhere(DB::raw('lower(concat(middle_name, " ", last_name, ", ", first_name))'), 'like', '%' . $inputName . '%');
+                $q->orWhere(DB::raw('lower(concat(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $inputName . '%');
+                $q->orWhere(DB::raw('lower(concat(last_name, ", ", first_name))'), 'like', '%' . $inputName . '%');
+                $q->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $inputName . '%');
             })->orWhereHas('book', function ($q) use ($inputName) {
                 $q->where('title', 'like', '%' . $inputName . '%')
                     ->orWhere('accession', 'like', '%' . $inputName . '%');

@@ -166,7 +166,12 @@ class UserLogsController extends Controller
             $query->whereHas('user', function ($q) use ($inputName) {
                 $q->where(DB::raw('lower(first_name)'), 'like', '%' . $inputName . '%')
                     ->orWhere(DB::raw('lower(last_name)'), 'like', '%' . $inputName . '%')
-                    ->orWhere(DB::raw('lower(middle_name)'), 'like', '%' . $inputName . '%');
+                    ->orWhere(DB::raw('lower(middle_name)'), 'like', '%' . $inputName . '%')
+                    ->orWhere(DB::raw('lower(concat(first_name, " ", middle_name, " ", last_name))'), 'like', '%' . $inputName . '%')
+                    ->orWhere(DB::raw('lower(concat(middle_name, " ", last_name, ", ", first_name))'), 'like', '%' . $inputName . '%')
+                    ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $inputName . '%')
+                    ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name))'), 'like', '%' . $inputName . '%')
+                    ->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $inputName . '%');
             });
         }
 
