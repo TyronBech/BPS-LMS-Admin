@@ -102,6 +102,7 @@
       </thead>
       <tbody>
         @forelse($data as $item)
+        @if($item->book)
         <tr>
           <td>{{ $item->book->accession }}</td>
           <td>{{ $item->book->call_number }}</td>
@@ -109,6 +110,7 @@
           <td>{{ $item->book->author }}</td>
           <td>{{ \Carbon\Carbon::parse($item->checked_at)->format('m/d/Y') }}</td>
         </tr>
+        @endif
         @empty
         <tr>
           <td colspan="5" class="text-center">No data found.</td>

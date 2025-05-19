@@ -10,17 +10,19 @@
     </thead>
     <tbody id="students-activity">
       @forelse($data as $item)
-        <tr class="text-center">
-          <td>{{ $item->book->accession }}</td>
-          <td>{{ $item->book->call_number }}</td>
-          <td>{{ $item->book->title }}</td>
-          <td>{{ $item->book->author }}</td>
-          <td>{{ $item->checked_at }}</td>
-        </tr>
+      @if($item->book)
+      <tr class="text-center">
+        <td>{{ $item->book->accession }}</td>
+        <td>{{ $item->book->call_number }}</td>
+        <td>{{ $item->book->title }}</td>
+        <td>{{ $item->book->author }}</td>
+        <td>{{ $item->checked_at }}</td>
+      </tr>
+      @endif
       @empty
-        <tr>
-          <td colspan="8" class="text-center">No data found.</td>
-        </tr>
+      <tr>
+        <td colspan="8" class="text-center">No data found.</td>
+      </tr>
       @endforelse
     </tbody>
   </table>

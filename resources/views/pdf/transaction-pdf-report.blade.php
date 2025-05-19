@@ -103,6 +103,7 @@
       </thead>
       <tbody>
         @forelse($data as $item)
+        @if($item->book && $item->user)
         <tr>
           <td>{{ $item->book->accession }}</td>
           <td>{{ $item->book->title }}</td>
@@ -111,6 +112,7 @@
           <td>{{ $item->due_date }}</td>
           <td>{{ $item->return_date }}</td>
         </tr>
+        @endif
         @empty
         <tr>
           <td colspan="6" class="text-center">No data found.</td>
