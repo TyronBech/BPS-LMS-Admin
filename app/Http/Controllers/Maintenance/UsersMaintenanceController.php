@@ -39,9 +39,14 @@ class UsersMaintenanceController extends Controller
     public function show(Request $request)
     {
         $search = strtolower($request->input('search-users'));
-        $users = User::where('first_name', 'like', '%'.$search.'%')
-                    ->orWhere('middle_name', 'like', '%'.$search.'%')
-                    ->orWhere('last_name', 'like', '%'.$search.'%')
+        $users = User::where(DB::raw('lower(first_name)'), 'like', '%'.$search.'%')
+                    ->orWhere(DB::raw('lower(middle_name)'), 'like', '%'.$search.'%')
+                    ->orWhere(DB::raw('lower(last_name)'), 'like', '%'.$search.'%')
+                    ->orWhere(DB::raw('lower(concat(first_name, " ", middle_name, " ", last_name))'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('lower(concat(middle_name, " ", last_name, ", ", first_name))'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name))'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $search . '%')
                     ->orWhere('email', 'like', '%'.$search.'%')
                     ->orWhere('rfid', 'like', '%'.$search.'%')
                     ->orWhereHas('students', function ($q) use ($search) {
@@ -52,7 +57,7 @@ class UsersMaintenanceController extends Controller
                     ->orWhereHas('employees', function ($q) use ($search) {
                         $q->where('employee_id', 'like', '%'.$search.'%');
                     })
-                    ->orWhereHas('groups', function ($q) use ($search) {
+                    ->orWhereHas('privileges', function ($q) use ($search) {
                         $q->where('user_type', 'like', '%'.$search.'%');
                     })
                     ->get();
