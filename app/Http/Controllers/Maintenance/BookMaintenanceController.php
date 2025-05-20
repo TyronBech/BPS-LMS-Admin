@@ -117,7 +117,8 @@ class BookMaintenanceController extends Controller
             ->orWhere('digital_copy_url', 'like', '%' . $search . '%')
             ->orWhere('remarks', 'like', '%' . $search . '%')
             ->orWhereHas('category', function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%');
+                $q->where('name', 'like', '%' . $search . '%')
+                    ->orWhere('legend', 'like', '%' . $search . '%');
             })
             ->get();
         return view('maintenance.books.books', compact('books'));
