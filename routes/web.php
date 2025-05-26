@@ -1,5 +1,6 @@
 <?php
 
+use App\Enum\RolesEnum;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\RedirectIfAuthenticated;
@@ -33,7 +34,6 @@ use App\Http\Middleware\InventoryAuthentication;
 use App\Http\Middleware\ReportAuthentication;
 use App\Http\Middleware\PrivilegeAuthentication;
 use App\Http\Middleware\BookCategoriesAuthentication;
-use App\Models\Category;
 
 Route::get('/', function () {
     return view('main-welcome');
