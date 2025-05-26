@@ -23,7 +23,7 @@
           </li>
           @can(PermissionsEnum::BOOK_INVENTORY)
           <li>
-            <a href="{{ route('inventory.inventory') }}" class="block py-2 px-3 text-white bpsBlue rounded hover:underline lg:bg-transparent lg:text-white lg:p-0" aria-current="page">Inventory</a>
+            <a href="{{ route('inventory.dashboard') }}" class="block py-2 px-3 text-white bpsBlue rounded hover:underline lg:bg-transparent lg:text-white lg:p-0" aria-current="page">Inventory</a>
           </li>
           @endcan
           @if(auth()->user()->can(PermissionsEnum::VIEW_USER_REPORTS)

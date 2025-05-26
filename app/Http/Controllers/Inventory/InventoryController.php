@@ -54,7 +54,7 @@ class InventoryController extends Controller
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         DB::commit();
-        return redirect()->route('inventory.inventory')->with('toast-success', 'Book added to inventory successfully!');
+        return redirect()->route('inventory.dashboard')->with('toast-success', 'Book added to inventory successfully!');
     }
     public function update(Request $request)
     {
@@ -83,7 +83,7 @@ class InventoryController extends Controller
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         DB::commit();
-        return redirect()->route('inventory.inventory')->with('toast-success', 'Inventory updated successfully!');
+        return redirect()->route('inventory.dashboard')->with('toast-success', 'Inventory updated successfully!');
     }
     public function destroy(Request $request)
     {
@@ -106,7 +106,7 @@ class InventoryController extends Controller
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         DB::commit();
-        return redirect()->route('inventory.inventory')->with('toast-success', 'Inventory deleted successfully!');
+        return redirect()->route('inventory.dashboard')->with('toast-success', 'Inventory deleted successfully!');
     }
     private function extract_enums($table, $columnName)
     {
