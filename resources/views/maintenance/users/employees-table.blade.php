@@ -1,4 +1,5 @@
 @use('App\Enum\PermissionsEnum')
+@use('App\Enum\RolesEnum')
 @php
 $employeeID = null;
 $increment = 0;
@@ -39,6 +40,7 @@ $increment = 0;
             @php
             $employeeID = ['id' => $item->id];
             @endphp
+            @if(!$item->hasRole(RolesEnum::SUPER_ADMIN))
             @can(PermissionsEnum::DELETE_USERS, 'admin')
             <form action="{{ route('maintenance.delete-user', $employeeID) }}" method="POST" class="flex items-center justify-center">
               @csrf
@@ -48,6 +50,7 @@ $increment = 0;
               </button>
             </form>
             @endcan
+            @endif
           </td>
           @endif
         </tr>
