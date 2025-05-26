@@ -8,19 +8,18 @@ use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Mail\Mailables\Address;
 
-class RoleEmailMessage extends Mailable
+class AccountEmailMessage extends Mailable
 {
     use Queueable, SerializesModels;
 
     /**
      * Create a new message instance.
      */
-    public function __construct(private $user, private $role)
+    public function __construct(private $user, private $password)
     {
         $this->user = $user;
-        $this->role = $role;
+        $this->password = $password;
     }
 
     /**
@@ -29,7 +28,7 @@ class RoleEmailMessage extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'Role Email Message',
+            subject: 'BPS Library Account',
         );
     }
 
@@ -39,11 +38,11 @@ class RoleEmailMessage extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'mail.roleMsg',
+            view: 'mail.accountNotif',
             with: [
                 'user' => $this->user,
-                'role' => $this->role,
-            ],
+                'password' => $this->password,
+            ]
         );
     }
 
