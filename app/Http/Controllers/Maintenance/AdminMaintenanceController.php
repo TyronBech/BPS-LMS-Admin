@@ -168,7 +168,7 @@ class AdminMaintenanceController extends Controller
         DB::commit();
         return redirect()->route('maintenance.admins')->with('toast-success', 'Admin deleted successfully');
     }
-    public function notification(User $user, $role){
+    private function notification(User $user, $role){
         Mail::to($user->email)->send(new RoleEmailMessage($user, $role));
     }
     private function has_invalid_characters($name) {

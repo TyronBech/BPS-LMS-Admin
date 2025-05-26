@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx as ReaderXlsx;
 use App\Models\StagingUser;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\AccountEmailMessage;
 
 class StudentImportController extends Controller
 {
@@ -23,6 +25,7 @@ class StudentImportController extends Controller
         $data       = $request->input('data');
         $dataArray  = json_decode($data, true);
         $errors     = "";
+        $staged_users = array();
         DB::beginTransaction();
         foreach ($dataArray as $item) {
             try {
@@ -44,6 +47,13 @@ class StudentImportController extends Controller
                         'section'       => $item['section'],
                     ]);
                 } else {
+                    if(User::where('email', $item['email'])->exists()){
+                        $errors = "Email already exists for student: " . $item['first_name'] . " " . $item['last_name'];
+                        return redirect()->route('import.import-students')->with('toast-error', $errors);
+                    } else if(User::where('rfid', $item['rfid'])->exists()){
+                        $errors = "RFID already exists for student: " . $item['first_name'] . " " . $item['last_name'];
+                        return redirect()->route('import.import-students')->with('toast-error', $errors);
+                    }
                     $password = Str::password(8, true, true, true, false);
                     StagingUser::create([
                         'rfid'          => $item['rfid'],
@@ -59,6 +69,10 @@ class StudentImportController extends Controller
                         'section'       => $item['section'],
                         'user_type'     => 'student',
                     ]);
+                    $staged_users[] = [
+                        'email' => $item['email'],
+                        'password' => $password,
+                    ];
                 }
             } catch (\Illuminate\Database\QueryException $e) {
                 DB::rollBack();
@@ -77,6 +91,9 @@ class StudentImportController extends Controller
             DB::statement('CALL DistributeStagingUsers()');
         } catch (\Illuminate\Database\QueryException $e) {
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage());
+        }
+        foreach ($staged_users as $user) {
+            $this->account_notification($user['email'], $user['password']);
         }
         return redirect()->route('import.import-students')->with('toast-success', 'Students imported successfully');
     }
@@ -113,5 +130,8 @@ class StudentImportController extends Controller
             return redirect()->route('import.import-students')->with('toast-error', $errors);
         }
         return view('import.students.students', compact('showTable', 'data'));
+    }
+    private function account_notification($user, $password){
+        Mail::to($user->email)->send(new AccountEmailMessage($user, $password));
     }
 }

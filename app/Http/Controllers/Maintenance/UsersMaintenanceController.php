@@ -13,6 +13,8 @@ use App\Models\UserGroup;
 use Illuminate\Support\Facades\Validator;
 use App\Models\StagingUser;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\AccountEmailMessage;
 
 class UsersMaintenanceController extends Controller
 {
@@ -93,6 +95,10 @@ class UsersMaintenanceController extends Controller
             return redirect()->back()->with('toast-warning', 'User\'s grade level is invalid');
         } else if($request->input('id_number') == null || !preg_match('/^[0-9]+$/', $request->input('id_number'))){
             return redirect()->back()->with('toast-warning', 'User\'s LRN is invalid');
+        } else if(User::where('email', $request->input('email'))->exists()){
+            return redirect()->back()->with('toast-warning', 'User with email ' . $request->input('email') . ' already exists');
+        } else if(User::where('rfid', $request->input('rfid'))->exists()){
+            return redirect()->back()->with('toast-warning', 'User with RFID ' . $request->input('rfid') . ' already exists');
         }
         if($request->hasFile('profile-image')){
             $image = $request->file('profile-image');
@@ -128,6 +134,7 @@ class UsersMaintenanceController extends Controller
         } catch (\Illuminate\Database\QueryException $e) {
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage());
         }
+        $this->account_notification(User::where('email', $request->input('email'))->first(), $password);
         return redirect()->back()->with('toast-success', 'User added successfully');
     }
     public function store_employee(Request $request)
@@ -156,6 +163,10 @@ class UsersMaintenanceController extends Controller
             return redirect()->back()->with('toast-warning', 'User\'s last name contains invalid characters');
         } else if(!in_array($request->input('suffix'), ['Jr.', 'Sr.', 'II', 'III', 'IV', ''])){
             return redirect()->back()->with('toast-warning', 'User\'s suffix is invalid');
+        } else if(User::where('email', $request->input('email'))->exists()){
+            return redirect()->back()->with('toast-warning', 'User with email ' . $request->input('email') . ' already exists');
+        } else if(User::where('rfid', $request->input('rfid'))->exists()){
+            return redirect()->back()->with('toast-warning', 'User with RFID ' . $request->input('rfid') . ' already exists');
         }
         if($request->hasFile('profile-image')){
             $image = $request->file('profile-image');
@@ -190,6 +201,7 @@ class UsersMaintenanceController extends Controller
         } catch (\Illuminate\Database\QueryException $e) {
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage());
         }
+        $this->account_notification(User::where('email', $request->input('email'))->first(), $password);
         return redirect()->back()->with('toast-success', 'User added successfully');
     }
     public function edit_student(Request $request)
@@ -364,6 +376,9 @@ class UsersMaintenanceController extends Controller
         }
         DB::commit();
         return redirect()->back()->with('toast-success', 'User deleted successfully');
+    }
+    private function account_notification($user, $password){
+        Mail::to($user->email)->send(new AccountEmailMessage($user, $password));
     }
     private function has_invalid_characters($name) {
         $pattern = '/^[a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+$/';

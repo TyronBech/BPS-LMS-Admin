@@ -9,6 +9,9 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use App\Models\StagingUser;
+use App\Models\User;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\AccountEmailMessage;
 
 class FacultyStaffImportController extends Controller
 {
@@ -22,23 +25,53 @@ class FacultyStaffImportController extends Controller
         $data       = $request->input('data');
         $dataArray  = json_decode($data, true);
         $errors     = "";
+        $staged_users = array();
         foreach ($dataArray as $item) {
             DB::beginTransaction();
             try {
                 $password = Str::password(8, true, true, true, false);
-                StagingUser::create([
-                    'rfid'          => $item['rfid'],
-                    'first_name'    => $item['first_name'],
-                    'middle_name'   => $item['middle_name'],
-                    'last_name'     => $item['last_name'],
-                    'suffix'        => $item['suffix'],
-                    'gender'        => $item['gender'],
-                    'email'         => $item['email'],
-                    'password'      => Hash::make($password),
-                    'employee_id'   => $item['employee_id'],
-                    'employee_role' => $item['employee_role'],
-                    'user_type'     => 'employee',
-                ]);
+                $existingEmployee = User::wherehas('employees', function ($query) use ($item) {
+                    $query->where('employee_id', $item['employee_id']);
+                })->with('employees')->first();
+                if ($existingEmployee) {
+                    $existingEmployee->update([
+                        'first_name'    => $item['first_name'],
+                        'middle_name'   => $item['middle_name'],
+                        'last_name'     => $item['last_name'],
+                        'suffix'        => $item['suffix'],
+                        'gender'        => $item['gender'],
+                        'email'         => $item['email'],
+                    ]);
+                    $existingEmployee->employees()->update([
+                        'employee_role' => $item['employee_role'],
+                        'employee_id'   => $item['employee_id'],
+                    ]);
+                } else {
+                    if (StagingUser::where('email', $item['email'])->exists()) {
+                        $errors = "Email already exists for user: " . $item['first_name'] . " " . $item['last_name'];
+                        return redirect()->route('import.import-faculties-staffs')->with('toast-error', $errors);
+                    } else if (StagingUser::where('rfid', $item['rfid'])->exists()) {
+                        $errors = "RFID already exists for user: " . $item['first_name'] . " " . $item['last_name'];
+                        return redirect()->route('import.import-faculties-staffs')->with('toast-error', $errors);
+                    }
+                    StagingUser::create([
+                        'rfid'          => $item['rfid'],
+                        'first_name'    => $item['first_name'],
+                        'middle_name'   => $item['middle_name'],
+                        'last_name'     => $item['last_name'],
+                        'suffix'        => $item['suffix'],
+                        'gender'        => $item['gender'],
+                        'email'         => $item['email'],
+                        'password'      => Hash::make($password),
+                        'employee_id'   => $item['employee_id'],
+                        'employee_role' => $item['employee_role'],
+                        'user_type'     => 'employee',
+                    ]);
+                    $staged_users[] = [
+                        'email'     => $item['email'],
+                        'password'  => $password,
+                    ];
+                }
             } catch (\Illuminate\Database\QueryException $e) {
                 DB::rollBack();
                 if ($e->getCode() == 23000) {
@@ -56,6 +89,9 @@ class FacultyStaffImportController extends Controller
             DB::statement('CALL DistributeStagingUsers()');
         } catch (\Illuminate\Database\QueryException $e) {
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage());
+        }
+        foreach ($staged_users as $user) {
+            $this->account_notification($user['email'], $user['password']);
         }
         return redirect()->route('import.import-faculties-staffs')->with('toast-success', 'Faculties & Staffs imported successfully');
     }
@@ -93,5 +129,8 @@ class FacultyStaffImportController extends Controller
             return redirect()->route('import.import-faculties-staffs')->with('toast-error', $errors);
         }
         return view('import.employees.index', compact('showTable', 'data'));
+    }
+    private function account_notification($user, $password){
+        Mail::to($user->email)->send(new AccountEmailMessage($user, $password));
     }
 }
