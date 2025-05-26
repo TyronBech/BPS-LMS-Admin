@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Maintenance;
 
 use App\Enum\PermissionsEnum;
+use App\Enum\RolesEnum;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -343,12 +344,25 @@ class UsersMaintenanceController extends Controller
     public function destroy(Request $request)
     {
         DB::beginTransaction();
-        try{
-            $id = $request->input('id'); 
-            User::find($id)->delete();
-        } catch(\Illuminate\Database\QueryException $e){
+        try {
+            $id = $request->input('id');
+            $user = User::findOrFail($id); // Throws ModelNotFoundException if not found
+
+            if ($user->hasRole(RolesEnum::SUPER_ADMIN)) {
+                DB::rollBack(); // Rollback transaction before redirecting
+                return redirect()->back()->with('delete-error', 'Cannot delete a super admin user');
+            }
+
+            $user->delete();
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             DB::rollBack();
-            return redirect()->back()->with('delete-error', $e->getMessage());
+            return redirect()->back()->with('delete-error', 'User not found.');
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
+            return redirect()->back()->with('delete-error', 'A database error occurred while deleting the user.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('delete-error', 'An unexpected error occurred while deleting the user.');
         }
         DB::commit();
         return redirect()->back()->with('toast-success', 'User deleted successfully');

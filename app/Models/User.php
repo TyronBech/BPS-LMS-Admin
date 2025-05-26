@@ -82,4 +82,15 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Transaction::class, 'book_id', 'id');
     }
+    protected static function booted()
+    {
+        static::deleting(function ($user) {
+            if (!$user->isForceDeleting()) {
+                $user->logs()->delete();
+            }
+        });
+        static::restoring(function ($user) {
+            $user->logs()->withTrashed()->restore();
+        });
+    }
 }
