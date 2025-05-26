@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx as ReaderXlsx;
 use App\Models\StagingUser;
 
@@ -43,6 +44,7 @@ class StudentImportController extends Controller
                         'section'       => $item['section'],
                     ]);
                 } else {
+                    $password = Str::password(8, true, true, true, false);
                     StagingUser::create([
                         'rfid'          => $item['rfid'],
                         'first_name'    => $item['first_name'],
@@ -51,7 +53,7 @@ class StudentImportController extends Controller
                         'suffix'        => $item['suffix'],
                         'gender'        => $item['gender'],
                         'email'         => $item['email'],
-                        'password'      => Hash::make($item['password']),
+                        'password'      => Hash::make($password),
                         'id_number'     => $item['id_number'],
                         'level'         => $item['grade_level'],
                         'section'       => $item['section'],
@@ -101,10 +103,9 @@ class StudentImportController extends Controller
                     'suffix'        => $rows[$i][4],
                     'gender'        => $rows[$i][5],
                     'email'         => $rows[$i][6],
-                    'password'      => $rows[$i][7],
-                    'id_number'     => $rows[$i][8],
-                    'grade_level'   => $rows[$i][9],
-                    'section'       => $rows[$i][10],   
+                    'id_number'     => $rows[$i][7],
+                    'grade_level'   => $rows[$i][8],
+                    'section'       => $rows[$i][9],   
                 );
             }
         } catch(\Exception $e){

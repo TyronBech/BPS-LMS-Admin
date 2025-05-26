@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Reader\Xlsx as ReaderXlsx;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Str;
 use App\Models\StagingUser;
 
 class FacultyStaffImportController extends Controller
@@ -24,6 +25,7 @@ class FacultyStaffImportController extends Controller
         foreach ($dataArray as $item) {
             DB::beginTransaction();
             try {
+                $password = Str::password(8, true, true, true, false);
                 StagingUser::create([
                     'rfid'          => $item['rfid'],
                     'first_name'    => $item['first_name'],
@@ -32,7 +34,7 @@ class FacultyStaffImportController extends Controller
                     'suffix'        => $item['suffix'],
                     'gender'        => $item['gender'],
                     'email'         => $item['email'],
-                    'password'      => Hash::make($item['password']),
+                    'password'      => Hash::make($password),
                     'employee_id'   => $item['employee_id'],
                     'employee_role' => $item['employee_role'],
                     'user_type'     => 'employee',
@@ -82,9 +84,8 @@ class FacultyStaffImportController extends Controller
                     'suffix'        => $rows[$i][4],
                     'gender'        => $rows[$i][5],
                     'email'         => $rows[$i][6],
-                    'password'      => $rows[$i][7],
-                    'employee_id'   => $rows[$i][8],
-                    'employee_role' => $rows[$i][9], 
+                    'employee_id'   => $rows[$i][7],
+                    'employee_role' => $rows[$i][8], 
                 );
             }
         } catch(\Exception $e){

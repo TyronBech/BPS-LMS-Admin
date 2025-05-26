@@ -12,9 +12,7 @@ use Illuminate\Support\Facades\Hash;
 use App\Models\UserGroup;
 use Illuminate\Support\Facades\Validator;
 use App\Models\StagingUser;
-use Illuminate\Auth\Events\Registered;
-use App\Models\StudentDetail;
-use App\Models\EmployeeDetail;
+use Illuminate\Support\Str;
 
 class UsersMaintenanceController extends Controller
 {
@@ -77,7 +75,6 @@ class UsersMaintenanceController extends Controller
             'level'         => 'required|in:7,8,9,10,11,12',
             'section'       => 'required|max:50',
             'email'         => 'required|email',
-            'password'      => 'required|min:8',
         ]);
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -105,6 +102,7 @@ class UsersMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try{
+            $password = Str::password(8, true, true, true, false);
             StagingUser::create([
                 'rfid'          => $request->input('rfid'),
                 'first_name'    => $request->input('first-name'),
@@ -117,7 +115,7 @@ class UsersMaintenanceController extends Controller
                 'level'         => $request->input('level'),
                 'section'       => $request->input('section'),
                 'email'         => $request->input('email'),
-                'password'      => Hash::make($request->input('password')),
+                'password'      => Hash::make($password),
                 'user_type'     => "student",
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
@@ -144,7 +142,6 @@ class UsersMaintenanceController extends Controller
             'employee_id'   => 'required|string|max:50',
             'employee_role' => 'required',
             'email'         => 'required|email',
-            'password'      => 'required',
         ]);
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -168,6 +165,7 @@ class UsersMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try{
+            $password = Str::password(8, true, true, true, false);
             StagingUser::create([
                 'rfid'          => $request->input('rfid'),
                 'first_name'    => $request->input('first-name'),
@@ -179,7 +177,7 @@ class UsersMaintenanceController extends Controller
                 'employee_id'   => $request->input('employee_id'),
                 'employee_role' => $request->input('employee_role'),
                 'email'         => $request->input('email'),
-                'password'      => Hash::make($request->input('password')),
+                'password'      => Hash::make($password),
                 'user_type'     => "employee",
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
