@@ -46,8 +46,8 @@
   const deleteInputID = document.getElementById('accession');
   deleteButtons.forEach(btn => {
     btn.addEventListener('click', function(event) {
-      const privilegeId   = event.target.value;
-      deleteInputID.value = privilegeId;
+      const invetoryId   = event.target.value;
+      deleteInputID.value = invetoryId;
     });
   });
 </script>
