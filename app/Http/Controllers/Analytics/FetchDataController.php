@@ -16,15 +16,14 @@ class FetchDataController extends Controller
     public function fetchCurrentTimeInUsers(){
         $today = Carbon::today();
 
-        $activeCount = Log::whereDate('timestamp', $today)
-            ->where('action', 'Time in')
-            ->whereNotIn('user_id', function($query) use ($today) {
-                $query->select('user_id')
-                      ->from('log_user_logs')
-                      ->whereDate('timestamp', $today)
-                      ->where('action', 'Time out');
-            })
-            ->count();
+        $activeCount = Log::where('action', 'Time in')
+        ->whereDate('timestamp', $today)
+        ->count();
+        $inactiveCount = Log::where('action', 'Time out')
+        ->whereDate('timestamp', $today)
+        ->count();
+        $activeCount -= $inactiveCount;
+        $activeCount = $activeCount > 0 ? $activeCount : 0;
         return response()->json(['active_count' => $activeCount]);
     }
     public function fetchMonthlyUsers(){
