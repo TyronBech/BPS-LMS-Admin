@@ -116,6 +116,7 @@ class ComputerUseController extends Controller
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
         $dompdf->stream('computer-use-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
+        exit;
     }
     private function exportExcel($data)
     {

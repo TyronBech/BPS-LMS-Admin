@@ -77,6 +77,7 @@ class TransactionController extends Controller
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
         $dompdf->stream('transaction-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
+        exit;
     }
     private function exportExcel($data)
     {

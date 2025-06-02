@@ -60,6 +60,7 @@ class BookCirculationController extends Controller
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
         $dompdf->stream('book-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
+        exit;
     }
     private function exportExcel($data)
     {

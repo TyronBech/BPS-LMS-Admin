@@ -113,6 +113,7 @@ class UserLogsController extends Controller
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
         $dompdf->stream('users-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
+        exit;
     }
     private function exportExcel($data)
     {

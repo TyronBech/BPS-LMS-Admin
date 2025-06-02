@@ -47,6 +47,7 @@ class CategoriesController extends Controller
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
         $dompdf->stream('book-summary-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
+        exit;
     }
     private function exportExcel($data)
     {
