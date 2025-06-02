@@ -24,8 +24,9 @@ class BookMaintenanceController extends Controller
         $categories     = Category::all()->pluck('name', 'id');
         $condition      = $this->extract_enums('bk_books', 'condition_status');
         $availability   = $this->extract_enums('bk_books', 'availability_status');     
-        $remarks        = $this->extract_enums('bk_books', 'remarks'); 
-        return view('maintenance.books.create', compact('categories', 'condition', 'availability', 'remarks'));
+        $remarks        = $this->extract_enums('bk_books', 'remarks');
+        $book_types     = $this->extract_enums('bk_books', 'book_type');
+        return view('maintenance.books.create', compact('categories', 'condition', 'availability', 'remarks', 'book_types'));
     }
     public function store(Request $request)
     {
@@ -34,6 +35,7 @@ class BookMaintenanceController extends Controller
             'call_number'       => 'sometimes|max:50',
             'title'             => 'required|string|max:1024',
             'authors'           => 'sometimes',
+            'description'       => 'sometimes',
             'edition'           => 'sometimes',
             'publication'       => 'required|string|max:255',
             'publisher'         => 'required|string|max:255',
@@ -42,6 +44,7 @@ class BookMaintenanceController extends Controller
             'digital_copy_url'  => 'sometimes',
             'remarks'           => 'required',
             'category'          => 'required|in:'.implode(',', Category::all()->pluck('id')->toArray()),
+            'book_type'         => 'required|in:'.implode(',', $this->extract_enums('bk_books', 'book_type')),
             'condition'         => 'required|in:'.implode(',', $this->extract_enums('bk_books', 'condition_status')),
             'availability'      => 'required|in:'.implode(',', $this->extract_enums('bk_books', 'availability_status')),
         ]);
@@ -63,6 +66,7 @@ class BookMaintenanceController extends Controller
                 'barcode'               => $barcode->getBarcodeJPG($request->input('accession'), 'C39+', 2, 70, array(0, 0, 0, 0), true),
                 'title'                 => $request->input('title'),
                 'author'                => $request->input('authors') ?? null,
+                'description'           => $request->input('description') ?? null,
                 'edition'               => $request->input('edition') ?? null,
                 'place_of_publication'  => $request->input('publication'),
                 'publisher'             => $request->input('publisher'),
@@ -71,6 +75,7 @@ class BookMaintenanceController extends Controller
                 'digital_copy_url'      => $request->input('digital_copy_url') ?? null,
                 'remarks'               => $request->input('remarks'),
                 'category_id'           => $request->input('category'),
+                'book_type'             => $request->input('book_type'),
                 'condition_status'      => $request->input('condition'),
                 'availability_status'   => $request->input('availability'),
                 'created_at'            => now(),
@@ -97,10 +102,11 @@ class BookMaintenanceController extends Controller
             $condition      = $this->extract_enums('bk_books', 'condition_status');
             $availability   = $this->extract_enums('bk_books', 'availability_status');     
             $remarks        = $this->extract_enums('bk_books', 'remarks');
+            $book_types     = $this->extract_enums('bk_books', 'book_type');
         } catch(\Exception $e){
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
-        return view('maintenance.books.edit', compact('book', 'categories', 'condition', 'availability', 'remarks'));
+        return view('maintenance.books.edit', compact('book', 'categories', 'condition', 'availability', 'remarks', 'book_types'));
     }
     public function show(Request $request)
     {
@@ -138,6 +144,7 @@ class BookMaintenanceController extends Controller
             'call_number'       => 'sometimes|max:50',
             'title'             => 'required|string|max:1024',
             'authors'           => 'sometimes',
+            'description'       => 'sometimes',
             'edition'           => 'sometimes',
             'publication'       => 'required|string|max:255',
             'publisher'         => 'required|string|max:255',
@@ -146,12 +153,14 @@ class BookMaintenanceController extends Controller
             'digital_copy_url'  => 'sometimes',
             'remarks'           => 'required',
             'category'          => 'required|in:'.implode(',', Category::all()->pluck('id')->toArray()),
+            'book_type'         => 'required|in:'.implode(',', $this->extract_enums('bk_books', 'book_type')),
             'condition'         => 'required|in:'.implode(',', $this->extract_enums('bk_books', 'condition_status')),
             'availability'      => 'required|in:'.implode(',', $this->extract_enums('bk_books', 'availability_status')),
         ]);
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
+        //dd($request->all());
         if($request->hasFile('cover_image')){
             $image = $request->file('cover_image');
             $imageContent = file_get_contents($image->getRealPath());
@@ -168,6 +177,7 @@ class BookMaintenanceController extends Controller
                 'barcode'               => $barcode->getBarcodeJPG($request->input('accession'), 'C39+', 2, 70, array(0, 0, 0, 0), true),
                 'title'                 => $request->input('title'),
                 'author'                => $request->input('authors'),
+                'description'           => $request->input('description'),
                 'edition'               => $request->input('edition'),
                 'place_of_publication'  => $request->input('publication'),
                 'publisher'             => $request->input('publisher'),
@@ -176,6 +186,7 @@ class BookMaintenanceController extends Controller
                 'digital_copy_url'      => $request->input('digital_copy_url'),
                 'remarks'               => $request->input('remarks'),
                 'category'              => $request->input('category'),
+                'book_type'             => $request->input('book_type'),
                 'condition_status'      => $request->input('condition'),
                 'availability_status'   => $request->input('availability'),
                 'updated_at'            => now()

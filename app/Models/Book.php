@@ -18,6 +18,7 @@ class Book extends Model
         'call_number',
         'title',
         'author',
+        'description',
         'edition',
         'place_of_publication',
         'publisher',
@@ -27,6 +28,7 @@ class Book extends Model
         'cover_image',
         'digital_copy_url',
         'barcode',
+        'book_type',
         'availability_status',
         'condition_status',
     ];

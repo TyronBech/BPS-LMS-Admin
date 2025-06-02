@@ -33,15 +33,6 @@
       </div>
       @enderror
     </div>
-    <!-- <div class="mb-5">
-      <label for="barcode" class="block mb-2 text-sm font-medium">Barcode:</label>
-      <input type="text" id="barcode" name="barcode" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="1234 5678">
-      @error('barcode')
-      <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
-        <span class="font-medium">{{ $message }}</span>
-      </div>
-      @enderror
-    </div> -->
     <div class="mb-5">
       <label for="title" class="block mb-2 text-sm font-medium">Title:</label>
       <input type="text" id="title" name="title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Title...">
@@ -55,6 +46,15 @@
       <label for="authors" class="block mb-2 text-sm font-medium">Authors:</label>
       <input type="text" id="authors" name="authors" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Juan Dela Cruz">
       @error('authors')
+      <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+        <span class="font-medium">{{ $message }}</span>
+      </div>
+      @enderror
+    </div>
+    <div class="mb-5">
+      <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Book Description:</label>
+      <textarea id="description" name="description" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Write book description here..."></textarea>
+      @error('description')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
       </div>
@@ -136,6 +136,19 @@
         @endforeach
       </select>
       @error('remarks')
+      <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+        <span class="font-medium">{{ $message }}</span>
+      </div>
+      @enderror
+    </div>
+    <div class="mb-5">
+      <label for="book_type" class="block mb-2 text-sm font-medium">Select Book Type:</label>
+      <select id="book_type" name="book_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        @foreach($book_types as $value)
+        <option value="{{ $value }}">{{ $value }}</option>
+        @endforeach
+      </select>
+      @error('book_type')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
       </div>
