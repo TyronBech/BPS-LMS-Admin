@@ -8,6 +8,7 @@
       <th>Call Number</th>
       <th>Title</th>
       <th>Author</th>
+      <th>Remarks</th>
       <th>Condition</th>
       <th>Action</th>
     </thead>
@@ -18,6 +19,17 @@
         <td class="mt-1">{{ $book->call_number }}</td>
         <td class="mt-1">{{ $book->title }}</td>
         <td class="mt-1">{{ $book->author }}</td>
+        <td class="mt-1 mx-2">
+          <select name="remarks[{{ $book->accession }}]" id="remarks" class="w-full p-2 border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+            @foreach($remarks as $remarks)
+            @if($remarks == $book->remarks)
+            <option value="{{ $remarks }}" selected>{{ $remarks }}</option>
+            @else
+            <option value="{{ $remarks }}">{{ $remarks }}</option>
+            @endif
+            @endforeach
+          </select>
+        </td>
         <td class="mt-1 mx-2">
           <select name="condition[{{ $book->accession }}]" id="condition" class="w-full p-2 border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
             @foreach($conditions as $condition)

@@ -14,18 +14,18 @@ class InventoryController extends Controller
     public function index()
     {
         $conditions = $this->extract_enums('bk_books', 'condition_status');
+        $remarks = $this->extract_enums('bk_books', 'remarks');
         $books = Book::with('inventory')
             ->whereHas('inventory', function ($query) {
                 $query->where('checked_at', null);
             })
             ->orderBy('created_at', 'desc')
             ->get();
-        return view('inventory.inventory', compact('books', 'conditions'));
+        return view('inventory.inventory', compact('books', 'conditions', 'remarks'));
     }
     public function search(Request $request)
     {
         $data       = null;
-        $conditions = $this->extract_enums('bk_books', 'condition_status');
         $validator  = Validator::make($request->all(), [
             'barcode' => 'required',
         ]);
@@ -59,6 +59,7 @@ class InventoryController extends Controller
     public function update(Request $request)
     {
         $condition = $request->input('condition');
+        $remarks = $request->input('remarks');
         if (!$condition) {
             return redirect()->back()->with('toast-warning', 'Please enter a book');
         }
@@ -66,6 +67,10 @@ class InventoryController extends Controller
         try {
             foreach ($condition as $key => $value) {
                 $book = Book::where('accession', $key)->first();
+                if (!$book) {
+                    DB::rollBack();
+                    return redirect()->back()->with('toast-warning', 'Book not found!');
+                }
                 $inventory = Inventory::where('book_id', $book->id)->where('checked_at', null)->first();
                 if (!$inventory) {
                     return redirect()->back()->with('toast-warning', 'No inventory found for this book!');
@@ -74,7 +79,7 @@ class InventoryController extends Controller
                     'checked_at' => now(),
                 ]);
                 $book->update([
-                    'remarks'           => "On Shelf",
+                    'remarks'           => $remarks[$key],
                     'condition_status'  => $value,
                 ]);
             }
