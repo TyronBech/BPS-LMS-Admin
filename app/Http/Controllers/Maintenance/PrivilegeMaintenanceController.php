@@ -34,7 +34,7 @@ class PrivilegeMaintenanceController extends Controller
                 'category'              => $request->input('category'),
                 'max_book_allowed'      => $request->input('max_book_allowed_add'),
                 'borrow_duration_days'  => $request->input('borrow_duration_days_add'),
-                'renewal_limit'         => $request->input('renewal_limit'),
+                'renewal_limit'         => $request->input('renewal_limit_add'),
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
