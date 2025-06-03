@@ -33,7 +33,7 @@ class PrivilegeMaintenanceController extends Controller
                 'user_type'             => $request->input('user_type'),
                 'category'              => $request->input('category'),
                 'max_book_allowed'      => $request->input('max_book_allowed_add'),
-                'borrow_duration_days'  => $request->input('borrow_duration_days'),
+                'borrow_duration_days'  => $request->input('borrow_duration_days_add'),
                 'renewal_limit'         => $request->input('renewal_limit'),
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
@@ -62,7 +62,7 @@ class PrivilegeMaintenanceController extends Controller
                 'user_type'             => $request->input('user_type'),
                 'category'              => $request->input('category'),
                 'max_book_allowed'      => $request->input('max_book_allowed_update'),
-                'borrow_duration_days'  => $request->input('borrow_duration_days_updare'),
+                'borrow_duration_days'  => $request->input('borrow_duration_days_update'),
                 'renewal_limit'         => $request->input('renewal_limit_update'),
             ]);
         } catch (\Illuminate\Database\QueryException $e) {

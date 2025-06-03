@@ -5,7 +5,7 @@
       <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 rtl:space-x-reverse">
         <img class="rounded-full w-24 h-24" src="{{ asset('img/BPSLogo.png') }}" alt="School Logo">
         <div class="flex flex-col justify-center">
-          <h1 class="xl:2xl lg:text-xl md:text-md text-xs text-white font-semibold text-start">Bicutan Parochial School inc.</h1>
+          <h1 class="xl:2xl lg:text-xl md:text-md text-xs text-white font-semibold text-start">Bicutan Parochial School, Inc.</h1>
           <hr class="h-px bg-gray-200 border-0">
           <h1 class="xl:2xl lg:text-xl md:text-md text-xs text-white font-semibold text-start">Library Management System</h1>
         </div>
