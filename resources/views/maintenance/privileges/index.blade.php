@@ -102,21 +102,21 @@
             @enderror
           </div>
           <div class="mb-5">
-            <label for="renewal_limi_add" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Renewal Limit:</label>
+            <label for="renewal_limit_add" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Renewal Limit:</label>
             <div class="relative flex items-center max-w-[8rem]">
-              <button type="button" id="decrement-button" data-input-counter-decrement="renewal_limi_add" class="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-s-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none">
+              <button type="button" id="decrement-button" data-input-counter-decrement="renewal_limit_add" class="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-s-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none">
                 <svg class="w-3 h-3 text-gray-900 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 2">
                   <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h16" />
                 </svg>
               </button>
-              <input type="text" id="renewal_limi_add" name="renewal_limi_add" data-input-counter data-input-counter-min="0" data-input-counter-max="999" aria-describedby="helper-text-explanation" class="bg-gray-50 border-x-0 border-gray-300 h-11 text-center text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 block w-full py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="999" value="5" required />
-              <button type="button" id="increment-button" data-input-counter-increment="renewal_limi_add" class="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-e-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none">
+              <input type="text" id="renewal_limit_add" name="renewal_limit_add" data-input-counter data-input-counter-min="0" data-input-counter-max="999" aria-describedby="helper-text-explanation" class="bg-gray-50 border-x-0 border-gray-300 h-11 text-center text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 block w-full py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="999" value="5" required />
+              <button type="button" id="increment-button" data-input-counter-increment="renewal_limit_add" class="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-e-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none">
                 <svg class="w-3 h-3 text-gray-900 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
                   <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 1v16M1 9h16" />
                 </svg>
               </button>
             </div>
-            @error('renewal_limi_add')
+            @error('renewal_limit_add')
             <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
               <span class="font-medium">{{ $message }}</span>
             </div>

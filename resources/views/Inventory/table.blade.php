@@ -21,11 +21,11 @@
         <td class="mt-1">{{ $book->author }}</td>
         <td class="mt-1 mx-2">
           <select name="remarks[{{ $book->accession }}]" id="remarks" class="w-full p-2 border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
-            @foreach($remarks as $remarks)
-            @if($remarks == $book->remarks)
-            <option value="{{ $remarks }}" selected>{{ $remarks }}</option>
+            @foreach($remarks as $remark)
+            @if($remark == $book->remarks)
+            <option value="{{ $remark }}" selected>{{ $remark }}</option>
             @else
-            <option value="{{ $remarks }}">{{ $remarks }}</option>
+            <option value="{{ $remark }}">{{ $remark }}</option>
             @endif
             @endforeach
           </select>
