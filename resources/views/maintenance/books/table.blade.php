@@ -25,20 +25,8 @@ $bookID = null;
         @forelse($books as $item)
         <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
           <td class="max-w-40 h-14">{{ $item->accession }}</td>
-          <!-- <td class="max-w-36 overflow-hidden text-ellipsis">{{ $item->call_number }}</td> -->
           <td class="max-w-72 overflow-hidden text-ellipsis">{{ $item->title }}</td>
-          <!-- <td class="max-w-80">{{ $item->author }}</td>
-          <td class="max-w-40">{{ $item->category->name }}</td>
-          <td class="max-w-36">{{ $item->edition }}</td>
-          <td class="max-w-72">{{ $item->place_of_publication }}</td>
-          <td class="max-w-80">{{ $item->publisher }}</td>
-          <td class="max-w-40">{{ $item->copyrights }}</td> -->
-          <!-- <td class="max-w-60 text-start bg-white text-black">
-            {!! DNS1D::getBarcodeHTML("$item->accession", 'C128A', 2.29, 50) !!}
-            {{ $item->accession }}
-          </td> -->
           <td class="max-w-60 text-start">
-          <!-- <img src="data:image/jpeg;base64,{{ DNS1D::getBarcodeJPG($item->accession, 'C39+', 2, 70, array(0, 0, 0, 0), true) }}" alt="barcode" /></td> -->
           <img src="data:image/jpg;base64,{{ $item->barcode }}" alt="barcode" /></td>
           <td class="max-w-36">{{ $item->remarks }}</td>
           <td class="pb-1 flex justify-center">
