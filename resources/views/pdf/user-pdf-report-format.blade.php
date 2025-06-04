@@ -5,11 +5,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
-      padding: 0;
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+    * {
+      font-family: "IBM Plex Sans", sans-serif;
+      font-optical-sizing: auto;
+      font-style: normal;
       box-sizing: border-box;
+      padding: 0;
+      margin: 0 10px; 
+    }
+    header {
+      text-align: center;
+      margin-bottom: 4px;
+
     }
 
     table {
@@ -34,6 +42,25 @@
     h1,
     h4 {
       color: #333;
+    }
+    h4 {
+      text-align: center;
+      margin: 10px 0;
+      padding: 0;
+    }
+    img {
+      max-width: 100%;
+      height: auto;
+      margin-top: 5px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+    .logo img {
+      margin-right: 10px;
     }
 
     .total {
@@ -85,40 +112,49 @@
 </head>
 
 <body>
-  <h1>Report Document</h1>
-  <h3>Report Title: {{ $title }}</h3>
-  <h3>Report Date: {{ $date }}</h3>
-  <div class="table-container">
-    <h4>Report Details</h4>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Date</th>
-          <th>Time</th>
-          <th>Computer Use</th>
-          <th>Action</th>
-        </tr>
-      </thead>
-      <tbody>
-        @forelse($data as $item)
-        @if($item->user)
-        <tr>
-          <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
-          <td>{{ \Carbon\Carbon::parse($item->timestamp)->format('Y-m-d') }}</td>
-          <td>{{ \Carbon\Carbon::parse($item->timestamp)->format('H:i:s') }}</td>
-          <td>{{ $item->computer_use }}</td>
-          <td>{{ $item->action }}</td>
-        </tr>
-        @endif
-        @empty
-        <tr>
-          <td colspan="5" class="text-center">No data found.</td>
-        </tr>
-        @endforelse
-      </tbody>
-    </table>
-  </div>
+  <header class="header">
+    <div class="logo">
+      <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('img/BPSLogo.png'))) }}" alt="BPS Logo">
+      <div>
+        <h2>Bicutan Parochial School, Inc.</h2>
+        <p>Lower Bicutan, Taguig City</p>
+      </div>
+    </div>
+  </header>
+  <main>
+    <h4>{{ $title }}</h4>
+    <h4>{{ $date }}</h4>
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Computer Use</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @forelse($data as $item)
+          @if($item->user)
+          <tr>
+            <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
+            <td>{{ \Carbon\Carbon::parse($item->timestamp)->format('Y-m-d') }}</td>
+            <td>{{ \Carbon\Carbon::parse($item->timestamp)->format('H:i:s') }}</td>
+            <td>{{ $item->computer_use }}</td>
+            <td>{{ $item->action }}</td>
+          </tr>
+          @endif
+          @empty
+          <tr>
+            <td colspan="5" class="text-center">No data found.</td>
+          </tr>
+          @endforelse
+        </tbody>
+      </table>
+    </div>
+  </main>
   <!-- Page break if the content overflows -->
   <div class="page-break"></div>
 </body>

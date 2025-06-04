@@ -9,6 +9,7 @@ use App\Models\Log;
 use Illuminate\Support\Facades\Validator;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Dompdf\Dompdf;
+use Dompdf\Options;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use DateTime;
@@ -102,15 +103,16 @@ class UserLogsController extends Controller
     private function generatePDF($data)
     {
         $items = [
-            'title' => 'Users Report',
+            'title' => 'User logs Report',
             'date' => date('m/d/y'),
             'data' => $data,
             'totalCount' => $data->count(),
         ];
-
-        $dompdf = new Dompdf();
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new Dompdf($options);
         $dompdf->loadHtml(view('pdf.user-pdf-report-format', $items));
-        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
         $dompdf->stream('users-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;

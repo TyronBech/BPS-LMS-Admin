@@ -9,6 +9,8 @@ use App\Http\Controllers\Admin\Auth\AdminLoginController;
 use App\Http\Controllers\Admin\Auth\RegisterAdminController;
 use App\Http\Controllers\Report\UserLogsController;
 use App\Http\Controllers\Report\VisitorLogsController;
+use App\Models\Log;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Report\TransactionController;
 use App\Http\Controllers\Report\BookCirculationController;
 use App\Http\Controllers\Import\StudentImportController;
@@ -55,15 +57,8 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     Route::get('dashboard', function(){
         return view('dashboard.dashboard');
     })->name('dashboard');
-    Route::get('test', function(){
-        // $data = Category::all();
-        // $items = [
-        //     'title' => 'Summary Report',
-        //     'date' => date('m/d/y'),
-        //     'data' => $data,
-        //     'totalCount' => $data->count(),
-        // ];
-        // return view('pdf.summary-pdf-report', $items);
+    Route::get('test', function() {
+        return view('dashboard.dashboard');
     })->name('test');
     Route::get('profile',   [ProfileController::class, 'index']) ->name('profile');
     Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
