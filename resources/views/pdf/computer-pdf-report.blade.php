@@ -5,9 +5,20 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
+    * {
+      font-family: "IBM Plex Sans", sans-serif;
+      font-optical-sizing: auto;
+      font-style: normal; 
+    }
+    header {
+      text-align: center;
+      margin-bottom: 4px;
+
+    }
+
     body {
-      font-family: Arial, sans-serif;
-      margin: 20px;
+      margin-top: 10px;
       padding: 0;
       box-sizing: border-box;
     }
@@ -34,6 +45,25 @@
     h1,
     h4 {
       color: #333;
+    }
+    h4 {
+      text-align: center;
+      margin: 10px 0;
+      padding: 0;
+    }
+    img {
+      max-width: 100px;
+      height: auto;
+      margin-top: 5px;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 10px;
+    }
+    .logo img {
+      margin-right: 10px;
     }
 
     .total {
@@ -85,10 +115,18 @@
 </head>
 
 <body>
-  <h1>Report Document</h1>
-  <h3>Report Title: {{ $title }}</h3>
-  <h3>Report Date: {{ $date }}</h3>
-  <div class="table-container">
+  <header class="header">
+    <div class="logo">
+      <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('img/BPSLogo.png'))) }}" alt="BPS Logo">
+      <div>
+        <h2>Bicutan Parochial School, Inc.</h2>
+        <p>Lower Bicutan, Taguig City</p>
+      </div>
+    </div>
+  </header>
+  <h4>{{ $title }}</h4>
+  <h4>{{ $date }}</h4>
+  <main class="table-container">
     <h4>Report Details</h4>
     <table>
       <thead>
@@ -118,7 +156,7 @@
         @endforelse
       </tbody>
     </table>
-  </div>
+  </main>
   <!-- Page break if the content overflows -->
   <div class="page-break"></div>
 </body>

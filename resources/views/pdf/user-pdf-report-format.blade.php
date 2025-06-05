@@ -9,15 +9,18 @@
     * {
       font-family: "IBM Plex Sans", sans-serif;
       font-optical-sizing: auto;
-      font-style: normal;
-      box-sizing: border-box;
-      padding: 0;
-      margin: 0 10px; 
+      font-style: normal; 
     }
     header {
       text-align: center;
       margin-bottom: 4px;
 
+    }
+
+    body {
+      margin-top: 10px;
+      padding: 0;
+      box-sizing: border-box;
     }
 
     table {
@@ -49,7 +52,7 @@
       padding: 0;
     }
     img {
-      max-width: 100%;
+      max-width: 100px;
       height: auto;
       margin-top: 5px;
     }
@@ -112,7 +115,7 @@
 </head>
 
 <body>
-  <header class="header">
+  <header>
     <div class="logo">
       <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('img/BPSLogo.png'))) }}" alt="BPS Logo">
       <div>
@@ -121,42 +124,37 @@
       </div>
     </div>
   </header>
-  <main>
-    <h4>{{ $title }}</h4>
-    <h4>{{ $date }}</h4>
-    <div class="table-container">
-      <table>
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Date</th>
-            <th>Time</th>
-            <th>Computer Use</th>
-            <th>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          @forelse($data as $item)
-          @if($item->user)
-          <tr>
-            <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
-            <td>{{ \Carbon\Carbon::parse($item->timestamp)->format('Y-m-d') }}</td>
-            <td>{{ \Carbon\Carbon::parse($item->timestamp)->format('H:i:s') }}</td>
-            <td>{{ $item->computer_use }}</td>
-            <td>{{ $item->action }}</td>
-          </tr>
-          @endif
-          @empty
-          <tr>
-            <td colspan="5" class="text-center">No data found.</td>
-          </tr>
-          @endforelse
-        </tbody>
-      </table>
-    </div>
+  <h4>{{ $title }}</h4>
+  <h4>{{ $date }}</h4>
+  <main class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Date</th>
+          <th>Time in</th>
+          <th>Time out</th>
+        </tr>
+      </thead>
+      <tbody>
+        @forelse($data as $item)
+        @if($item->user)
+        <tr>
+          <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
+          <td>{{ \Carbon\Carbon::parse($item->time_in)->format('Y-m-d') }}</td>
+          <td>{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
+          <td>{{ \Carbon\Carbon::parse($item->time_out)->format('g:i A') }}</td>
+        </tr>
+        @endif
+        @empty
+        <tr>
+          <td colspan="5" class="text-center">No data found.</td>
+        </tr>
+        @endforelse
+      </tbody>
+    </table>
   </main>
   <!-- Page break if the content overflows -->
   <div class="page-break"></div>
 </body>
-
 </html>
