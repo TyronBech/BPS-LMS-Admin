@@ -14,8 +14,9 @@ class Log extends Model
     protected $fillable = [
         'user_id',
         'computer_use',
-        'timestamp',
-        'action',
+        'time_in',
+        'time_out',
+        'remarks',
     ];
     public function user() : BelongsTo
     {
