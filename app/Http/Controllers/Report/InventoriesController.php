@@ -52,7 +52,7 @@ class InventoriesController extends Controller
 
         $dompdf = new Dompdf();
         $dompdf->loadHtml(view('pdf.inventory-pdf-report', $items));
-        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
         $dompdf->stream('users-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;

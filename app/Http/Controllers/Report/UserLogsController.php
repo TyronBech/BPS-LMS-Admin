@@ -24,10 +24,10 @@ class UserLogsController extends Controller
         $fromInputDate  = null;
         $toInputDate    = null;
         $peak_hour      = "00:00";
-        $data           = Log::with('user')->orderBy(DB::raw('date(timestamp)'), 'desc')
-            ->orderBy(DB::raw('time(timestamp)'), 'desc')->get();
+        $data           = Log::with('user')->orderBy(DB::raw('date(time_in)'), 'desc')
+            ->orderBy(DB::raw('time(time_in)'), 'desc')->get();
         $hours = $data->map(function ($item) {
-            $item = Carbon::parse($item->timestamp)->format('H:i:s');
+            $item = Carbon::parse($item->time_in)->format('H:i:s');
             return $item;
         });
         $hour = $this->findPeakHour($hours);
@@ -68,7 +68,7 @@ class UserLogsController extends Controller
         }
         $data = $this->generateData($request);
         $hours = $data->map(function ($item) {
-            $item = Carbon::parse($item->timestamp)->format('H:i:s');
+            $item = Carbon::parse($item->time_in)->format('H:i:s');
             return $item;
         });
         $hour = $this->findPeakHour($hours);
@@ -138,8 +138,8 @@ class UserLogsController extends Controller
                 continue; // Skip if users relationship is not loaded
             }
             $sheet->setCellValue('A' . $row, $item->user->last_name . ', ' . $item->user->first_name . ' ' . $item->user->middle_name);
-            $sheet->setCellValue('B' . $row, Carbon::parse($item->timestamp)->format('Y-m-d'));
-            $sheet->setCellValue('C' . $row, Carbon::parse($item->timestamp)->format('H:i:s'));
+            $sheet->setCellValue('B' . $row, Carbon::parse($item->time_in)->format('Y-m-d'));
+            $sheet->setCellValue('C' . $row, Carbon::parse($item->time_in)->format('H:i:s'));
             $sheet->setCellValue('D' . $row, $item->computer_use);
             $sheet->setCellValue('E' . $row, $item->action);
             $row++;
@@ -162,7 +162,7 @@ class UserLogsController extends Controller
         if (strlen($fromInputDate) > 0) {
             $fromInputDate = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
             $toInputDate = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
-            $query->whereBetween(DB::raw('DATE(log_user_logs.timestamp)'), [$fromInputDate, $toInputDate]); // Corrected table name
+            $query->whereBetween(DB::raw('DATE(log_user_logs.time_in)'), [$fromInputDate, $toInputDate]); // Corrected table name
         }
 
         if (strlen($inputName) > 0) {
@@ -178,7 +178,7 @@ class UserLogsController extends Controller
             });
         }
 
-        $data = $query->orderBy(DB::raw('DATE(log_user_logs.timestamp)'), 'asc') // Corrected table name
+        $data = $query->orderBy(DB::raw('DATE(log_user_logs.time_in)'), 'asc') // Corrected table name
             ->get();
         return $data;
     }

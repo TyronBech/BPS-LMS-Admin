@@ -25,11 +25,11 @@ class ComputerUseController extends Controller
         $data = Log::with(['user.students']) // correct singular relationship
                 ->where('computer_use', 'Yes')
                 ->whereHas('user.students')
-                ->orderBy(DB::raw('DATE(timestamp)'), 'desc')
-                ->orderBy(DB::raw('TIME(timestamp)'), 'desc')
+                ->orderBy(DB::raw('DATE(time_in)'), 'desc')
+                ->orderBy(DB::raw('TIME(time_in)'), 'desc')
                 ->get();
         $hours = $data->map(function ($item) {
-            $item = Carbon::parse($item->timestamp)->format('H:i:s');
+            $item = Carbon::parse($item->time_in)->format('H:i:s');
             return $item;
         });
         $hour = $this->findPeakHour($hours);
@@ -70,7 +70,7 @@ class ComputerUseController extends Controller
         }
         $data = $this->generateData($request);
         $hours = $data->map(function ($item) {
-            $item = Carbon::parse($item->timestamp)->format('H:i:s');
+            $item = Carbon::parse($item->time_in)->format('H:i:s');
             return $item;
         });
         $hour = $this->findPeakHour($hours);
@@ -113,7 +113,7 @@ class ComputerUseController extends Controller
 
         $dompdf = new Dompdf();
         $dompdf->loadHtml(view('pdf.computer-pdf-report', $items));
-        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
         $dompdf->stream('computer-use-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;
@@ -141,8 +141,8 @@ class ComputerUseController extends Controller
             $sheet->setCellValue('A' . $row, $item->user->last_name . ', ' . $item->user->first_name . ' ' . $item->user->middle_name);
             $sheet->setCellValue('B' . $row, $item->user->students->level);
             $sheet->setCellValue('C' . $row, $item->user->students->section);
-            $sheet->setCellValue('D' . $row, Carbon::parse($item->timestamp)->format('Y-m-d'));
-            $sheet->setCellValue('E' . $row, Carbon::parse($item->timestamp)->format('H:i:s'));
+            $sheet->setCellValue('D' . $row, Carbon::parse($item->time_in)->format('Y-m-d'));
+            $sheet->setCellValue('E' . $row, Carbon::parse($item->time_in)->format('H:i:s'));
             $row++;
         }
         $writer     = new WriterXlsx($spreadsheet);
@@ -163,7 +163,7 @@ class ComputerUseController extends Controller
         if (strlen($fromInputDate) > 0) {
             $fromInputDate = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
             $toInputDate = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
-            $query->whereBetween(DB::raw('DATE(log_user_logs.timestamp)'), [$fromInputDate, $toInputDate]); // Corrected table name
+            $query->whereBetween(DB::raw('DATE(log_user_logs.time_in)'), [$fromInputDate, $toInputDate]); // Corrected table name
         }
 
         if (strlen($inputName) > 0) {
@@ -179,7 +179,7 @@ class ComputerUseController extends Controller
             });
         }
 
-        $data = $query->where('computer_use', 'Yes')->orderBy(DB::raw('DATE(log_user_logs.timestamp)'), 'asc') // Corrected table name
+        $data = $query->where('computer_use', 'Yes')->orderBy(DB::raw('DATE(log_user_logs.time_in)'), 'asc') // Corrected table name
             ->get();
         return $data;
     }

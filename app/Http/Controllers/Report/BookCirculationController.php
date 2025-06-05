@@ -57,7 +57,7 @@ class BookCirculationController extends Controller
         ];
         $dompdf = new Dompdf();
         $dompdf->loadHtml(view('pdf.book-pdf-report', $items));
-        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
         $dompdf->stream('book-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;
