@@ -4,19 +4,19 @@
     <thead id="today-header" class="bg-blue-400 text-center font-bold text-slate-200">
       <th>Name</th>
       <th>Date</th>
-      <th>Time</th>
-      <th>Computer Use</th>
-      <th>Action</th>
+      <th>Time in</th>
+      <th>Time out</th>
+      <th>Remarks</th>
     </thead>
     <tbody id="students-activity">
       @forelse($data as $item)
       @if($item->user)
       <tr class="text-center">
         <td class="pb-1 min-w-20">{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
-        <td class="pb-1">{{ \Carbon\Carbon::parse($item->timestamp)->format('Y-m-d') }}</td>
-        <td class="pb-1">{{ \Carbon\Carbon::parse($item->timestamp)->format('H:i:s') }}</td>
-        <td class="pb-1">{{ $item->computer_use }}</td>
-        <td class="pb-1">{{ $item->action }}</td>
+        <td class="pb-1">{{ \Carbon\Carbon::parse($item->time_in)->format('Y-m-d') }}</td>
+        <td class="pb-1">{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
+        <td class="pb-1">{{ \Carbon\Carbon::parse($item->time_out)->format('g:i A') }}</td>
+        <td class="pb-1">{{ $item->remarks ?? '' }}</td>
       </tr>
       @endif
       @empty
