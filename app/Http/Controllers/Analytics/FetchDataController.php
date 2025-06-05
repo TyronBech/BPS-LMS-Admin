@@ -16,24 +16,20 @@ class FetchDataController extends Controller
     public function fetchCurrentTimeInUsers(){
         $today = Carbon::today();
 
-        $activeCount = Log::where('action', 'Time in')
-        ->whereDate('timestamp', $today)
-        ->count();
-        $inactiveCount = Log::where('action', 'Time out')
-        ->whereDate('timestamp', $today)
-        ->count();
-        $activeCount -= $inactiveCount;
-        $activeCount = $activeCount > 0 ? $activeCount : 0;
+        $activeCount = Log::where('time_in' , '!=', null)
+            ->where('time_out', null)
+            ->whereDate('time_in', $today)
+            ->count();
         return response()->json(['active_count' => $activeCount]);
     }
     public function fetchMonthlyUsers(){
         $monthlyRecord = Log::select(
-            DB::raw("DATE_FORMAT(timestamp, '%Y %M') as month"),
+            DB::raw("DATE_FORMAT(time_in, '%Y %M') as month"),
             DB::raw('COUNT(*) as count')
         )
-        ->where('action', 'Time in')
-        ->groupBy(DB::raw("DATE_FORMAT(timestamp, '%Y %M')"))
-        ->orderBy(DB::raw("MIN(timestamp)")) // optional: to order correctly from oldest to newest
+        ->where('time_in', '!=', null)
+        ->groupBy(DB::raw("DATE_FORMAT(time_in, '%Y %M')"))
+        ->orderBy(DB::raw("MIN(time_in)")) // optional: to order correctly from oldest to newest
         ->limit(12)
         ->get();
         return response()->json($monthlyRecord);
