@@ -15,7 +15,11 @@
         <td class="pb-1 min-w-20">{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
         <td class="pb-1">{{ \Carbon\Carbon::parse($item->time_in)->format('Y-m-d') }}</td>
         <td class="pb-1">{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
+        @if($item->time_out)
         <td class="pb-1">{{ \Carbon\Carbon::parse($item->time_out)->format('g:i A') }}</td>
+        @else
+        <td class="pb-1">-</td>
+        @endif
         <td class="pb-1">{{ $item->remarks ?? '' }}</td>
       </tr>
       @endif
