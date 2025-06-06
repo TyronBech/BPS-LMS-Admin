@@ -8,6 +8,7 @@ use App\Models\Inventory;
 use Illuminate\Support\Facades\DB;
 use DateTime;
 use Dompdf\Dompdf;
+use Dompdf\Options;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use Carbon\Carbon;
@@ -49,12 +50,13 @@ class InventoriesController extends Controller
             'data' => $data,
             'totalCount' => $data->count(),
         ];
-
-        $dompdf = new Dompdf();
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new Dompdf($options);
         $dompdf->loadHtml(view('pdf.inventory-pdf-report', $items));
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
-        $dompdf->stream('users-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
+        $dompdf->stream('inventory-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;
     }
     private function exportExcel($data)

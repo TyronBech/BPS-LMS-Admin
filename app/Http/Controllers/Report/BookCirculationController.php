@@ -9,8 +9,8 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
-use Carbon\Carbon;
 use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class BookCirculationController extends Controller
 {
@@ -55,7 +55,9 @@ class BookCirculationController extends Controller
             'data'  => $data,
             'totalCount' => $data->count(),
         ];
-        $dompdf = new Dompdf();
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new Dompdf($options);
         $dompdf->loadHtml(view('pdf.book-pdf-report', $items));
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();

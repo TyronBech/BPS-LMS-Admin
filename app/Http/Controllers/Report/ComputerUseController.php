@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator; // Import the Validator facade
 use DateTime; // Import the DateTime class
 use Barryvdh\DomPDF\Facade\Pdf; // Import the Pdf facade
 use Dompdf\Dompdf; // Import the Dompdf class
+use Dompdf\Options; // Import the Dompdf Options class
 use PhpOffice\PhpSpreadsheet\Spreadsheet; // Import the Spreadsheet class
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx; // Import the WriterXlsx class with alias
 
@@ -110,8 +111,9 @@ class ComputerUseController extends Controller
             'data' => $data,
             'totalCount' => $data->count(),
         ];
-
-        $dompdf = new Dompdf();
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new Dompdf($options);
         $dompdf->loadHtml(view('pdf.computer-pdf-report', $items));
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();

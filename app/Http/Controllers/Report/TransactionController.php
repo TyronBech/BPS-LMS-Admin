@@ -14,6 +14,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class TransactionController extends Controller
 {
@@ -71,8 +72,9 @@ class TransactionController extends Controller
             'data' => $data,
             'totalCount' => $data->count(),
         ];
-
-        $dompdf = new Dompdf();
+        $options = new Options();
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new Dompdf($options);
         $dompdf->loadHtml(view('pdf.transaction-pdf-report', $items));
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
