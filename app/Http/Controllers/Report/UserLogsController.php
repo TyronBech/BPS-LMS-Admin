@@ -109,6 +109,8 @@ class UserLogsController extends Controller
             'totalCount' => $data->count(),
         ];
         $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isPhpEnabled', true);
         $options->set('isRemoteEnabled', true);
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml(view('pdf.user-pdf-report-format', $items));

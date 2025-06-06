@@ -159,6 +159,20 @@
   </main>
   <!-- Page break if the content overflows -->
   <div class="page-break"></div>
+  @if (!app()->runningInConsole())
+  @php ob_start(); @endphp
+  <script type="text/php">
+    if (isset($pdf)) {
+      $font = $fontMetrics->getFont("IBM Plex Sans", "normal");
+      $size = 10;
+      $pageText = "Page {PAGE_NUM} of {PAGE_COUNT}";
+      $x = 520; // Adjust horizontal position
+      $y = 820; // Adjust vertical position (lower right corner)
+      $pdf->page_text($x, $y, $pageText, $font, $size);
+    }
+  </script>
+  @php echo ob_get_clean(); @endphp
+  @endif
 </body>
 
 </html>
