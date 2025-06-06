@@ -128,12 +128,10 @@ class UserLogsController extends Controller
         $sheet->getColumnDimension('B')->setWidth(20);
         $sheet->getColumnDimension('C')->setWidth(20);
         $sheet->getColumnDimension('D')->setWidth(20);
-        $sheet->getColumnDimension('E')->setWidth(20);
         $sheet->setCellValue('A1', 'Name');
         $sheet->setCellValue('B1', 'Date');
-        $sheet->setCellValue('C1', 'Time');
-        $sheet->setCellValue('D1', 'Compute Use');
-        $sheet->setCellValue('E1', 'Action');
+        $sheet->setCellValue('C1', 'Time in');
+        $sheet->setCellValue('D1', 'Time out');
         $row = 2;
         foreach ($data as $item) {
             if(!$item->user) {
@@ -141,9 +139,12 @@ class UserLogsController extends Controller
             }
             $sheet->setCellValue('A' . $row, $item->user->last_name . ', ' . $item->user->first_name . ' ' . $item->user->middle_name);
             $sheet->setCellValue('B' . $row, Carbon::parse($item->time_in)->format('Y-m-d'));
-            $sheet->setCellValue('C' . $row, Carbon::parse($item->time_in)->format('H:i:s'));
-            $sheet->setCellValue('D' . $row, $item->computer_use);
-            $sheet->setCellValue('E' . $row, $item->action);
+            $sheet->setCellValue('C' . $row, Carbon::parse($item->time_in)->format('g:i A'));
+            if ($item->time_out) {
+                $sheet->setCellValue('D' . $row, Carbon::parse($item->time_out)->format('g:i A'));
+            } else {
+                $sheet->setCellValue('D' . $row, 'N/A');
+            }
             $row++;
         }
         $writer     = new WriterXlsx($spreadsheet);

@@ -146,7 +146,7 @@ class ComputerUseController extends Controller
             $sheet->setCellValue('B' . $row, $item->user->students->level);
             $sheet->setCellValue('C' . $row, $item->user->students->section);
             $sheet->setCellValue('D' . $row, Carbon::parse($item->time_in)->format('Y-m-d'));
-            $sheet->setCellValue('E' . $row, Carbon::parse($item->time_in)->format('H:i:s'));
+            $sheet->setCellValue('E' . $row, Carbon::parse($item->time_in)->format('g:i A'));
             $row++;
         }
         $writer     = new WriterXlsx($spreadsheet);
