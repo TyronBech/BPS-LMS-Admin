@@ -1,58 +1,28 @@
 <x-mail::message>
+
 {{-- Greeting --}}
-@if (! empty($greeting))
-# {{ $greeting }}
-@else
-@if ($level === 'error')
-# @lang('Whoops!')
-@else
-# @lang('Hello!')
-@endif
-@endif
+# Hello!
 
 {{-- Intro Lines --}}
-@foreach ($introLines as $line)
-{{ $line }}
-
-@endforeach
+You are receiving this email because we received a password reset request for your account at **Bicutan Parochial School Library**.
 
 {{-- Action Button --}}
-@isset($actionText)
-<?php
-    $color = match ($level) {
-        'success', 'error' => $level,
-        default => 'primary',
-    };
-?>
-<x-mail::button :url="$actionUrl" :color="$color">
-{{ $actionText }}
+<x-mail::button :url="$actionUrl" color="primary">
+Reset Password
 </x-mail::button>
-@endisset
 
 {{-- Outro Lines --}}
-@foreach ($outroLines as $line)
-{{ $line }}
+This password reset link will expire in 60 minutes.
 
-@endforeach
+If you did not request a password reset, no further action is required.
 
 {{-- Salutation --}}
-@if (! empty($salutation))
-{{ $salutation }}
-@else
-@lang('Regards,')<br>
-{{ config('app.name') }}
-@endif
+Regards,<br>
+**BPS Library System**
 
 {{-- Subcopy --}}
-@isset($actionText)
 <x-slot:subcopy>
-@lang(
-    "If you're having trouble clicking the \":actionText\" button, copy and paste the URL below\n".
-    'into your web browser:',
-    [
-        'actionText' => $actionText,
-    ]
-) <span class="break-all">[{{ $displayableActionUrl }}]({{ $actionUrl }})</span>
+If you're having trouble clicking the **"Reset Password"** button, copy and paste the URL below into your web browser:  
+<span class="break-all">[{{ $displayableActionUrl }}]({{ $actionUrl }})</span>
 </x-slot:subcopy>
-@endisset
 </x-mail::message>
