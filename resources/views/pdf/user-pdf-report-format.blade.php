@@ -125,8 +125,8 @@
     <div class="logo">
       <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('img/BPSLogo.png'))) }}" alt="BPS Logo">
       <div>
-        <h2>Bicutan Parochial School, Inc.</h2>
-        <p>Lower Bicutan, Taguig City</p>
+        <h2>{{ $school }}</h2>
+        <p>{{ $address }}</p>
       </div>
     </div>
   </header>
