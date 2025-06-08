@@ -13,6 +13,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
+use Illuminate\Support\Facades\DB;
 
 class CategoriesController extends Controller
 {
@@ -148,5 +149,13 @@ class CategoriesController extends Controller
         header("Content-Disposition: attachment;filename=\"$fileName\"");
         $writer->save("php://output");
         exit();
+    }
+    public function update(){
+        try{
+            DB::statement('CALL update_summary_matrix()');
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage());
+        }
+        return redirect()->back()->with('toast-success', 'Successfully updated');
     }
 }
