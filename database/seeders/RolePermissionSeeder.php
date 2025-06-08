@@ -30,6 +30,7 @@ class RolePermissionSeeder extends Seeder
         // Permission::create(['name' => 'View Inventory Reports',         'guard_name' => 'admin']);
         // Permission::create(['name' => 'View Transaction Reports',       'guard_name' => 'admin']);
         // Permission::create(['name' => 'View Book Circulation Reports',  'guard_name' => 'admin']);
+        // Permission::create(['name' => 'View Penalty Reports',           'guard_name' => 'admin']);
         // Permission::create(['name' => 'Book Inventory',                 'guard_name' => 'admin']);
         // Permission::create(['name' => 'Import Users',                   'guard_name' => 'admin']);
         // Permission::create(['name' => 'Import Faculties & Staffs',      'guard_name' => 'admin']);
