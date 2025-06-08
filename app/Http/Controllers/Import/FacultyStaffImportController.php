@@ -91,7 +91,9 @@ class FacultyStaffImportController extends Controller
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage());
         }
         foreach ($staged_users as $user) {
-            $this->account_notification($user['email'], $user['password']);
+            $employee = User::where('email', $user['email'])->first();
+            if($employee == null) continue;
+            $this->account_notification($employee, $user['password']);
         }
         return redirect()->route('import.import-faculties-staffs')->with('toast-success', 'Faculties & Staffs imported successfully');
     }

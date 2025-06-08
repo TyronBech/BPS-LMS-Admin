@@ -93,7 +93,9 @@ class StudentImportController extends Controller
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage());
         }
         foreach ($staged_users as $user) {
-            $this->account_notification($user['email'], $user['password']);
+            $student = User::where('email', $user['email'])->first();
+            if(!$student) continue;
+            $this->account_notification($student, $user['password']);
         }
         return redirect()->route('import.import-students')->with('toast-success', 'Students imported successfully');
     }

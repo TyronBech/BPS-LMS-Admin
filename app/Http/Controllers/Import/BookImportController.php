@@ -66,6 +66,10 @@ class BookImportController extends Controller
                     DB::rollBack();
                     return redirect()->route('import.import-books')->with('toast-warning', 'Category not found: ' . $item['category']);
                 }
+                if(Book::where('accession', $item['accession'])->exists()){
+                    DB::rollBack();
+                    return redirect()->route('import.import-books')->with('toast-warning', 'Duplicate accession number found: ' . $item['accession']);
+                }
                 $barcode = new DNS1D();
                 Book::create([
                     'accession'             => $item['accession'],
