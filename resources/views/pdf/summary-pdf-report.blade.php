@@ -163,7 +163,7 @@
         </tr>
       </tbody>
     </table>
-  <main/>
+  </main>
   <!-- Page break if the content overflows -->
   <div class="page-break"></div>
   @if (!app()->runningInConsole())
