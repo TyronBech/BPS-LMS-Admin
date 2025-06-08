@@ -27,6 +27,7 @@ use App\Http\Controllers\Report\CategoriesController;
 use App\Http\Controllers\Report\InventoriesController;
 use App\Http\Controllers\Analytics\FetchDataController;
 use App\Http\Controllers\Report\ComputerUseController;
+use App\Http\Controllers\Report\PenaltiesController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Middleware\BookAuthentication;
@@ -83,8 +84,11 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::post('book-circulation', [BookCirculationController::class, 'search'])   ->name('report.book-circulation-search');
         Route::get('summary',           [CategoriesController::class, 'index'])         ->name('report.summary');
         Route::post('summary',          [CategoriesController::class, 'export'])        ->name('report.summary-export');
+        Route::post('update-summary',   [CategoriesController::class, 'update'])        ->name('report.summary-update');
         Route::get('inventory-report',  [InventoriesController::class, 'index'])        ->name('report.inventory');
         Route::post('inventory-report', [InventoriesController::class, 'search'])       ->name('report.inventory-search');
+        Route::get('penalties',         [PenaltiesController::class, 'index'])          ->name('report.penalties');
+        Route::post('penalties',        [PenaltiesController::class, 'search'])         ->name('report.penalties-search');
     });
     Route::prefix('import')->group(function () {
         Route::get('students',                  [StudentImportController::class, 'index'])          ->name('import.import-students');

@@ -14,6 +14,6 @@ class PenaltySeeder extends Seeder
     protected $model = Penalty::class;
     public function run(): void
     {
-        Penalty::factory()->count(3)->create();
+        Penalty::factory()->count(5)->create();
     }
 }
