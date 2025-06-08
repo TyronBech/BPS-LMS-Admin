@@ -51,6 +51,9 @@ class BookMaintenanceController extends Controller
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
+        if(Book::where('accession', $request->input('accession'))->exists()){
+            return redirect()->back()->with('toast-error', 'Book with this accession number already exists!');
+        }
         if($request->hasFile('cover_image')){
             $image = $request->file('cover_image');
             $imageContent = file_get_contents($image->getRealPath());
