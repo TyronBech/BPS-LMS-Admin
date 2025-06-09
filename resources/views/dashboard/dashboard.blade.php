@@ -61,7 +61,7 @@
       const data = await response.json();
       document.getElementById('timed-in-count').textContent = data.active_count;
     } catch (error) {
-      document.getElementById('timed-in-count').textContent = 'ERR';
+      document.getElementById('timed-in-count').textContent = '...';
     }
   }
   // Fetch the monthly count of logs
@@ -84,7 +84,7 @@
       document.getElementById('book-count').textContent = data.total_books;
     } catch (error) {
       console.error('Error fetching book count:', error);
-      document.getElementById('book-count').textContent = 'ERR';
+      document.getElementById('book-count').textContent = '...';
     }
   }
   // Fetch the transaction history

@@ -12,7 +12,7 @@
     <p class="mb-3 font-normal text-gray-700 dark:text-gray-400"><span class="font-bold">Edition:</span> {{ $book->edition ?? '-' }}</p>
     <p class="mb-3 font-normal text-gray-700 dark:text-gray-400"><span class="font-bold">Place of Publication:</span> {{ $book->place_of_publication ?? '-' }}</p>
     <p class="mb-3 font-normal text-gray-700 dark:text-gray-400"><span class="font-bold">Publisher:</span> {{ $book->publisher ?? '-' }}</p>
-    <p class="mb-3 font-normal text-gray-700 dark:text-gray-400"><span class="font-bold">Copyright:</span> {{ $book->copyright ?? '-' }}</p>
+    <p class="mb-3 font-normal text-gray-700 dark:text-gray-400"><span class="font-bold">Copyright:</span> {{ $book->copyrights ?? '-' }}</p>
     <p class="mb-3 font-normal text-gray-700 dark:text-gray-400"><span class="font-bold">Category:</span> {{ $book->category->name }}</p>
     <p class="mb-3 font-normal text-gray-700 dark:text-gray-400"><span class="font-bold">Digital Copy:</span> {{ $book->digital_copy_url ?? '-' }}</p>
     <p class="mb-3 font-normal text-gray-700 dark:text-gray-400"><span class="font-bold">Remarks:</span> {{ $book->remarks }}</p>
