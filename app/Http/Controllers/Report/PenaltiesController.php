@@ -88,12 +88,18 @@ class PenaltiesController extends Controller
         $sheet->getColumnDimension('D')->setWidth(20);
         $sheet->getColumnDimension('E')->setWidth(20);
         $sheet->getColumnDimension('F')->setWidth(20);
+        $sheet->getColumnDimension('G')->setWidth(20);
+        $sheet->getColumnDimension('H')->setWidth(20);
+        $sheet->getColumnDimension('I')->setWidth(20);
         $sheet->setCellValue('A1', 'Name');
         $sheet->setCellValue('B1', 'Accession');
         $sheet->setCellValue('C1', 'Book');
-        $sheet->setCellValue('D1', 'Date');
-        $sheet->setCellValue('E1', 'Penalty');
-        $sheet->setCellValue('F1', 'Amount');
+        $sheet->setCellValue('D1', 'Borrowed Date');
+        $sheet->setCellValue('E1', 'Due Date');
+        $sheet->setCellValue('F1', 'Returned Date');
+        $sheet->setCellValue('G1', 'Violation');
+        $sheet->setCellValue('H1', 'Amount');
+        $sheet->setCellValue('I1', 'Status');
         $row = 2;
         foreach ($data as $item) {
             if(!$item->transaction->user || !$item->transaction->book || !$item->penaltyRule) {
@@ -103,8 +109,12 @@ class PenaltiesController extends Controller
             $sheet->setCellValue('B' . $row, $item->transaction->book->accession);
             $sheet->setCellValue('C' . $row, $item->transaction->book->title);
             $sheet->setCellValue('D' . $row, $item->transaction->date_borrowed);
-            $sheet->setCellValue('E' . $row, $item->penaltyRule->type);
-            $sheet->setCellValue('F' . $row, $item->amount);
+            $sheet->setCellValue('E' . $row, $item->transaction->due_date ?? 'Not Returned');
+            $sheet->setCellValue('F' . $row, $item->transaction->return_date ?? 'Not Returned');
+            $sheet->setCellValue('G' . $row, $item->penaltyRule->type);
+            $sheet->setCellValue('H' . $row, $item->amount);
+            $sheet->setCellValue('I' . $row, $item->transaction->penalty_status);
+
             $row++;
         }
         $writer     = new WriterXlsx($spreadsheet);
