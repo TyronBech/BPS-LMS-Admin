@@ -96,12 +96,14 @@ class TransactionController extends Controller
         $sheet->getColumnDimension('D')->setWidth(20);
         $sheet->getColumnDimension('E')->setWidth(20);
         $sheet->getColumnDimension('F')->setWidth(20);
+        $sheet->getColumnDimension('G')->setWidth(20);
         $sheet->setCellValue('A1', 'Accession');
         $sheet->setCellValue('B1', 'Title');
         $sheet->setCellValue('C1', 'Name');
         $sheet->setCellValue('D1', 'Borrowed');
         $sheet->setCellValue('E1', 'Due');
         $sheet->setCellValue('F1', 'Returned');
+        $sheet->setCellValue('G1', 'Status');
         $row = 2;
         foreach ($data as $item) {
             if(!$item->book || !$item->user) {
@@ -111,8 +113,9 @@ class TransactionController extends Controller
             $sheet->setCellValue('B' . $row, $item->book->title);
             $sheet->setCellValue('C' . $row, $item->user->last_name . ', ' . $item->user->first_name . ' ' . $item->user->middle_name);
             $sheet->setCellValue('D' . $row, $item->date_borrowed);
-            $sheet->setCellValue('E' . $row, $item->due_date);
+            $sheet->setCellValue('E' . $row, $item->due_date ?? 'Not Set');
             $sheet->setCellValue('F' . $row, $item->return_date ?? 'Not Returned');
+            $sheet->setCellValue('G' . $row, $item->transaction_type);
             $row++;
         }
         $writer     = new WriterXlsx($spreadsheet);

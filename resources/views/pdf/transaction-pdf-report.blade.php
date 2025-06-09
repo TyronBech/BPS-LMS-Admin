@@ -137,6 +137,7 @@
           <th>Borrowed</th>
           <th>Due</th>
           <th>Returned</th>
+          <th>Status</th>
         </tr>
       </thead>
       <tbody>
@@ -149,6 +150,7 @@
           <td>{{ $item->date_borrowed }}</td>
           <td>{{ $item->due_date }}</td>
           <td>{{ $item->return_date }}</td>
+          <td>{{ $item->transaction_type }}</td>
         </tr>
         @endif
         @empty

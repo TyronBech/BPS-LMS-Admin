@@ -18,20 +18,14 @@
           <td class="pb-1">{{ $item->book->title }}</td>
           <td class="pb-1">{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name }}</td>
           <td class="pb-1">{{ $item->date_borrowed }}</td>
-          <td class="pb-1">{{ $item->due_date }}</td>
-          <td class="pb-1">{{ $item->return_date ? $item->return_date : '-' }}</td>
-          @if($item->transaction_type == 'Borrowed')
-            <td class="text-red-600 pb-1 dark:text-red-400">{{ $item->transaction_type }}</td>
-          @elseif($item->transaction_type == 'Reserved')
-            <td class="text-yellow-600 pb-1 dark:text-yellow-400">{{ $item->transaction_type }}</td> 
-          @elseif($item->transaction_type == 'Returned')
-            <td class="text-green-600 pb-1 dark:text-green-400">{{ $item->transaction_type }}</td> 
-          @endif
+          <td class="pb-1">{{ $item->due_date ?? '-' }}</td>
+          <td class="pb-1">{{ $item->return_date ?? '-' }}</td>
+          <td class="pb-1">{{ $item->transaction_type }}</td>
         </tr>
       @endif
       @empty
         <tr>
-          <td colspan="8">No data found.</td>
+          <td colspan="7">No data found.</td>
         </tr>
       @endforelse
     </tbody>

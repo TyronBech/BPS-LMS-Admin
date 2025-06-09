@@ -20,7 +20,7 @@
         <td class="px-4 py-2">{{ $item->amount }}</td>
       @empty
       <tr>
-        <td colspan="5" class="text-center">No data found.</td>
+        <td colspan="6" class="text-center">No data found.</td>
       </tr>
       @endforelse
     </tbody>
