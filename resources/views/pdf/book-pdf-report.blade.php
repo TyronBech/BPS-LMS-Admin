@@ -6,13 +6,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
-
     * {
       font-family: "IBM Plex Sans", sans-serif;
       font-optical-sizing: auto;
       font-style: normal;
+      
     }
-
     header {
       text-align: center;
       margin-bottom: 4px;
@@ -33,7 +32,8 @@
 
     th,
     td {
-      padding: 8px 12px;
+      padding: 3px;
+      font-size: 10px;
       text-align: left;
       border: 1px solid #ddd;
       word-wrap: break-word;
@@ -43,31 +43,31 @@
     th {
       background-color: #f2f2f2;
     }
+    h2, p {
+      margin: 0;
+      padding: 2px;
+    }
 
     h1,
     h4 {
       color: #333;
     }
-
     h4 {
       text-align: center;
-      margin: 10px 0;
+      margin: 0;
       padding: 0;
     }
-
     img {
       max-width: 100px;
       height: auto;
       margin-top: 5px;
     }
-
     .logo {
       display: flex;
       align-items: center;
       justify-content: center;
       margin-bottom: 10px;
     }
-
     .logo img {
       margin-right: 10px;
     }
@@ -133,7 +133,6 @@
   <h4>{{ $title }}</h4>
   <h4>{{ $date }}</h4>
   <main class="table-container">
-    <h4>Report Details</h4>
     <table>
       <thead>
         <tr>

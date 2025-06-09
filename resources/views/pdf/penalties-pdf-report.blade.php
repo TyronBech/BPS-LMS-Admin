@@ -9,7 +9,8 @@
     * {
       font-family: "IBM Plex Sans", sans-serif;
       font-optical-sizing: auto;
-      font-style: normal; 
+      font-style: normal;
+      
     }
     header {
       text-align: center;
@@ -31,7 +32,8 @@
 
     th,
     td {
-      padding: 8px 12px;
+      padding: 3px;
+      font-size: 10px;
       text-align: left;
       border: 1px solid #ddd;
       word-wrap: break-word;
@@ -41,6 +43,10 @@
     th {
       background-color: #f2f2f2;
     }
+    h2, p {
+      margin: 0;
+      padding: 2px;
+    }
 
     h1,
     h4 {
@@ -48,7 +54,7 @@
     }
     h4 {
       text-align: center;
-      margin: 10px 0;
+      margin: 0;
       padding: 0;
     }
     img {
@@ -127,16 +133,18 @@
   <h4>{{ $title }}</h4>
   <h4>{{ $date }}</h4>
   <main class="table-container">
-    <h4>Report Details</h4>
     <table>
       <thead>
         <tr>
           <th>Name</th>
           <th>Accession</th>
           <th>Book</th>
-          <th>Date</th>
-          <th>Penalty</th>
+          <th>Borrowed</th>
+          <th>Due</th>
+          <th>Returned</th>
+          <th>Violation</th>
           <th>Amount</th>
+          <th>Status</th>
         </tr>
       </thead>
       <tbody>
@@ -146,8 +154,11 @@
           <td>{{ $item->transaction->book->accession }}</td>
           <td>{{ $item->transaction->book->title }}</td>
           <td>{{ $item->transaction->date_borrowed }}</td>
+          <td>{{ $item->transaction->due_date ?? '-' }}</td>
+          <td>{{ $item->transaction->return_date ?? '-' }}</td>
           <td>{{ $item->penaltyRule->type }}</td>
           <td>{{ $item->amount }}</td>
+          <td>{{ $item->transaction->penalty_status }}</td>
         </tr>
         @empty
         <tr>
