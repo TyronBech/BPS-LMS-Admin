@@ -20,7 +20,7 @@
         @else
         <td class="pb-1">-</td>
         @endif
-        <td class="pb-1">{{ $item->remarks ?? '' }}</td>
+        <td class="pb-1">{{ $item->remarks ?? '-' }}</td>
       </tr>
       @endif
       @empty

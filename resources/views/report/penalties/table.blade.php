@@ -5,9 +5,12 @@
       <th>Name</th>
       <th>Accession</th>
       <th>Book</th>
-      <th>Date</th>
-      <th>Penalty</th>
+      <th>Borrowed</th>
+      <th>Due</th>
+      <th>Returned</th>
+      <th>Violation</th>
       <th>Amount</th>
+      <th>Status</th>
     </thead>
     <tbody>
       @forelse($data as $item)
@@ -16,8 +19,11 @@
         <td class="px-4 py-2">{{ $item->transaction->book->accession }}</td>
         <td class="px-4 py-2">{{ $item->transaction->book->title }}</td>
         <td class="px-4 py-2">{{ $item->transaction->date_borrowed }}</td>
+        <td class="px-4 py-2">{{ $item->transaction->due_date ?? '-' }}</td>
+        <td class="px-4 py-2">{{ $item->transaction->return_date ?? '-' }}</td>
         <td class="px-4 py-2">{{ $item->penaltyRule->type }}</td>
         <td class="px-4 py-2">{{ $item->amount }}</td>
+        <td class="px-4 py-2">{{ $item->transaction->penalty_status }}</td>
       @empty
       <tr>
         <td colspan="6" class="text-center">No data found.</td>

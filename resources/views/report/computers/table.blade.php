@@ -15,8 +15,8 @@
         <td class="pb-1 min-w-20">{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
         <td class="pb-1">{{ $item->user->students->level }}</td>
         <td class="pb-1">{{ $item->user->students->section }}</td>
-        <td class="pb-1">{{ \Carbon\Carbon::parse($item->timestamp)->format('Y-m-d') }}</td>
-        <td class="pb-1">{{ \Carbon\Carbon::parse($item->timestamp)->format('H:i:s') }}</td>
+        <td class="pb-1">{{ \Carbon\Carbon::parse($item->time_in)->format('Y-m-d') }}</td>
+        <td class="pb-1">{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
       </tr>
       @endif
       @empty
