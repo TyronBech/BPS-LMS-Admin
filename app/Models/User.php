@@ -25,7 +25,7 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $fillable = [
         'rfid',
-        'group_id',
+        'privilege_id',
         'first_name',
         'middle_name',
         'last_name',
