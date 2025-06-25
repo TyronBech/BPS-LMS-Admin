@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Log;
 
 class AdminLoginRequest extends FormRequest
 {
@@ -27,9 +28,36 @@ class AdminLoginRequest extends FormRequest
    public function rules(): array
    {
        return [
-           'email' => ['required', 'string', 'email'],
-           'password' => ['required', 'string'],
-       ];
+        'email' => [
+            'required',
+            'email',
+            'max:255',
+            function ($attribute, $value, $fail) {
+                if (preg_match('/(select|union|insert|update|delete|drop|--|;)/i', $value)) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                    Log::warning('Possible SQL injection attempt for email', [
+                        'field' => $attribute,
+                        'input' => $value,
+                        'ip' => request()->ip(),
+                    ]);
+                }
+            }
+        ],
+        'password' => [
+            'required',
+            'string',
+            function ($attribute, $value, $fail) {
+                if (preg_match('/(select|union|insert|update|delete|drop|--|;)/i', $value)) {
+                    $fail('The ' . $attribute . ' is invalid.');
+                    Log::warning('Possible SQL injection attempt for password', [
+                        'field' => $attribute,
+                        'input' => $value,
+                        'ip' => request()->ip(),
+                    ]);
+                }
+            }
+        ]
+    ];
    }
 
    /**
