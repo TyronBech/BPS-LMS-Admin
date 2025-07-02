@@ -30,6 +30,7 @@ use App\Http\Controllers\Report\ComputerUseController;
 use App\Http\Controllers\Report\PenaltiesController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Maintenance\PenaltyRuleController;
 use App\Http\Middleware\BookAuthentication;
 use App\Http\Middleware\SuperAdminAuthentication;
 use App\Http\Middleware\UserAuthentication;
@@ -37,6 +38,7 @@ use App\Http\Middleware\InventoryAuthentication;
 use App\Http\Middleware\ReportAuthentication;
 use App\Http\Middleware\PrivilegeAuthentication;
 use App\Http\Middleware\BookCategoriesAuthentication;
+use App\Http\Middleware\PenaltyRuleMiddleware;
 
 Route::get('/', function () {
     return view('main-welcome');
@@ -146,6 +148,9 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             // Route::post('search-privilege',     [PrivilegeMaintenanceController::class, 'search_privilege'])    ->name('maintenance.search-privilege');
             // Route::get('edit-privilege',        [PrivilegeMaintenanceController::class, 'edit'])                ->name('maintenance.edit-privilege');
             // Route::get('show-privileges',       [PrivilegeMaintenanceController::class, 'show'])                ->name('maintenance.show-privileges');
+        });
+        Route::prefix('penalty-rules')->middleware(PenaltyRuleMiddleware::class)->group(function () {
+            Route::get('penalty-rules',         [PenaltyRuleController::class, 'index'])       ->name('maintenance.penalty-rules');
         });
         Route::prefix('admin-management')->middleware(SuperAdminAuthentication::class)->group(function () {
             Route::get('admins',            [AdminMaintenanceController::class, 'index'])           ->name('maintenance.admins');
