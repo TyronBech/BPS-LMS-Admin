@@ -28,7 +28,7 @@ class BookFactory extends Factory
             'publisher' => $this->faker->company(),
             'copyrights' => $this->faker->year(),
             'remarks' => $this->faker->randomElement(['On Shelf', 'Lost', 'Missing']),
-            'category_id' => $this->faker->numberBetween(1, 5),
+            'category_id' => $this->faker->numberBetween(2, 6),
             'cover_image' => 'default.jpg',
             'digital_copy_url' => $this->faker->url(),
             'barcode' => $this->faker->ean13(),
