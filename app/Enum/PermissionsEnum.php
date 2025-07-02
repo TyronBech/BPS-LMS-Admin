@@ -27,4 +27,7 @@ enum PermissionsEnum : string
     case VIEW_INVENTORY_REPORTS         = 'View Inventory Reports';
     case VIEW_TRANSACTION_REPORTS       = 'View Transaction Reports';
     case VIEW_BOOK_CIRCULATION_REPORTS  = 'View Book Circulation Reports';
+    case ADD_PENALTY_RULES              = 'Add Penalty Rule';
+    case EDIT_PENALTY_RULES             = 'Edit Penalty Rule';
+    case DELETE_PENALTY_RULES           = 'Delete Penalty Rule';
 }
