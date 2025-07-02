@@ -19,7 +19,7 @@ class FetchDataTest extends TestCase
         
         // Arrange
         $user = User::factory()->create();
-        $this->actingAs($user);
+        $this->actingAs($user, 'admin');
 
         Log::factory()->create([
             'user_id'       => 106,
