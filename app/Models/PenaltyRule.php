@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class PenaltyRule extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'penalty_rules';
     protected $fillable = [
         'type',

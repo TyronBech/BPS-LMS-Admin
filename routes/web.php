@@ -150,7 +150,10 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             // Route::get('show-privileges',       [PrivilegeMaintenanceController::class, 'show'])                ->name('maintenance.show-privileges');
         });
         Route::prefix('penalty-rules')->middleware(PenaltyRuleMiddleware::class)->group(function () {
-            Route::get('penalty-rules',         [PenaltyRuleController::class, 'index'])       ->name('maintenance.penalty-rules');
+            Route::get('penalty-rules',             [PenaltyRuleController::class, 'index'])    ->name('maintenance.penalty-rules');
+            Route::post('add-penalty-rule',         [PenaltyRuleController::class, 'store'])    ->name('maintenance.store-penalty-rule');
+            Route::put('edit-penalty-rule',         [PenaltyRuleController::class, 'update'])   ->name('maintenance.update-penalty-rule');
+            Route::delete('delete-penalty-rule',    [PenaltyRuleController::class, 'destroy'])  ->name('maintenance.delete-penalty-rule');
         });
         Route::prefix('admin-management')->middleware(SuperAdminAuthentication::class)->group(function () {
             Route::get('admins',            [AdminMaintenanceController::class, 'index'])           ->name('maintenance.admins');
