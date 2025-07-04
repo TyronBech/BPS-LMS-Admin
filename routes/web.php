@@ -31,6 +31,7 @@ use App\Http\Controllers\Report\PenaltiesController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Maintenance\PenaltyRuleController;
+use App\Http\Controllers\Maintenance\TransactionsController;
 use App\Http\Middleware\BookAuthentication;
 use App\Http\Middleware\SuperAdminAuthentication;
 use App\Http\Middleware\UserAuthentication;
@@ -154,6 +155,12 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::post('add-penalty-rule',         [PenaltyRuleController::class, 'store'])    ->name('maintenance.store-penalty-rule');
             Route::put('edit-penalty-rule',         [PenaltyRuleController::class, 'update'])   ->name('maintenance.update-penalty-rule');
             Route::delete('delete-penalty-rule',    [PenaltyRuleController::class, 'destroy'])  ->name('maintenance.delete-penalty-rule');
+        });
+        Route::prefix('transactions')->middleware(SuperAdminAuthentication::class)->group(function () {
+            Route::get('transactions',          [TransactionsController::class, 'index'])   ->name('maintenance.transactions');
+            Route::post('search-transaction',   [TransactionsController::class, 'search'])  ->name('maintenance.search-transaction');
+            Route::get('show-transactions',     [TransactionsController::class, 'show'])    ->name('maintenance.show-transactions');
+            Route::delete('delete-transaction', [TransactionsController::class, 'destroy']) ->name('maintenance.delete-transaction');
         });
         Route::prefix('admin-management')->middleware(SuperAdminAuthentication::class)->group(function () {
             Route::get('admins',            [AdminMaintenanceController::class, 'index'])           ->name('maintenance.admins');
