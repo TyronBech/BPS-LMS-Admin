@@ -30,4 +30,5 @@ enum PermissionsEnum : string
     case ADD_PENALTY_RULES              = 'Add Penalty Rule';
     case EDIT_PENALTY_RULES             = 'Edit Penalty Rule';
     case DELETE_PENALTY_RULES           = 'Delete Penalty Rule';
+    case EDIT_TRANSACTIONS              = 'Edit Transactions';
 }
