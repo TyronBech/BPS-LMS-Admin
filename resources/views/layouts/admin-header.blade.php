@@ -223,7 +223,9 @@
                   </a>
                 </li>
                 @endif
-                @can(PermissionsEnum::VIEW_BOOK_CIRCULATION_REPORTS)
+                @if(auth()->user()->can(PermissionsEnum::ADD_PENALTY_RULES) 
+                || auth()->user()->can(PermissionsEnum::EDIT_PENALTY_RULES)
+                || auth()->user()->can(PermissionsEnum::DELETE_PENALTY_RULES))
                 <li>
                   <a href="{{ route('maintenance.penalty-rules') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
                     <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
@@ -233,7 +235,7 @@
                     <span class="ms-2">Penalty Rules</span>
                   </a>
                 </li>
-                @endcan
+                @endif
                 @if(auth()->user()->hasRole(App\Enum\RolesEnum::SUPER_ADMIN))
                 <li aria-labelledby="dropdownNavbarLink">
                   <button id="doubleDropdownButton" data-dropdown-toggle="doubleDropdown" data-dropdown-placement="right-start" type="button" class="flex items-center w-full px-4 pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
