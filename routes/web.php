@@ -158,7 +158,6 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         });
         Route::prefix('transactions')->middleware(SuperAdminAuthentication::class)->group(function () {
             Route::get('transactions',          [TransactionsController::class, 'index'])   ->name('maintenance.transactions');
-            Route::post('search-transaction',   [TransactionsController::class, 'search'])  ->name('maintenance.search-transaction');
             Route::get('show-transactions',     [TransactionsController::class, 'show'])    ->name('maintenance.show-transactions');
             Route::delete('delete-transaction', [TransactionsController::class, 'destroy']) ->name('maintenance.delete-transaction');
         });
