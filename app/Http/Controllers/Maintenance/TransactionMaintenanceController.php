@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Transaction;
 use App\Models\Book;
 
-class TransactionsController extends Controller
+class TransactionMaintenanceController extends Controller
 {
     public function index()
     {

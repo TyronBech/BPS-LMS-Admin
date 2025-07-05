@@ -31,7 +31,7 @@ use App\Http\Controllers\Report\PenaltiesController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Maintenance\PenaltyRuleController;
-use App\Http\Controllers\Maintenance\TransactionsController;
+use App\Http\Controllers\Maintenance\TransactionMaintenanceController;
 use App\Http\Middleware\BookAuthentication;
 use App\Http\Middleware\SuperAdminAuthentication;
 use App\Http\Middleware\UserAuthentication;
@@ -157,9 +157,10 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::delete('delete-penalty-rule',    [PenaltyRuleController::class, 'destroy'])  ->name('maintenance.delete-penalty-rule');
         });
         Route::prefix('transactions')->middleware(SuperAdminAuthentication::class)->group(function () {
-            Route::get('transactions',          [TransactionsController::class, 'index'])   ->name('maintenance.transactions');
-            Route::get('show-transactions',     [TransactionsController::class, 'show'])    ->name('maintenance.show-transactions');
-            Route::delete('delete-transaction', [TransactionsController::class, 'destroy']) ->name('maintenance.delete-transaction');
+            Route::get('transactions',          [TransactionMaintenanceController::class, 'index'])     ->name('maintenance.transactions');
+            Route::get('show-transactions',     [TransactionMaintenanceController::class, 'show'])      ->name('maintenance.show-transactions');
+            Route::put('edit-transaction',      [TransactionMaintenanceController::class, 'update'])    ->name('maintenance.update-transaction');
+            Route::delete('delete-transaction', [TransactionMaintenanceController::class, 'destroy'])   ->name('maintenance.delete-transaction');
         });
         Route::prefix('admin-management')->middleware(SuperAdminAuthentication::class)->group(function () {
             Route::get('admins',            [AdminMaintenanceController::class, 'index'])           ->name('maintenance.admins');
