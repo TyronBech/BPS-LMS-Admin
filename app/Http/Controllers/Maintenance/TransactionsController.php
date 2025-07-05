@@ -22,10 +22,10 @@ class TransactionsController extends Controller
         $conditions             = $this->extract_enums($books->getTable(), 'condition_status');
         return view('maintenance.transactions.index', compact('transactions', 'transactionTypes', 'transactionStatuses', 'conditions'));
     }
-    public function viewTransation(Request $request)
+    public function show(Request $request)
     {
         $transaction = Transaction::with('user', 'book')
-            ->where('id', $request->id)
+            ->where('id', $request->input('viewBtn'))
             ->firstOrFail();
         return view('maintenance.transactions.view', compact('transaction'));
     }
