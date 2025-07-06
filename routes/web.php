@@ -159,6 +159,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::prefix('transactions')->middleware(SuperAdminAuthentication::class)->group(function () {
             Route::get('transactions',          [TransactionMaintenanceController::class, 'index'])     ->name('maintenance.transactions');
             Route::get('show-transactions',     [TransactionMaintenanceController::class, 'show'])      ->name('maintenance.show-transactions');
+            Route::get('retrieve-transaction',  [TransactionMaintenanceController::class, 'retrieve'])  ->name('maintenance.retrieve-transaction');
             Route::put('edit-transaction',      [TransactionMaintenanceController::class, 'update'])    ->name('maintenance.update-transaction');
             Route::delete('delete-transaction', [TransactionMaintenanceController::class, 'destroy'])   ->name('maintenance.delete-transaction');
         });

@@ -58,61 +58,140 @@
       </div>
       <!-- Modal body -->
       <div class="p-4 md:p-5">
-        <form class="space-y-4" action="{{ route('maintenance.update-penalty-rule') }}" method="POST">
+        <form class="space-y-4" action="{{ route('maintenance.update-transaction') }}" method="POST">
           @csrf
           @method('PUT')
           <div class="mb-5">
-            <label for="type" class="block mb-2 text-sm font-medium">Type:</label>
-            <input type="text" id="type" name="type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Late" required>
-            @error('type')
-            <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
-              <span class="font-medium">{{ $message }}</span>
-            </div>
-            @enderror
-          </div>
-          <div class="mb-5">
-            <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description:</label>
-            <textarea id="description" name="description" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Description"></textarea>
-            @error('description')
-            <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
-              <span class="font-medium">{{ $message }}</span>
-            </div>
-            @enderror
-          </div>
-          <div class="mb-5">
-            <label for="rate" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Rate:</label>
-            <input type="number" id="rate" name="rate" aria-describedby="helper-text-explanation" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="10" required />
-            @error('rate')
-            <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
-              <span class="font-medium">{{ $message }}</span>
-            </div>
-            @enderror
-          </div>
-          <div class="mb-5">
-            <label for="per_day" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Per Day:</label>
-            <div class="relative flex items-center max-w-[8rem]">
-              <button type="button" id="decrement-button" data-input-counter-decrement="per_day" class="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-s-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none">
-                <svg class="w-3 h-3 text-gray-900 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 2">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h16" />
+            <label for="due-datepicker" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Due Date:</label>
+            <div class="relative max-w-sm">
+              <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
+                <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
                 </svg>
-              </button>
-              <input type="text" id="per_day" name="per_day" data-input-counter data-input-counter-min="0" data-input-counter-max="99" aria-describedby="helper-text-explanation" class="bg-gray-50 border-x-0 border-gray-300 h-11 text-center text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 block w-full py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="10" required />
-              <button type="button" id="increment-button" data-input-counter-increment="per_day" class="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-e-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none">
-                <svg class="w-3 h-3 text-gray-900 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 1v16M1 9h16" />
-                </svg>
-              </button>
+              </div>
+              <input datepicker id="due-datepicker" type="text" name="due_date" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Select date">
             </div>
-            @error('per_day')
+            @error('due_date')
             <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
               <span class="font-medium">{{ $message }}</span>
             </div>
             @enderror
           </div>
-          <input type="hidden" name="edit_rule_id" id="edit_rule_id" value="" />
+          <div class="mb-5">
+            <label for="pickup-datepicker" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Pickup Date:</label>
+            <div class="relative max-w-sm">
+              <div class="absolute inset-y-0 start-0 flex items-center ps-3.5 pointer-events-none">
+                <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
+                </svg>
+              </div>
+              <input datepicker id="pickup-datepicker" type="text" name="pickup_date" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Select date">
+            </div>
+            @error('pickup_date')
+            <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+              <span class="font-medium">{{ $message }}</span>
+            </div>
+            @enderror
+          </div>
+          <div class="mb-5">
+            <label for="transaction_type" class="block mb-2 text-sm font-medium">Transaction Type:</label>
+            <select id="transaction_type" name="transaction_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+              <option selected disabled>Choose a type</option>
+              @foreach($transactionTypes as $item)
+              <option value="{{ $item }}">{{ $item }}</option>
+              @endforeach
+            </select>
+            @error('transaction_type')
+            <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+              <span class="font-medium">{{ $message }}</span>
+            </div>
+            @enderror
+          </div>
+          <div class="mb-5">
+            <label for="status" class="block mb-2 text-sm font-medium">Status:</label>
+            <select id="status" name="status" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+              <option selected disabled>Choose a status</option>
+              @foreach($transactionStatuses as $item)
+              <option value="{{ $item }}">{{ $item }}</option>
+              @endforeach
+            </select>
+            @error('status')
+            <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+              <span class="font-medium">{{ $message }}</span>
+            </div>
+            @enderror
+          </div>
+          <div class="mb-5">
+            <label for="book_condition" class="block mb-2 text-sm font-medium">Book Condition:</label>
+            <select id="book_condition" name="book_condition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+              <option selected disabled>Choose a condition</option>
+              @foreach($conditions as $item)
+              <option value="{{ $item }}">{{ $item }}</option>
+              @endforeach
+            </select>
+            @error('book_condition')
+            <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+              <span class="font-medium">{{ $message }}</span>
+            </div>
+            @enderror
+          </div>
+          <div class="mb-5">
+            <label for="penalty_total" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Penalty Total:</label>
+            <input type="number" id="penalty_total" name="penalty_total" aria-describedby="helper-text-explanation" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Amount" />
+            @error('penalty_total')
+            <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+              <span class="font-medium">{{ $message }}</span>
+            </div>
+            @enderror
+          </div>
+          <div class="mb-5">
+            <label for="remarks" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Remarks:</label>
+            <textarea id="remarks" name="remarks" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Remarks..."></textarea>
+            @error('remarks')
+            <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+              <span class="font-medium">{{ $message }}</span>
+            </div>
+            @enderror
+          </div>
+          <input type="hidden" name="edit_transaction_id" id="edit_transaction_id" value="" />
           <button type="submit" class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
         </form>
       </div>
     </div>
   </div>
 </div>
+<script type="module">
+  document.addEventListener('DOMContentLoaded', function() {
+    const editButtons = document.querySelectorAll('.editBtn');
+    editButtons.forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        $.ajax({
+          url: "{{ route('maintenance.retrieve-transaction') }}",
+          type: "GET",
+          data: {
+            viewBtn: this.value
+          },
+          dataType: "json",
+          headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
+          },
+          success: function(response) {
+            const transaction = response.transaction;
+            document.getElementById('edit_transaction_id').value  = transaction.id;
+            document.getElementById('due-datepicker').value       = transaction.due_date || '';
+            document.getElementById('pickup-datepicker').value    = transaction.pickup_deadline || '';
+            document.getElementById('transaction_type').value     = transaction.transaction_type;
+            document.getElementById('status').value               = transaction.status || '';
+            document.getElementById('book_condition').value       = transaction.book_condition || '';
+            document.getElementById('penalty_total').value        = transaction.penalty_total || '';
+            document.getElementById('remarks').value              = transaction.remarks || '';
+          },
+          error: function(xhr, status, error) {
+            console.error("Error fetching transaction data:", error);
+          }
+        });
+      });
+    });
+  });
+</script>
