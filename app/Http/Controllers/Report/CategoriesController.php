@@ -37,7 +37,7 @@ class CategoriesController extends Controller
     private function generatePDF($data)
     {
         $items = [
-            'title'         => 'Summary Report',
+            'title'         => 'Summary of BPS Collections Report',
             'school'        => "Bicutan Parochial School, Inc.",
             'address'       => "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'date'          => date('m/d/y'),
