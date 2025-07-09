@@ -1,37 +1,21 @@
 <div class="container flex flex-col overflow-x-auto border-collapse border-2 border-slate-900 mt-2 mb-4 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600">
   <h2 class="text-center mb-4 mt-4 font-semibold text-2xl">Book Circulation Table</h2>
   <table class="table-fixed m-4 bg-white dark:bg-gray-800">
-    <thead id="today-header" class="bg-blue-400 font-bold text-slate-200">
-      <th>Accession</th>
-      <th>Call Number</th>
-      <th>Title</th>
-      <th>Availability</th>
-      <th>Condition</th>
+    <thead id="today-header" class="bg-blue-400 text-left font-bold text-slate-200 border-2 border-slate-300 dark:border-slate-700">
+      <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Accession</th>
+      <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Call Number</th>
+      <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Title</th>
+      <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Availability</th>
+      <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Condition</th>
     </thead>
-    <tbody id="students-activity" class="text-center">
+    <tbody id="students-activity">
       @forelse($data as $item)
-        <tr>
-          <td class="pb-1">{{ $item->accession }}</td>
-          <td class="pb-1">{{ $item->call_number }}</td>
-          <td class="pb-1">{{ $item->title }}</td>
-          @if($item->availability_status == 'Available')
-            <td class="pb-1 text-green-500 dark:text-green-400">{{ $item->availability_status }}</td>
-          @elseif($item->availability_status == 'Borrowed')
-            <td class="pb-1 text-red-500 dark:text-red-400">{{ $item->availability_status }}</td>
-          @elseif($item->availability_status == 'Reserved')
-            <td class="pb-1 text-yellow-500 dark:text-yellow-400">{{ $item->availability_status }}</td>
-          @elseif($item->availability_status == 'In Use')
-            <td class="pb-1 text-blue-500 dark:text-blue-400">{{ $item->availability_status }}</td>
-          @endif
-          @if($item->condition_status == 'New')
-            <td class="pb-1 text-blue-500 dark:text-blue-400">{{ $item->condition_status }}</td>
-          @elseif($item->condition_status == 'Good')
-            <td class="pb-1 text-green-500 dark:text-green-400">{{ $item->condition_status }}</td>
-          @elseif($item->condition_status == 'Fair')
-            <td class="pb-1 text-yellow-500 dark:text-yellow-400">{{ $item->condition_status }}</td>
-          @elseif($item->condition_status == 'Poor')
-            <td class="pb-1 text-red-500 dark:text-red-400">{{ $item->condition_status }}</td>
-          @endif
+        <tr class="text-left border-2 border-slate-300 dark:border-slate-700">
+          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->accession }}</td>
+          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->call_number }}</td>
+          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->title }}</td>
+          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->availability_status }}</td>
+          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->condition_status }}</td>
         </tr>
       @empty
         <tr>
