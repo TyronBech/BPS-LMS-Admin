@@ -15,6 +15,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use DateTime;
 use Carbon\Carbon;
 use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Facades\Auth;
 
 class UserLogsController extends Controller
 {
@@ -103,10 +104,11 @@ class UserLogsController extends Controller
     private function generatePDF($data)
     {
         $items = [
-            'title'         => 'User logs Report',
+            'title'         => 'User Logs Report',
             'school'        => "Bicutan Parochial School, Inc.",
             'address'       => "Manuel L. Quezon St., Lower Bicutan, Taguig City",
-            'date'          => date('m/d/y'),
+            'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
+            'date'          => date('F j, Y'),
             'data'          => $data,
             'totalCount'    => $data->count(),
         ];

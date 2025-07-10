@@ -12,6 +12,7 @@ use Dompdf\Options;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class InventoriesController extends Controller
 {
@@ -48,7 +49,8 @@ class InventoriesController extends Controller
             'title'         => 'Inventory Report',
             'school'        => "Bicutan Parochial School, Inc.",
             'address'       => "Manuel L. Quezon St., Lower Bicutan, Taguig City",
-            'date'          => date('m/d/y'),
+            'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
+            'date'          => date('F j, Y'),
             'data'          => $data,
             'totalCount'    => $data->count(),
         ];

@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use Symfony\Component\HttpFoundation\StreamedResponse;
@@ -70,7 +71,8 @@ class TransactionController extends Controller
             'title'         => 'Transaction Report',
             'school'        => "Bicutan Parochial School, Inc.",
             'address'       => "Manuel L. Quezon St., Lower Bicutan, Taguig City",
-            'date'          => date('m/d/y'),
+            'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
+            'date'          => date('F j, Y'),
             'data'          => $data,
             'totalCount'    => $data->count(),
         ];

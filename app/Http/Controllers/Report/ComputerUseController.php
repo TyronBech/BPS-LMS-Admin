@@ -14,6 +14,7 @@ use Dompdf\Dompdf; // Import the Dompdf class
 use Dompdf\Options; // Import the Dompdf Options class
 use PhpOffice\PhpSpreadsheet\Spreadsheet; // Import the Spreadsheet class
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx; // Import the WriterXlsx class with alias
+use Illuminate\Support\Facades\Auth; // Import the Auth facade
 
 class ComputerUseController extends Controller
 {
@@ -109,7 +110,8 @@ class ComputerUseController extends Controller
             'title'         => 'Users Report',
             'school'        => "Bicutan Parochial School, Inc.",
             'address'       => "Manuel L. Quezon St., Lower Bicutan, Taguig City",
-            'date'          => date('m/d/y'),
+            'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
+            'date'          => date('F j, Y'),
             'data'          => $data,
             'totalCount'    => $data->count(),
         ];
