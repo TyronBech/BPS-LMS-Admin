@@ -5,133 +5,120 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:ital,wght@0,100..700;1,100..700&display=swap');
-    * {
-      font-family: "IBM Plex Sans", sans-serif;
-      font-optical-sizing: auto;
-      font-style: normal;
-      
-    }
-    header {
-      text-align: center;
-      margin-bottom: 4px;
-
+    @page {
+      margin: 30px 25px 40px 25px;
     }
 
     body {
-      margin-top: 10px;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-bottom: 20px;
-    }
-
-    th,
-    td {
-      padding: 3px;
+      font-family: 'DejaVu Sans', sans-serif;
       font-size: 10px;
-      text-align: left;
-      border: 1px solid #ddd;
-      word-wrap: break-word;
-      word-break: break-word;
-    }
-
-    th {
-      background-color: #f2f2f2;
-    }
-    h2, p {
-      margin: 0;
-      padding: 2px;
-    }
-
-    h1,
-    h4 {
-      color: #333;
-    }
-    h4 {
-      text-align: center;
       margin: 0;
       padding: 0;
+      overflow-x: hidden;
     }
-    img {
-      max-width: 100px;
-      height: auto;
-      margin-top: 5px;
+
+    header {
+      text-align: center;
+      margin-bottom: 10px;
     }
+
     .logo {
       display: flex;
       align-items: center;
       justify-content: center;
       margin-bottom: 10px;
     }
+
     .logo img {
+      max-width: 80px;
+      max-height: 60px;
       margin-right: 10px;
     }
+    .school-info {
+      text-align: center;
+    }
 
-    .total {
-      text-align: right;
+    h2, p {
+      margin: 0;
+      padding: 0;
+    }
+    .title {
+      text-align: center;
+      font-size: 14px;
       font-weight: bold;
+      margin-top: 10px;
+      margin-bottom: 2px;
     }
 
-    /* Add page-break to handle large tables */
-    .page-break {
-      page-break-before: always;
+    h4 {
+      text-align: center;
+      margin: 5px 0;
     }
 
-    /* Ensure the content fits within a page */
-    body {
-      max-width: 100%;
-      overflow-x: hidden;
+    .generated-date {
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .user {
+      text-align: right;
+      padding-top: 40px;
+      margin-top: 10px;
+      margin-right: 5px;
+      font-size: 10px;
+    }
+
+    .table-container {
+      width: 100%;
     }
 
     table {
-      table-layout: fixed;
       width: 100%;
-      max-width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
     }
 
-    /* Prevent table from overflowing */
-    .table-container {
-      overflow-x: auto;
-      margin-bottom: 30px;
+    th, td {
+      border: 1px solid #ddd;
+      padding: 4px;
+      font-size: 10px;
+      word-break: break-word;
+      text-align: left;
     }
 
-    /* Style for the page to break gracefully */
+    th {
+      background-color: #f2f2f2;
+    }
+
     @media print {
-      body {
-        width: 100%;
-        margin: 0;
-        padding: 0;
-      }
-
       table {
-        width: 100%;
+        page-break-inside: auto;
       }
 
-      .page-break {
-        page-break-before: always;
+      tr {
+        page-break-inside: avoid;
+        page-break-after: auto;
       }
     }
   </style>
-  <title>Report Document</title>
+  <title>{{ $title }}</title>
 </head>
 
 <body>
-  <header class="header">
+  <header>
     <div class="logo">
       <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('img/BPSLogo.png'))) }}" alt="BPS Logo">
-      <div>
+      <div class="school-info">
         <h2>{{ $school }}</h2>
         <p>{{ $address }}</p>
       </div>
     </div>
+    <hr>
   </header>
-  <h4>{{ $title }}</h4>
-  <h4>{{ $date }}</h4>
+
+  <h4 class="title">{{ $title }}</h4>
+  <div class="generated-date">Generated on: {{ $date }}</div>
+
   <main class="table-container">
     <table>
       <thead>
@@ -145,34 +132,35 @@
       </thead>
       <tbody>
         @forelse($data as $item)
-        @if($item->user && $item->user->students)
-        <tr>
-          <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
-          <td>{{ $item->user->students->level }}</td>
-          <td>{{ $item->user->students->section }}</td>
-          <td>{{ \Carbon\Carbon::parse($item->time_in)->format('Y-m-d') }}</td>
-          <td>{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
-        </tr>
-        @endif
+          @if($item->user && $item->user->students)
+          <tr>
+            <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
+            <td>{{ $item->user->students->level }}</td>
+            <td>{{ $item->user->students->section }}</td>
+            <td>{{ \Carbon\Carbon::parse($item->time_in)->format('Y-m-d') }}</td>
+            <td>{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
+          </tr>
+          @endif
         @empty
         <tr>
-          <td colspan="5" class="text-center">No data found.</td>
+          <td colspan="5" style="text-align: center;">No data found.</td>
         </tr>
         @endforelse
       </tbody>
     </table>
   </main>
-  <!-- Page break if the content overflows -->
-  <div class="page-break"></div>
+
+  <div class="user">Generated by: {{ $user }}</div>
+
   @if (!app()->runningInConsole())
   @php ob_start(); @endphp
   <script type="text/php">
     if (isset($pdf)) {
-      $font = $fontMetrics->getFont("IBM Plex Sans", "normal");
-      $size = 10;
+      $font = $fontMetrics->getFont("DejaVu Sans", "normal");
+      $size = 9;
       $pageText = "Page {PAGE_NUM} of {PAGE_COUNT}";
-      $x = 520; // Adjust horizontal position
-      $y = 820; // Adjust vertical position (lower right corner)
+      $x = 500;
+      $y = 820;
       $pdf->page_text($x, $y, $pageText, $font, $size);
     }
   </script>
