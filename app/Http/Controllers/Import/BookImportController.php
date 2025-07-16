@@ -34,18 +34,18 @@ class BookImportController extends Controller
             } else if(count($rows[0]) > 12 || count($rows[0]) < 12){
                 return redirect()->route('import.import-books')->with('toast-error', "An error occurred while saving book: Wrong number of columns.");
             }
-            for($i = 1; $i < count($rows); $i++){
+            for($i = 19; $i < count($rows); $i++){
                 $data[] = array(
-                    'accession'             => $rows[$i][0],
-                    'call_number'           => $rows[$i][1],
-                    'title'                 => $rows[$i][2],
-                    'authors'               => $rows[$i][3],
-                    'edition'               => $rows[$i][4],
-                    'place_of_publication'  => $rows[$i][5],
-                    'publisher'             => $rows[$i][6],
-                    'copyrights'            => $rows[$i][7],
-                    'category'              => $rows[$i][8],
-                    'digital_copy_url'      => $rows[$i][9],
+                    'accession'             => $rows[$i][1],
+                    'call_number'           => $rows[$i][2],
+                    'title'                 => $rows[$i][3],
+                    'authors'               => $rows[$i][4],
+                    'edition'               => $rows[$i][5],
+                    'place_of_publication'  => $rows[$i][6],
+                    'publisher'             => $rows[$i][7],
+                    'copyrights'            => $rows[$i][8],
+                    'category'              => $rows[$i][9],
+                    'digital_copy_url'      => $rows[$i][10],
                 );
             }
         } catch(\Exception $e){
@@ -59,6 +59,7 @@ class BookImportController extends Controller
         $data       = $request->input('data');
         $dataArray  = json_decode($data, true);
         $errors     = "";
+        $newBooksCount = 0;
         foreach ($dataArray as $item) {
             DB::beginTransaction();
             try {
@@ -88,9 +89,8 @@ class BookImportController extends Controller
                     'remarks'               => 'On Shelf',
                     'availability_status'   => 'Available',
                     'condition_status'      => 'New',
-                    'created_at'            => now(),
-                    'updated_at'            => now()
                 ]);
+                $newBooksCount++;
             } catch (\Illuminate\Database\QueryException $e) {
                 DB::rollBack();
                 if ($e->getCode() == 23000) {
@@ -104,7 +104,7 @@ class BookImportController extends Controller
             }
             DB::commit();
         }
-        return redirect()->route('import.import-books')->with('toast-success', 'Books imported successfully');
+        return redirect()->route('import.import-books')->with('toast-success', 'Books imported successfully: ' . $newBooksCount . ' new books added.');
     }
     public function downloadTemplate()
     {

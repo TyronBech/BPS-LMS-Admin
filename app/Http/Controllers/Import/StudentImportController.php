@@ -27,7 +27,9 @@ class StudentImportController extends Controller
         $data       = $request->input('data');
         $dataArray  = json_decode($data, true);
         $errors     = "";
-        $staged_users = array();
+        $staged_users           = array();
+        $newStudentsCount       = 0;
+        $existingStudentsCount  = 0;
         DB::beginTransaction();
         foreach ($dataArray as $item) {
             try {
@@ -48,6 +50,7 @@ class StudentImportController extends Controller
                         'level'         => $item['grade_level'],
                         'section'       => $item['section'],
                     ]);
+                    $existingStudentsCount++;
                 } else {
                     if(User::where('email', $item['email'])->exists()){
                         $errors = "Email already exists for student: " . $item['first_name'] . " " . $item['last_name'];
@@ -75,6 +78,7 @@ class StudentImportController extends Controller
                         'email' => $item['email'],
                         'password' => $password,
                     ];
+                    $newStudentsCount++;
                 }
             } catch (\Illuminate\Database\QueryException $e) {
                 DB::rollBack();
@@ -99,7 +103,7 @@ class StudentImportController extends Controller
             if(!$student) continue;
             $this->account_notification($student, $user['password']);
         }
-        return redirect()->route('import.import-students')->with('toast-success', 'Students imported successfully');
+        return redirect()->route('import.import-students')->with('toast-success', 'Students imported successfully: ' . $newStudentsCount . ' new students added & ' . $existingStudentsCount . ' existing students updated.');
     }
     public function upload(Request $request)
     {
@@ -115,18 +119,18 @@ class StudentImportController extends Controller
             if($rows[0][0] == null){
                 return redirect()->route('import.import-students')->with('toast-error', "Excel file is empty.");
             }
-            for($i = 1; $i < count($rows); $i++){
+            for($i = 19; $i < count($rows); $i++){
                 $data[] = array(
-                    'rfid'          => $rows[$i][0],
-                    'first_name'    => $rows[$i][1],
-                    'middle_name'   => $rows[$i][2],
-                    'last_name'     => $rows[$i][3],
-                    'suffix'        => $rows[$i][4],
-                    'gender'        => $rows[$i][5],
-                    'email'         => $rows[$i][6],
-                    'id_number'     => $rows[$i][7],
-                    'grade_level'   => $rows[$i][8],
-                    'section'       => $rows[$i][9],   
+                    'rfid'          => $rows[$i][1],
+                    'first_name'    => $rows[$i][2],
+                    'middle_name'   => $rows[$i][3],
+                    'last_name'     => $rows[$i][4],
+                    'suffix'        => $rows[$i][5],
+                    'gender'        => $rows[$i][6],
+                    'email'         => $rows[$i][7],
+                    'id_number'     => $rows[$i][8],
+                    'grade_level'   => $rows[$i][9],
+                    'section'       => $rows[$i][10],   
                 );
             }
         } catch(\Exception $e){

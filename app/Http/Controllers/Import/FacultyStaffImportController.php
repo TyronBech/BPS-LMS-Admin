@@ -28,6 +28,8 @@ class FacultyStaffImportController extends Controller
         $dataArray  = json_decode($data, true);
         $errors     = "";
         $staged_users = array();
+        $newFacultiesCount = 0;
+        $existingFacultiesCount = 0;
         foreach ($dataArray as $item) {
             DB::beginTransaction();
             try {
@@ -48,6 +50,7 @@ class FacultyStaffImportController extends Controller
                         'employee_role' => $item['employee_role'],
                         'employee_id'   => $item['employee_id'],
                     ]);
+                    $existingFacultiesCount++;
                 } else {
                     if (StagingUser::where('email', $item['email'])->exists()) {
                         $errors = "Email already exists for user: " . $item['first_name'] . " " . $item['last_name'];
@@ -73,6 +76,7 @@ class FacultyStaffImportController extends Controller
                         'email'     => $item['email'],
                         'password'  => $password,
                     ];
+                    $newFacultiesCount++;
                 }
             } catch (\Illuminate\Database\QueryException $e) {
                 DB::rollBack();
@@ -97,7 +101,7 @@ class FacultyStaffImportController extends Controller
             if($employee == null) continue;
             $this->account_notification($employee, $user['password']);
         }
-        return redirect()->route('import.import-faculties-staffs')->with('toast-success', 'Faculties & Staffs imported successfully');
+        return redirect()->route('import.import-faculties-staffs')->with('toast-success', 'Faculties & Staffs imported successfully: ' . $newFacultiesCount . ' added & ' . $existingFacultiesCount . ' updated');
     }
     public function upload(Request $request)
     {
@@ -115,17 +119,17 @@ class FacultyStaffImportController extends Controller
             } else if(count($rows[0]) > 11 || count($rows[0]) < 11){
                 return redirect()->route('import.import-faculties-staffs')->with('toast-error', "An error occurred while saving faculties & staffs: Wrong number of columns.");
             }
-            for($i = 1; $i < count($rows); $i++){
+            for($i = 19; $i < count($rows); $i++){
                 $data[] = array(
-                    'rfid'          => $rows[$i][0],
-                    'first_name'    => $rows[$i][1],
-                    'middle_name'   => $rows[$i][2],
-                    'last_name'     => $rows[$i][3],
-                    'suffix'        => $rows[$i][4],
-                    'gender'        => $rows[$i][5],
-                    'email'         => $rows[$i][6],
-                    'employee_id'   => $rows[$i][7],
-                    'employee_role' => $rows[$i][8], 
+                    'rfid'          => $rows[$i][1],
+                    'first_name'    => $rows[$i][2],
+                    'middle_name'   => $rows[$i][3],
+                    'last_name'     => $rows[$i][4],
+                    'suffix'        => $rows[$i][5],
+                    'gender'        => $rows[$i][6],
+                    'email'         => $rows[$i][7],
+                    'employee_id'   => $rows[$i][8],
+                    'employee_role' => $rows[$i][9], 
                 );
             }
         } catch(\Exception $e){
