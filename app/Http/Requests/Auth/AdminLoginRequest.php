@@ -33,7 +33,7 @@ class AdminLoginRequest extends FormRequest
             'email',
             'max:255',
             function ($attribute, $value, $fail) {
-                if (preg_match('/(select|union|insert|update|delete|drop|--|;)/i', $value)) {
+                if (preg_match('/(select|union|insert|update|delete|drop|--|;)/i', strtolower($value))) {
                     $fail('The ' . $attribute . ' is invalid.');
                     Log::warning('Possible SQL injection attempt for email', [
                         'field' => $attribute,
@@ -47,7 +47,7 @@ class AdminLoginRequest extends FormRequest
             'required',
             'string',
             function ($attribute, $value, $fail) {
-                if (preg_match('/(select|union|insert|update|delete|drop|--|;)/i', $value)) {
+                if (preg_match('/(select|union|insert|update|delete|drop|--|;)/i', strtolower($value))) {
                     $fail('The ' . $attribute . ' is invalid.');
                     Log::warning('Possible SQL injection attempt for password', [
                         'field' => $attribute,

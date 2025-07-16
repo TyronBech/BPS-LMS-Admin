@@ -24,6 +24,10 @@ class AdminLoginController extends Controller
      */
     public function store(AdminLoginRequest $request): RedirectResponse
     {
+        $request->merge([
+            'email'     => trim($request['email']),
+            'password'  => trim($request['password'])
+        ]);
         foreach ($request->all() as $input) {
             if ($this->hasSqlInjection($input)) {
                 abort(400, 'Suspicious input detected.');
