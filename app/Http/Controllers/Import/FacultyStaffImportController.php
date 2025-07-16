@@ -12,6 +12,8 @@ use App\Models\StagingUser;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AccountEmailMessage;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
 
 class FacultyStaffImportController extends Controller
 {
@@ -131,6 +133,15 @@ class FacultyStaffImportController extends Controller
             return redirect()->route('import.import-faculties-staffs')->with('toast-error', $errors);
         }
         return view('import.employees.index', compact('showTable', 'data'));
+    }
+    public function downloadTemplate()
+    {
+        $filePath = public_path('excel/Employee-template.xlsx');
+
+        if (File::exists($filePath)) {
+            return Response::download($filePath, 'Employee-template.xlsx');
+        }
+        abort(404, 'File not found.');
     }
     private function account_notification($user, $password){
         Mail::to($user->email)->send(new AccountEmailMessage($user, $password));

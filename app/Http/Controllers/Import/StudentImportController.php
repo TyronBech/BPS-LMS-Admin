@@ -12,6 +12,8 @@ use PhpOffice\PhpSpreadsheet\Reader\Xlsx as ReaderXlsx;
 use App\Models\StagingUser;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AccountEmailMessage;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
 
 class StudentImportController extends Controller
 {
@@ -132,6 +134,15 @@ class StudentImportController extends Controller
             return redirect()->route('import.import-students')->with('toast-error', $errors);
         }
         return view('import.students.students', compact('showTable', 'data'));
+    }
+    public function downloadTemplate()
+    {
+        $filePath = public_path('excel/Student-template.xlsx');
+
+        if (File::exists($filePath)) {
+            return Response::download($filePath, 'Student-template.xlsx');
+        }
+        abort(404, 'File not found.');
     }
     private function account_notification($user, $password){
         Mail::to($user->email)->send(new AccountEmailMessage($user, $password));

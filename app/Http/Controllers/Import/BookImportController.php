@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Book;
 use App\Models\Category;
 use Milon\Barcode\DNS1D;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Response;
 
 class BookImportController extends Controller
 {
@@ -103,5 +105,14 @@ class BookImportController extends Controller
             DB::commit();
         }
         return redirect()->route('import.import-books')->with('toast-success', 'Books imported successfully');
+    }
+    public function downloadTemplate()
+    {
+        $filePath = public_path('excel/Book-template.xlsx');
+
+        if (File::exists($filePath)) {
+            return Response::download($filePath, 'Employee-template.xlsx');
+        }
+        abort(404, 'File not found.');
     }
 }
