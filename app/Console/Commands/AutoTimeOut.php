@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Exception;
 
 class AutoTimeOut extends Command
 {
@@ -26,6 +28,12 @@ class AutoTimeOut extends Command
      */
     public function handle()
     {
+        try{
+            DB::statement('CALL AutoTimeoutUsers()');
+        } catch (Exception $e) {
+            Log::error('Error in AutoTimeOut command: ' . $e->getMessage());
+            return;
+        }
         Log::info('Auto time out command executed.');
     }
 }
