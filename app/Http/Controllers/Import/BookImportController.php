@@ -39,12 +39,14 @@ class BookImportController extends Controller
                     'call_number'           => $rows[$i][2],
                     'title'                 => $rows[$i][3],
                     'authors'               => $rows[$i][4],
-                    'edition'               => $rows[$i][5],
-                    'place_of_publication'  => $rows[$i][6],
-                    'publisher'             => $rows[$i][7],
-                    'copyrights'            => $rows[$i][8],
-                    'category'              => $rows[$i][9],
-                    'digital_copy_url'      => $rows[$i][10],
+                    'book_type'             => $rows[$i][5],
+                    'description'           => $rows[$i][6],
+                    'edition'               => $rows[$i][7],
+                    'place_of_publication'  => $rows[$i][8],
+                    'publisher'             => $rows[$i][9],
+                    'copyrights'            => $rows[$i][10],
+                    'category'              => $rows[$i][11],
+                    'digital_copy_url'      => $rows[$i][12],
                 );
             }
         } catch(\Exception $e){
@@ -60,18 +62,22 @@ class BookImportController extends Controller
         $errors     = "";
         $newBooksCount = 0;
         $categories = new Category();
+        $books = new Book();
         DB::beginTransaction();
         foreach ($dataArray as $item) {
+            $item['book_type'] = strtolower($item['book_type']);
             $validator = Validator::make($item, [
                 'accession'             => 'required|string|max:50',
                 'call_number'           => 'nullable|string|max:50',
                 'title'                 => 'required|string|max:255',
                 'authors'               => 'nullable|string|max:255',
+                'book_type'             => 'nullable|string|in:' . implode(',', $this->extract_enums($books->getTable(), 'book_type')),
+                'description'           => 'nullable|string',
                 'edition'               => 'nullable|string|max:50',
                 'place_of_publication'  => 'required|string|max:100',
                 'publisher'             => 'required|string|max:100',
                 'copyrights'            => 'nullable|string|max:255',
-                'category'              => 'required|string|in:' . implode(',', $this->extract_enums($categories->getTable(), 'name')),
+                'category'              => 'required|string|in:' . implode(',', Category::pluck('name')->toArray()),
                 'digital_copy_url'      => 'nullable|url|max:255',
             ]);
             if($validator->fails()){
@@ -95,6 +101,8 @@ class BookImportController extends Controller
                     'call_number'           => $item['call_number'] ?? null,
                     'title'                 => $item['title'],
                     'author'                => $item['authors'] ?? null,
+                    'book_type'             => $item['book_type'] ?? null,
+                    'description'           => $item['description'] ?? null,
                     'edition'               => $item['edition'] ?? null,
                     'place_of_publication'  => $item['place_of_publication'],
                     'publisher'             => $item['publisher'],
