@@ -69,14 +69,14 @@ class UsersMaintenanceController extends Controller
         $validator = Validator::make($request->all(), [
             'rfid'          => 'required|string|min:10',
             'first-name'    => 'required|string|max:50',
-            'middle-name'   => 'sometimes|max:50',
+            'middle-name'   => 'nullable|string|max:50',
             'last-name'     => 'required|string|max:50',
-            'suffix'        => 'sometimes|max:10',
+            'suffix'        => 'nullable|string|max:10',
             'gender'        => 'required|in:Male,Female,Prefer not to say',
             'id_number'     => 'required|min:12',
-            'level'         => 'required|in:7,8,9,10,11,12',
+            'level'         => 'required|min:7|max:12',
             'section'       => 'required|max:50',
-            'email'         => 'required|email',
+            'email'         => 'required|string|email',
         ]);
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -139,16 +139,17 @@ class UsersMaintenanceController extends Controller
     }
     public function store_employee(Request $request)
     {
+        $users = new User();
         $validator = Validator::make($request->all(), [
             'rfid'          => 'required|string|min:10',
             'first-name'    => 'required|string|max:50',
-            'middle-name'   => 'sometimes|max:50',
+            'middle-name'   => 'nullable|string|max:50',
             'last-name'     => 'required|string|max:50',
-            'suffix'        => 'sometimes|max:10',
-            'gender'        => 'required|in:Male,Female,Prefer not to say',
+            'suffix'        => 'nullable|string|max:10',
+            'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
             'employee_id'   => 'required|string|max:50',
-            'employee_role' => 'required',
-            'email'         => 'required|email',
+            'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
+            'email'         => 'required|string|email',
         ]);
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -234,14 +235,14 @@ class UsersMaintenanceController extends Controller
         $validator = Validator::make($request->all(), [
             'rfid'          => 'required|string|min:10',
             'first-name'    => 'required|string|max:50',
-            'middle-name'   => 'sometimes|max:50',
+            'middle-name'   => 'nullable|string|max:50',
             'last-name'     => 'required|string|max:50',
-            'suffix'        => 'sometimes|max:10',
+            'suffix'        => 'nullable|string|max:10',
             'gender'        => 'required|in:Male,Female,Prefer not to say',
             'id_number'     => 'required|min:12',
-            'level'         => 'required|in:7,8,9,10,11,12',
+            'level'         => 'required|min:7|max:12',
             'section'       => 'required|max:50',
-            'email'         => 'required|email',
+            'email'         => 'required|string|email',
         ]);
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -296,16 +297,17 @@ class UsersMaintenanceController extends Controller
     }
     public function update_employee(Request $request)
     {
+        $users = new User();
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|max:10',
+            'rfid'          => 'required|string|min:10',
             'first-name'    => 'required|string|max:50',
-            'middle-name'   => 'sometimes|max:50',
+            'middle-name'   => 'nullable|string|max:50',
             'last-name'     => 'required|string|max:50',
-            'suffix'        => 'sometimes|max:10',
-            'gender'        => 'required|in:Male,Female,Prefer not to say',
+            'suffix'        => 'nullable|string|max:10',
+            'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
             'employee_id'   => 'required|string|max:50',
-            'employee_role' => 'required',
-            'email'         => 'required|email',
+            'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
+            'email'         => 'required|string|email',
         ]);
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -379,6 +381,21 @@ class UsersMaintenanceController extends Controller
     }
     private function account_notification($user, $password){
         Mail::to($user->email)->send(new AccountEmailMessage($user, $password));
+    }
+    private function extract_enums($table, $columnName){
+        $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";
+        $column = DB::select($query);
+        if (empty($column)) {
+            return ['N/A'];
+        }   
+        $type = $column[0]->Type;
+        // Extract enum values
+        preg_match('/enum\((.*)\)$/', $type, $matches);
+        $enumValues = [];
+        if (isset($matches[1])) {
+            $enumValues = str_getcsv($matches[1], ',', "'");
+        }
+        return $enumValues;
     }
     private function has_invalid_characters($name) {
         $pattern = '/^[a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+$/';

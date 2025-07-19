@@ -21,32 +21,34 @@ class BookMaintenanceController extends Controller
     }
     public function create()
     {
+        $books = new Book();
         $categories     = Category::all()->pluck('name', 'id');
-        $condition      = $this->extract_enums('bk_books', 'condition_status');
-        $availability   = $this->extract_enums('bk_books', 'availability_status');     
-        $remarks        = $this->extract_enums('bk_books', 'remarks');
-        $book_types     = $this->extract_enums('bk_books', 'book_type');
+        $condition      = $this->extract_enums($books->getTable(), 'condition_status');
+        $availability   = $this->extract_enums($books->getTable(), 'availability_status');     
+        $remarks        = $this->extract_enums($books->getTable(), 'remarks');
+        $book_types     = $this->extract_enums($books->getTable(), 'book_type');
         return view('maintenance.books.create', compact('categories', 'condition', 'availability', 'remarks', 'book_types'));
     }
     public function store(Request $request)
     {
+        $books = new Book();
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string|max:50',
-            'call_number'       => 'sometimes|max:50',
-            'title'             => 'required|string|max:1024',
-            'authors'           => 'sometimes',
-            'description'       => 'sometimes',
-            'edition'           => 'sometimes',
-            'publication'       => 'required|string|max:255',
-            'publisher'         => 'required|string|max:255',
+            'call_number'       => 'nullable|string|max:50',
+            'title'             => 'required|string|max:150',
+            'authors'           => 'nullable|string|max:1024',
+            'description'       => 'nullable|string',
+            'edition'           => 'nullable|string|max:50',
+            'publication'       => 'required|string|max:50',
+            'publisher'         => 'required|string|max:100',
             'copyright'         => 'required|string|max:50',
-            'cover_image'       => 'sometimes',
-            'digital_copy_url'  => 'sometimes',
-            'remarks'           => 'required',
+            'cover_image'       => 'nullable',
+            'digital_copy_url'  => 'nullable|string',
+            'remarks'           => 'required|in:'.implode(',', $this->extract_enums($books->getTable(), 'remarks')),
             'category'          => 'required|in:'.implode(',', Category::all()->pluck('id')->toArray()),
-            'book_type'         => 'required|in:'.implode(',', $this->extract_enums('bk_books', 'book_type')),
-            'condition'         => 'required|in:'.implode(',', $this->extract_enums('bk_books', 'condition_status')),
-            'availability'      => 'required|in:'.implode(',', $this->extract_enums('bk_books', 'availability_status')),
+            'book_type'         => 'required|in:'.implode(',', $this->extract_enums($books->getTable(), 'book_type')),
+            'condition'         => 'required|in:'.implode(',', $this->extract_enums($books->getTable(), 'condition_status')),
+            'availability'      => 'required|in:'.implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
         ]);
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -101,11 +103,12 @@ class BookMaintenanceController extends Controller
         try{
             $id = $request->input('id');
             $book = Book::findOrFail($id);
+            $books = new Book();
             $categories     = Category::all()->pluck('name', 'id');
-            $condition      = $this->extract_enums('bk_books', 'condition_status');
-            $availability   = $this->extract_enums('bk_books', 'availability_status');     
-            $remarks        = $this->extract_enums('bk_books', 'remarks');
-            $book_types     = $this->extract_enums('bk_books', 'book_type');
+            $condition      = $this->extract_enums($books->getTable(), 'condition_status');
+            $availability   = $this->extract_enums($books->getTable(), 'availability_status');     
+            $remarks        = $this->extract_enums($books->getTable(), 'remarks');
+            $book_types     = $this->extract_enums($books->getTable(), 'book_type');
         } catch(\Exception $e){
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
@@ -142,23 +145,24 @@ class BookMaintenanceController extends Controller
     }
     public function update(Request $request)
     {
+        $books = new Book();
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string|max:50',
-            'call_number'       => 'sometimes|max:50',
-            'title'             => 'required|string|max:1024',
-            'authors'           => 'sometimes',
-            'description'       => 'sometimes',
-            'edition'           => 'sometimes',
-            'publication'       => 'required|string|max:255',
-            'publisher'         => 'required|string|max:255',
+            'call_number'       => 'nullable|string|max:50',
+            'title'             => 'required|string|max:150',
+            'authors'           => 'nullable|string|max:1024',
+            'description'       => 'nullable|string',
+            'edition'           => 'nullable|string|max:50',
+            'publication'       => 'required|string|max:50',
+            'publisher'         => 'required|string|max:100',
             'copyright'         => 'required|string|max:50',
-            'cover_image'       => 'sometimes',
-            'digital_copy_url'  => 'sometimes',
-            'remarks'           => 'required',
+            'cover_image'       => 'nullable',
+            'digital_copy_url'  => 'nullable|string',
+            'remarks'           => 'required|in:'.implode(',', $this->extract_enums($books->getTable(), 'remarks')),
             'category'          => 'required|in:'.implode(',', Category::all()->pluck('id')->toArray()),
-            'book_type'         => 'required|in:'.implode(',', $this->extract_enums('bk_books', 'book_type')),
-            'condition'         => 'required|in:'.implode(',', $this->extract_enums('bk_books', 'condition_status')),
-            'availability'      => 'required|in:'.implode(',', $this->extract_enums('bk_books', 'availability_status')),
+            'book_type'         => 'required|in:'.implode(',', $this->extract_enums($books->getTable(), 'book_type')),
+            'condition'         => 'required|in:'.implode(',', $this->extract_enums($books->getTable(), 'condition_status')),
+            'availability'      => 'required|in:'.implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
         ]);
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
