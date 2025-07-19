@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\AccountEmailMessage;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Validator;
 
 class StudentImportController extends Controller
 {
@@ -24,19 +25,46 @@ class StudentImportController extends Controller
     }
     public function store(Request $request)
     {
-        $data       = $request->input('data');
-        $dataArray  = json_decode($data, true);
-        $errors     = "";
+        $data                   = $request->input('data');
+        $dataArray              = json_decode($data, true);
+        $errors                 = null;
         $staged_users           = array();
         $newStudentsCount       = 0;
         $existingStudentsCount  = 0;
+        $users                  = new User();
         DB::beginTransaction();
         foreach ($dataArray as $item) {
+            $validator = Validator::make($item, [
+                'rfid'          => 'required|string|min:10',
+                'first_name'    => 'required|string|max:50',
+                'middle_name'   => 'nullable|string|max:50',
+                'last_name'     => 'required|string|max:50',
+                'suffix'        => 'nullable|string|max:10',
+                'grade_level'   => 'required|numeric|min:7|max:12',
+                'section'       => 'required|string|max:50',
+                'gender'        => 'required|string|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
+                'email'         => 'required|string|email|max:255',
+            ]);
+            if($validator->fails()){
+                DB::rollBack();
+                $errors = 'Validation error: ' . $validator->errors()->first() . ' for student: ' . $item['first_name'] . ' ' . $item['last_name'];
+                return redirect()->route('import.import-students')->with('toast-error', $errors);
+            }
             try {
                 $existingStudent = User::whereHas('students', function ($query) use ($item) {
                     $query->where('id_number', $item['id_number']);
                 })->with('students')->first();
                 if($existingStudent){
+                    if($existingStudent->rfid               == $item['rfid'] 
+                    && $existingStudent->first_name         == $item['first_name'] 
+                    && $existingStudent->middle_name        == $item['middle_name']
+                    && $existingStudent->last_name          == $item['last_name'] 
+                    && $existingStudent->suffix             == $item['suffix']
+                    && $existingStudent->gender             == $item['gender']
+                    && $existingStudent->email              == $item['email']
+                    && $existingStudent->students->level    == $item['grade_level']
+                    && $existingStudent->students->section  == $item['section']
+                    ){ continue; }
                     $existingStudent->update([
                         'rfid'          => $item['rfid'],
                         'first_name'    => $item['first_name'],
@@ -53,9 +81,11 @@ class StudentImportController extends Controller
                     $existingStudentsCount++;
                 } else {
                     if(User::where('email', $item['email'])->exists()){
+                        DB::rollBack();
                         $errors = "Email already exists for student: " . $item['first_name'] . " " . $item['last_name'];
                         return redirect()->route('import.import-students')->with('toast-error', $errors);
                     } else if(User::where('rfid', $item['rfid'])->exists()){
+                        DB::rollBack();
                         $errors = "RFID already exists for student: " . $item['first_name'] . " " . $item['last_name'];
                         return redirect()->route('import.import-students')->with('toast-error', $errors);
                     }
@@ -150,5 +180,21 @@ class StudentImportController extends Controller
     }
     private function account_notification($user, $password){
         Mail::to($user->email)->send(new AccountEmailMessage($user, $password));
+    }
+    private function extract_enums($table, $columnName){
+        $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";
+        $column = DB::select($query);
+        if (empty($column)) {
+            return ['N/A'];
+        }
+        $type = $column[0]->Type;
+        // Extract enum values
+        preg_match('/enum\((.*)\)$/', $type, $matches);
+        $enumValues = [];
+
+        if (isset($matches[1])) {
+            $enumValues = str_getcsv($matches[1], ',', "'");
+        }
+        return $enumValues;
     }
 }

@@ -11,6 +11,7 @@ use App\Models\Category;
 use Milon\Barcode\DNS1D;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Validator;
 
 class BookImportController extends Controller
 {
@@ -31,8 +32,6 @@ class BookImportController extends Controller
             $data           = array();
             if($rows[0][0] == null){
                 return redirect()->route('import.import-books')->with('toast-error', "Excel file is empty.");
-            } else if(count($rows[0]) > 12 || count($rows[0]) < 12){
-                return redirect()->route('import.import-books')->with('toast-error', "An error occurred while saving book: Wrong number of columns.");
             }
             for($i = 19; $i < count($rows); $i++){
                 $data[] = array(
@@ -60,11 +59,28 @@ class BookImportController extends Controller
         $dataArray  = json_decode($data, true);
         $errors     = "";
         $newBooksCount = 0;
+        $categories = new Category();
+        DB::beginTransaction();
         foreach ($dataArray as $item) {
-            DB::beginTransaction();
+            $validator = Validator::make($item, [
+                'accession'             => 'required|string|max:50',
+                'call_number'           => 'nullable|string|max:50',
+                'title'                 => 'required|string|max:255',
+                'authors'               => 'nullable|string|max:255',
+                'edition'               => 'nullable|string|max:50',
+                'place_of_publication'  => 'required|string|max:100',
+                'publisher'             => 'required|string|max:100',
+                'copyrights'            => 'nullable|string|max:255',
+                'category'              => 'required|string|in:' . implode(',', $this->extract_enums($categories->getTable(), 'name')),
+                'digital_copy_url'      => 'nullable|url|max:255',
+            ]);
+            if($validator->fails()){
+                DB::rollBack();
+                $errors = 'Validation error: ' . $validator->errors()->first() . ' for book: ' . $item['title'];
+                return redirect()->route('import.import-books')->with('toast-error', $errors);
+            }
             try {
                 $category = Category::select('id')->where(DB::raw('lower(name)'), strtolower($item['category']))->first();
-
                 if($category == null){
                     DB::rollBack();
                     return redirect()->route('import.import-books')->with('toast-warning', 'Category not found: ' . $item['category']);
@@ -102,8 +118,8 @@ class BookImportController extends Controller
                 }
                 return redirect()->route('import.import-books')->with('toast-error', $errors);
             }
-            DB::commit();
         }
+        DB::commit();
         return redirect()->route('import.import-books')->with('toast-success', 'Books imported successfully: ' . $newBooksCount . ' new books added.');
     }
     public function downloadTemplate()
@@ -111,8 +127,23 @@ class BookImportController extends Controller
         $filePath = public_path('excel/Book-template.xlsx');
 
         if (File::exists($filePath)) {
-            return Response::download($filePath, 'Employee-template.xlsx');
+            return Response::download($filePath, 'Book-template.xlsx');
         }
         abort(404, 'File not found.');
+    }
+    private function extract_enums($table, $columnName){
+        $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";
+        $column = DB::select($query);
+        if (empty($column)) {
+            return ['N/A'];
+        }   
+        $type = $column[0]->Type;
+        // Extract enum values
+        preg_match('/enum\((.*)\)$/', $type, $matches);
+        $enumValues = [];
+        if (isset($matches[1])) {
+            $enumValues = str_getcsv($matches[1], ',', "'");
+        }
+        return $enumValues;
     }
 }

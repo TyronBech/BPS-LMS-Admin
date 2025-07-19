@@ -12,8 +12,10 @@ use App\Models\StagingUser;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AccountEmailMessage;
+use App\Models\UserGroup;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
+use Illuminate\Support\Facades\Validator;
 
 class FacultyStaffImportController extends Controller
 {
@@ -24,20 +26,47 @@ class FacultyStaffImportController extends Controller
     }
     public function store(Request $request)
     {
-        $data       = $request->input('data');
-        $dataArray  = json_decode($data, true);
-        $errors     = "";
-        $staged_users = array();
-        $newFacultiesCount = 0;
+        $data                   = $request->input('data');
+        $dataArray              = json_decode($data, true);
+        $errors                 = null;
+        $staged_users           = array();
+        $newFacultiesCount      = 0;
         $existingFacultiesCount = 0;
+        $users                  = new User();
+        DB::beginTransaction();
         foreach ($dataArray as $item) {
-            DB::beginTransaction();
+            $validator = Validator::make($item, [
+                'rfid'          => 'required|string|min:10',
+                'first_name'    => 'required|string|max:50',
+                'middle_name'   => 'nullable|string|max:50',
+                'last_name'     => 'required|string|max:50',
+                'suffix'        => 'nullable|string|max:10',
+                'gender'        => 'required|string|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
+                'email'         => 'required|string|email|max:255',
+                'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
+                'employee_id'   => 'required|string|max:50',
+            ]);
+            if($validator->fails()){
+                DB::rollBack();
+                $errors = 'Validation error: ' . $validator->errors()->first() . ' for faculty/staff: ' . $item['first_name'] . ' ' . $item['last_name'];
+                return redirect()->route('import.import-faculties-staffs')->with('toast-error', $errors);
+            }
             try {
                 $password = Str::password(8, true, true, true, false);
                 $existingEmployee = User::wherehas('employees', function ($query) use ($item) {
                     $query->where('employee_id', $item['employee_id']);
                 })->with('employees')->first();
                 if ($existingEmployee) {
+                    if ($existingEmployee->rfid                     == $item['rfid']
+                    && $existingEmployee->first_name                == $item['first_name']
+                    && $existingEmployee->middle_name               == $item['middle_name']
+                    && $existingEmployee->last_name                 == $item['last_name']
+                    && $existingEmployee->suffix                    == $item['suffix']
+                    && $existingEmployee->gender                    == $item['gender']
+                    && $existingEmployee->email                     == $item['email']
+                    && $existingEmployee->employees->employee_role  == $item['employee_role']
+                    && $existingEmployee->employees->employee_id    == $item['employee_id']) 
+                    { continue; }
                     $existingEmployee->update([
                         'first_name'    => $item['first_name'],
                         'middle_name'   => $item['middle_name'],
@@ -53,9 +82,11 @@ class FacultyStaffImportController extends Controller
                     $existingFacultiesCount++;
                 } else {
                     if (StagingUser::where('email', $item['email'])->exists()) {
+                        DB::rollBack();
                         $errors = "Email already exists for user: " . $item['first_name'] . " " . $item['last_name'];
                         return redirect()->route('import.import-faculties-staffs')->with('toast-error', $errors);
                     } else if (StagingUser::where('rfid', $item['rfid'])->exists()) {
+                        DB::rollBack();
                         $errors = "RFID already exists for user: " . $item['first_name'] . " " . $item['last_name'];
                         return redirect()->route('import.import-faculties-staffs')->with('toast-error', $errors);
                     }
@@ -89,8 +120,8 @@ class FacultyStaffImportController extends Controller
                 }
                 return redirect()->route('import.import-faculties-staffs')->with('toast-error', $errors);
             }
-            DB::commit();
         }
+        DB::commit();
         try{
             DB::statement('CALL DistributeStagingUsers()');
         } catch (\Illuminate\Database\QueryException $e) {
@@ -149,5 +180,20 @@ class FacultyStaffImportController extends Controller
     }
     private function account_notification($user, $password){
         Mail::to($user->email)->send(new AccountEmailMessage($user, $password));
+    }
+    private function extract_enums($table, $columnName){
+        $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";
+        $column = DB::select($query);
+        if (empty($column)) {
+            return ['N/A'];
+        }   
+        $type = $column[0]->Type;
+        // Extract enum values
+        preg_match('/enum\((.*)\)$/', $type, $matches);
+        $enumValues = [];
+        if (isset($matches[1])) {
+            $enumValues = str_getcsv($matches[1], ',', "'");
+        }
+        return $enumValues;
     }
 }
