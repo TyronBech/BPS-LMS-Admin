@@ -61,13 +61,12 @@ class BookImportController extends Controller
         $dataArray  = json_decode($data, true);
         $errors     = "";
         $newBooksCount = 0;
-        $categories = new Category();
         $books = new Book();
         DB::beginTransaction();
         foreach ($dataArray as $item) {
             $item['book_type'] = strtolower($item['book_type']);
             $validator = Validator::make($item, [
-                'accession'             => 'required|string|max:50',
+                'accession'             => 'required|string|unique:' . Book::class . ',accession|max:50',
                 'call_number'           => 'nullable|string|max:50',
                 'title'                 => 'required|string|max:255',
                 'authors'               => 'nullable|string|max:255',
@@ -78,7 +77,7 @@ class BookImportController extends Controller
                 'publisher'             => 'required|string|max:100',
                 'copyrights'            => 'nullable|string|max:255',
                 'category'              => 'required|string|in:' . implode(',', Category::pluck('name')->toArray()),
-                'digital_copy_url'      => 'nullable|url|max:255',
+                'digital_copy_url'      => 'nullable|url',
             ]);
             if($validator->fails()){
                 DB::rollBack();

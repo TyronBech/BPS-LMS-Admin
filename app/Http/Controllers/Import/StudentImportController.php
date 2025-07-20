@@ -35,15 +35,16 @@ class StudentImportController extends Controller
         DB::beginTransaction();
         foreach ($dataArray as $item) {
             $validator = Validator::make($item, [
-                'rfid'          => 'required|string|min:10',
+                'rfid'          => 'required|string|min:10|unique:' . User::class . ',rfid',
                 'first_name'    => 'required|string|max:50',
                 'middle_name'   => 'nullable|string|max:50',
                 'last_name'     => 'required|string|max:50',
                 'suffix'        => 'nullable|string|max:10',
+                'id_number'     => 'required|string|min:10|unique:' . User::class . ',id_number',
                 'grade_level'   => 'required|numeric|min:7|max:12',
                 'section'       => 'required|string|max:50',
                 'gender'        => 'required|string|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
-                'email'         => 'required|string|email|max:255',
+                'email'         => 'required|string|email|unique:' . User::class . ',email|max:255',
             ]);
             if($validator->fails()){
                 DB::rollBack();

@@ -12,6 +12,7 @@ use App\Models\StagingUser;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AccountEmailMessage;
+use App\Models\EmployeeDetail;
 use App\Models\UserGroup;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
@@ -36,7 +37,7 @@ class FacultyStaffImportController extends Controller
         DB::beginTransaction();
         foreach ($dataArray as $item) {
             $validator = Validator::make($item, [
-                'rfid'          => 'required|string|min:10',
+                'rfid'          => 'required|string|unique:' . User::class . ',rfid|min:10',
                 'first_name'    => 'required|string|max:50',
                 'middle_name'   => 'nullable|string|max:50',
                 'last_name'     => 'required|string|max:50',
@@ -44,7 +45,7 @@ class FacultyStaffImportController extends Controller
                 'gender'        => 'required|string|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
                 'email'         => 'required|string|email|max:255',
                 'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
-                'employee_id'   => 'required|string|max:50',
+                'employee_id'   => 'required|string|unique:' . EmployeeDetail::class . ',employee_id|max:50',
             ]);
             if($validator->fails()){
                 DB::rollBack();
