@@ -74,7 +74,7 @@ class UsersMaintenanceController extends Controller
             'suffix'        => 'nullable|string|max:10',
             'gender'        => 'required|in:Male,Female,Prefer not to say',
             'id_number'     => 'required|min:12',
-            'level'         => 'required|min:7|max:12',
+            'level'         => 'required|numeric|min:7|max:12',
             'section'       => 'required|max:50',
             'email'         => 'required|string|email',
         ]);
@@ -240,7 +240,7 @@ class UsersMaintenanceController extends Controller
             'suffix'        => 'nullable|string|max:10',
             'gender'        => 'required|in:Male,Female,Prefer not to say',
             'id_number'     => 'required|min:12',
-            'level'         => 'required|min:7|max:12',
+            'level'         => 'required|numeric|min:7|max:12',
             'section'       => 'required|max:50',
             'email'         => 'required|string|email',
         ]);
