@@ -16,7 +16,7 @@
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->book->call_number }}</td>
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->book->title }}</td>
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->book->author }}</td>
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->checked_at }}</td>
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->checked_at ?? 'Pending' }}</td>
       </tr>
       @endif
       @empty
