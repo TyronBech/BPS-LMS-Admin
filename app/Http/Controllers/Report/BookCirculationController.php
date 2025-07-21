@@ -20,7 +20,7 @@ class BookCirculationController extends Controller
         $barcode        = "";
         $title          = "";
         $availability   = $this->extract_enums('bk_books', 'availability_status');
-        $data           = Book::select('accession', 'call_number', 'title', 'barcode', 'availability_status', 'condition_status')->get();
+        $data           = Book::with('category')->select('accession', 'call_number', 'title', 'availability_status', 'condition_status', 'category_id')->get();
         return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability'));
     }
     public function search(Request $request)
@@ -106,7 +106,7 @@ class BookCirculationController extends Controller
         $barcode        = $request->input('barcode');
         $title          = strtolower($request->input('title'));
         $availability   = $request->input('availability');
-        $query          = Book::select('accession', 'call_number', 'title', 'barcode', 'availability_status', 'condition_status');
+        $query          = Book::with('category')->select('accession', 'call_number', 'title', 'barcode', 'availability_status', 'condition_status', 'category_id');
         if (strlen($barcode) > 0) {
             $query->where('barcode', 'like', '%' . $barcode . '%');
         }
