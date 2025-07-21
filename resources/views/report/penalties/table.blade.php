@@ -26,7 +26,7 @@
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->transaction->penalty_status }}</td>
       @empty
       <tr>
-        <td colspan="6" class="text-center">No data found.</td>
+        <td colspan="9" class="text-center">No data found.</td>
       </tr>
       @endforelse
     </tbody>
