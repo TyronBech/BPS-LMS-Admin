@@ -12,7 +12,10 @@
     <table class="w-full text-sm text-left rtl:text-right whitespace-nowrap table-auto">
       <thead class="text-xs py-2 text-gray-700 uppercase bg-gray-300 text-center dark:bg-gray-500 dark:text-white">
         <tr>
-          <th scope="col" class="p-2 text-center"></th>
+          <th scope="col" class="p-2 text-center">
+            <input id="selectAll" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+            <label for="selectAll" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"></label>
+          </th>
           <th scope="col" class="p-2 text-center">Accession</th>
           <th scope="col" class="p-2 text-center">Title</th>
           <th scope="col" class="p-2 text-center">Barcode</th>
@@ -25,7 +28,7 @@
         <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
           <td>
             <div class="flex items-center mb-4 ml-4">
-              <input id="bookCheck" type="checkbox" value="{{ $item->id }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+              <input id="bookCheck" type="checkbox" value="{{ $item->id }}" class="w-4 h-4 ml-2 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
               <label for="bookCheck" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"></label>
             </div>
           </td>
@@ -125,28 +128,48 @@
   const bulkDeleteBookIds = document.getElementById('bulk-delete_book_ids');
   const bulkDeleteBookBtn = document.getElementById('bulkDeleteBookBtn');
   const selectedHeader = document.getElementById('selectedHeader');
+  const selectAllCheckbox = document.getElementById('selectAll');
   bulkDeleteBookIds.value = '';
   bulkDeleteBookBtn.value = '';
   const selectedIds = new Set();
   bookCheck.forEach(check => {
-    check.addEventListener('change', function() {
-      const bookId = this.value;
-      if (this.checked) {
+    check.addEventListener('change', function(event) {
+      const bookId = event.target.value;
+      if (event.target.checked) {
         selectedIds.add(bookId);
         checkedBooks++;
-        selectedHeader.textContent = `Selected (${checkedBooks})`;
       } else {
         selectedIds.delete(bookId);
         checkedBooks--;
-        selectedHeader.textContent = `Selected (${checkedBooks})`;
       }
+      bulkDeleteBookIds.value = Array.from(selectedIds).join(',');
+      bulkDeleteBookBtn.value = Array.from(selectedIds).join(',');
       if (checkedBooks > 0) {
         checkedBooksContainer.classList.replace('hidden', 'flex');
-        bulkDeleteBookIds.value = Array.from(selectedIds).join(',');
+        selectedHeader.textContent = `Selected (${checkedBooks})`;
       } else {
         checkedBooksContainer.classList.replace('flex', 'hidden');
-        bulkDeleteBookIds.value = '';
-        bulkDeleteBookBtn.value = '';
+      }
+    });
+  });
+  selectAllCheckbox.addEventListener('change', function(event) {
+    bookCheck.forEach(check => {
+      check.checked = event.target.checked;
+      const bookId = check.value;
+      if (event.target.checked) {
+        selectedIds.add(bookId);
+        checkedBooks++;
+      } else {
+        selectedIds.delete(bookId);
+        checkedBooks = 0;
+      }
+      bulkDeleteBookIds.value = Array.from(selectedIds).join(',');
+      bulkDeleteBookBtn.value = Array.from(selectedIds).join(',');
+      if (checkedBooks > 0) {
+        checkedBooksContainer.classList.replace('hidden', 'flex');
+        selectedHeader.textContent = `Selected (${checkedBooks})`;
+      } else {
+        checkedBooksContainer.classList.replace('flex', 'hidden');
       }
     });
   });
