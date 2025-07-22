@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use App\Http\Requests\Auth\AdminLoginRequest;
+use App\Models\User;
 
 class AdminLoginController extends Controller
 {
@@ -32,6 +33,13 @@ class AdminLoginController extends Controller
             if ($this->hasSqlInjection($input)) {
                 abort(400, 'Suspicious input detected.');
             }
+        }
+        $user = User::where('email', $request->input('email'))->first();
+        if(!$user) {
+            return redirect()->back()->with('toast-error', 'Invalid email or password.');
+        }
+        if($user->getRoleNames()->isEmpty()) {
+            return redirect()->back()->with('toast-error', 'You do not have admin access to this area.');
         }
         $request->authenticate();
 
