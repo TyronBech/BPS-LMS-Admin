@@ -110,7 +110,7 @@
         <p>Please change your password after logging in for the first time.</p>
         <p>Thank you for using the BPS Library Management System!</p>
         <div class="button">
-          <a href="{{ route('login') }}" class="login" style="color: #fff; text-decoration: none">Login</a>
+          <a href="https://e-library.bps.edu.ph/web/login" class="login" style="color: #fff; text-decoration: none">Login</a>
         </div>
       </div>
     </div>
