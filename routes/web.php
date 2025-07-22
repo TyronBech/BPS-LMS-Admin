@@ -115,14 +115,15 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     });
     Route::prefix('maintenance')->group(function () {
         Route::prefix('books')->middleware(BookAuthentication::class)->group(function () {
-            Route::get('books',             [BookMaintenanceController::class, 'index'])    ->name('maintenance.books');
-            Route::get('add-book',          [BookMaintenanceController::class, 'create'])   ->name('maintenance.create-book');
-            Route::post('add-book',         [BookMaintenanceController::class, 'store'])    ->name('maintenance.store-book');
-            Route::get('edit-book',         [BookMaintenanceController::class, 'edit'])     ->name('maintenance.edit-book');
-            Route::put('edit-book',         [BookMaintenanceController::class, 'update'])   ->name('maintenance.update-book');
-            Route::post('show-books',       [BookMaintenanceController::class, 'show'])     ->name('maintenance.show-books');
-            Route::get('show-book',         [BookMaintenanceController::class, 'view'])     ->name('maintenance.view-book');
-            Route::delete('delete-book',    [BookMaintenanceController::class, 'destroy'])  ->name('maintenance.delete-book');
+            Route::get('books',                 [BookMaintenanceController::class, 'index'])        ->name('maintenance.books');
+            Route::get('add-book',              [BookMaintenanceController::class, 'create'])       ->name('maintenance.create-book');
+            Route::post('add-book',             [BookMaintenanceController::class, 'store'])        ->name('maintenance.store-book');
+            Route::get('edit-book',             [BookMaintenanceController::class, 'edit'])         ->name('maintenance.edit-book');
+            Route::put('edit-book',             [BookMaintenanceController::class, 'update'])       ->name('maintenance.update-book');
+            Route::post('show-books',           [BookMaintenanceController::class, 'show'])         ->name('maintenance.show-books');
+            Route::get('show-book',             [BookMaintenanceController::class, 'view'])         ->name('maintenance.view-book');
+            Route::delete('delete-book',        [BookMaintenanceController::class, 'destroy'])      ->name('maintenance.delete-book');
+            Route::delete('bulk-delete-book',   [BookMaintenanceController::class, 'bulkDelete'])   ->name('maintenance.bulk-delete-book');
             Route::prefix('categories')->middleware(BookCategoriesAuthentication::class)->group(function () {
                 Route::get('categories',            [CategoryMaintenanceController::class, 'index'])    ->name('maintenance.categories');
                 Route::post('add-category',         [CategoryMaintenanceController::class, 'store'])    ->name('maintenance.store-category');

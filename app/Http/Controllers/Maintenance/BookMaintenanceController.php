@@ -218,6 +218,24 @@ class BookMaintenanceController extends Controller
         DB::commit();
         return redirect()->route('maintenance.books')->with('toast-success', 'Book deleted successfully');
     }
+    public function bulkDelete(Request $request)
+    {
+        $ids = array_filter(explode(',', $request->input('ids')), function($id) {
+            return is_numeric($id) && $id > 0;
+        });
+        if(empty($ids)){
+            return redirect()->back()->with('toast-warning', 'No books selected for deletion!');
+        }
+        DB::beginTransaction();
+        try{
+            Book::whereIn('id', $ids)->delete();
+        }catch(\Illuminate\Database\QueryException $e){
+            DB::rollBack();
+            return redirect()->back()->with('toast-error', 'Something went wrong!');
+        }
+        DB::commit();
+        return redirect()->route('maintenance.books')->with('toast-success', 'Books deleted successfully');
+    }
     private function extract_enums($table, $columnName){
         $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";
         $column = DB::select($query);
