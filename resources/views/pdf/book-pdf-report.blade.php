@@ -121,6 +121,7 @@
         <th>Accession Number</th>
         <th>Call Number</th>
         <th>Title</th>
+        <th>Category</th>
         <th>Availability</th>
         <th>Condition</th>
       </tr>
@@ -131,6 +132,7 @@
           <td>{{ $item->accession }}</td>
           <td>{{ $item->call_number }}</td>
           <td>{{ $item->title }}</td>
+          <td>{{ $item->category->name }}</td>
           <td>{{ $item->availability_status }}</td>
           <td>{{ $item->condition_status }}</td>
         </tr>
