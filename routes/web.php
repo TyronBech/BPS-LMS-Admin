@@ -1,6 +1,5 @@
 <?php
 
-use App\Enum\RolesEnum;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Middleware\RedirectIfAuthenticated;
@@ -9,8 +8,6 @@ use App\Http\Controllers\Admin\Auth\AdminLoginController;
 use App\Http\Controllers\Admin\Auth\RegisterAdminController;
 use App\Http\Controllers\Report\UserLogsController;
 use App\Http\Controllers\Report\VisitorLogsController;
-use App\Models\Log;
-use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\Report\TransactionController;
 use App\Http\Controllers\Report\BookCirculationController;
 use App\Http\Controllers\Import\StudentImportController;
