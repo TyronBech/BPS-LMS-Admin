@@ -15,6 +15,7 @@ use App\Models\StagingUser;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AccountEmailMessage;
+use Illuminate\Support\Facades\Auth;
 
 class UsersMaintenanceController extends Controller
 {
@@ -108,7 +109,8 @@ class UsersMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try{
-            $password = Str::password(8, true, true, true, false);
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
+            $password = Str::password(8, true, true, false, false);
             StagingUser::create([
                 'rfid'          => $request->input('rfid'),
                 'first_name'    => $request->input('first-name'),
@@ -177,7 +179,8 @@ class UsersMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try{
-            $password = Str::password(8, true, true, true, false);
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
+            $password = Str::password(8, true, true, false, false);
             StagingUser::create([
                 'rfid'          => $request->input('rfid'),
                 'first_name'    => $request->input('first-name'),
@@ -270,6 +273,7 @@ class UsersMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try{
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $student = User::with('students')->where('id', $request->input('id'))->first();
             if($student){
                 $student->update([
@@ -331,6 +335,7 @@ class UsersMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try{
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $employee = User::with('employees')->where('id', $request->input('id'))->first();
             $employee->update([
                 'rfid'          => $request->input('rfid'),
@@ -357,6 +362,7 @@ class UsersMaintenanceController extends Controller
     {
         DB::beginTransaction();
         try {
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $id = $request->input('id');
             $user = User::findOrFail($id); // Throws ModelNotFoundException if not found
 

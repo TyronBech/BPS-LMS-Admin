@@ -8,6 +8,7 @@ use App\Models\Book;
 use App\Models\Category;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 use Milon\Barcode\DNS1D;
 
 class BookMaintenanceController extends Controller
@@ -64,6 +65,7 @@ class BookMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try{
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $barcode = new DNS1D();
             Book::create([
                 'accession'             => $request->input('accession'),
@@ -176,6 +178,7 @@ class BookMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try{
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $barcode = new DNS1D();
             $book = Book::findOrFail($request->input('id'));
             $book->update([
@@ -209,6 +212,7 @@ class BookMaintenanceController extends Controller
     {
         DB::beginTransaction();
         try{
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $id = $request->input('id');
             Book::find($id)->delete();
         }catch(\Illuminate\Database\QueryException $e){
