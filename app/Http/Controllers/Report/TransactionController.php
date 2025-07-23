@@ -23,11 +23,12 @@ class TransactionController extends Controller
         $toInputDate    = "";
         $inputName      = "";
         $inputLastName  = "";
+        $type           = "All";
         $data           = Transaction::with('book', 'user')
             ->orderBy(DB::raw('DATE(date_borrowed)'), 'desc')
             ->orderBy(DB::raw('TIME(date_borrowed)'), 'desc')
             ->get();
-        return view('report.transactions.transactions', compact('data', 'inputName', 'inputLastName', 'fromInputDate', 'toInputDate'));
+        return view('report.transactions.transactions', compact('data', 'inputName', 'inputLastName', 'fromInputDate', 'toInputDate', 'type'));
     }
     public function test()
     {
@@ -42,18 +43,20 @@ class TransactionController extends Controller
         $inputName      = $request->input('name');
         $fromInputDate  = $request->input('start');
         $toInputDate    = $request->input('end');
+        $type           = $request->input('type');
         $validator = Validator::make($request->all(), [
             'start'         => 'sometimes',
             'end'           => 'sometimes',
             'last-name'     => 'sometimes',
             'first-name'    => 'sometimes',
+            'type'          => 'sometimes|in:All,Borrowed,Reserved',
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
         if ($request->input('submit') == 'pdf') {
             $data = $this->generateData($request);
-            $this->generatePDF($data);
+            $this->generatePDF($data, $type);
             return redirect()->route('report.transaction')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {
             $data = $this->generateData($request);
@@ -61,13 +64,15 @@ class TransactionController extends Controller
             return redirect()->route('report.transaction')->with('toast-success', 'Successfully exported to Excel');
         }
         $data = $this->generateData($request);
-        return view('report.transactions.transactions', compact('data', 'inputName', 'fromInputDate', 'toInputDate'));
+        return view('report.transactions.transactions', compact('data', 'inputName', 'fromInputDate', 'toInputDate', 'type'));
     }
-    private function generatePDF($data)
+    private function generatePDF($data, $type)
     {
         $items = [
             'title'         => 'Transaction Report',
             'school'        => "Bicutan Parochial School, Inc.",
+            'type'          => $type,
+            'logo'          => base64_encode(file_get_contents((public_path('img/BPSLogo.png')))),
             'address'       => "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
             'date'          => date('F j, Y'),
@@ -80,7 +85,7 @@ class TransactionController extends Controller
         $options->set('isRemoteEnabled', true);
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml(view('pdf.transaction-pdf-report', $items));
-        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->setPaper('legal', 'landscape');
         $dompdf->render();
         $dompdf->stream('transaction-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;
@@ -152,6 +157,7 @@ class TransactionController extends Controller
         $fromInputDate  = $request->input('start');
         $toInputDate    = $request->input('end');
         $inputName      = strtolower($request->input('name'));
+        $type           = $request->input('type');
 
         $query = Transaction::with('book', 'user');
         if (strlen($fromInputDate) > 0) {
@@ -174,6 +180,10 @@ class TransactionController extends Controller
                 $q->where('title', 'like', '%' . $inputName . '%')
                     ->orWhere('accession', 'like', '%' . $inputName . '%');
             })->orWhere('transaction_type', 'like', '%' . $inputName . '%');
+        }
+
+        if ($type && $type !== 'All') {
+            $query->orWhere('transaction_type', $type);
         }
         $data = $query->orderBy(DB::raw('DATE(date_borrowed)'), 'asc')
             ->get();

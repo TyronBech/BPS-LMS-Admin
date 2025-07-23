@@ -39,10 +39,12 @@
       text-align: center;
     }
 
-    h2, p {
+    h2,
+    p {
       margin: 0;
       padding: 0;
     }
+
     .title {
       text-align: center;
       font-size: 14px;
@@ -80,7 +82,8 @@
       table-layout: fixed;
     }
 
-    th, td {
+    th,
+    td {
       border: 1px solid #ddd;
       padding: 4px;
       font-size: 10px;
@@ -109,7 +112,7 @@
 <body>
   <header>
     <div class="logo">
-      <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('img/BPSLogo.png'))) }}" alt="BPS Logo">
+      <img src="data:image/png;base64,{{ $logo }}" alt="BPS Logo">
       <div class="school-info">
         <h2>{{ $school }}</h2>
         <p>{{ $address }}</p>
@@ -128,29 +131,43 @@
           <th>Accession Number</th>
           <th>Title</th>
           <th>Name</th>
+          @if($type === 'Reserved' || $type === 'All')
+          <th>Reserved Date</th>
+          <th>Pickup Deadline</th>
+          @endif
+          @if($type === 'Borrowed' || $type === 'All')
           <th>Borrowed</th>
           <th>Due</th>
           <th>Returned</th>
+          @endif
+          <th>Transaction Type</th>
           <th>Status</th>
         </tr>
       </thead>
       <tbody>
         @forelse($data as $item)
-          @if($item->book && $item->user)
-            <tr>
-              <td>{{ $item->book->accession }}</td>
-              <td>{{ $item->book->title }}</td>
-              <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
-              <td>{{ $item->date_borrowed }}</td>
-              <td>{{ $item->due_date ?? 'N/A' }}</td>
-              <td>{{ $item->return_date ?? 'N/A' }}</td>
-              <td>{{ $item->transaction_type }}</td>
-            </tr>
+        @if($item->book && $item->user)
+        <tr>
+          <td>{{ $item->book->accession }}</td>
+          <td>{{ $item->book->title }}</td>
+          <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
+          @if($type === 'Reserved' || $type === 'All')
+          <td>{{ $item->reserved_date ?? 'N/A' }}</td>
+          <td>{{ $item->pickup_deadline ?? 'N/A' }}</td>
           @endif
+          @if($type === 'Borrowed' || $type === 'All')
+          <td>{{ $item->date_borrowed ?? 'N/A' }}</td>
+          <td>{{ $item->due_date ?? 'N/A' }}</td>
+          <td>{{ $item->return_date ?? 'N/A' }}</td>
+          @endif
+          <td>{{ $item->transaction_type }}</td>
+          <td>{{ $item->status }}</td>
+        </tr>
+        @endif
         @empty
-          <tr>
-            <td colspan="7" style="text-align: center;">No data found.</td>
-          </tr>
+        <tr>
+          <td colspan="7" style="text-align: center;">No data found.</td>
+        </tr>
         @endforelse
       </tbody>
     </table>
@@ -165,8 +182,8 @@
       $font = $fontMetrics->getFont("DejaVu Sans", "normal");
       $size = 9;
       $pageText = "Page {PAGE_NUM} of {PAGE_COUNT}";
-      $x = 500;
-      $y = 820; // Adjust to fit within bottom margin
+      $x = 930;
+      $y = 580;
       $pdf->page_text($x, $y, $pageText, $font, $size);
     }
   </script>
