@@ -73,15 +73,15 @@ class BookImportController extends Controller
                 'book_type'             => 'nullable|string|in:' . implode(',', $this->extract_enums($books->getTable(), 'book_type')),
                 'description'           => 'nullable|string',
                 'edition'               => 'nullable|string|max:50',
-                'place_of_publication'  => 'required|string|max:100',
-                'publisher'             => 'required|string|max:100',
+                'place_of_publication'  => 'nullable|string|max:100',
+                'publisher'             => 'nullable|string|max:100',
                 'copyrights'            => 'nullable|string|max:255',
                 'category'              => 'required|string|in:' . implode(',', Category::pluck('name')->toArray()),
                 'digital_copy_url'      => 'nullable|url',
             ]);
             if($validator->fails()){
                 DB::rollBack();
-                $errors = 'Validation error: ' . $validator->errors()->first() . ' for book: ' . $item['title'];
+                $errors = 'Validation error: ' . $validator->errors()->first() . ' for accession: ' . $item['accession'];
                 return redirect()->route('import.import-books')->with('toast-error', $errors);
             }
             try {
