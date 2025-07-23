@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 use App\Models\Transaction;
 use App\Models\Book;
 use DateTime;
@@ -60,6 +61,7 @@ class TransactionMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try{
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $transaction = Transaction::find($request->input('edit_transaction_id'));
             if (!$transaction) {
                 return redirect()->back()->with('toast-error', 'Transaction not found');
