@@ -13,10 +13,12 @@ class Transaction extends Model
     protected $fillable = [
         'user_id',
         'book_id',
-        'transaction_type',
         'date_borrowed',
         'due_date',
         'return_date',
+        'reserved_date',
+        'pickup_deadline',
+        'transaction_type',
         'status',
         'book_condition',
         'penalty_total',
