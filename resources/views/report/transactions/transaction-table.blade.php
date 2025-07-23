@@ -14,8 +14,8 @@
       <th class="px-2 min-w-36 border-r border-slate-300 dark:border-slate-700">Due</th>
       <th class="px-2 min-w-36 border-r border-slate-300 dark:border-slate-700">Returned</th>
       @endif
-      <th class="px-2 border-r border-slate-300 dark:border-slate-700">Transaction Type</th>
-      <th class="px-2 border-r border-slate-300 dark:border-slate-700">Status</th>
+      <th class="px-2 min-w-40 border-r border-slate-300 dark:border-slate-700">Transaction Type</th>
+      <th class="px-2 min-w-44 border-r border-slate-300 dark:border-slate-700">Status</th>
     </thead>
     <tbody id="students-activity">
       @forelse($data as $item)
@@ -39,7 +39,13 @@
       @endif
       @empty
         <tr>
+          @if($type === 'All')
+          <td colspan="10" class="text-center">No data found.</td>
+          @elseif($type === 'Borrowed')
+          <td colspan="8" class="text-center">No data found.</td>
+          @elseif($type === 'Reserved')
           <td colspan="7" class="text-center">No data found.</td>
+          @endif
         </tr>
       @endforelse
     </tbody>
