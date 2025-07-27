@@ -141,6 +141,7 @@
       } else {
         selectedIds.delete(bookId);
         checkedBooks--;
+        selectAllCheckbox.checked = false;
       }
       bulkDeleteBookIds.value = Array.from(selectedIds).join(',');
       bulkDeleteBookBtn.value = Array.from(selectedIds).join(',');
@@ -153,6 +154,7 @@
     });
   });
   selectAllCheckbox.addEventListener('change', function(event) {
+    checkedBooks = 0;
     bookCheck.forEach(check => {
       check.checked = event.target.checked;
       const bookId = check.value;
