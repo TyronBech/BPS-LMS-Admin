@@ -6,14 +6,28 @@
     <div>
       <img class="rounded-full w-72 h-72 m-auto my-8" src="data:image/jpeg;base64, {{ $user->profile_image }}" alt="Profile Image">
       <div class="flex flex-col justify-center m-auto w-7/12 mb-2">
-        <span><h2 class="text-2xl font-bold text-center">{{ $user->first_name }} {{ $user->last_name }}</h2></span>
+        <span>
+          <h2 class="text-2xl font-bold text-center">{{ $user->first_name }} {{ $user->last_name }}</h2>
+        </span>
         <hr class="h-px bg-gray-200 border-0 dark:bg-gray-700">
-        <span><h2 class="text-xs font-semibold text-center">Name</h2></span>
+        <span>
+          <h2 class="text-xs font-semibold text-center">Name</h2>
+        </span>
       </div>
       <div class="flex flex-col justify-center m-auto w-5/12">
+        @if($user->privileges->user_type === 'student')
+        <h2 class="text-lg font-semibold text-center">{{ $user->students->id_number }}</h2>
+        <hr class="h-px bg-gray-200 border-0 dark:bg-gray-700">
+        <span>
+          <h2 class="text-xs font-semibold text-center">ID Number</h2>
+        </span>
+        @elseif($user->privileges->user_type === 'employee')
         <h2 class="text-lg font-semibold text-center">{{ $user->employees->employee_id }}</h2>
         <hr class="h-px bg-gray-200 border-0 dark:bg-gray-700">
-        <span><h2 class="text-xs font-semibold text-center">Employee ID</h2></span>
+        <span>
+          <h2 class="text-xs font-semibold text-center">Employee ID</h2>
+        </span>
+        @endif
       </div>
     </div>
     <div class="flex flex-col justify-center m-auto py-5 w-11/12">
@@ -49,9 +63,14 @@
           @enderror
         </div>
         <div class="relative z-0 w-full mb-5 group">
-          <input type="text" name="employee_id" id="employee_id" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " value="{{ $user->employees->employee_id }}" />
-          <label for=employee_id" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Employee ID:</label>
-          @error('employee_id')
+          @if($user->privileges->user_type === 'student')
+          <input type="text" name="user_id" id="user_id" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " value="{{ $user->students->id_number }}" />
+          <label for=user_id" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">ID Number:</label>
+          @elseif($user->privileges->user_type === 'employee')
+          <input type="text" name="user_id" id="user_id" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " value="{{ $user->employees->employee_id }}" />
+          <label for=user_id" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 rtl:peer-focus:left-auto peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Employee ID:</label>
+          @endif
+          @error('user_id')
           <div class="p-1.5 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
             <span class="font-medium">{{ $message }}</span>
           </div>

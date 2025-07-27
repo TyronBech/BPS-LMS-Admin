@@ -34,14 +34,16 @@ class ProfileController extends Controller
             'middle_name'   => ['required', 'string', 'max:50'],
             'last_name'     => ['required', 'string', 'max:50'],
             'email'         => ['required', 'string', 'max:50', 'email'],
-            'employee_id'   => ['required', 'string', 'max:10'],
+            'user_id'       => ['required', 'string', 'max:50'],
         ];
-        if($request->filled('current_password') && $request->filled('new_password') && $request->filled('new_password_confirmation')) {
-            $rules['current_password']          = ['required', 'current_password'];
-            $rules['new_password']              = ['required', 'string', Password::min(8)->mixedCase()->numbers()->symbols()->uncompromised(), 'confirmed'];
-            $rules['new_password_confirmation'] = 'required';
-        } else {
-            return redirect()->back()->with('toast-warning', 'Please fill in the current password and new password fields.');
+        if($request->filled('current_password')) {
+            if($request->filled('new_password') && $request->filled('new_password_confirmation')) {
+                $rules['current_password']          = ['required', 'current_password'];
+                $rules['new_password']              = ['required', 'string', Password::min(8)->mixedCase()->numbers()->uncompromised(), 'confirmed'];
+                $rules['new_password_confirmation'] = 'required';
+            } else {
+                return redirect()->back()->with('toast-warning', 'Please fill in the new password and confirmation fields.');
+            }
         }
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
@@ -56,10 +58,12 @@ class ProfileController extends Controller
             $user->email        = $request->input('email');
             $user->password     = Hash::make($request->input('new_password'));
             $user->save();
-            $employeeDetails = EmployeeDetail::where('user_id', $user->id)->first();
-            if ($employeeDetails) {
-                $employeeDetails->employee_id = $request->input('employee_id');
-                $employeeDetails->save();
+            if($user->privileges->user_type === 'student') {
+                $user->students->id_number = $request->input('user_id');
+                $user->students->save();
+            } elseif($user->privileges->user_type === 'employee') {
+                $user->employees->employee_id = $request->input('user_id');
+                $user->employees->save();
             }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
