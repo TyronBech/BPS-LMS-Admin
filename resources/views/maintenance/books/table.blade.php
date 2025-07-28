@@ -1,14 +1,16 @@
 @use('App\Enum\PermissionsEnum')
-<div id="checked-books" class="hidden flex-row">
-  <h5 id="selectedHeader" class="text-sm font-bold tracking-tight border-2 rounded-lg px-5 py-2 me-2 mb-2">Selected</h5>
-  @can(PermissionsEnum::DELETE_BOOKS, 'admin')
-  <button data-modal-target="bulk-delete-book-modal" data-modal-toggle="bulk-delete-book-modal" class="bulkDeleteBookBtn focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 mb-2" type="button" value="">
-    Delete
-  </button>
-  @endcan
-</div>
-<div class="mx-auto px-2 font-sans flex-col">
-  <form method="GET" class="mb-4">
+<div class="flex space-x-4 justify-between items-center mb-4 w-full">
+  <div class="justify-start flex items-center">
+    <div id="checked-books" class="hidden flex-row">
+      <h5 id="selectedHeader" class="text-sm font-bold tracking-tight border-2 rounded-lg px-5 py-2 me-2">Selected</h5>
+      @can(PermissionsEnum::DELETE_BOOKS, 'admin')
+      <button data-modal-target="bulk-delete-book-modal" data-modal-toggle="bulk-delete-book-modal" class="bulkDeleteBookBtn focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2" type="button" value="">
+        Delete
+      </button>
+      @endcan
+    </div>
+  </div>
+  <form method="GET" class="m-2 justify-end">
     <label for="perPage" class="mr-2 text-sm font-medium text-gray-700">Show</label>
     <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2, dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
       <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
@@ -17,13 +19,17 @@
     </select>
     <span class="ml-2 text-sm text-gray-600">entries per page</span>
   </form>
+</div>
+<div class="mx-auto px-2 font-sans flex-col">
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
     <table class="w-full text-sm text-left rtl:text-right whitespace-nowrap table-auto">
       <thead class="text-xs py-2 text-gray-700 uppercase bg-gray-300 text-center dark:bg-gray-500 dark:text-white">
         <tr>
-          <th scope="col" class="p-2 text-center">
-            <input id="selectAll" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-            <label for="selectAll" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"></label>
+          <th scope="col">
+            <div class="flex items-center ml-4">
+              <input id="selectAll" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+              <label for="selectAll" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"></label>
+            </div>
           </th>
           <th scope="col" class="p-2 text-center">Accession</th>
           <th scope="col" class="p-2 text-center">Title</th>
@@ -32,11 +38,11 @@
           <th scope="col" class="p-2 text-center">Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
         @forelse($books as $item)
-        <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
+        <tr>
           <td>
-            <div class="flex items-center ml-6">
+            <div class="flex items-center ml-4">
               <input id="bookCheck" type="checkbox" value="{{ $item->id }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
               <label for="bookCheck" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"></label>
             </div>
