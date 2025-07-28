@@ -13,12 +13,16 @@ use Milon\Barcode\DNS1D;
 
 class BookMaintenanceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $perPage = $request->input('perPage', 10);
         $books = Book::with('category')
                     ->orderBy('id', 'asc')
-                    ->get();
-        return view('maintenance.books.books', compact('books'));
+                    ->paginate($perPage)
+                    ->appends([
+                        'perPage' => $perPage,
+                    ]);
+        return view('maintenance.books.books', compact('books', 'perPage'));
     }
     public function create()
     {

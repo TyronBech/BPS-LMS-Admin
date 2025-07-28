@@ -8,6 +8,15 @@
   @endcan
 </div>
 <div class="mx-auto px-2 font-sans flex-col">
+  <form method="GET" class="mb-4">
+    <label for="perPage" class="mr-2 text-sm font-medium text-gray-700">Show</label>
+    <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2, dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+      <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+      <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+      <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+    </select>
+    <span class="ml-2 text-sm text-gray-600">entries per page</span>
+  </form>
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
     <table class="w-full text-sm text-left rtl:text-right whitespace-nowrap table-auto">
       <thead class="text-xs py-2 text-gray-700 uppercase bg-gray-300 text-center dark:bg-gray-500 dark:text-white">
@@ -27,8 +36,8 @@
         @forelse($books as $item)
         <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
           <td>
-            <div class="flex items-center mb-4 ml-4">
-              <input id="bookCheck" type="checkbox" value="{{ $item->id }}" class="w-4 h-4 ml-2 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+            <div class="flex items-center ml-6">
+              <input id="bookCheck" type="checkbox" value="{{ $item->id }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
               <label for="bookCheck" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"></label>
             </div>
           </td>
@@ -57,6 +66,9 @@
         @endforelse
       </tbody>
     </table>
+    <div class="m-4">
+      {{ $books->links() }}
+    </div>
   </div>
 </div>
 <div id="delete-book-modal" tabindex="-1" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
