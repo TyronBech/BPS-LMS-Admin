@@ -18,14 +18,22 @@ use Illuminate\Support\Facades\Auth;
 
 class UserLogsController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $inputName      = null;
-        $fromInputDate  = null;
-        $toInputDate    = null;
+        $inputName      = $request->input('first-name', '');
+        $fromInputDate  = $request->input('start', '');
+        $toInputDate    = $request->input('end', '');
         $peak_hour      = "00:00";
+        $perPage        = $request->input('perPage', 10);
         $data           = Log::with('user')->orderBy(DB::raw('date(time_in)'), 'desc')
-            ->orderBy(DB::raw('time(time_in)'), 'desc')->get();
+                            ->orderBy(DB::raw('time(time_in)'), 'desc')
+                            ->paginate($perPage)
+                            ->appends([
+                                'perPage' => $perPage,
+                                'first-name' => $inputName,
+                                'start' => $fromInputDate,
+                                'end' => $toInputDate,
+                            ]);
         $hours = $data->map(function ($item) {
             $item = Carbon::parse($item->time_in)->format('H:i:s');
             return $item;
@@ -40,33 +48,35 @@ class UserLogsController extends Controller
         } else {
             $peak_hour = $hour . ":00 AM";
         }
-        return view('report.users.user-logs', compact('data', 'inputName', 'fromInputDate', 'toInputDate', 'peak_hour'));
+        return view('report.users.user-logs', compact('data', 'inputName', 'fromInputDate', 'toInputDate', 'peak_hour', 'perPage'));
     }
     public function search(Request $request)
     {
-        $inputName      = $request->input('first-name');
-        $fromInputDate  = $request->input('start');
-        $toInputDate    = $request->input('end');
+        $inputName      = $request->input('first-name', '');
+        $fromInputDate  = $request->input('start', '');
+        $toInputDate    = $request->input('end', '');
         $peak_hour      = "00:00";
+        $perPage        = $request->input('perPage', 10);
+        $tableName      = new Log();
         $validator = Validator::make($request->all(), [
-            'start'         => 'sometimes',
-            'end'           => 'sometimes',
-            'last-name'     => 'sometimes',
-            'first-name'    => 'sometimes',
+            'start'         => 'nullable',
+            'end'           => 'nullable',
+            'last-name'     => 'nullable',
+            'first-name'    => 'nullable',
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
         if ($request->input('submit') == 'pdf') {
-            $data = $this->generateData($request);
+            $data = $this->generateData($request, $tableName, true);
             $this->generatePDF($data);
             return redirect()->route('report.user')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {
-            $data = $this->generateData($request);
+            $data = $this->generateData($request, $tableName, true);
             $this->exportExcel($data);
             return redirect()->route('report.user')->with('toast-success', 'Successfully exported to Excel');
         }
-        $data = $this->generateData($request);
+        $data = $this->generateData($request, $tableName, false);
         $hours = $data->map(function ($item) {
             $item = Carbon::parse($item->time_in)->format('H:i:s');
             return $item;
@@ -81,7 +91,7 @@ class UserLogsController extends Controller
         } else {
             $peak_hour = $hour . ":00 AM";
         }
-        return view('report.users.user-logs', compact('data', 'inputName', 'fromInputDate', 'toInputDate', 'peak_hour'));
+        return view('report.users.user-logs', compact('data', 'inputName', 'fromInputDate', 'toInputDate', 'peak_hour', 'perPage'));
     }
     private function findPeakHour($times)
     {
@@ -180,18 +190,19 @@ class UserLogsController extends Controller
         $writer->save("php://output");
         exit;
     }
-    private function generateData(Request $request)
+    private function generateData(Request $request, Log $tableName, $isExport = false)
     {
-        $fromInputDate  = $request->input('start');
-        $toInputDate    = $request->input('end');
-        $inputName      = strtolower($request->input('first-name'));
+        $fromInputDate  = $request->input('start' , '');
+        $toInputDate    = $request->input('end', '');
+        $inputName      = strtolower($request->input('first-name', ''));
+        $perPage        = $request->input('perPage', 10);
 
         $query = Log::with('user');
 
         if (strlen($fromInputDate) > 0) {
             $fromInputDate = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
             $toInputDate = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
-            $query->whereBetween(DB::raw('DATE(log_user_logs.time_in)'), [$fromInputDate, $toInputDate]); // Corrected table name
+            $query->whereBetween(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), [$fromInputDate, $toInputDate]);
         }
 
         if (strlen($inputName) > 0) {
@@ -206,9 +217,19 @@ class UserLogsController extends Controller
                     ->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $inputName . '%');
             });
         }
-
-        $data = $query->orderBy(DB::raw('DATE(log_user_logs.time_in)'), 'asc') // Corrected table name
-            ->get();
+        if($isExport) {
+            $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), 'asc')
+                ->get();
+        } else {
+            $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), 'asc')
+                ->paginate($perPage)
+                ->appends([
+                    'perPage' => $perPage,
+                    'first-name' => $inputName,
+                    'start' => $fromInputDate,
+                    'end' => $toInputDate,
+                ]);
+        }
         return $data;
     }
 }
