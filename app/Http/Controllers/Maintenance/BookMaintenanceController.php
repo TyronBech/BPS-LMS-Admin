@@ -17,7 +17,7 @@ class BookMaintenanceController extends Controller
     {
         $perPage = $request->input('perPage', 10);
         $books = Book::with('category')
-                    ->orderBy('id', 'asc')
+                    ->orderBy('accession', 'desc')
                     ->paginate($perPage)
                     ->appends([
                         'perPage' => $perPage,
@@ -123,7 +123,7 @@ class BookMaintenanceController extends Controller
     public function show(Request $request)
     {
         $search = strtolower($request->input('search'));
-
+        $perPage = $request->input('perPage', 10);
         $books = Book::where('accession', 'like', '%' . $search . '%')
             ->orWhere('title', 'like', '%' . $search . '%')
             ->orWhere('author', 'like', '%' . $search . '%')
@@ -138,8 +138,13 @@ class BookMaintenanceController extends Controller
                 $q->where('name', 'like', '%' . $search . '%')
                     ->orWhere('legend', 'like', '%' . $search . '%');
             })
-            ->get();
-        return view('maintenance.books.books', compact('books'));
+            ->orderBy('accession', 'desc')
+            ->paginate($perPage)
+            ->appends([
+                'perPage' => $perPage,
+                'search' => $search,
+            ])->withQueryString();
+        return view('maintenance.books.books', compact('books', 'perPage', 'search'));
     }
     public function view(Request $request){
         $accession = $request->input('accession');

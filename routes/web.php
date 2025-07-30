@@ -117,7 +117,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::post('add-book',             [BookMaintenanceController::class, 'store'])        ->name('maintenance.store-book');
             Route::get('edit-book',             [BookMaintenanceController::class, 'edit'])         ->name('maintenance.edit-book');
             Route::put('edit-book',             [BookMaintenanceController::class, 'update'])       ->name('maintenance.update-book');
-            Route::post('show-books',           [BookMaintenanceController::class, 'show'])         ->name('maintenance.show-books');
+            Route::get('show-books',           [BookMaintenanceController::class, 'show'])         ->name('maintenance.show-books');
             Route::get('show-book',             [BookMaintenanceController::class, 'view'])         ->name('maintenance.view-book');
             Route::delete('delete-book',        [BookMaintenanceController::class, 'destroy'])      ->name('maintenance.delete-book');
             Route::delete('bulk-delete-book',   [BookMaintenanceController::class, 'bulkDelete'])   ->name('maintenance.bulk-delete-book');
