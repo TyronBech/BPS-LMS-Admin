@@ -369,6 +369,8 @@ class UsersMaintenanceController extends Controller
             if ($user->hasRole(RolesEnum::SUPER_ADMIN)) {
                 DB::rollBack(); // Rollback transaction before redirecting
                 return redirect()->back()->with('delete-error', 'Cannot delete a super admin user');
+            } else if($user->getRoleNames()){
+                $user->syncRoles([]);
             }
 
             $user->delete();
@@ -384,6 +386,53 @@ class UsersMaintenanceController extends Controller
         }
         DB::commit();
         return redirect()->back()->with('toast-success', 'User deleted successfully');
+    }
+    public function bulk_delete_student(Request $request){
+        $ids = array_filter(explode(',', $request->input('student_ids')), function($id) {
+            return is_numeric($id) && $id > 0;
+        });
+        if(empty($ids)){
+            return redirect()->back()->with('toast-warning', 'No students selected for deletion!');
+        }
+        DB::beginTransaction();
+        try{
+            User::whereIn('id', $ids)->delete();
+        }catch(\Illuminate\Database\QueryException $e){
+            DB::rollBack();
+            return redirect()->back()->with('toast-error', 'Something went wrong!');
+        }
+        DB::commit();
+        return redirect()->route('maintenance.users')->with('toast-success', 'Users deleted successfully');
+    }
+    public function bulk_delete_employee(Request $request){
+        $ids = array_filter(explode(',', $request->input('employee_ids')), function($id) {
+            return is_numeric($id) && $id > 0;
+        });
+        if(empty($ids)){
+            return redirect()->back()->with('toast-warning', 'No employees selected for deletion!');
+        }
+        $user = User::whereIn('id', $ids)->get();
+        if($user->contains(function($u) {
+            return $u->hasRole(RolesEnum::SUPER_ADMIN);
+        })){
+            return redirect()->back()->with('toast-warning', 'Cannot delete a super admin user');
+        }
+        DB::beginTransaction();
+        try{
+            if($user->contains(function($u) {
+                return $u->getRoleNames();
+            })){
+                $user->each(function($u) {
+                    $u->syncRoles([]);
+                });
+            }
+            User::whereIn('id', $ids)->delete();
+        }catch(\Illuminate\Database\QueryException $e){
+            DB::rollBack();
+            return redirect()->back()->with('toast-error', 'Something went wrong!');
+        }
+        DB::commit();
+        return redirect()->route('maintenance.users')->with('toast-success', 'Users deleted successfully');
     }
     private function account_notification($user, $password){
         Mail::to($user->email)->send(new AccountEmailMessage($user, $password));
