@@ -16,13 +16,15 @@ class BookMaintenanceController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('perPage', 10);
+        $search = $request->input('search', '');
         $books = Book::with('category')
-                    ->orderBy('accession', 'desc')
+                    ->orderBy('accession', 'asc')
                     ->paginate($perPage)
                     ->appends([
                         'perPage' => $perPage,
+                        'search' => $search,
                     ]);
-        return view('maintenance.books.books', compact('books', 'perPage'));
+        return view('maintenance.books.books', compact('books', 'perPage', 'search'));
     }
     public function create()
     {
@@ -138,7 +140,7 @@ class BookMaintenanceController extends Controller
                 $q->where('name', 'like', '%' . $search . '%')
                     ->orWhere('legend', 'like', '%' . $search . '%');
             })
-            ->orderBy('accession', 'desc')
+            ->orderBy('accession', 'asc')
             ->paginate($perPage)
             ->appends([
                 'perPage' => $perPage,
