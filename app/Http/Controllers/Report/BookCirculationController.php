@@ -55,6 +55,7 @@ class BookCirculationController extends Controller
             'title'         => 'Book Report',
             'school'        => "Bicutan Parochial School, Inc.",
             'address'       => "Manuel L. Quezon St., Lower Bicutan, Taguig City",
+            'logo'          => base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
             'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
             'date'          => date('F j, Y'),
             'data'          => $data,

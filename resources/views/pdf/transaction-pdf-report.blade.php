@@ -30,8 +30,7 @@
     }
 
     .logo img {
-      max-width: 80px;
-      max-height: 60px;
+      max-width: 500px;
       margin-right: 10px;
     }
 
@@ -113,10 +112,6 @@
   <header>
     <div class="logo">
       <img src="data:image/png;base64,{{ $logo }}" alt="BPS Logo">
-      <div class="school-info">
-        <h2>{{ $school }}</h2>
-        <p>{{ $address }}</p>
-      </div>
     </div>
     <hr>
   </header>

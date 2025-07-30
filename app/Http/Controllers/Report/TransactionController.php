@@ -72,7 +72,7 @@ class TransactionController extends Controller
             'title'         => 'Transaction Report',
             'school'        => "Bicutan Parochial School, Inc.",
             'type'          => $type,
-            'logo'          => base64_encode(file_get_contents((public_path('img/BPSLogo.png')))),
+            'logo'          => base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
             'address'       => "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
             'date'          => date('F j, Y'),

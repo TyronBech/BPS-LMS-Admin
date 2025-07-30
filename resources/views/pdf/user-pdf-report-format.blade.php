@@ -26,11 +26,10 @@
       align-items: center;
       justify-content: center;
       margin-bottom: 10px;
-    }
+    } 
 
     .logo img {
-      max-width: 80px;
-      max-height: 60px;
+      max-width: 420px;
       margin-right: 10px;
     }
 
@@ -105,11 +104,7 @@
 <body>
   <header>
     <div class="logo">
-      <img src="data:image/png;base64,{{ base64_encode(file_get_contents(public_path('img/BPSLogo.png'))) }}" alt="Logo">
-      <div class="school-info">
-        <h2>{{ $school }}</h2>
-        <p>{{ $address }}</p>
-      </div>
+      <img src="data:image/png;base64,{{ $logo }}" alt="Logo">
     </div>
     <hr>
   </header>
