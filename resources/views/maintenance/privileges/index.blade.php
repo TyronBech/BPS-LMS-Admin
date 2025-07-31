@@ -120,9 +120,9 @@
             <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
               <span class="font-medium">{{ $message }}</span>
             </div>
-            @enderror -->
+            @enderror
             <p id="helper-text-explanation" class="mt-2 text-sm text-gray-500 dark:text-gray-400">Please select a 3 digit number from 0 to 9.</p>
-          </div>
+          </div> -->
           <button data-modal-hide="add-privilege-modal" type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Add</button>
           <button data-modal-hide="add-privilege-modal" type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Cancel</button>
         </form>
