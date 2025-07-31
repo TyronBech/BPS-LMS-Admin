@@ -17,54 +17,44 @@ use Dompdf\Options;
 
 class TransactionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $fromInputDate  = "";
-        $toInputDate    = "";
-        $inputName      = "";
-        $inputLastName  = "";
-        $type           = "All";
-        $data           = Transaction::with('book', 'user')
-            ->orderBy(DB::raw('DATE(date_borrowed)'), 'desc')
-            ->orderBy(DB::raw('TIME(date_borrowed)'), 'desc')
-            ->get();
-        return view('report.transactions.transactions', compact('data', 'inputName', 'inputLastName', 'fromInputDate', 'toInputDate', 'type'));
-    }
-    public function test()
-    {
-        $data           = Transaction::with('book', 'user')
-            ->orderBy(DB::raw('DATE(date_borrowed)'), 'desc')
-            ->orderBy(DB::raw('TIME(date_borrowed)'), 'desc')
-            ->get();
-        return view('pdf.transaction-pdf-report-format', compact('data'));
+        $fromInputDate  = $request->input('start', '');
+        $toInputDate    = $request->input('end', '');
+        $search         = $request->input('search', '');
+        $perPage        = $request->input('perPage', 10);
+        $type           = $request->input('type', 'All');
+        $data           = $this->generateData($request, false);
+        return view('report.transactions.transactions', compact('data', 'search', 'fromInputDate', 'toInputDate', 'type', 'perPage'));
     }
     public function search(Request $request)
     {
-        $inputName      = $request->input('name');
-        $fromInputDate  = $request->input('start');
-        $toInputDate    = $request->input('end');
-        $type           = $request->input('type');
+        $search         = $request->input('search', '');
+        $fromInputDate  = $request->input('start', '');
+        $toInputDate    = $request->input('end', '');
+        $type           = $request->input('type', 'All');
+        $perPage        = $request->input('perPage', 10);
         $validator = Validator::make($request->all(), [
-            'start'         => 'sometimes',
-            'end'           => 'sometimes',
-            'last-name'     => 'sometimes',
-            'first-name'    => 'sometimes',
-            'type'          => 'sometimes|in:All,Borrowed,Reserved',
+            'start'         => 'nullable',
+            'end'           => 'nullable',
+            'last-name'     => 'nullable',
+            'first-name'    => 'nullable',
+            'type'          => 'nullable|in:All,Borrowed,Reserved',
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
         if ($request->input('submit') == 'pdf') {
-            $data = $this->generateData($request);
+            $data = $this->generateData($request, true);
             $this->generatePDF($data, $type);
             return redirect()->route('report.transaction')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {
-            $data = $this->generateData($request);
+            $data = $this->generateData($request, true);
             $this->exportExcel($data, $type);
             return redirect()->route('report.transaction')->with('toast-success', 'Successfully exported to Excel');
         }
-        $data = $this->generateData($request);
-        return view('report.transactions.transactions', compact('data', 'inputName', 'fromInputDate', 'toInputDate', 'type'));
+        $data = $this->generateData($request, false);
+        return view('report.transactions.transactions', compact('data', 'search', 'fromInputDate', 'toInputDate', 'type', 'perPage'));
     }
     private function generatePDF($data, $type)
     {
@@ -200,12 +190,12 @@ class TransactionController extends Controller
         $writer->save("php://output");
         exit;
     }
-    private function generateData(Request $request)
+    private function generateData(Request $request, bool $isExport = false)
     {
-        $fromInputDate  = $request->input('start');
-        $toInputDate    = $request->input('end');
-        $inputName      = strtolower($request->input('name'));
-        $type           = $request->input('type');
+        $fromInputDate  = $request->input('start', ''  );
+        $toInputDate    = $request->input('end', '');
+        $search         = strtolower($request->input('search', ''));
+        $type           = $request->input('type', 'All');
 
         $query = Transaction::with('book', 'user');
         if (strlen($fromInputDate) > 0) {
@@ -214,27 +204,37 @@ class TransactionController extends Controller
             $query->whereBetween(DB::raw('DATE(date_borrowed)'), [$fromInputDate, $toInputDate]);
         }
 
-        if (strlen($inputName) > 0) {
-            $query->whereHas('user', function ($q) use ($inputName) {
-                $q->where('first_name', 'like', '%' . $inputName . '%');
-                $q->orWhere('middle_name', 'like', '%' . $inputName . '%');
-                $q->orWhere('last_name', 'like', '%' . $inputName . '%');
-                $q->orWhere(DB::raw('lower(concat(first_name, " ", middle_name, " ", last_name))'), 'like', '%' . $inputName . '%');
-                $q->orWhere(DB::raw('lower(concat(middle_name, " ", last_name, ", ", first_name))'), 'like', '%' . $inputName . '%');
-                $q->orWhere(DB::raw('lower(concat(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $inputName . '%');
-                $q->orWhere(DB::raw('lower(concat(last_name, ", ", first_name))'), 'like', '%' . $inputName . '%');
-                $q->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $inputName . '%');
-            })->orWhereHas('book', function ($q) use ($inputName) {
-                $q->where('title', 'like', '%' . $inputName . '%')
-                    ->orWhere('accession', 'like', '%' . $inputName . '%');
-            })->orWhere('transaction_type', 'like', '%' . $inputName . '%');
+        if (strlen($search) > 0) {
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('first_name', 'like', '%' . $search . '%');
+                $q->orWhere('middle_name', 'like', '%' . $search . '%');
+                $q->orWhere('last_name', 'like', '%' . $search . '%');
+                $q->orWhere(DB::raw('lower(concat(first_name, " ", middle_name, " ", last_name))'), 'like', '%' . $search . '%');
+                $q->orWhere(DB::raw('lower(concat(middle_name, " ", last_name, ", ", first_name))'), 'like', '%' . $search . '%');
+                $q->orWhere(DB::raw('lower(concat(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $search . '%');
+                $q->orWhere(DB::raw('lower(concat(last_name, ", ", first_name))'), 'like', '%' . $search . '%');
+                $q->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $search . '%');
+            })->orWhereHas('book', function ($q) use ($search) {
+                $q->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('accession', 'like', '%' . $search . '%');
+            })->orWhere('transaction_type', 'like', '%' . $search . '%');
         }
 
         if ($type && $type !== 'All') {
             $query->orWhere('transaction_type', $type);
         }
-        $data = $query->orderBy(DB::raw('DATE(date_borrowed)'), 'asc')
-            ->get();
+        if ($isExport) {
+            $data = $query->orderBy(DB::raw('DATE(date_borrowed)'), 'asc')->get();
+        } else {
+            $data = $query->orderBy(DB::raw('DATE(date_borrowed)'), 'asc')
+                ->paginate($request->input('perPage', 10))
+                ->appends([
+                    'start' => $fromInputDate,
+                    'end' => $toInputDate,
+                    'search' => $search,
+                    'type' => $type,
+                ]);
+        }
         return $data;
     }
 }

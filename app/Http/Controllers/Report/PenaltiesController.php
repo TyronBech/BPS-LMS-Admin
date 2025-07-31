@@ -14,47 +14,45 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Models\Penalty;
 use Illuminate\Support\Facades\Auth;
+use Svg\Tag\Rect;
 
 class PenaltiesController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $inputName      = null;
-        $fromInputDate  = null;
-        $toInputDate    = null;
-        $data = Penalty::with('penaltyRule')
-            ->with('transaction.user')
-            ->with('transaction.book')
-            ->orderBy(DB::raw('DATE(created_at)'), 'desc')
-            ->orderBy(DB::raw('TIME(created_at)'), 'desc')
-            ->get();
-        return view('report.penalties.index', compact('data', 'inputName', 'fromInputDate', 'toInputDate'));
+        $search         = $request->input('search');
+        $fromInputDate  = $request->input('start');
+        $toInputDate    = $request->input('end');
+        $perPage        = $request->input('perPage', 10);
+        $data           = $this->generateData($request);
+        return view('report.penalties.index', compact('data', 'fromInputDate', 'toInputDate', 'search', 'perPage'));
     }
     public function search(Request $request)
     {
-        $inputName      = $request->input('first-name');
+        $search         = $request->input('search');
         $fromInputDate  = $request->input('start');
         $toInputDate    = $request->input('end');
+        $perPage        = $request->input('perPage', 10);
         $validator = Validator::make($request->all(), [
-            'start'         => 'sometimes',
-            'end'           => 'sometimes',
-            'last-name'     => 'sometimes',
-            'first-name'    => 'sometimes',
+            'start'         => 'nullable',
+            'end'           => 'nullable',
+            'last-name'     => 'nullable',
+            'search'        => 'nullable',
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
         if ($request->input('submit') == 'pdf') {
-            $data = $this->generateData($request);
+            $data = $this->generateData($request, true);
             $this->generatePDF($data);
             return redirect()->route('report.penalties')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {
-            $data = $this->generateData($request);
+            $data = $this->generateData($request, true);
             $this->exportExcel($data);
             return redirect()->route('report.penalties')->with('toast-success', 'Successfully exported to Excel');
         }
-        $data = $this->generateData($request);
-        return view('report.penalties.index', compact('data', 'inputName', 'fromInputDate', 'toInputDate'));
+        $data = $this->generateData($request, false);
+        return view('report.penalties.index', compact('data', 'search', 'fromInputDate', 'toInputDate', 'perPage'));
     }
     private function generatePDF($data)
     {
@@ -148,12 +146,12 @@ class PenaltiesController extends Controller
         $writer->save("php://output");
         exit;
     }
-    private function generateData(Request $request)
+    private function generateData(Request $request, bool $isExport = false)
     {
         $fromInputDate  = $request->input('start');
         $toInputDate    = $request->input('end');
-        $inputName      = strtolower($request->input('first-name'));
-
+        $search         = strtolower($request->input('search'));
+        $perPage        = $request->input('perPage', 10);
         $query = Penalty::with([
             'penaltyRule',
             'transaction.user',
@@ -169,20 +167,30 @@ class PenaltiesController extends Controller
         }
 
         // Name search through transaction.user
-        if (!empty($inputName)) {
-            $query->whereHas('transaction.user', function ($q) use ($inputName) {
-                $q->where(DB::raw('LOWER(first_name)'), 'like', '%' . $inputName . '%')
-                ->orWhere(DB::raw('LOWER(last_name)'), 'like', '%' . $inputName . '%')
-                ->orWhere(DB::raw('LOWER(middle_name)'), 'like', '%' . $inputName . '%')
-                ->orWhere(DB::raw('LOWER(CONCAT(first_name, " ", middle_name, " ", last_name))'), 'like', '%' . $inputName . '%')
-                ->orWhere(DB::raw('LOWER(CONCAT(middle_name, " ", last_name, ", ", first_name))'), 'like', '%' . $inputName . '%')
-                ->orWhere(DB::raw('LOWER(CONCAT(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $inputName . '%')
-                ->orWhere(DB::raw('LOWER(CONCAT(last_name, ", ", first_name))'), 'like', '%' . $inputName . '%')
-                ->orWhere(DB::raw('LOWER(CONCAT(first_name, " ", last_name))'), 'like', '%' . $inputName . '%');
+        if (!empty($search)) {
+            $query->whereHas('transaction.user', function ($q) use ($search) {
+                $q->where(DB::raw('LOWER(first_name)'), 'like', '%' . $search . '%')
+                ->orWhere(DB::raw('LOWER(last_name)'), 'like', '%' . $search . '%')
+                ->orWhere(DB::raw('LOWER(middle_name)'), 'like', '%' . $search . '%')
+                ->orWhere(DB::raw('LOWER(CONCAT(first_name, " ", middle_name, " ", last_name))'), 'like', '%' . $search . '%')
+                ->orWhere(DB::raw('LOWER(CONCAT(middle_name, " ", last_name, ", ", first_name))'), 'like', '%' . $search . '%')
+                ->orWhere(DB::raw('LOWER(CONCAT(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $search . '%')
+                ->orWhere(DB::raw('LOWER(CONCAT(last_name, ", ", first_name))'), 'like', '%' . $search . '%')
+                ->orWhere(DB::raw('LOWER(CONCAT(first_name, " ", last_name))'), 'like', '%' . $search . '%');
             });
         }
-
-        $data = $query->orderBy(DB::raw('DATE(tr_penalties.created_at)'), 'asc')->get();
+        if($isExport) {
+            $data = $query->orderBy(DB::raw('DATE(tr_penalties.created_at)'), 'asc')->get();
+        } else {
+            $data = $query->orderBy(DB::raw('DATE(tr_penalties.created_at)'), 'asc')
+                ->paginate($perPage)
+                ->appends([
+                    'start' => $fromInputDate,
+                    'end' => $toInputDate,
+                    'search' => $search,
+                    'perPage' => $perPage
+                ]);
+        }
 
         return $data;
     }

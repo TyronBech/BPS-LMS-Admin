@@ -17,32 +17,33 @@ use Illuminate\Support\Facades\Auth;
 
 class InventoriesController extends Controller
 {
-    public function index(){
-        $fromInputDate  = null;
-        $toInputDate    = null;
-        $data           = Inventory::with('book')->orderBy('created_at', 'desc')->get();
-        return view('report.inventories.index', compact('fromInputDate', 'toInputDate', 'data'));
+    public function index(Request $request){
+        $fromInputDate  = $request->input('start', '');
+        $toInputDate    = $request->input('end', '');
+        $perPage        = $request->input('perPage', 10);
+        $data           = $this->generateData($request, new Inventory(), false);
+        return view('report.inventories.index', compact('fromInputDate', 'toInputDate', 'data', 'perPage'));
     }
     public function search(Request $request){
-        $fromInputDate  = $request->input('start');
-        $toInputDate    = $request->input('end');
+        $fromInputDate  = $request->input('start', '');
+        $toInputDate    = $request->input('end', '');
+        $perPage        = $request->input('perPage', 10);
         $start          = null;
         $end            = null;
-        $data           = Inventory::with('book')->where('checked_at', '!=', null)->orderBy('created_at', 'desc')->get();
-        if(strlen($fromInputDate) > 0) $start = DateTime::createFromFormat('m/d/Y', $request->input('start'))->format('Y-m-d');
-        if(strlen($toInputDate) > 0) $end = DateTime::createFromFormat('m/d/Y', $request->input('end'))->format('Y-m-d');
-        if(strlen($fromInputDate) > 0 || strlen($toInputDate) > 0){
-            $data = Inventory::with('book')->where('checked_at', '!=', null)->whereBetween(DB::raw('DATE(bk_inventories.checked_at)'), [$start, $end])->get();
-        }
-        if ($request->input('submit') == 'pdf') {
+        $data           = Inventory::with('book')->where('checked_at', '!=', null);
+        
+        if($request->input('submit') == 'pdf'){
+            $data = $this->generateData($request, new Inventory(), true);
             $this->generatePDF($data);
             return redirect()->back()->with('toast-success', 'PDF generated successfully');
         }
-        if ($request->input('submit') == 'excel') {
+        if($request->input('submit') == 'excel'){
+            $data = $this->generateData($request, new Inventory(), false);
             $this->exportExcel($data);
             return redirect()->back()->with('toast-success', 'Excel generated successfully');
         }
-        return view('report.inventories.index', compact('fromInputDate', 'toInputDate', 'data'));
+        $data = $this->generateData($request, new Inventory(), false);
+        return view('report.inventories.index', compact('fromInputDate', 'toInputDate', 'data', 'perPage'));
     }
     private function generatePDF($data)
     {
@@ -81,7 +82,7 @@ class InventoriesController extends Controller
         $logo->setOffsetX(10);
         $logo->setOffsetY(5);
         $logo->setWorksheet($sheet);
-
+        
         $sheet->setTitle('Book Circulation Report');
         $sheet->getColumnDimension('A')->setWidth(20);
         $sheet->getColumnDimension('B')->setWidth(30);
@@ -119,5 +120,27 @@ class InventoriesController extends Controller
         header("Content-Disposition: attachment;filename=\"$fileName\"");
         $writer->save("php://output");
         exit;
+    }
+    private function generateData(Request $request, Inventory $tableName, bool $isExport = false){
+        $fromInputDate  = $request->input('start', '');
+        $toInputDate    = $request->input('end', '');
+        $perPage        = $request->input('perPage', 10);
+        $start          = null;
+        $end            = null;
+        $query          = Inventory::with('book')->where('checked_at', '!=', null);
+        if(strlen($fromInputDate) > 0) $start = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
+        if(strlen($toInputDate) > 0) $end = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
+        if(strlen($fromInputDate) > 0 || strlen($toInputDate) > 0){
+            $query = $query->whereBetween(DB::raw('DATE(' . $tableName->getTable() . '.checked_at)'), [$start, $end]);
+        }
+        if($isExport){
+            $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.checked_at)'), 'asc')->get();
+            return $data;
+        }
+        return $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.checked_at)'), 'asc')->paginate($perPage)->appends([
+            'start' => $fromInputDate,
+            'end' => $toInputDate,
+            'perPage' => $perPage,
+        ]);
     }
 }

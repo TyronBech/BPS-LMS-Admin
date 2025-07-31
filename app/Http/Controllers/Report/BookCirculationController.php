@@ -16,23 +16,27 @@ use Dompdf\Options;
 
 class BookCirculationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $barcode        = "";
-        $title          = "";
-        $availability   = $this->extract_enums('bk_books', 'availability_status');
-        $data           = Book::with('category')->select('accession', 'call_number', 'title', 'availability_status', 'condition_status', 'category_id')->get();
-        return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability'));
+        $barcode        = $request->input('barcode', '');
+        $title          = $request->input('title', '');
+        $perPage        = $request->input('perPage', 10);
+        $books          = new Book();
+        $availability   = $this->extract_enums($books->getTable(), 'availability_status');
+        $data           = $this->generateData($request);
+        return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability', 'perPage'));
     }
     public function search(Request $request)
     {
-        $barcode        = $request->input('barcode');
-        $title          = $request->input('title');
-        $availability   = $request->input('availability');
+        $barcode        = $request->input('barcode', '');
+        $title          = $request->input('title', '');
+        $availability   = $request->input('availability', 'All');
+        $perPage        = $request->input('perPage', 10);
+        $books          = new Book();
         $validator = Validator::make($request->all(), [
-            'availability'  => 'sometimes',
-            'title'         => 'sometimes',
-            'barcode'       => 'sometimes',
+            'availability'  => 'nullable|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
+            'title'         => 'nullable',
+            'barcode'       => 'nullable',
         ]);
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -45,9 +49,9 @@ class BookCirculationController extends Controller
             $this->exportExcel($data);
             return redirect()->route('report.book-circulation')->with('toast-success', 'Successfully exported to Excel');
         }
-        $availability = $this->extract_enums('bk_books', 'availability_status');
+        $availability = $this->extract_enums($books->getTable(), 'availability_status');
         if(!count($data)) return redirect()->route('report.book-circulation')->with('toast-error', 'No data found.');
-        return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability'));
+        return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability', 'perPage'));
     }
     private function generatePDF($data)
     {
@@ -128,11 +132,12 @@ class BookCirculationController extends Controller
         $writer->save("php://output");
         exit;
     }
-    private function generateData(Request $request)
+    private function generateData(Request $request, bool $isExport = false)
     {
-        $barcode        = $request->input('barcode');
-        $title          = strtolower($request->input('title'));
-        $availability   = $request->input('availability');
+        $barcode        = $request->input('barcode', '');
+        $title          = strtolower($request->input('title', ''));
+        $availability   = $request->input('availability', 'All');
+        $perPage        = $request->input('perPage', 10);
         $query          = Book::with('category')->select('accession', 'call_number', 'title', 'barcode', 'availability_status', 'condition_status', 'category_id');
         if (strlen($barcode) > 0) {
             $query->where('barcode', 'like', '%' . $barcode . '%');
@@ -140,10 +145,19 @@ class BookCirculationController extends Controller
         if (strlen($title) > 0) {
             $query->where(DB::raw('lower(title)'), 'like', '%' . $title . '%');
         }
-        if (strlen($availability) > 0 && $availability != 'Choose availability status') {
+        if (strlen($availability) > 0 && $availability != 'All') {
             $query->where('availability_status', $availability);
         }
-        $data = $query->get();
+        if ($isExport) {
+            $data = $query->get();
+        } else {
+            $data = $query->paginate($perPage)->appends([
+                'barcode'       => $barcode,
+                'title'         => $title,
+                'availability'  => $availability,
+                'perPage'       => $perPage,
+            ]);
+        }
         return $data;
     }
     private function extract_enums($table, $columnName){
@@ -160,6 +174,7 @@ class BookCirculationController extends Controller
         if (isset($matches[1])) {
             $enumValues = str_getcsv($matches[1], ',', "'");
         }
+        $enumValues = array_merge(['All'], $enumValues);
         return $enumValues;
     }
 }

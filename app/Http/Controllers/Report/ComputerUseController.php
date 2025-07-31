@@ -4,33 +4,29 @@ namespace App\Http\Controllers\Report;
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
-use App\Models\Log; // Import the Log model
-use Illuminate\Support\Facades\DB; // Import the DB facade
-use Carbon\Carbon; // Import the Carbon class
-use Illuminate\Support\Facades\Validator; // Import the Validator facade
-use DateTime; // Import the DateTime class
-use Dompdf\Dompdf; // Import the Dompdf class
-use Dompdf\Options; // Import the Dompdf Options class
-use PhpOffice\PhpSpreadsheet\Spreadsheet; // Import the Spreadsheet class
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx; // Import the WriterXlsx class with alias
-use PhpOffice\PhpSpreadsheet\Worksheet\Drawing; // Import the Drawing class
-use Illuminate\Support\Facades\Auth; // Import the Auth facade
+use App\Models\Log;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
+use DateTime;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use Illuminate\Support\Facades\Auth;
 
 class ComputerUseController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $inputName      = null;
-        $fromInputDate  = null;
-        $toInputDate    = null;
+        $search      = $request->input('search', '');
+        $fromInputDate  = $request->input('start', '');
+        $toInputDate    = $request->input('end', '');
         $peak_hour      = "00:00";
-        $data = Log::with(['user.students']) // correct singular relationship
-                ->where('computer_use', 'Yes')
-                ->whereHas('user.students')
-                ->orderBy(DB::raw('DATE(time_in)'), 'desc')
-                ->orderBy(DB::raw('TIME(time_in)'), 'desc')
-                ->get();
-        $hours = $data->map(function ($item) {
+        $perPage        = $request->input('perPage', 10);
+        $data           = $this->generateData($request, new Log(), false);
+        $hours          = $data->map(function ($item) {
             $item = Carbon::parse($item->time_in)->format('H:i:s');
             return $item;
         });
@@ -44,33 +40,34 @@ class ComputerUseController extends Controller
         } else {
             $peak_hour = $hour . ":00 AM";
         }
-        return view('report.computers.index', compact('data', 'inputName', 'fromInputDate', 'toInputDate', 'peak_hour'));
+        return view('report.computers.index', compact('data', 'search', 'fromInputDate', 'toInputDate', 'peak_hour', 'perPage'));
     }
     public function search(Request $request)
     {
-        $inputName      = $request->input('first-name');
-        $fromInputDate  = $request->input('start');
-        $toInputDate    = $request->input('end');
+        $search      = $request->input('search' , '');
+        $fromInputDate  = $request->input('start', '');
+        $toInputDate    = $request->input('end', '');
+        $perPage        = $request->input('perPage', 10);
         $peak_hour      = "00:00";
         $validator = Validator::make($request->all(), [
-            'start'         => 'sometimes',
-            'end'           => 'sometimes',
-            'last-name'     => 'sometimes',
-            'first-name'    => 'sometimes',
+            'start'         => 'nullable',
+            'end'           => 'nullable',
+            'last-name'     => 'nullable',
+            'search'        => 'nullable',
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
         if ($request->input('submit') == 'pdf') {
-            $data = $this->generateData($request);
+            $data = $this->generateData($request, new Log(), true);
             $this->generatePDF($data);
             return redirect()->route('report.computer-use')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {
-            $data = $this->generateData($request);
+            $data = $this->generateData($request, new Log(), true);
             $this->exportExcel($data);
             return redirect()->route('report.computer-use')->with('toast-success', 'Successfully exported to Excel');
         }
-        $data = $this->generateData($request);
+        $data = $this->generateData($request, new Log(), false);
         $hours = $data->map(function ($item) {
             $item = Carbon::parse($item->time_in)->format('H:i:s');
             return $item;
@@ -85,7 +82,7 @@ class ComputerUseController extends Controller
         } else {
             $peak_hour = $hour . ":00 AM";
         }
-        return view('report.computers.index', compact('data', 'inputName', 'fromInputDate', 'toInputDate', 'peak_hour'));
+        return view('report.computers.index', compact('data', 'search', 'fromInputDate', 'toInputDate', 'peak_hour', 'perPage'));
     }
     private function findPeakHour($times)
     {
@@ -183,35 +180,49 @@ class ComputerUseController extends Controller
         $writer->save("php://output");
         exit;
     }
-    private function generateData(Request $request)
+    private function generateData(Request $request, Log $tableName, bool $isExport = false)
     {
         $fromInputDate  = $request->input('start');
         $toInputDate    = $request->input('end');
-        $inputName      = strtolower($request->input('first-name'));
+        $search      = strtolower($request->input('search'));
+        $perPage        = $request->input('perPage', 10);
 
         $query = Log::with(['user.students'])->whereHas('user.students');
 
         if (strlen($fromInputDate) > 0) {
             $fromInputDate = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
             $toInputDate = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
-            $query->whereBetween(DB::raw('DATE(log_user_logs.time_in)'), [$fromInputDate, $toInputDate]); // Corrected table name
+            $query->whereBetween(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), [$fromInputDate, $toInputDate]);
         }
 
-        if (strlen($inputName) > 0) {
-            $query->with(['user.students'])->whereHas('user', function ($q) use ($inputName) {
-                $q->where(DB::raw('lower(first_name)'), 'like', '%' . $inputName . '%')
-                    ->orWhere(DB::raw('lower(last_name)'), 'like', '%' . $inputName . '%')
-                    ->orWhere(DB::raw('lower(middle_name)'), 'like', '%' . $inputName . '%')
-                    ->orWhere(DB::raw('lower(concat(first_name, " ", middle_name, " ", last_name))'), 'like', '%' . $inputName . '%')
-                    ->orWhere(DB::raw('lower(concat(middle_name, " ", last_name, ", ", first_name))'), 'like', '%' . $inputName . '%')
-                    ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $inputName . '%')
-                    ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name))'), 'like', '%' . $inputName . '%')
-                    ->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $inputName . '%');
+        if (strlen($search) > 0) {
+            $query->with(['user.students'])->whereHas('user', function ($q) use ($search) {
+                $q->where(DB::raw('lower(first_name)'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('lower(last_name)'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('lower(middle_name)'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('lower(concat(first_name, " ", middle_name, " ", last_name))'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('lower(concat(middle_name, " ", last_name, ", ", first_name))'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name))'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $search . '%');
             });
         }
 
-        $data = $query->where('computer_use', 'Yes')->orderBy(DB::raw('DATE(log_user_logs.time_in)'), 'asc') // Corrected table name
-            ->get();
+        if ($isExport) {
+            $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), 'asc')
+                ->orderBy(DB::raw('TIME(' . $tableName->getTable() . '.time_in)'), 'asc')
+                ->get();
+        } else {
+            $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), 'desc')
+                ->orderBy(DB::raw('TIME(' . $tableName->getTable() . '.time_in)'), 'desc')
+                ->paginate($perPage)
+                ->appends([
+                    'perPage' => $perPage,
+                    'search' => $search,
+                    'start' => $fromInputDate,
+                    'end' => $toInputDate,
+                ]);
+        }
         return $data;
     }
 }

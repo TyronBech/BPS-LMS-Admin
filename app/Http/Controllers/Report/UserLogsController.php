@@ -20,20 +20,12 @@ class UserLogsController extends Controller
 {
     public function index(Request $request)
     {
-        $inputName      = $request->input('first-name', '');
+        $search      = $request->input('search', '');
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
         $peak_hour      = "00:00";
         $perPage        = $request->input('perPage', 10);
-        $data           = Log::with('user')->orderBy(DB::raw('date(time_in)'), 'desc')
-                            ->orderBy(DB::raw('time(time_in)'), 'desc')
-                            ->paginate($perPage)
-                            ->appends([
-                                'perPage' => $perPage,
-                                'first-name' => $inputName,
-                                'start' => $fromInputDate,
-                                'end' => $toInputDate,
-                            ]);
+        $data           = $this->generateData($request, new Log(), false);
         $hours = $data->map(function ($item) {
             $item = Carbon::parse($item->time_in)->format('H:i:s');
             return $item;
@@ -48,11 +40,11 @@ class UserLogsController extends Controller
         } else {
             $peak_hour = $hour . ":00 AM";
         }
-        return view('report.users.user-logs', compact('data', 'inputName', 'fromInputDate', 'toInputDate', 'peak_hour', 'perPage'));
+        return view('report.users.user-logs', compact('data', 'search', 'fromInputDate', 'toInputDate', 'peak_hour', 'perPage'));
     }
     public function search(Request $request)
     {
-        $inputName      = $request->input('first-name', '');
+        $search      = $request->input('search', '');
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
         $peak_hour      = "00:00";
@@ -62,7 +54,7 @@ class UserLogsController extends Controller
             'start'         => 'nullable',
             'end'           => 'nullable',
             'last-name'     => 'nullable',
-            'first-name'    => 'nullable',
+            'search'        => 'nullable',
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -91,7 +83,7 @@ class UserLogsController extends Controller
         } else {
             $peak_hour = $hour . ":00 AM";
         }
-        return view('report.users.user-logs', compact('data', 'inputName', 'fromInputDate', 'toInputDate', 'peak_hour', 'perPage'));
+        return view('report.users.user-logs', compact('data', 'search', 'fromInputDate', 'toInputDate', 'peak_hour', 'perPage'));
     }
     private function findPeakHour($times)
     {
@@ -190,11 +182,11 @@ class UserLogsController extends Controller
         $writer->save("php://output");
         exit;
     }
-    private function generateData(Request $request, Log $tableName, $isExport = false)
+    private function generateData(Request $request, Log $tableName, bool $isExport = false)
     {
         $fromInputDate  = $request->input('start' , '');
         $toInputDate    = $request->input('end', '');
-        $inputName      = strtolower($request->input('first-name', ''));
+        $search      = strtolower($request->input('search', ''));
         $perPage        = $request->input('perPage', 10);
 
         $query = Log::with('user');
@@ -205,27 +197,28 @@ class UserLogsController extends Controller
             $query->whereBetween(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), [$fromInputDate, $toInputDate]);
         }
 
-        if (strlen($inputName) > 0) {
-            $query->whereHas('user', function ($q) use ($inputName) {
-                $q->where(DB::raw('lower(first_name)'), 'like', '%' . $inputName . '%')
-                    ->orWhere(DB::raw('lower(last_name)'), 'like', '%' . $inputName . '%')
-                    ->orWhere(DB::raw('lower(middle_name)'), 'like', '%' . $inputName . '%')
-                    ->orWhere(DB::raw('lower(concat(first_name, " ", middle_name, " ", last_name))'), 'like', '%' . $inputName . '%')
-                    ->orWhere(DB::raw('lower(concat(middle_name, " ", last_name, ", ", first_name))'), 'like', '%' . $inputName . '%')
-                    ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $inputName . '%')
-                    ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name))'), 'like', '%' . $inputName . '%')
-                    ->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $inputName . '%');
+        if (strlen($search) > 0) {
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where(DB::raw('lower(first_name)'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('lower(last_name)'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('lower(middle_name)'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('lower(concat(first_name, " ", middle_name, " ", last_name))'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('lower(concat(middle_name, " ", last_name, ", ", first_name))'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name))'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $search . '%');
             });
         }
         if($isExport) {
             $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), 'asc')
+                ->orderBy(DB::raw('TIME(' . $tableName->getTable() . '.time_in)'), 'asc')
                 ->get();
         } else {
             $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), 'asc')
                 ->paginate($perPage)
                 ->appends([
                     'perPage' => $perPage,
-                    'first-name' => $inputName,
+                    'search' => $search,
                     'start' => $fromInputDate,
                     'end' => $toInputDate,
                 ]);
