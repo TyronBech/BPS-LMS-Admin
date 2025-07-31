@@ -7,8 +7,6 @@
           <th scope="col" class="p-2 text-center">User Type</th>
           <th scope="col" class="p-2 text-center">Category</th>
           <th scope="col" class="p-2 text-center">Max Book Allowed</th>
-          <th scope="col" class="p-2 text-center">Borrow Limit</th>
-          <th scope="col" class="p-2 text-center">Renewal Limit</th>
           <th scope="col" class="p-2 text-center">Actions</th>
         </tr>
       </thead>
@@ -18,8 +16,6 @@
           <td class="min-w-40 h-14">{{ $item->user_type }}</td>
           <td class="min-w-40 h-14">{{ $item->category }}</td>
           <td class="min-w-40 h-14">{{ $item->max_book_allowed }}</td>
-          <td class="min-w-40 h-14">{{ $item->borrow_duration_days }}</td>
-          <td class="min-w-40 h-14">{{ $item->renewal_limit }}</td>
           <td class="pb-1 flex justify-center">
             @if(auth()->user()->can(PermissionsEnum::EDIT_PRIVILEGES))
             <button type="button" data-modal-target="edit-privilege-modal" data-modal-toggle="edit-privilege-modal" value="{{ $item->id }}" class="editBtn focus:outline-none text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2">Edit</button>
@@ -104,7 +100,7 @@
             </div>
             @enderror
           </div>
-          <div class="mb-5">
+          <!-- <div class="mb-5">
             <label for="borrow_duration_days_update" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Max Borrowing Duration:</label>
             <div class="relative flex items-center max-w-[8rem]">
               <button type="button" id="decrement-button" data-input-counter-decrement="borrow_duration_days_update" class="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-s-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none">
@@ -124,8 +120,8 @@
               <span class="font-medium">{{ $message }}</span>
             </div>
             @enderror
-          </div>
-          <div class="mb-5">
+          </div> -->
+          <!-- <div class="mb-5">
             <label for="renewal_limit_update" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Renewal Limit:</label>
             <div class="relative flex items-center max-w-[8rem]">
               <button type="button" id="decrement-button" data-input-counter-decrement="renewal_limit_update" class="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-s-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none">
@@ -144,7 +140,7 @@
             <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
               <span class="font-medium">{{ $message }}</span>
             </div>
-            @enderror
+            @enderror -->
             <p id="helper-text-explanation" class="mt-2 text-sm text-gray-500 dark:text-gray-400">Please select a 3 digit number from 0 to 9.</p>
           </div>
           <input type="hidden" name="edit_privilege_id" id="edit_privilege_id" value="" />
@@ -188,8 +184,8 @@
   const user_type             = document.getElementById('user_type');
   const category              = document.getElementById('category');
   const max_book_allowed      = document.getElementById('max_book_allowed_update');
-  const borrow_duration_days  = document.getElementById('borrow_duration_days_update');
-  const renewal_limit         = document.getElementById('renewal_limit_update');
+  // const borrow_duration_days  = document.getElementById('borrow_duration_days_update');
+  // const renewal_limit         = document.getElementById('renewal_limit_update');
   editButtons.forEach(btn => {
     btn.addEventListener('click', function(event) {
       const privilegeId           = event.target.value;
@@ -197,8 +193,8 @@
       user_type.value             = event.target.parentElement.parentElement.children[0].textContent;
       category.value              = event.target.parentElement.parentElement.children[1].textContent;
       max_book_allowed.value      = event.target.parentElement.parentElement.children[2].textContent;
-      borrow_duration_days.value  = event.target.parentElement.parentElement.children[3].textContent;
-      renewal_limit.value         = event.target.parentElement.parentElement.children[4].textContent;
+      // borrow_duration_days.value  = event.target.parentElement.parentElement.children[3].textContent;
+      // renewal_limit.value         = event.target.parentElement.parentElement.children[4].textContent;
     });
   });
   const deleteButtons = document.querySelectorAll('.deleteBtn');

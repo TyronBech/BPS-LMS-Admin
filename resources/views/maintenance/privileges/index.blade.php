@@ -80,7 +80,7 @@
             </div>
             @enderror
           </div>
-          <div class="mb-5">
+          <!-- <div class="mb-5">
             <label for="borrow_duration_days_add" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Max Borrowing Duration:</label>
             <div class="relative flex items-center max-w-[8rem]">
               <button type="button" id="decrement-button" data-input-counter-decrement="borrow_duration_days_add" class="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-s-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none">
@@ -100,8 +100,8 @@
               <span class="font-medium">{{ $message }}</span>
             </div>
             @enderror
-          </div>
-          <div class="mb-5">
+          </div> -->
+          <!-- <div class="mb-5">
             <label for="renewal_limit_add" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Renewal Limit:</label>
             <div class="relative flex items-center max-w-[8rem]">
               <button type="button" id="decrement-button" data-input-counter-decrement="renewal_limit_add" class="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-s-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none">
@@ -120,7 +120,7 @@
             <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
               <span class="font-medium">{{ $message }}</span>
             </div>
-            @enderror
+            @enderror -->
             <p id="helper-text-explanation" class="mt-2 text-sm text-gray-500 dark:text-gray-400">Please select a 3 digit number from 0 to 9.</p>
           </div>
           <button data-modal-hide="add-privilege-modal" type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Add</button>
