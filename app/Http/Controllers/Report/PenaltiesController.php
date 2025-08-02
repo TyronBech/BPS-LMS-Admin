@@ -180,9 +180,9 @@ class PenaltiesController extends Controller
             });
         }
         if($isExport) {
-            $data = $query->orderBy(DB::raw('DATE(tr_penalties.created_at)'), 'asc')->get();
+            $data = $query->orderBy(DB::raw('DATE(tr_penalties.created_at)'), 'desc')->get();
         } else {
-            $data = $query->orderBy(DB::raw('DATE(tr_penalties.created_at)'), 'asc')
+            $data = $query->orderBy(DB::raw('DATE(tr_penalties.created_at)'), 'desc')
                 ->paginate($perPage)
                 ->appends([
                     'start' => $fromInputDate,

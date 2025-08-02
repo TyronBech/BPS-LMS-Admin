@@ -224,9 +224,9 @@ class TransactionController extends Controller
             $query->orWhere('transaction_type', $type);
         }
         if ($isExport) {
-            $data = $query->orderBy(DB::raw('DATE(date_borrowed)'), 'asc')->get();
+            $data = $query->orderBy(DB::raw('DATE(date_borrowed)'), 'desc')->get();
         } else {
-            $data = $query->orderBy(DB::raw('DATE(date_borrowed)'), 'asc')
+            $data = $query->orderBy(DB::raw('DATE(date_borrowed)'), 'desc')
                 ->paginate($request->input('perPage', 10))
                 ->appends([
                     'start' => $fromInputDate,

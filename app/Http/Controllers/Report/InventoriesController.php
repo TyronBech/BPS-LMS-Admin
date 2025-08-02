@@ -134,10 +134,10 @@ class InventoriesController extends Controller
             $query = $query->whereBetween(DB::raw('DATE(' . $tableName->getTable() . '.checked_at)'), [$start, $end]);
         }
         if($isExport){
-            $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.checked_at)'), 'asc')->get();
+            $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.checked_at)'), 'desc')->get();
             return $data;
         }
-        return $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.checked_at)'), 'asc')->paginate($perPage)->appends([
+        return $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.checked_at)'), 'desc')->paginate($perPage)->appends([
             'start' => $fromInputDate,
             'end' => $toInputDate,
             'perPage' => $perPage,

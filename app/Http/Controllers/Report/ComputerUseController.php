@@ -209,8 +209,8 @@ class ComputerUseController extends Controller
         }
 
         if ($isExport) {
-            $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), 'asc')
-                ->orderBy(DB::raw('TIME(' . $tableName->getTable() . '.time_in)'), 'asc')
+            $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), 'desc')
+                ->orderBy(DB::raw('TIME(' . $tableName->getTable() . '.time_in)'), 'desc')
                 ->get();
         } else {
             $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), 'desc')
