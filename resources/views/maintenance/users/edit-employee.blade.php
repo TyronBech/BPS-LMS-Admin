@@ -20,17 +20,8 @@
     <h6 class="mb-1 text-xl font-semibold tracking-tight">User Information</h6>
     <hr class="h-px my-1 bg-gray-200 border-0">
     <div class="mb-5">
-      <label for="rfid" class="block mb-2 text-sm font-medium">RFID Number:</label>
-      <input type="text" id="rfid" name="rfid" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="0123456789" value="{{ $user->rfid }}" required>
-      @error('rfid')
-      <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
-        <span class="font-medium">{{ $message }}</span>
-      </div>
-      @enderror
-    </div>
-    <div class="mb-5">
       <label for="first-name" class="block mb-2 text-sm font-medium">First Name:</label>
-      <input type="text" id="first-name" name="first-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Juan" value="{{ $user->first_name }}" required>
+      <input type="text" id="first-name" name="first-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Juan" value="{{ $user->first_name ?? old('first-name') }}" required>
       @error('first-name')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -39,7 +30,7 @@
     </div>
     <div class="mb-5">
       <label for="middle-name" class="block mb-2 text-sm font-medium">Middle Name:</label>
-      <input type="text" id="middle-name" name="middle-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value="{{ $user->middle_name }}" placeholder="Santos">
+      <input type="text" id="middle-name" name="middle-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value="{{ $user->middle_name ?? old('middle-name') }}" placeholder="Santos">
       @error('middle-name')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -48,7 +39,7 @@
     </div>
     <div class="mb-5">
       <label for="last-name" class="block mb-2 text-sm font-medium">Last Name:</label>
-      <input type="text" id="last-name" name="last-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Dela Cruz" value="{{ $user->last_name }}" required>
+      <input type="text" id="last-name" name="last-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Dela Cruz" value="{{ $user->last_name ?? old('last-name') }}" required>
       @error('last-name')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -57,7 +48,7 @@
     </div>
     <div class="mb-5">
       <label for="suffix" class="block mb-2 text-sm font-medium">Suffix:</label>
-      <input type="text" id="suffix" name="suffix" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Jr." value="{{ $user->suffix }}">
+      <input type="text" id="suffix" name="suffix" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Jr." value="{{ $user->suffix ?? old('suffix') }}">
       @error('suffix')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -66,21 +57,11 @@
     </div>
     <div class="mb-5">
       <label for="gender" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select gender:</label>
-      <select id="gender" name="gender" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+      <select id="gender" name="gender" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required>
         <option selected disabled>Choose an option</option>
-        @if($user->gender == 'Male')
-        <option value="Male" selected>Male</option>
-        <option value="Female">Female</option>
-        <option value="Prefer not to say">Prefer not to say</option>
-        @elseif($user->gender == 'Female')
-        <option value="Male">Male</option>
-        <option value="Female" selected>Female</option>
-        <option value="Prefer not to say">Prefer not to say</option>
-        @elseif($user->gender == 'Prefer not to say')
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Prefer not to say" selected>Prefer not to say</option>
-        @endif
+        <option value="Male" {{ $user->gender == 'Male' ? 'selected' : '' }}>Male</option>
+        <option value="Female" {{ $user->gender == 'Female' ? 'selected' : '' }}>Female</option>
+        <option value="Prefer not to say" {{ $user->gender == 'Prefer not to say' ? 'selected' : '' }}>Prefer not to say</option>
       </select>
       @error('gender')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
@@ -99,7 +80,7 @@
     </div>
     <div class="mb-5">
       <label for="employee_id" class="block mb-2 text-sm font-medium">Employee ID:</label>
-      <input type="text" id="employee_id" name="employee_id" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="0123456789" value="{{ $user->employees->employee_id }}">
+      <input type="text" id="employee_id" name="employee_id" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="0123456789" value="{{ $user->employees->employee_id ?? old('employee_id') }}" required>
       @error('employee_id')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -108,14 +89,10 @@
     </div>
     <div class="mb-5">
       <label for="employee_role" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select Position:</label>
-      <select id="employee_role" name="employee_role" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+      <select id="employee_role" name="employee_role" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required>
         <option selected disabled>Choose an option</option>
         @foreach($privileges as $privilege)
-        @if($user->employees->employee_role == $privilege)
-        <option value="{{ $privilege }}" selected>{{ $privilege }}</option>
-        @else
-        <option value="{{ $privilege }}">{{ $privilege }}</option>
-        @endif
+        <option class="text-sm dark:text-white" value="{{ $privilege }}" {{ $user->employees->employee_role == $privilege ? 'selected' : '' }}>{{ $privilege }}</option>
         @endforeach
       </select>
       @error('employee_role')
@@ -124,8 +101,6 @@
       </div>
       @enderror
     </div>
-    <h6 class="mb-1 text-md font-bold tracking-tight">User Account</h6>
-    <hr class="h-px my-1 bg-gray-200 border-0">
     <div class="mb-5">
       <label for="email" class="block mb-2 text-sm font-medium">Email Address:</label>
       <div class="relative">
@@ -135,9 +110,18 @@
             <path d="M11.241 9.817c-.36.275-.801.425-1.255.427-.428 0-.845-.138-1.187-.395L0 2.6V14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V2.5l-8.759 7.317Z" />
           </svg>
         </div>
-        <input type="email" id="email" name="email" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="juandelacruz@gmail.com" value="{{ $user->email }}" required>
+        <input type="email" id="email" name="email" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="juandelacruz@gmail.com" value="{{ $user->email ?? old('email') }}" required>
       </div>
       @error('email')
+      <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+        <span class="font-medium">{{ $message }}</span>
+      </div>
+      @enderror
+    </div>
+    <div class="mb-5">
+      <label for="rfid" class="block mb-2 text-sm font-medium">RFID Number:</label>
+      <input type="text" id="rfid" name="rfid" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="0123456789" value="{{ $user->rfid ?? old('rfid') }}" required>
+      @error('rfid')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
       </div>

@@ -15,19 +15,10 @@
   <form action="{{ route('maintenance.store-employee') }}" class="max-w-2xl mx-auto" method="POST">
     @csrf
     <h6 class="mb-1 text-xl font-semibold tracking-tight">Employee Information</h6>
-    <hr class="h-px my-1 bg-gray-200 border-0">
-    <div class="mb-5">
-      <label for="rfid" class="block mb-2 text-sm font-medium">RFID Number:</label>
-      <input type="text" id="rfid" name="rfid" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="0123456789" required>
-      @error('rfid')
-      <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
-        <span class="font-medium">{{ $message }}</span>
-      </div>
-      @enderror
-    </div>
+    <hr class="h-px my-1 bg-gray-200 border-0 mb-3">
     <div class="mb-5">
       <label for="first-name" class="block mb-2 text-sm font-medium">First Name:</label>
-      <input type="text" id="first-name" name="first-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Juan" required>
+      <input type="text" id="first-name" name="first-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Juan" value="{{ old('first-name') }}" required>
       @error('first-name')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -36,7 +27,7 @@
     </div>
     <div class="mb-5">
       <label for="middle-name" class="block mb-2 text-sm font-medium">Middle Name:</label>
-      <input type="text" id="middle-name" name="middle-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Santos">
+      <input type="text" id="middle-name" name="middle-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Santos" value="{{ old('middle-name') }}">
       @error('middle-name')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -45,7 +36,7 @@
     </div>
     <div class="mb-5">
       <label for="last-name" class="block mb-2 text-sm font-medium">Last Name:</label>
-      <input type="text" id="last-name" name="last-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Dela Cruz" required>
+      <input type="text" id="last-name" name="last-name" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Dela Cruz" value="{{ old('last-name') }}" required>
       @error('last-name')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -54,7 +45,7 @@
     </div>
     <div class="mb-5">
       <label for="suffix" class="block mb-2 text-sm font-medium">Suffix:</label>
-      <input type="text" id="suffix" name="suffix" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Jr.">
+      <input type="text" id="suffix" name="suffix" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Jr." value="{{ old('suffix') }}">
       @error('suffix')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -63,11 +54,11 @@
     </div>
     <div class="mb-5">
       <label for="gender" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select gender:</label>
-      <select id="gender" name="gender" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+      <select id="gender" name="gender" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required> 
         <option selected disabled>Choose an option</option>
-        <option value="Male">Male</option>
-        <option value="Female">Female</option>
-        <option value="Prefer not to say">Prefer not to say</option>
+        <option value="Male" {{ old('gender') == 'Male' ? 'selected' : '' }}>Male</option>
+        <option value="Female" {{ old('gender') == 'Female' ? 'selected' : '' }}>Female</option>
+        <option value="Prefer not to say" {{ old('gender') == 'Prefer not to say' ? 'selected' : '' }}>Prefer not to say</option>
       </select>
       @error('gender')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
@@ -86,7 +77,7 @@
     </div>
     <div class="mb-5">
       <label for="employee_id" class="block mb-2 text-sm font-medium">Employee ID:</label>
-      <input type="text" id="employee_id" name="employee_id" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="0123456789">
+      <input type="text" id="employee_id" name="employee_id" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="0123456789" value="{{ old('employee_id') }}" required>
       @error('employee_id')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -95,10 +86,11 @@
     </div>
     <div class="mb-5">
       <label for="employee_role" class="block mb-2 text-sm font-medium">Select Position:</label>
-      <select id="employee_role" name="employee_role" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+      <select id="employee_role" name="employee_role" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required>
+        <option selected disabled>Choose an option</option>
         @foreach($groups as $group)
         @if($group != "Student" && $group != "Visitor")
-        <option class="text-sm dark:text-white" value="{{ $group }}">{{ $group }}</option>
+        <option class="text-sm dark:text-white" value="{{ $group }}" {{ old('employee_role') == $group ? 'selected' : '' }}>{{ $group }}</option>
         @endif
         @endforeach
       </select>
@@ -117,9 +109,18 @@
             <path d="M11.241 9.817c-.36.275-.801.425-1.255.427-.428 0-.845-.138-1.187-.395L0 2.6V14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V2.5l-8.759 7.317Z" />
           </svg>
         </div>
-        <input type="email" id="email" name="email" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="juandelacruz@gmail.com" required>
+        <input type="email" id="email" name="email" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="juandelacruz@gmail.com" value="{{ old('email') }}" required>
       </div>
       @error('email')
+      <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+        <span class="font-medium">{{ $message }}</span>
+      </div>
+      @enderror
+    </div>
+    <div class="mb-5">
+      <label for="rfid" class="block mb-2 text-sm font-medium">RFID Number:</label>
+      <input type="text" id="rfid" name="rfid" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="0123456789" value="{{ old('rfid') }}" required>
+      @error('rfid')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
       </div>

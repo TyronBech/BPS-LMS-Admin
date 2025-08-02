@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers\Maintenance;
 
-use App\Enum\PermissionsEnum;
 use App\Enum\RolesEnum;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
@@ -69,37 +68,37 @@ class UsersMaintenanceController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'rfid'          => 'required|string|min:10',
-            'first-name'    => 'required|string|max:50',
-            'middle-name'   => 'nullable|string|max:50',
-            'last-name'     => 'required|string|max:50',
+            'first-name'    => 'required|string|alpha|max:50',
+            'middle-name'   => 'nullable|string|alpha|max:50',
+            'last-name'     => 'required|string|alpha|max:50',
             'suffix'        => 'nullable|string|max:10',
-            'gender'        => 'required|in:Male,Female,Prefer not to say',
+            'gender'        => 'required|alpha|min:Male,Female,Prefer not to say',
             'id_number'     => 'required|min:12',
             'level'         => 'required|numeric|min:7|max:12',
             'section'       => 'required|max:50',
             'email'         => 'required|string|email',
         ]);
         if($validator->fails()){
-            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         if(!preg_match('/^[0-9]+$/', $request->input('rfid') || strlen($request->input('rfid')) != 10)){
-            return redirect()->back()->with('toast-warning', 'RFID number is invalid');
+            return redirect()->back()->with('toast-warning', 'RFID number is invalid')->withInput();
         } else if($this->has_invalid_characters($request->input('first-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s name contains invalid characters');
+            return redirect()->back()->with('toast-warning', 'User\'s name contains invalid characters')->withInput();
         } else if($request->input('middle-name') != null && $this->has_invalid_characters($request->input('middle-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s middle name contains invalid characters');
+            return redirect()->back()->with('toast-warning', 'User\'s middle name contains invalid characters')->withInput();
         } else if($this->has_invalid_characters($request->input('last-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s last name contains invalid characters');
+            return redirect()->back()->with('toast-warning', 'User\'s last name contains invalid characters')->withInput();
         } else if(!in_array($request->input('suffix'), ['Jr.', 'Sr.', 'II', 'III', 'IV', ''])){
-            return redirect()->back()->with('toast-warning', 'User\'s suffix is invalid');
+            return redirect()->back()->with('toast-warning', 'User\'s suffix is invalid')->withInput();
         } else if($request->input('level') != null && !preg_match('/^(?:[7-9]|1[0-2])$/', $request->input('level'))){
-            return redirect()->back()->with('toast-warning', 'User\'s grade level is invalid');
+            return redirect()->back()->with('toast-warning', 'User\'s grade level is invalid')->withInput();
         } else if($request->input('id_number') == null || !preg_match('/^[0-9]+$/', $request->input('id_number'))){
-            return redirect()->back()->with('toast-warning', 'User\'s LRN is invalid');
+            return redirect()->back()->with('toast-warning', 'User\'s LRN is invalid')->withInput();
         } else if(User::where('email', $request->input('email'))->exists()){
-            return redirect()->back()->with('toast-warning', 'User with email ' . $request->input('email') . ' already exists');
+            return redirect()->back()->with('toast-warning', 'User with email ' . $request->input('email') . ' already exists')->withInput();
         } else if(User::where('rfid', $request->input('rfid'))->exists()){
-            return redirect()->back()->with('toast-warning', 'User with RFID ' . $request->input('rfid') . ' already exists');
+            return redirect()->back()->with('toast-warning', 'User with RFID ' . $request->input('rfid') . ' already exists')->withInput();
         }
         if($request->hasFile('profile-image')){
             $image = $request->file('profile-image');
@@ -128,13 +127,13 @@ class UsersMaintenanceController extends Controller
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
-            return redirect()->back()->with('toast-error', 'User with RFID or email ' . $request->input('rfid') . ' already exists. Error code: ' . $e->getMessage());
+            return redirect()->back()->with('toast-error', 'User with RFID or email ' . $request->input('rfid') . ' already exists. Error code: ' . $e->getMessage())->withInput();
         }
         DB::commit();
         try{
             DB::statement('CALL DistributeStagingUsers()');
         } catch (\Illuminate\Database\QueryException $e) {
-            return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage());
+            return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage())->withInput();
         }
         $this->account_notification(User::where('email', $request->input('email'))->first(), $password);
         return redirect()->back()->with('toast-success', 'User added successfully');
@@ -144,32 +143,32 @@ class UsersMaintenanceController extends Controller
         $users = new User();
         $validator = Validator::make($request->all(), [
             'rfid'          => 'required|string|min:10',
-            'first-name'    => 'required|string|max:50',
-            'middle-name'   => 'nullable|string|max:50',
-            'last-name'     => 'required|string|max:50',
+            'first-name'    => 'required|string|alpha|max:50',
+            'middle-name'   => 'nullable|string|alpha|max:50',
+            'last-name'     => 'required|string|alpha|max:50',
             'suffix'        => 'nullable|string|max:10',
-            'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
+            'gender'        => 'required|alpha|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
             'employee_id'   => 'required|string|max:50',
             'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
             'email'         => 'required|string|email',
         ]);
         if($validator->fails()){
-            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         if(!preg_match('/^[0-9]+$/', $request->input('rfid')) || strlen($request->input('rfid')) != 10){
-            return redirect()->back()->with('toast-warning', 'RFID number is invalid');
+            return redirect()->back()->with('toast-warning', 'RFID number is invalid')->withInput();
         } else if($this->has_invalid_characters($request->input('first-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s name contains invalid characters');
+            return redirect()->back()->with('toast-warning', 'User\'s name contains invalid characters')->withInput();
         } else if($request->input('middle-name') != null && $this->has_invalid_characters($request->input('middle-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s middle name contains invalid characters');
+            return redirect()->back()->with('toast-warning', 'User\'s middle name contains invalid characters')->withInput();
         } else if($this->has_invalid_characters($request->input('last-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s last name contains invalid characters');
+            return redirect()->back()->with('toast-warning', 'User\'s last name contains invalid characters')->withInput();
         } else if(!in_array($request->input('suffix'), ['Jr.', 'Sr.', 'II', 'III', 'IV', ''])){
-            return redirect()->back()->with('toast-warning', 'User\'s suffix is invalid');
+            return redirect()->back()->with('toast-warning', 'User\'s suffix is invalid')->withInput();
         } else if(User::where('email', $request->input('email'))->exists()){
-            return redirect()->back()->with('toast-warning', 'User with email ' . $request->input('email') . ' already exists');
+            return redirect()->back()->with('toast-warning', 'User with email ' . $request->input('email') . ' already exists')->withInput();
         } else if(User::where('rfid', $request->input('rfid'))->exists()){
-            return redirect()->back()->with('toast-warning', 'User with RFID ' . $request->input('rfid') . ' already exists');
+            return redirect()->back()->with('toast-warning', 'User with RFID ' . $request->input('rfid') . ' already exists')->withInput();
         }
         if($request->hasFile('profile-image')){
             $image = $request->file('profile-image');
@@ -197,13 +196,13 @@ class UsersMaintenanceController extends Controller
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
-            return redirect()->back()->with('toast-error', 'User with RFID or email ' . $request->input('rfid') . ' already exists. Error code: ' . $e->getMessage());
+            return redirect()->back()->with('toast-error', 'User with RFID or email ' . $request->input('rfid') . ' already exists. Error code: ' . $e->getMessage())->withInput();
         }
         DB::commit();
         try{
             DB::statement('CALL DistributeStagingUsers()');
         } catch (\Illuminate\Database\QueryException $e) {
-            return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage());
+            return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage())->withInput();
         }
         $this->account_notification(User::where('email', $request->input('email'))->first(), $password);
         return redirect()->back()->with('toast-success', 'User added successfully');
@@ -235,35 +234,36 @@ class UsersMaintenanceController extends Controller
     }
     public function update_student(Request $request)
     {
+        $users = new User();
         $validator = Validator::make($request->all(), [
             'rfid'          => 'required|string|min:10',
-            'first-name'    => 'required|string|max:50',
-            'middle-name'   => 'nullable|string|max:50',
-            'last-name'     => 'required|string|max:50',
+            'first-name'    => 'required|string|alpha|max:50',
+            'middle-name'   => 'nullable|string|alpha|max:50',
+            'last-name'     => 'required|string|alpha|max:50',
             'suffix'        => 'nullable|string|max:10',
-            'gender'        => 'required|in:Male,Female,Prefer not to say',
+            'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
             'id_number'     => 'required|min:12',
             'level'         => 'required|numeric|min:7|max:12',
             'section'       => 'required|max:50',
             'email'         => 'required|string|email',
         ]);
         if($validator->fails()){
-            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         if(!preg_match('/^[0-9]+$/', $request->input('rfid') || strlen($request->input('rfid')) != 10)){
-            return redirect()->back()->with('toast-warning', 'RFID number is invalid');
+            return redirect()->back()->with('toast-warning', 'RFID number is invalid')->withInput();
         } else if($this->has_invalid_characters($request->input('first-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s name contains invalid characters');
+            return redirect()->back()->with('toast-warning', 'User\'s name contains invalid characters')->withInput();
         } else if($request->input('middle-name') != null && $this->has_invalid_characters($request->input('middle-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s middle name contains invalid characters');
+            return redirect()->back()->with('toast-warning', 'User\'s middle name contains invalid characters')->withInput();
         } else if($this->has_invalid_characters($request->input('last-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s last name contains invalid characters');
+            return redirect()->back()->with('toast-warning', 'User\'s last name contains invalid characters')->withInput();
         } else if(!in_array($request->input('suffix'), ['Jr.', 'Sr.', 'II', 'III', 'IV', ''])){
-            return redirect()->back()->with('toast-warning', 'User\'s suffix is invalid');
+            return redirect()->back()->with('toast-warning', 'User\'s suffix is invalid')->withInput();
         } else if($request->input('level') != null && !preg_match('/^(?:[7-9]|1[0-2])$/', $request->input('level'))){
-            return redirect()->back()->with('toast-warning', 'User\'s grade level is invalid');
+            return redirect()->back()->with('toast-warning', 'User\'s grade level is invalid')->withInput();
         } else if($request->input('id_number') == null || !preg_match('/^[0-9]+$/', $request->input('id_number'))){
-            return redirect()->back()->with('toast-warning', 'User\'s LRN is invalid');
+            return redirect()->back()->with('toast-warning', 'User\'s LRN is invalid')->withInput();
         }
         if($request->hasFile('profile-image')){
             $image = $request->file('profile-image');
@@ -294,7 +294,7 @@ class UsersMaintenanceController extends Controller
             }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack(); 
-            return redirect()->back()->with('toast-error', $e->getMessage());
+            return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
         }
         DB::commit();
         return redirect()->back()->with('toast-success', 'User updated successfully');
@@ -304,28 +304,28 @@ class UsersMaintenanceController extends Controller
         $users = new User();
         $validator = Validator::make($request->all(), [
             'rfid'          => 'required|string|min:10',
-            'first-name'    => 'required|string|max:50',
-            'middle-name'   => 'nullable|string|max:50',
-            'last-name'     => 'required|string|max:50',
+            'first-name'    => 'required|string|alpha|max:50',
+            'middle-name'   => 'nullable|string|alpha|max:50',
+            'last-name'     => 'required|string|alpha|max:50',
             'suffix'        => 'nullable|string|max:10',
-            'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
+            'gender'        => 'required|alpha|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
             'employee_id'   => 'required|string|max:50',
             'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
             'email'         => 'required|string|email',
         ]);
         if($validator->fails()){
-            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         if(!preg_match('/^[0-9]+$/', $request->input('rfid') || strlen($request->input('rfid')) != 10)){
-            return redirect()->back()->with('toast-warning', 'RFID number is invalid');
+            return redirect()->back()->with('toast-warning', 'RFID number is invalid')->withInput();
         } else if($this->has_invalid_characters($request->input('first-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s name contains invalid characters');
+            return redirect()->back()->with('toast-warning', 'User\'s name contains invalid characters')->withInput();
         } else if($request->input('middle-name') != null && $this->has_invalid_characters($request->input('middle-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s middle name contains invalid characters');
+            return redirect()->back()->with('toast-warning', 'User\'s middle name contains invalid characters')->withInput();
         } else if($this->has_invalid_characters($request->input('last-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s last name contains invalid characters');
+            return redirect()->back()->with('toast-warning', 'User\'s last name contains invalid characters')->withInput();
         } elseif(!in_array($request->input('suffix'), ['Jr.', 'Sr.', 'II', 'III', 'IV', ''])){
-            return redirect()->back()->with('toast-warning', 'User\'s suffix is invalid');
+            return redirect()->back()->with('toast-warning', 'User\'s suffix is invalid')->withInput();
         }
         if($request->hasFile('profile-image')){
             $image = $request->file('profile-image');
@@ -353,7 +353,7 @@ class UsersMaintenanceController extends Controller
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
-            return redirect()->back()->with('toast-error', $e->getMessage());
+            return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
         }
         DB::commit();
         return redirect()->back()->with('toast-success', 'User updated successfully');
