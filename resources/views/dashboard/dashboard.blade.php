@@ -343,7 +343,7 @@
           backgroundColor: [
             "rgba(75, 192, 192, 1)",
             "rgba(54, 162, 235, 1)",
-            'rgba(247,247,73)',
+            "rgba(255, 182, 115, 1)",
           ],
           hoverOffset: 4,
         }]
