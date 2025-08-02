@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Book;
 use App\Models\Transaction;
 use App\Models\User;
+use Illuminate\Contracts\Session\Session;
+use Illuminate\Support\Facades\Log as LogFacade;
 
 class FetchDataController extends Controller
 {
@@ -21,6 +23,22 @@ class FetchDataController extends Controller
             ->whereDate('time_in', $today)
             ->count();
         return response()->json(['active_count' => $activeCount]);
+    }
+    public function timeoutAllUsers(){
+        try {
+            DB::statement('CALL AutoTimeoutUsers()');
+            LogFacade::info('Auto time out command executed.');
+        } catch (\Exception $e) {
+            session()->flash('toast-error', 'An error occurred while executing the auto time out command.');
+            LogFacade::error('Error executing auto time out command: ' . $e->getMessage());
+            return response()->json([
+                'error' => 'An error occurred while processing the request.'
+            ], 500);
+        }
+        session()->flash('toast-success', 'All users have been timed out successfully.');
+        return response()->json([
+            'message' => 'All users have been timed out successfully.'
+        ]);
     }
     public function fetchMonthlyUsers(){
         $monthlyRecord = Log::select(
