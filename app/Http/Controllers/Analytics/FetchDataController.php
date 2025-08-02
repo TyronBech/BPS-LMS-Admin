@@ -96,9 +96,13 @@ class FetchDataController extends Controller
         $employees = User::whereHas('privileges', function ($query) {
             $query->where('user_type', 'employee');
         })->count();
+        $visitors = User::whereHas('privileges', function ($query) {
+            $query->where('user_type', 'visitor');
+        })->count();
         return response()->json([
             'students' => $students,
-            'employees' => $employees
+            'employees' => $employees,
+            'visitors' => $visitors
         ]);
     }
 }

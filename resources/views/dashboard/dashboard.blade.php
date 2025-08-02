@@ -119,10 +119,11 @@
     try {
       const response = await fetch("{{ route('fetch-registered-users') }}");
       const data = await response.json();
-      const student = data.students;
-      const employees = data.employees;
-      const labels = ['Students', 'Faculty & Staff'];
-      const counts = [student, employees];
+      const student = data.students || 0;
+      const employees = data.employees || 0;
+      const visitors = data.visitors || 0;
+      const labels = ['Students', 'Faculty & Staff', 'Visitors'];
+      const counts = [student, employees, visitors];
       RegisteredUsersPieGraph(labels, counts);
     } catch (error) {
       console.error('Error fetching registered users:', error);
@@ -324,6 +325,7 @@
           backgroundColor: [
             "rgba(75, 192, 192, 1)",
             "rgba(54, 162, 235, 1)",
+            'rgba(247,247,73)',
           ],
           hoverOffset: 4,
         }]
