@@ -27,7 +27,6 @@ class AdminLoginController extends Controller
     {
         $request->merge([
             'email'     => trim($request['email']),
-            'password'  => trim($request['password'])
         ]);
         foreach ($request->all() as $input) {
             if ($this->hasSqlInjection($input)) {
