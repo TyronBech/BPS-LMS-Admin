@@ -27,8 +27,9 @@ class FacultyStaffImportController extends Controller
     }
     public function store(Request $request)
     {
-        $data                   = $request->input('data');
-        $dataArray              = json_decode($data, true);
+        $newData                = json_decode($request->input('newData'), true);
+        $existingData           = json_decode($request->input('existingData'), true);
+        $dataArray              = array_merge($newData, $existingData);
         $errors                 = null;
         $staged_users           = array();
         $newFacultiesCount      = 0;
@@ -145,14 +146,17 @@ class FacultyStaffImportController extends Controller
             $spreadsheet    = $reader->load($file);
             $sheet          = $spreadsheet->getActiveSheet();
             $rows           = $sheet->toArray();
-            $data           = array();
+            $newData        = array();
+            $existingData   = array();
+            $new            = false;
+            $existing       = false;
             if($rows[0][0] == null){
                 return redirect()->route('import.import-faculties-staffs')->with('toast-error', "Excel file is empty.");
             } else if(count($rows[0]) > 11 || count($rows[0]) < 11){
                 return redirect()->route('import.import-faculties-staffs')->with('toast-error', "An error occurred while saving faculties & staffs: Wrong number of columns.");
             }
             for($i = 19; $i < count($rows); $i++){
-                $data[] = array(
+                $temp = array(
                     'rfid'          => $rows[$i][1],
                     'first_name'    => $rows[$i][2],
                     'middle_name'   => $rows[$i][3],
@@ -163,12 +167,19 @@ class FacultyStaffImportController extends Controller
                     'employee_id'   => $rows[$i][8],
                     'employee_role' => $rows[$i][9], 
                 );
+                if(EmployeeDetail::where('employee_id', $temp['employee_id'])->exists()){
+                    $existingData[] = $temp;
+                    $existing = true;
+                } else {
+                    $newData[] = $temp;
+                    $new = true;
+                }
             }
         } catch(\Exception $e){
             $errors = "An error occurred while loading the students";
             return redirect()->route('import.import-faculties-staffs')->with('toast-error', $errors);
         }
-        return view('import.employees.index', compact('showTable', 'data'));
+        return view('import.employees.index', compact('showTable', 'newData', 'existingData', 'new', 'existing'));
     }
     public function downloadTemplate()
     {

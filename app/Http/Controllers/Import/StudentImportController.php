@@ -26,8 +26,9 @@ class StudentImportController extends Controller
     }
     public function store(Request $request)
     {
-        $data                   = $request->input('data');
-        $dataArray              = json_decode($data, true);
+        $newData                = json_decode($request->input('newData'), true);
+        $existingData           = json_decode($request->input('existingData'), true);
+        $dataArray              = array_merge($newData, $existingData);
         $errors                 = null;
         $staged_users           = array();
         $newStudentsCount       = 0;
@@ -147,29 +148,39 @@ class StudentImportController extends Controller
             $spreadsheet    = $reader->load($file);
             $sheet          = $spreadsheet->getActiveSheet();
             $rows           = $sheet->toArray();
-            $data           = array();
+            $newData        = array();
+            $existingData   = array();
+            $new            = false;
+            $existing       = false;
             if($rows[0][0] == null){
                 return redirect()->route('import.import-students')->with('toast-error', "Excel file is empty.");
             }
             for($i = 19; $i < count($rows); $i++){
-                $data[] = array(
-                    'rfid'          => $rows[$i][1],
-                    'first_name'    => $rows[$i][2],
-                    'middle_name'   => $rows[$i][3],
-                    'last_name'     => $rows[$i][4],
-                    'suffix'        => $rows[$i][5],
-                    'gender'        => $rows[$i][6],
-                    'email'         => $rows[$i][7],
-                    'id_number'     => $rows[$i][8],
-                    'grade_level'   => $rows[$i][9],
-                    'section'       => $rows[$i][10],   
-                );
+                $temp = array(
+                        'rfid'          => $rows[$i][1],
+                        'first_name'    => $rows[$i][2],
+                        'middle_name'   => $rows[$i][3],
+                        'last_name'     => $rows[$i][4],
+                        'suffix'        => $rows[$i][5],
+                        'gender'        => $rows[$i][6],
+                        'email'         => $rows[$i][7],
+                        'id_number'     => $rows[$i][8],
+                        'grade_level'   => $rows[$i][9],
+                        'section'       => $rows[$i][10],   
+                    );
+                if(StudentDetail::where('id_number', $rows[$i][8])->exists()){
+                    $existingData[] = $temp;
+                    $existing = true;
+                } else {
+                    $newData[] = $temp;
+                    $new = true;
+                }
             }
         } catch(\Exception $e){
             $errors = "An error occurred while loading the students";
-            return redirect()->route('import.import-students')->with('toast-error', $errors);
+            return redirect()->route('import.import-students')->with('toast-error', $e->getMessage());
         }
-        return view('import.students.students', compact('showTable', 'data'));
+        return view('import.students.students', compact('showTable', 'newData', 'existingData', 'new', 'existing'));
     }
     public function downloadTemplate()
     {
