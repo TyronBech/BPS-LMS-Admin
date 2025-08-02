@@ -1,7 +1,7 @@
 @extends('layouts.admin-app')
 @section('content')
 @use('App\Enum\PermissionsEnum')
-<h1 class="font-semibold text-center text-4xl p-5">Book Circulation</h1>
+<h1 class="font-semibold text-center text-4xl p-5">Book Accession List</h1>
   <form action="{{ route('report.book-circulation-search') }}" method="POST">
     @csrf
     <div class="container flex flex-row justify-center">

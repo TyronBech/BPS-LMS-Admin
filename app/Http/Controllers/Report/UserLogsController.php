@@ -105,7 +105,7 @@ class UserLogsController extends Controller
     private function generatePDF($data)
     {
         $items = [
-            'title'         => 'User Logs Report',
+            'title'         => 'Attendance Monitoring Report',
             'school'        => "Bicutan Parochial School, Inc.",
             'address'       => "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
@@ -140,7 +140,7 @@ class UserLogsController extends Controller
         $logo->setOffsetY(5);
         $logo->setWorksheet($sheet);
 
-        $sheet->setTitle('Users Report');
+        $sheet->setTitle('Attendance Monitoring Report');
         $sheet->getColumnDimension('A')->setWidth(30);
         $sheet->getColumnDimension('B')->setWidth(20);
         $sheet->getColumnDimension('C')->setWidth(20);

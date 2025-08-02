@@ -104,7 +104,7 @@ class ComputerUseController extends Controller
     private function generatePDF($data)
     {
         $items = [
-            'title'         => 'Users Report',
+            'title'         => 'Online Research Report',
             'school'        => "Bicutan Parochial School, Inc.",
             'address'       => "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),

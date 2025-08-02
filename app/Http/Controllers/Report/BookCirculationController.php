@@ -56,7 +56,7 @@ class BookCirculationController extends Controller
     private function generatePDF($data)
     {
         $items = [
-            'title'         => 'Book Report',
+            'title'         => 'Book Records',
             'school'        => "Bicutan Parochial School, Inc.",
             'address'       => "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
@@ -73,7 +73,7 @@ class BookCirculationController extends Controller
         $dompdf->loadHtml(view('pdf.book-pdf-report', $items));
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
-        $dompdf->stream('book-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
+        $dompdf->stream('book-records ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;
     }
     private function exportExcel($data)

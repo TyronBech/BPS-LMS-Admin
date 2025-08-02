@@ -110,7 +110,7 @@
   </header>
 
   <div class="title">{{ $title }}</div>
-  <div class="generated-date">Generated on: {{ $date }}</div>
+  <div class="generated-date">{{ $date }}</div>
 
   <main class="table-container">
     <table>

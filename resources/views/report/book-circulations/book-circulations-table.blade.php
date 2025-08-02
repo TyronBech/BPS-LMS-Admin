@@ -1,5 +1,5 @@
 <div class="container flex flex-col overflow-x-auto border-collapse border-2 border-slate-900 mt-2 mb-4 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600">
-  <h2 class="text-center mb-4 mt-4 font-semibold text-2xl">Book Circulation Table</h2>
+  <h2 class="text-center mb-4 mt-4 font-semibold text-2xl">Accession List Table</h2>
   <form method="GET" class="m-2">
     <label for="perPage" class="mr-2 text-sm font-medium text-gray-700">Show</label>
     <input type="hidden" name="barcode" value="{{ request('barcode') }}">

@@ -57,7 +57,7 @@ class PenaltiesController extends Controller
     private function generatePDF($data)
     {
         $items = [
-            'title'         => 'Penalties Report',
+            'title'         => 'Overdue Fines Report',
             'school'        => "Bicutan Parochial School, Inc.",
             'address'       => "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
@@ -74,7 +74,7 @@ class PenaltiesController extends Controller
         $dompdf->loadHtml(view('pdf.penalties-pdf-report', $items));
         $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
-        $dompdf->stream('penalties-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
+        $dompdf->stream('overdue-fines-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;
     }
     private function exportExcel($data)
@@ -92,7 +92,7 @@ class PenaltiesController extends Controller
         $logo->setOffsetY(5);
         $logo->setWorksheet($sheet);
 
-        $sheet->setTitle('Penalties Report');
+        $sheet->setTitle('Overdue Fines Report');
         $sheet->getColumnDimension('A')->setWidth(30);
         $sheet->getColumnDimension('B')->setWidth(20);
         $sheet->getColumnDimension('C')->setWidth(60);
