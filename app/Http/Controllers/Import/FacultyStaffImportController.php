@@ -37,7 +37,7 @@ class FacultyStaffImportController extends Controller
         DB::beginTransaction();
         foreach ($dataArray as $item) {
             $validator = Validator::make($item, [
-                'rfid'          => 'required|string|unique:' . User::class . ',rfid|min:10',
+                'rfid'          => 'required|string',
                 'first_name'    => 'required|string|max:50',
                 'middle_name'   => 'nullable|string|max:50',
                 'last_name'     => 'required|string|max:50',
@@ -45,7 +45,7 @@ class FacultyStaffImportController extends Controller
                 'gender'        => 'required|string|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
                 'email'         => 'required|string|email|max:255',
                 'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
-                'employee_id'   => 'required|string|unique:' . EmployeeDetail::class . ',employee_id|max:50',
+                'employee_id'   => 'required|string|min:10',
             ]);
             if($validator->fails()){
                 DB::rollBack();

@@ -12,6 +12,7 @@ use PhpOffice\PhpSpreadsheet\Reader\Xlsx as ReaderXlsx;
 use App\Models\StagingUser;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AccountEmailMessage;
+use App\Models\StudentDetail;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
@@ -35,16 +36,16 @@ class StudentImportController extends Controller
         DB::beginTransaction();
         foreach ($dataArray as $item) {
             $validator = Validator::make($item, [
-                'rfid'          => 'required|string|min:10|unique:' . User::class . ',rfid',
+                'rfid'          => 'required|string|min:10',
                 'first_name'    => 'required|string|max:50',
                 'middle_name'   => 'nullable|string|max:50',
                 'last_name'     => 'required|string|max:50',
                 'suffix'        => 'nullable|string|max:10',
-                'id_number'     => 'required|string|min:10|unique:' . User::class . ',id_number',
+                'id_number'     => 'required|string|min:10',
                 'grade_level'   => 'required|numeric|min:7|max:12',
                 'section'       => 'required|string|max:50',
                 'gender'        => 'required|string|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
-                'email'         => 'required|string|email|unique:' . User::class . ',email|max:255',
+                'email'         => 'required|string|email',
             ]);
             if($validator->fails()){
                 DB::rollBack();
