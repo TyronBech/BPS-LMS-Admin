@@ -28,11 +28,6 @@ class AdminLoginController extends Controller
         $request->merge([
             'email'     => trim($request['email']),
         ]);
-        foreach ($request->all() as $input) {
-            if ($this->hasSqlInjection($input)) {
-                abort(400, 'Suspicious input detected.');
-            }
-        }
         $user = User::where('email', $request->input('email'))->first();
         if(!$user) {
             return redirect()->back()->with('toast-error', 'Invalid email or password.');
@@ -60,15 +55,5 @@ class AdminLoginController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('main-welcome');
-    }
-    /** * Check for SQL injection patterns in the input.
-     * @param mixed $input
-     * @return bool
-     */
-    private function hasSqlInjection($input): bool
-    {
-        $upper = is_string($input) ? strtoupper($input) : '';
-        $pattern = '/(\b(SELECT|UNION|INSERT|UPDATE|DELETE|DROP|RANDOMBLOB|CASE\s+|--|#)\b|["\'=;])/i';
-        return is_string($input) && preg_match($pattern, $upper);
     }
 }

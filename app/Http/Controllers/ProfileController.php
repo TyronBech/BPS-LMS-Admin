@@ -39,7 +39,7 @@ class ProfileController extends Controller
         if($request->filled('current_password')) {
             if($request->filled('new_password') && $request->filled('new_password_confirmation')) {
                 $rules['current_password']          = ['required', 'current_password'];
-                $rules['new_password']              = ['required', 'string', Password::min(8)->mixedCase()->numbers()->uncompromised(), 'confirmed'];
+                $rules['new_password']              = ['required', 'string', Password::min(8)->mixedCase()->letters()->numbers()->symbols()->uncompromised(), 'confirmed'];
                 $rules['new_password_confirmation'] = 'required';
             } else {
                 return redirect()->back()->with('toast-warning', 'Please fill in the new password and confirmation fields.');
