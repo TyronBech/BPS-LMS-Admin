@@ -51,6 +51,7 @@ class ProfileController extends Controller
         }
         DB::beginTransaction();
         try{
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $user = User::findOrFail(Auth::id());
             $user->first_name   = $request->input('first_name');
             $user->middle_name  = $request->input('middle_name');
