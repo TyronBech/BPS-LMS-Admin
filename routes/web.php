@@ -95,6 +95,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::post('penalties',        [PenaltiesController::class, 'search'])         ->name('report.penalties-search');
         Route::prefix('audit-trail')->group(function () {
             Route::get('users',         [UserAuditController::class, 'index'])          ->name('report.audit-trail.users');
+            Route::post('users',        [UserAuditController::class, 'search'])         ->name('report.audit-trail.users-search');
             Route::get('books',         [BookAuditController::class, 'index'])          ->name('report.audit-trail.books');
             Route::get('transactions',  [TransactionAuditController::class, 'index'])   ->name('report.audit-trail.transactions');
         });
