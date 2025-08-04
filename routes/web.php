@@ -29,6 +29,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Maintenance\PenaltyRuleController;
 use App\Http\Controllers\Maintenance\TransactionMaintenanceController;
+use App\Http\Controllers\Report\BookAuditController;
 use App\Http\Controllers\Report\UserAuditController;
 use App\Http\Middleware\BookAuthentication;
 use App\Http\Middleware\SuperAdminAuthentication;
@@ -93,6 +94,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::post('penalties',        [PenaltiesController::class, 'search'])         ->name('report.penalties-search');
         Route::prefix('audit-trail')->group(function () {
             Route::get('users',         [UserAuditController::class, 'index'])              ->name('report.audit-trail.users');
+            Route::get('books',         [BookAuditController::class, 'index'])              ->name('report.audit-trail.books');
         });
     });
     Route::prefix('import')->group(function () {

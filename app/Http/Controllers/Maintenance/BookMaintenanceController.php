@@ -206,7 +206,7 @@ class BookMaintenanceController extends Controller
                 'cover_image'           => $request->input('cover_image'),
                 'digital_copy_url'      => $request->input('digital_copy_url'),
                 'remarks'               => $request->input('remarks'),
-                'category'              => $request->input('category'),
+                'category_id'           => $request->input('category'),
                 'book_type'             => $request->input('book_type'),
                 'condition_status'      => $request->input('condition'),
                 'availability_status'   => $request->input('availability'),
