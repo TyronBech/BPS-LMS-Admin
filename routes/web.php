@@ -29,6 +29,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Maintenance\PenaltyRuleController;
 use App\Http\Controllers\Maintenance\TransactionMaintenanceController;
+use App\Http\Controllers\Report\UserAuditController;
 use App\Http\Middleware\BookAuthentication;
 use App\Http\Middleware\SuperAdminAuthentication;
 use App\Http\Middleware\UserAuthentication;
@@ -90,6 +91,9 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::post('inventory-report', [InventoriesController::class, 'search'])       ->name('report.inventory-search');
         Route::get('penalties',         [PenaltiesController::class, 'index'])          ->name('report.penalties');
         Route::post('penalties',        [PenaltiesController::class, 'search'])         ->name('report.penalties-search');
+        Route::prefix('audit-trail')->group(function () {
+            Route::get('users',         [UserAuditController::class, 'index'])              ->name('report.audit-trail.users');
+        });
     });
     Route::prefix('import')->group(function () {
         Route::get('students',                      [StudentImportController::class, 'index'])                  ->name('import.import-students');

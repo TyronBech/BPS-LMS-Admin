@@ -47,7 +47,6 @@
                     <span class="ms-2">Attendance Monitoring</span>
                   </a>
                 </li>
-                @endcan
                 <li>
                   <a href="{{ route('report.computer-use') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
                     <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
@@ -57,6 +56,7 @@
                     <span class="ms-2">Online Research</span>
                   </a>
                 </li>
+                @endcan
                 @can(PermissionsEnum::VIEW_SUMMARY_REPORTS)
                 <li>
                   <a href="{{ route('report.summary') }}" class="flex pl-2 py-2 hover:bg-gray-300  dark:text-white dark:hover:bg-gray-500">
@@ -97,13 +97,43 @@
                   </a>
                 </li>
                 @endcan
-                @can(PermissionsEnum::VIEW_BOOK_CIRCULATION_REPORTS)
+                @can(PermissionsEnum::VIEW_PENALTY_REPORTS)
                 <li>
                   <a href="{{ route('report.penalties') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
                     <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
                       <path fill-rule="evenodd" d="M2 12C2 6.477 6.477 2 12 2s10 4.477 10 10-4.477 10-10 10S2 17.523 2 12Zm11-4a1 1 0 1 0-2 0v5a1 1 0 1 0 2 0V8Zm-1 7a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H12Z" clip-rule="evenodd" />
                     </svg>
                     <span class="ms-2">Overdue Fines</span>
+                  </a>
+                </li>
+                @endcan
+                @can(PermissionsEnum::VIEW_USER_AUDIT_REPORTS)
+                <li>
+                  <a href="{{ route('report.audit-trail.users') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                      <path fill-rule="evenodd" d="M12 6a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7Zm-1.5 8a4 4 0 0 0-4 4 2 2 0 0 0 2 2h7a2 2 0 0 0 2-2 4 4 0 0 0-4-4h-3Zm6.82-3.096a5.51 5.51 0 0 0-2.797-6.293 3.5 3.5 0 1 1 2.796 6.292ZM19.5 18h.5a2 2 0 0 0 2-2 4 4 0 0 0-4-4h-1.1a5.503 5.503 0 0 1-.471.762A5.998 5.998 0 0 1 19.5 18ZM4 7.5a3.5 3.5 0 0 1 5.477-2.889 5.5 5.5 0 0 0-2.796 6.293A3.501 3.501 0 0 1 4 7.5ZM7.1 12H6a4 4 0 0 0-4 4 2 2 0 0 0 2 2h.5a5.998 5.998 0 0 1 3.071-5.238A5.505 5.505 0 0 1 7.1 12Z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="ms-2">User Audit Trail</span>
+                  </a>
+                </li>
+                @endcan
+                @can(PermissionsEnum::VIEW_BOOK_AUDIT_REPORTS)
+                <li>
+                  <a href="{{ route('report.audit-trail.users') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                      <path fill-rule="evenodd" d="M6 2a2 2 0 0 0-2 2v15a3 3 0 0 0 3 3h12a1 1 0 1 0 0-2h-2v-2h2a1 1 0 0 0 1-1V4a2 2 0 0 0-2-2h-8v16h5v2H7a1 1 0 1 1 0-2h1V2H6Z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="ms-2 mr-3">Accession Audit Trail</span>
+                  </a>
+                </li>
+                @endcan
+                @can(PermissionsEnum::VIEW_TRANSACTION_AUDIT_REPORTS)
+                <li>
+                  <a href="{{ route('report.audit-trail.users') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                      <path fill-rule="evenodd" d="M8 3a2 2 0 0 0-2 2v3h12V5a2 2 0 0 0-2-2H8Zm-3 7a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h1v-4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v4h1a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H5Zm4 11a1 1 0 0 1-1-1v-4h8v4a1 1 0 0 1-1 1H9Z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="ms-2 mr-3">Book Circulation Audit Trail</span>
                   </a>
                 </li>
                 @endcan

@@ -17,7 +17,16 @@ class UserAudit extends Model
     }
     public function changedBy()
     {
-        if($this->changed_by != 'system') return $this->belongsTo(User::class, 'changed_by', 'id');
-        return null;
+        return $this->belongsTo(User::class, 'changed_by', 'id');
+    }
+
+    public function oldPrivilege()
+    {
+        return $this->belongsTo(UserGroup::class, 'old_value', 'id');
+    }
+
+    public function newPrivilege()
+    {
+        return $this->belongsTo(UserGroup::class, 'new_value', 'id');
     }
 }
