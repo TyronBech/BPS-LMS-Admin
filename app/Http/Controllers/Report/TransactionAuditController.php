@@ -10,7 +10,7 @@ class TransactionAuditController extends Controller
 {
     public function index(Request $request)
     {
-        $data = TransactionAudit::with('transaction', 'changedBy')->orderBy('created_at', 'desc')->get();
+        $data = TransactionAudit::with('transaction', 'changedBy', 'oldBook', 'newBook', 'oldUser', 'newUser')->orderBy('created_at', 'desc')->get();
         return view('report.audits.transactions.index', compact('data'));
     }
 }
