@@ -80,6 +80,7 @@ class AdminMaintenanceController extends Controller
             return redirect()->route('maintenance.create-admin')->with('toast-warning', 'Please select a role');
         }
         try {
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $role = $request->input('role');
             $admin = User::where('rfid', $request->input('adminID'))->first();
             $admin->assignRole($role);
@@ -125,6 +126,7 @@ class AdminMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try {
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $authAdmin = User::findOrFail(Auth::guard('admin')->user()->id);
             if($authAdmin->hasAnyRole(RolesEnum::SUPER_ADMIN, RolesEnum::ADMIN)){
                 $admin = User::findOrFail($request->input('id'));
@@ -149,6 +151,7 @@ class AdminMaintenanceController extends Controller
     public function destroy(Request $request){
         DB::beginTransaction();
         try{
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $admin = User::findOrFail($request->input('id'));
             if($admin == null){
                 return redirect()->back()->with('toast-warning', 'Admin not found');

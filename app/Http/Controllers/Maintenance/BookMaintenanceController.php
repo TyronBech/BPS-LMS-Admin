@@ -243,6 +243,7 @@ class BookMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try{
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             Book::whereIn('id', $ids)->delete();
         }catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();

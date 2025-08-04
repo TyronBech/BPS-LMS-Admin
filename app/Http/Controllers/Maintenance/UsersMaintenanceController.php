@@ -396,6 +396,7 @@ class UsersMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try{
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             User::whereIn('id', $ids)->delete();
         }catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();
@@ -411,6 +412,7 @@ class UsersMaintenanceController extends Controller
         if(empty($ids)){
             return redirect()->back()->with('toast-warning', 'No employees selected for deletion!');
         }
+        DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
         $user = User::whereIn('id', $ids)->get();
         if($user->contains(function($u) {
             return $u->hasRole(RolesEnum::SUPER_ADMIN);
