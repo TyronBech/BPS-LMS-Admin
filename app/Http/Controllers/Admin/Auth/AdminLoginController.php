@@ -30,10 +30,10 @@ class AdminLoginController extends Controller
         ]);
         $user = User::where('email', $request->input('email'))->first();
         if(!$user) {
-            return redirect()->back()->with('toast-error', 'Invalid email or password.');
+            return redirect()->back()->with('toast-error', 'Invalid email or password.')->withInput();
         }
         if($user->getRoleNames()->isEmpty()) {
-            return redirect()->back()->with('toast-error', 'You do not have admin access to this area.');
+            return redirect()->back()->with('toast-error', 'You do not have admin access to this area.')->withInput();
         }
         $request->authenticate();
 

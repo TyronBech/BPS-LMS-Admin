@@ -50,11 +50,24 @@ class UserAuditController extends Controller
     }
     private function generateData(Request $request, UserAudit $tableName, $isExport = false)
     {
-        $fromInputDate  = $request->input('start' , '');
+        $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
         $types          = strtoupper($request->input('types', 'ALL'));
         $perPage        = $request->input('perPage', 10);
-        $data           = $tableName::with('user', 'changedBy', 'oldPrivilege', 'newPrivilege')->orderBy('created_at', 'desc');
+        $data           = $tableName::with([
+            'user' => function ($query) {
+                $query->withTrashed();
+            },
+            'changedBy' => function ($query) {
+                $query->withTrashed();
+            },
+            'oldPrivilege' => function ($query) {
+                $query->withTrashed();
+            },
+            'newPrivilege' => function ($query) {
+                $query->withTrashed();
+            },
+        ])->orderBy('created_at', 'desc');
         if (strlen($fromInputDate) > 0) {
             $fromInputDate = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
             $toInputDate = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
@@ -63,7 +76,7 @@ class UserAuditController extends Controller
         if ($types !== 'ALL') {
             $data->where(DB::raw('upper(' . $tableName->getTable() . '.change_type)'), $types);
         }
-        if($isExport) {
+        if ($isExport) {
             $data = $data->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.created_at)'), 'asc')
                 ->orderBy(DB::raw('TIME(' . $tableName->getTable() . '.created_at)'), 'asc')
                 ->get();

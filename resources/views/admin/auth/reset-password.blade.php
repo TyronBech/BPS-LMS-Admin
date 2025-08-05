@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,7 +8,6 @@
   @vite(['resources/css/app.css', 'resources/js/app.js'])
   <link rel="icon" href="{{ asset('img/BPSLogo.png') }}">
 </head>
-
 <body class="relative bg-blue-50 dark:bg-gray-900">
   <header>
     <div class="bg-bpsBlue border-gray-200 dark:bg-bpsBlue min-h-36 pt-5">
@@ -26,6 +24,7 @@
     </div>
   </header>
   <main class="container relative mx-auto my-4 px-2 font-sans flex-col">
+    @include('layouts.toast')
     <div class="flex flex-col items-center justify-center h-[calc(100vh-17rem)] w-full">
       <img class="w-20 h-20 block mb-4 dark:hidden" src="{{ asset('img/OwlQuery.png') }}" alt="OwlQuery">
       <img class="hidden dark:block w-20 h-20 mb-4" src="{{ asset('img/OwlQuery Dark.png') }}" alt="OwlQuery">
@@ -35,7 +34,7 @@
           <input type="hidden" name="token" value="{{ $request->route('token') }}">
           <div class="mb-5">
             <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email:</label>
-            <input type="email" id="email" name="email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="name@flowbite.com" required autofocus />
+            <input type="email" id="email" name="email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="name@example.com" value="{{ old('email') }}" required autofocus />
             @error('email')
             <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
               <span class="font-medium">{{ $message }}</span>
@@ -45,7 +44,7 @@
           <!-- Password Field with Toggle -->
           <div class="mb-5 relative">
             <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Password:</label>
-            <input type="password" id="password" name="password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pr-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required />
+            <input type="password" id="password" name="password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pr-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value="{{ old('password') }}" required />
             <!-- Toggle button -->
             <button type="button" id="togglePassword" class="absolute right-3 top-[38px] text-gray-500 dark:text-white" aria-label="Toggle password visibility">
               <span id="openEye1" class="hidden">
@@ -71,7 +70,7 @@
           <!-- Confirm Password Field with Toggle -->
           <div class="mb-5 relative">
             <label for="password_confirmation" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Confirm Password:</label>
-            <input type="password" id="password_confirmation" name="password_confirmation" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pr-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required />
+            <input type="password" id="password_confirmation" name="password_confirmation" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pr-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value="{{ old('password_confirmation') }}" required />
             <!-- Toggle button -->
             <button type="button" id="togglePasswordConfirmation" class="absolute right-3 top-[38px] text-gray-500 dark:text-white" aria-label="Toggle confirm password visibility">
               <span id="openEye2" class="hidden">

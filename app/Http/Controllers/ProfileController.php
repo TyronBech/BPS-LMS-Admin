@@ -42,12 +42,12 @@ class ProfileController extends Controller
                 $rules['new_password']              = ['required', 'string', Password::min(8)->mixedCase()->letters()->numbers()->symbols()->uncompromised(), 'confirmed'];
                 $rules['new_password_confirmation'] = 'required';
             } else {
-                return redirect()->back()->with('toast-warning', 'Please fill in the new password and confirmation fields.');
+                return redirect()->back()->with('toast-warning', 'Please fill in the new password and confirmation fields.')->withInput();
             }
         }
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
-            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         DB::beginTransaction();
         try{
@@ -68,7 +68,7 @@ class ProfileController extends Controller
             }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
-            return redirect()->back()->with('toast-error', 'Failed to update information. Please try again.');
+            return redirect()->back()->with('toast-error', 'Failed to update information. Please try again.')->withInput();
         }
         DB::commit();
         // Send email notification
