@@ -97,7 +97,9 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::get('users',         [UserAuditController::class, 'index'])          ->name('report.audit-trail.users');
             Route::post('users',        [UserAuditController::class, 'search'])         ->name('report.audit-trail.users-search');
             Route::get('books',         [BookAuditController::class, 'index'])          ->name('report.audit-trail.books');
+            Route::post('books',        [BookAuditController::class, 'search'])         ->name('report.audit-trail.books-search');
             Route::get('transactions',  [TransactionAuditController::class, 'index'])   ->name('report.audit-trail.transactions');
+            Route::post('transactions', [TransactionAuditController::class, 'search'])  ->name('report.audit-trail.transactions-search');
         });
     });
     Route::prefix('import')->group(function () {
