@@ -24,8 +24,12 @@
       </button>
     </form>
     @can(PermissionsEnum::ADD_BOOKS, 'admin')
-    <div>
-      <a href="{{ route('maintenance.create-book') }}" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">Add new book</a>
+    <div class="flex">
+      <form action="{{ route('maintenance.export-barcode') }}" method="GET">
+        @csrf
+        <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Export Barcodes</button>
+      </form>
+      <a href="{{ route('maintenance.create-book') }}" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Add new book</a>
     </div>
     @endcan
   </div>

@@ -18,6 +18,7 @@
     <p class="mb-3 font-normal text-gray-700 dark:text-gray-400"><span class="font-bold">Remarks:</span> {{ $book->remarks }}</p>
     <p class="mb-3 font-normal text-gray-700 dark:text-gray-400"><span class="font-bold">Availbability:</span> {{ $book->availability_status }}</p>
     <p class="mb-3 font-normal text-gray-700 dark:text-gray-400"><span class="font-bold">Condition:</span> {{ $book->condition_status }}</p>
+    <div class="mb-3 font-normal text-gray-700 dark:text-gray-400"><span class="font-bold">Barcode:</span><img src="data:image/jpeg;base64, {{ $book->barcode }}" alt="Book Barcode"></div>
   </div>
 </div>
 <a href="{{ route('maintenance.books') }}" class="inline-flex items-center px-3 py-3 mt-3 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">

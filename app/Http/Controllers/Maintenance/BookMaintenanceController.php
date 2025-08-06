@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Category;
+use Dompdf\Dompdf;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -218,6 +219,20 @@ class BookMaintenanceController extends Controller
         }
         DB::commit();
         return redirect()->back()->with('toast-success', 'Book updated successfully');
+    }
+    public function export_barcode(Request $request)
+    {
+        ini_set('memory_limit', '256M');
+        $books = Book::select('barcode', 'accession')->get();
+        $barcodeGenerator = new DNS1D();
+        $dompdf = new Dompdf();
+
+        $html = view('pdf.barcode-export-template', compact('books'))->render();
+        $dompdf->loadHtml($html);
+        $dompdf->setPaper('legal', 'portrait');
+        $dompdf->render();
+
+        return $dompdf->stream('barcodes.pdf');
     }
     public function destroy(Request $request)
     {

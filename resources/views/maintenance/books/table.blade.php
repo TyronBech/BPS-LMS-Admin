@@ -33,8 +33,8 @@
             </div>
           </th>
           <th scope="col" class="p-2 text-center">Accession</th>
+          <th scope="col" class="p-2 text-center">Call Number</th>
           <th scope="col" class="p-2 text-center">Title</th>
-          <th scope="col" class="p-2 text-center">Barcode</th>
           <th scope="col" class="p-2 text-center">Remarks</th>
           <th scope="col" class="p-2 text-center">Actions</th>
         </tr>
@@ -49,10 +49,8 @@
             </div>
           </td>
           <td class="max-w-40 h-14">{{ $item->accession }}</td>
+          <td class="max-w-40 h-14">{{ $item->call_number }}</td>
           <td class="max-w-72 overflow-hidden text-ellipsis">{{ $item->title }}</td>
-          <td class="max-w-60 text-start">
-            <img src="data:image/jpg;base64,{{ $item->barcode }}" alt="barcode" />
-          </td>
           <td class="max-w-36">{{ $item->remarks }}</td>
           <td class="pb-1 flex justify-center">
             <a href="{{ route('maintenance.view-book', ['accession' => $item->accession]) }}" id="viewBtn" name="viewBtn" class="focus:outline-none text-white bg-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2 dark:focus:ring-yellow-900">View</a>
