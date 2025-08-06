@@ -87,7 +87,7 @@
         </div>
         <!-- Current Password -->
         <div class="relative z-0 w-full mb-5 group">
-          <input type="password" name="current_password" id="current_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" value="{{ old('current_password') }}" required autocomplete="current-password"placeholder="••••••••" />
+          <input type="password" name="current_password" id="current_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" value="{{ old('current_password') }}" required autocomplete="current-password" placeholder=" " />
           <label for="current_password" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Current Password:</label>
           <!-- Toggle Button -->
           <button type="button" id="toggleCurrent_password" class="absolute right-0 top-1/2 -translate-y-1/2 px-3 text-gray-500 dark:text-white" aria-label="Toggle current password">
@@ -112,7 +112,7 @@
         </div>
         <!-- New Password -->
         <div class="relative z-0 w-full mb-5 group">
-          <input type="password" name="new_password" id="new_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" value="{{ old('new_password') }}" placeholder="••••••••" />
+          <input type="password" name="new_password" id="new_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" value="{{ old('new_password') }}" placeholder=" " />
           <label for="new_password" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">New Password:</label>
           <!-- Toggle Button -->
           <button type="button" id="toggleNew_password" class="absolute right-0 top-1/2 -translate-y-1/2 px-3 text-gray-500 dark:text-white" aria-label="Toggle new password">
@@ -137,7 +137,7 @@
         </div>
         <!-- Confirm Password -->
         <div class="relative z-0 w-full mb-5 group">
-          <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" value="{{ old('new_password_confirmation') }}" placeholder="••••••••" />
+          <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" value="{{ old('new_password_confirmation') }}" placeholder=" " />
           <label for="new_password_confirmation" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Confirm Password:</label>
           <!-- Toggle Button -->
           <button type="button" id="toggleNew_password_confirmation" class="absolute right-0 top-1/2 -translate-y-1/2 px-3 text-gray-500 dark:text-white" aria-label="Toggle confirm password">
