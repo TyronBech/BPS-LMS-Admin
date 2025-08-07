@@ -62,6 +62,22 @@
             <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name:</label>
             <input type="text" name="name" id="name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white" placeholder="Fiction" required />
           </div>
+          <div>
+            <label for="borrow_duration_days_edit" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Duration of Borrow in Days:</label>
+            <div class="relative flex items-center max-w-[8rem]">
+              <button type="button" id="decrement-button" data-input-counter-decrement="borrow_duration_days_edit" class="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-s-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none">
+                <svg class="w-3 h-3 text-gray-900 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 2">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h16" />
+                </svg>
+              </button>
+              <input type="text" id="borrow_duration_days_edit" name="borrow_duration_days_edit" data-input-counter aria-describedby="helper-text-explanation" class="bg-gray-50 border-x-0 border-gray-300 h-11 text-center text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 block w-full py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="5" min="0" max="99" required />
+              <button type="button" id="increment-button" data-input-counter-increment="borrow_duration_days_edit" class="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-e-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none">
+                <svg class="w-3 h-3 text-gray-900 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
+                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 1v16M1 9h16" />
+                </svg>
+              </button>
+            </div>
+          </div>
           <input type="hidden" name="edit_category_id" id="edit_category_id" value="" />
           <button type="submit" class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
         </form>
@@ -101,14 +117,14 @@
   const editButtons = document.querySelectorAll('.editBtn');
   const editInputID = document.getElementById('edit_category_id');
   const inputLegend = document.getElementById('legend');
-  const inputName   = document.getElementById('name');
+  const inputName = document.getElementById('name');
   editButtons.forEach(btn => {
     btn.addEventListener('click', function(event) {
-      const categoryId        = event.target.value;
+      const categoryId = event.target.value;
       editInputID.textContent = categoryId;
-      editInputID.value       = categoryId;
-      inputLegend.value       = event.target.parentElement.parentElement.children[0].textContent;
-      inputName.value         = event.target.parentElement.parentElement.children[1].textContent;
+      editInputID.value = categoryId;
+      inputLegend.value = event.target.parentElement.parentElement.children[0].textContent;
+      inputName.value = event.target.parentElement.parentElement.children[1].textContent;
     });
   });
   const deleteButtons = document.querySelectorAll('.deleteBtn');

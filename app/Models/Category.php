@@ -18,6 +18,7 @@ class Category extends Model
         'discarded',
         'newly_acquired',
         'present_inventory',
+        'borrow_duration_days',
 
     ];
 

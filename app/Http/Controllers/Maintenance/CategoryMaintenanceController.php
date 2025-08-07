@@ -18,8 +18,9 @@ class CategoryMaintenanceController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'name'      => 'required|string|max:50',
-            'legend'    => 'required|string|max:255',
+            'name'                      => 'required|string|max:50',
+            'legend'                    => 'required|string|max:255',
+            'borrow_duration_days_add'  => 'required|integer|min:0|max:999',
         ]);
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -30,8 +31,9 @@ class CategoryMaintenanceController extends Controller
         DB::beginTransaction();
         try{
             Category::create([
-                'name'      => $request->input('name'),
-                'legend'    => $request->input('legend'),
+                'name'                  => $request->input('name'),
+                'legend'                => $request->input('legend'),
+                'borrow_duration_days'  => $request->input('borrow_duration_days_add'),
             ]);
         } catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();
@@ -44,8 +46,9 @@ class CategoryMaintenanceController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'name'      => 'required|string|max:50',
-            'legend'    => 'required|string|max:255',
+            'name'                      => 'required|string|max:50',
+            'legend'                    => 'required|string|max:255',
+            'borrow_duration_days_edit' => 'required|integer|min:0|max:999',
         ]);
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -53,8 +56,9 @@ class CategoryMaintenanceController extends Controller
         DB::beginTransaction();
         try{
             $category = Category::findOrFail($request->input('edit_category_id'));
-            $category->name     = $request->input('name');
-            $category->legend   = $request->input('legend');
+            $category->name                 = $request->input('name');
+            $category->legend               = $request->input('legend');
+            $category->borrow_duration_days = $request->input('borrow_duration_days_edit');
             $category->save();
         } catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();

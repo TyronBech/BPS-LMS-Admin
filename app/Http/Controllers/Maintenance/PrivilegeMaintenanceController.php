@@ -13,7 +13,8 @@ class PrivilegeMaintenanceController extends Controller
     public function index()
     {
         $privileges = UserGroup::all();
-        return view('maintenance.privileges.index', compact('privileges'));
+        $durations = $this->extract_enums((new UserGroup)->getTable(), 'duration_type');
+        return view('maintenance.privileges.index', compact('privileges', 'durations'));
     }
     public function store(Request $request)
     {
@@ -21,8 +22,8 @@ class PrivilegeMaintenanceController extends Controller
             'user_type'                 => 'required|string|max:50',
             'category'                  => 'required|string|max:50',
             'max_book_allowed_add'      => 'required|integer|min:0|max:999',
-            'borrow_duration_days_add'  => 'required|integer|min:0|max:999',
             'renewal_limit_add'         => 'required|integer|min:0|max:999',
+            'duration_type'             => 'required|string|max:50|in:'.implode(',', $this->extract_enums((new UserGroup)->getTable(), 'duration_type')),
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -33,8 +34,8 @@ class PrivilegeMaintenanceController extends Controller
                 'user_type'             => $request->input('user_type'),
                 'category'              => $request->input('category'),
                 'max_book_allowed'      => $request->input('max_book_allowed_add'),
-                'borrow_duration_days'  => $request->input('borrow_duration_days_add'),
                 'renewal_limit'         => $request->input('renewal_limit_add'),
+                'duration_type'         => $request->input('duration_type'),
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
@@ -49,8 +50,8 @@ class PrivilegeMaintenanceController extends Controller
             'user_type'                     => 'required|string|max:50',
             'category'                      => 'required|string|max:50',
             'max_book_allowed_update'       => 'required|integer|min:0|max:999',
-            'borrow_duration_days_update'   => 'required|integer|min:0|max:999',
             'renewal_limit_update'          => 'required|integer|min:0|max:999',
+            'duration_type'                 => 'required|string|max:50|in:'.implode(',', $this->extract_enums((new UserGroup)->getTable(), 'duration_type')),
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -62,8 +63,8 @@ class PrivilegeMaintenanceController extends Controller
                 'user_type'             => $request->input('user_type'),
                 'category'              => $request->input('category'),
                 'max_book_allowed'      => $request->input('max_book_allowed_update'),
-                'borrow_duration_days'  => $request->input('borrow_duration_days_update'),
                 'renewal_limit'         => $request->input('renewal_limit_update'),
+                'duration_type'         => $request->input('duration_type'),
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
@@ -84,5 +85,21 @@ class PrivilegeMaintenanceController extends Controller
         }
         DB::commit();
         return redirect()->route('maintenance.privileges')->with('toast-success', 'Privilege deleted successfully.');
+    }
+    private function extract_enums($table, $columnName){
+        $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";
+        $column = DB::select($query);
+        if (empty($column)) {
+            return ['N/A'];
+        }
+        $type = $column[0]->Type;
+        // Extract enum values
+        preg_match('/enum\((.*)\)$/', $type, $matches);
+        $enumValues = [];
+
+        if (isset($matches[1])) {
+            $enumValues = str_getcsv($matches[1], ',', "'");
+        }
+        return $enumValues;
     }
 }

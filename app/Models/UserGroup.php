@@ -14,7 +14,7 @@ class UserGroup extends Model
         'user_type',
         'category',
         'max_book_allowed',
-        'borrow_duration_days',
+        'duration_type',
         'renewal_limit',
     ];
     public function users() : HasMany
