@@ -31,8 +31,7 @@ class ProfileController extends Controller
     {
         $rules = [
             'first_name'    => ['required', 'string', 'max:50'],
-            'middle_name'   => ['required', 'string', 'max:50'],
-            'last_name'     => ['required', 'string', 'max:50'],
+            'middle_name'   => ['nullable', 'string', 'max:50'],
             'email'         => ['required', 'string', 'max:50', 'email'],
             'user_id'       => ['required', 'string', 'max:50'],
         ];
