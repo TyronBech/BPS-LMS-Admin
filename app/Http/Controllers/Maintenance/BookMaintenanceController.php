@@ -247,7 +247,7 @@ class BookMaintenanceController extends Controller
     }
     public function export_barcode(Request $request)
     {
-        ini_set('memory_limit', '256M');
+        ini_set('memory_limit', '1024M');
         $category = $request->input('category', '');
         $books = null;
         if(empty($category)){
