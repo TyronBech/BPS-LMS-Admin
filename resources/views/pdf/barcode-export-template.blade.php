@@ -52,8 +52,8 @@
 
 <body>
   <table>
-    @for ($i = 0; $i < count($books) - 1; $i+=2)
-    <tr>
+    @for ($i = 0; $i < count($books); $i+=2)
+      <tr>
       <td>
         <div class="barcode-container">
           <p>BPS LIBRARY</p>
@@ -68,6 +68,7 @@
           <p class="barcode-text">{{ $books[$i]->accession }}</p>
         </div>
       </td>
+      @if(isset($books[$i + 1]))
       <td>
         <div class="barcode-container">
           <p>BPS LIBRARY</p>
@@ -82,8 +83,12 @@
           <p class="barcode-text">{{ $books[$i + 1]->accession }}</p>
         </div>
       </td>
-    </tr>
-    @endfor
+      @else
+      <td></td>
+      <td></td>
+      @endif
+      </tr>
+      @endfor
   </table>
 </body>
 

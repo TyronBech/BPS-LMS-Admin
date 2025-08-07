@@ -18,6 +18,8 @@ class BookMaintenanceController extends Controller
     {
         $perPage = $request->input('perPage', 10);
         $search = $request->input('search', '');
+        $category = $request->input('category', '');
+        $categories = Category::select('id', 'name')->get();
         $books = Book::with('category')
                     ->orderBy('accession', 'asc')
                     ->paginate($perPage)
@@ -25,7 +27,7 @@ class BookMaintenanceController extends Controller
                         'perPage' => $perPage,
                         'search' => $search,
                     ]);
-        return view('maintenance.books.books', compact('books', 'perPage', 'search'));
+        return view('maintenance.books.books', compact('books', 'perPage', 'search', 'categories', 'category'));
     }
     public function create()
     {
@@ -41,7 +43,7 @@ class BookMaintenanceController extends Controller
     {
         $books = new Book();
         $validator = Validator::make($request->all(), [
-            'accession'         => 'required|string|max:50',
+            'accession'         => 'required|string|max:50|unique:' . $books->getTable() . ',accession',
             'call_number'       => 'nullable|string|max:50',
             'title'             => 'required|string|max:150',
             'authors'           => 'nullable|string|max:1024',
@@ -125,7 +127,8 @@ class BookMaintenanceController extends Controller
     }
     public function show(Request $request)
     {
-        $search = strtolower($request->input('search'));
+        $search = $request->input('search', '');
+        $category = $request->input('category', '');
         $perPage = $request->input('perPage', 10);
         $books = Book::where('accession', 'like', '%' . $search . '%')
             ->orWhere('title', 'like', '%' . $search . '%')
@@ -146,8 +149,31 @@ class BookMaintenanceController extends Controller
             ->appends([
                 'perPage' => $perPage,
                 'search' => $search,
+                'category' => $category,
             ])->withQueryString();
-        return view('maintenance.books.books', compact('books', 'perPage', 'search'));
+        return view('maintenance.books.books', compact('books', 'perPage', 'search', 'category'));
+    }
+    public function search_category(Request $request){
+        $category = $request->input('category', '');
+        $search = $request->input('search', '');
+        $perPage = $request->input('perPage', 10);
+        $categories = Category::select('id', 'name')->get();
+        $validator = Validator::make($request->all(), [
+            'category' => 'required|string|in:' . implode(',', Category::all()->pluck('id')->toArray()),
+        ]);
+        if ($validator->fails()) {
+            return redirect()->back()->with('toast-error', $validator->errors()->first());
+        }
+        $books = Book::whereHas('category', function ($q) use ($category) {
+            $q->where('id', $category);
+        })->orderBy('accession', 'asc')
+            ->paginate($perPage)
+            ->appends([
+                'perPage' => $perPage,
+                'search' => $search,
+                'category' => $category,
+            ])->withQueryString();
+        return view('maintenance.books.books', compact('books', 'perPage', 'search', 'category', 'categories'));
     }
     public function view(Request $request){
         $accession = $request->input('accession');
@@ -170,8 +196,8 @@ class BookMaintenanceController extends Controller
             'publication'       => 'required|string|max:50',
             'publisher'         => 'required|string|max:100',
             'copyright'         => 'required|string|max:50',
-            'cover_image'       => 'nullable',
-            'digital_copy_url'  => 'nullable|string',
+            'cover_image'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'digital_copy_url'  => 'nullable|string|url',
             'remarks'           => 'required|in:'.implode(',', $this->extract_enums($books->getTable(), 'remarks')),
             'category'          => 'required|in:'.implode(',', Category::all()->pluck('id')->toArray()),
             'book_type'         => 'required|in:'.implode(',', $this->extract_enums($books->getTable(), 'book_type')),
@@ -211,7 +237,6 @@ class BookMaintenanceController extends Controller
                 'book_type'             => $request->input('book_type'),
                 'condition_status'      => $request->input('condition'),
                 'availability_status'   => $request->input('availability'),
-                'updated_at'            => now()
             ]);
         }catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();
@@ -223,7 +248,13 @@ class BookMaintenanceController extends Controller
     public function export_barcode(Request $request)
     {
         ini_set('memory_limit', '256M');
-        $books = Book::select('barcode', 'accession')->get();
+        $category = $request->input('category', '');
+        $books = null;
+        if(empty($category)){
+            $books = Book::select('barcode', 'accession')->get();
+        } else {
+            $books = Book::where('category_id', $category)->select('barcode', 'accession')->get();
+        }
         $barcodeGenerator = new DNS1D();
         $dompdf = new Dompdf();
 
