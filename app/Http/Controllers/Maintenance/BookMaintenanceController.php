@@ -130,6 +130,7 @@ class BookMaintenanceController extends Controller
         $search = $request->input('search', '');
         $category = $request->input('category', '');
         $perPage = $request->input('perPage', 10);
+        $categories = Category::select('id', 'name')->get();
         $books = Book::where('accession', 'like', '%' . $search . '%')
             ->orWhere('title', 'like', '%' . $search . '%')
             ->orWhere('author', 'like', '%' . $search . '%')
@@ -151,7 +152,7 @@ class BookMaintenanceController extends Controller
                 'search' => $search,
                 'category' => $category,
             ])->withQueryString();
-        return view('maintenance.books.books', compact('books', 'perPage', 'search', 'category'));
+        return view('maintenance.books.books', compact('books', 'perPage', 'search', 'category', 'categories'));
     }
     public function search_category(Request $request){
         $category = $request->input('category', '');
@@ -159,7 +160,7 @@ class BookMaintenanceController extends Controller
         $perPage = $request->input('perPage', 10);
         $categories = Category::select('id', 'name')->get();
         $validator = Validator::make($request->all(), [
-            'category' => 'required|string|in:' . implode(',', Category::all()->pluck('id')->toArray()),
+            'category' => 'sometimes|string|in:' . implode(',', Category::all()->pluck('id')->toArray()),
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-error', $validator->errors()->first());

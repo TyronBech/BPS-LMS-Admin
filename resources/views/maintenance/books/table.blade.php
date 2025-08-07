@@ -12,7 +12,8 @@
   </div>
   <form method="GET" class="m-2 justify-end">
     <label for="perPage" class="mr-2 text-sm font-medium text-gray-700">Show</label>
-    <input type="hidden" name="search" value="{{ request('search') }}">
+    <input type="hidden" name="search" value="{{ request('search', '') }}">
+    <input type="hidden" name="category" value="{{ request('category', '') }}">
     <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2, dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
       <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
       <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
