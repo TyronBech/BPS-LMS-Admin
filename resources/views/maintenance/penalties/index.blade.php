@@ -63,19 +63,14 @@
             @enderror
           </div>
           <div class="mb-5">
-            <label for="per_day" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Per Day:</label>
-            <div class="relative flex items-center max-w-[8rem]">
-              <button type="button" id="decrement-button" data-input-counter-decrement="per_day" class="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-s-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none">
-                <svg class="w-3 h-3 text-gray-900 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 2">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h16" />
-                </svg>
-              </button>
-              <input type="text" id="per_day" name="per_day" data-input-counter data-input-counter-min="0" data-input-counter-max="99" aria-describedby="helper-text-explanation" class="bg-gray-50 border-x-0 border-gray-300 h-11 text-center text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 block w-full py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="10" required />
-              <button type="button" id="increment-button" data-input-counter-increment="per_day" class="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-e-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none">
-                <svg class="w-3 h-3 text-gray-900 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 1v16M1 9h16" />
-                </svg>
-              </button>
+            <label for="per_day" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Accrues Daily: <span class="text-xs italic font-normal">(Amount of penalty increments daily?)</span></label>
+            <div class="flex items-center mb-4">
+              <input id="per_day-1" type="radio" value="1" name="per_day" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+              <label for="per_day-1" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Yes</label>
+            </div>
+            <div class="flex items-center">
+              <input checked id="per_day-2" type="radio" value="0" name="per_day" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+              <label for="per_day-2" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">No</label>
             </div>
             @error('per_day')
             <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">

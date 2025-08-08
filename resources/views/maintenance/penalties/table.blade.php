@@ -7,7 +7,7 @@
           <th scope="col" class="p-2 text-center">Type</th>
           <th scope="col" class="p-2 text-center">Description</th>
           <th scope="col" class="p-2 text-center">Rate</th>
-          <th scope="col" class="p-2 text-center">Per Day</th>
+          <th scope="col" class="p-2 text-center">Accrues Daily</th>
           <th scope="col" class="p-2 text-center">Actions</th>
         </tr>
       </thead>
@@ -15,9 +15,13 @@
         @forelse($rules as $item)
         <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
           <td class="min-w-40 h-14">{{ $item->type }}</td>
-          <td class="min-w-40 h-14">{{ $item->description }}</td>
+          <td class="min-w-40 h-14">{{ $item->description ?? 'None' }}</td>
           <td class="min-w-40 h-14">{{ $item->rate }}</td>
-          <td class="min-w-40 h-14">{{ $item->per_day }}</td>
+          @if($item->per_day == 0)
+          <td class="min-w-40 h-14">False</td>
+          @else
+          <td class="min-w-40 h-14">True</td>
+          @endif
           <td class="pb-1 flex justify-center">
             @if(auth()->user()->can(PermissionsEnum::EDIT_PENALTY_RULES))
             <button type="button" data-modal-target="edit-penalty-rule-modal" data-modal-toggle="edit-penalty-rule-modal" value="{{ $item->id }}" class="editBtn focus:outline-none text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2">Edit</button>
@@ -86,19 +90,14 @@
             @enderror
           </div>
           <div class="mb-5">
-            <label for="per_day" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Per Day:</label>
-            <div class="relative flex items-center max-w-[8rem]">
-              <button type="button" id="decrement-button" data-input-counter-decrement="per_day" class="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-s-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none">
-                <svg class="w-3 h-3 text-gray-900 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 2">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h16" />
-                </svg>
-              </button>
-              <input type="text" id="per_day" name="per_day" data-input-counter data-input-counter-min="0" data-input-counter-max="99" aria-describedby="helper-text-explanation" class="bg-gray-50 border-x-0 border-gray-300 h-11 text-center text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 block w-full py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="10" required />
-              <button type="button" id="increment-button" data-input-counter-increment="per_day" class="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-e-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none">
-                <svg class="w-3 h-3 text-gray-900 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 1v16M1 9h16" />
-                </svg>
-              </button>
+            <label for="per_day" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Accrues Daily: <span class="text-xs italic font-normal">(Amount of penalty increments daily?)</span></label>
+            <div class="flex items-center mb-4">
+              <input id="per_day-1" type="radio" value="1" name="per_day"  class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+              <label for="per_day-1" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Yes</label>
+            </div>
+            <div class="flex items-center">
+              <input checked id="per_day-2" type="radio" value="0" name="per_day" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+              <label for="per_day-2" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">No</label>
             </div>
             @error('per_day')
             <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
@@ -147,7 +146,8 @@
   const editInputType         = document.getElementById('type');
   const editInputDescription  = document.getElementById('description');
   const editInputRate         = document.getElementById('rate');
-  const editInputPerDay       = document.getElementById('per_day');
+  const per_day_1             = document.getElementById('per_day-1');
+  const per_day_2             = document.getElementById('per_day-2');
   editButtons.forEach(btn => {
     btn.addEventListener('click', function(event) {
       const ruleId                = event.target.value;
@@ -155,7 +155,13 @@
       editInputType.value         = event.target.parentElement.parentElement.children[0].textContent;
       editInputDescription.value  = event.target.parentElement.parentElement.children[1].textContent;
       editInputRate.value         = event.target.parentElement.parentElement.children[2].textContent;
-      editInputPerDay.value       = event.target.parentElement.parentElement.children[3].textContent;
+      if (event.target.parentElement.parentElement.children[3].textContent == 'True') {
+        per_day_1.checked = true;
+        per_day_2.checked = false;
+      } else {
+        per_day_1.checked = false;
+        per_day_2.checked = true;
+      }
     });
   });
   const deleteButtons = document.querySelectorAll('.deleteBtn');

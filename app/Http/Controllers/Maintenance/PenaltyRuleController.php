@@ -21,7 +21,7 @@ class PenaltyRuleController extends Controller
             'type'          => 'required|string',
             'description'   => 'required|string',
             'rate'          => 'required|numeric|min:0',
-            'per_day'       => 'required|numeric|min:0|max:99',
+            'per_day'       => 'required|integer|in:0,1',
         ]);
         if($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -47,7 +47,7 @@ class PenaltyRuleController extends Controller
             'type'          => 'required|string|max:50',
             'description'   => 'required|string|max:255',
             'rate'          => 'required|numeric|min:0',
-            'per_day'       => 'required|boolean',
+            'per_day'       => 'required|integer|in:0,1 ',
         ]);
         if($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
