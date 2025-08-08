@@ -35,6 +35,9 @@ class AdminLoginController extends Controller
         if($user->getRoleNames()->isEmpty()) {
             return redirect()->back()->with('toast-error', 'You do not have admin access to this area.')->withInput();
         }
+        if (Auth::guard('admin')->check()) {
+            return redirect()->intended(route('dashboard', absolute: false))->with('toast-error', 'A user is already logged in.');
+        }
         $request->authenticate();
 
         $request->session()->regenerate();
