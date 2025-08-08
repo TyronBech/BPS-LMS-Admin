@@ -224,8 +224,8 @@ class UsersMaintenanceController extends Controller
         try{
             $id = array_keys($request->all())[0];
             $user = User::with('employees', 'privileges')->where('id', $id)->first();
-            $privileges = UserGroup::where(DB::raw('lower(category)'), '!=', 'visitor')
-                        ->where(DB::raw('lower(category)'), '!=', 'student')
+            $privileges = UserGroup::where(DB::raw('lower(user_type)'), '!=', 'visitor')
+                        ->where(DB::raw('lower(user_type)'), '!=', 'student')
                         ->pluck('category');
         } catch(\Illuminate\Database\QueryException $e){
             return redirect()->back()->with('toast-error', 'Something went wrong!');
@@ -333,6 +333,11 @@ class UsersMaintenanceController extends Controller
             $base64Image = base64_encode($imageContent);
             $request->merge(['profile-image' => $base64Image]);
         }
+        $privileges = UserGroup::where(DB::raw('lower(user_type)'), '!=', 'visitor')
+                        ->where(DB::raw('lower(user_type)'), '!=', 'student')->pluck('id', 'category')->toArray();
+        if(!array_key_exists($request->input('employee_role'), $privileges)){
+            return redirect()->back()->with('toast-warning', 'User role is invalid')->withInput();
+        }
         DB::beginTransaction();
         try{
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
@@ -346,6 +351,7 @@ class UsersMaintenanceController extends Controller
                 'gender'        => $request->input('gender'),
                 'email'         => $request->input('email'),
                 'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
+                'privilege_id'  => $privileges[$request->input('employee_role')],
             ]);
             $employee->employees()->update([
                 'employee_id'   => $request->input('employee_id'),
