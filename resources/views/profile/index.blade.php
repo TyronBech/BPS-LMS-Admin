@@ -4,7 +4,12 @@
 <div class="w-8/12 p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
   <div class="grid grid-cols-2 md:grid-cols-1 lg:grid-cols-2 sm:grid-cols-1">
     <div>
+      @if($user->profile_image === null)
+      <img class="hidden rounded-full w-72 h-72 m-auto my-8 dark:block" src="{{ asset('img/User-dark.png') }}" alt="Profile Image">
+      <img class="rounded-full w-72 h-72 m-auto my-8 dark:hidden" src="{{ asset('img/User-light.png') }}" alt="Profile Image">
+      @else
       <img class="rounded-full w-72 h-72 m-auto my-8" src="data:image/jpeg;base64, {{ $user->profile_image }}" alt="Profile Image">
+      @endif
       <div class="flex flex-col justify-center m-auto w-7/12 mb-2">
         <span>
           <h2 class="text-2xl font-bold text-center">{{ $user->first_name }} {{ $user->last_name }}</h2>
@@ -87,7 +92,7 @@
         </div>
         <!-- Current Password -->
         <div class="relative z-0 w-full mb-5 group">
-          <input type="password" name="current_password" id="current_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" value="{{ old('current_password') }}" required autocomplete="current-password" placeholder=" " />
+          <input type="password" name="current_password" id="current_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" value="{{ old('current_password') }}" autocomplete="current-password" placeholder=" " />
           <label for="current_password" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Current Password:</label>
           <!-- Toggle Button -->
           <button type="button" id="toggleCurrent_password" class="absolute right-0 top-1/2 -translate-y-1/2 px-3 text-gray-500 dark:text-white" aria-label="Toggle current password">

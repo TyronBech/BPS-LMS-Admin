@@ -7,6 +7,8 @@ use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Validator;
@@ -39,6 +41,11 @@ class NewPasswordController extends Controller
         if($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
+        $user = User::where('email', $request->input('email'))->first();
+        if(!$user) {
+            return redirect()->back()->with('toast-error', 'User not found!')->withInput();
+        }
+        DB::statement("SET @current_user_id = ?", [$user->id]);
         // Here we will attempt to reset the user's password. If it is successful we
         // will update the password on an actual user model and persist it to the
         // database. Otherwise we will parse the error and return the response.

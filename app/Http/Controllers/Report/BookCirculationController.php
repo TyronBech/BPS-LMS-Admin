@@ -23,7 +23,7 @@ class BookCirculationController extends Controller
         $perPage        = $request->input('perPage', 10);
         $books          = new Book();
         $availability   = $this->extract_enums($books->getTable(), 'availability_status');
-        $data           = $this->generateData($request);
+        $data           = $this->generateData($request, false);
         return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability', 'perPage'));
     }
     public function search(Request $request)
@@ -41,20 +41,24 @@ class BookCirculationController extends Controller
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
-        $data = $this->generateData($request);
         if($request->input('submit') == 'pdf'){
+            $data = $this->generateData($request, true);
             $this->generatePDF($data);
             return redirect()->route('report.book-circulation')->with('toast-success', 'Successfully exported to PDF');
         } else if($request->input('submit') == 'excel'){
+            $data = $this->generateData($request, true);
             $this->exportExcel($data);
             return redirect()->route('report.book-circulation')->with('toast-success', 'Successfully exported to Excel');
         }
+        $data = $this->generateData($request, false);
         $availability = $this->extract_enums($books->getTable(), 'availability_status');
         if(!count($data)) return redirect()->route('report.book-circulation')->with('toast-error', 'No data found.');
         return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability', 'perPage'));
     }
     private function generatePDF($data)
     {
+        ini_set('memory_limit', '2048M');
+        ini_set('max_execution_time', 300);
         $items = [
             'title'         => 'Book Records',
             'school'        => "Bicutan Parochial School, Inc.",
