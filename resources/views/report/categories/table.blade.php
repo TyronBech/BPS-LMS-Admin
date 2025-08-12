@@ -2,7 +2,7 @@
 <div class="container flex flex-col border-collapse border-2 overflow-x-auto border-slate-900 mt-2 mb-4 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600">
   <h2 class="text-center mb-4 mt-4 font-semibold text-2xl">Report Table for Materials</h2>
   <table class="table-fixed m-4 bg-white dark:bg-gray-800">
-    <thead id="today-header" class="bg-blue-400 text-center font-bold text-slate-200">
+    <thead id="today-header" class="bg-blue-400 border-2 text-left font-bold text-slate-200 border-slate-300 dark:border-slate-700">
       <th>Legend</th>
       <th>Description</th>
       <th>Previous Inventory</th>
@@ -12,25 +12,25 @@
     </thead>
     <tbody id="students-activity">
       @forelse($data as $item)
-      <tr class="text-center">
-        <td class="pb-1">{{ $item->legend }}</td>
-        <td class="pb-1 text-center border-r border-slate-900 dark:border-gray-600">{{ $item->name }}</td>
-        <td class="pb-1 text-center">{{ $item->previous_inventory }}</td>
-        <td class="pb-1 text-center">{{ $item->newly_acquired }}</td>
-        <td class="pb-1 text-center">{{ $item->discarded }}</td>
-        <td class="pb-1 text-center">{{ $item->present_inventory }}</td>
+      <tr class="text-left text-slate-200 border-2 border-slate-300 dark:border-slate-700">
+        <td class="pl-2 border-r-2 border-slate-300 dark:border-slate-700">{{ $item->legend }}</td>
+        <td class="pl-2 border-r-2 border-slate-300 dark:border-slate-700 text-left">{{ $item->name }}</td>
+        <td class="pl-2 border-r-2 border-slate-300 dark:border-slate-700 text-left">{{ $item->previous_inventory }}</td>
+        <td class="pl-2 border-r-2 border-slate-300 dark:border-slate-700 text-left">{{ $item->newly_acquired }}</td>
+        <td class="pl-2 border-r-2 border-slate-300 dark:border-slate-700 text-left">{{ $item->discarded }}</td>
+        <td class="pl-2 border-r-2 border-slate-300 dark:border-slate-700 text-left">{{ $item->present_inventory }}</td>
       </tr>
       @empty
       <tr>
         <td colspan="8" class="text-center">No data found.</td>
       </tr>
       @endforelse
-      <tr class="border-t border-slate-900 dark:border-gray-600">
-        <td class="pb-1 text-right border-r pr-3 border-slate-900 dark:border-gray-600" colspan="2">Total:</td>
-        <td class="pb-1 text-center">{{ $data->sum('previous_inventory') }}</td>
-        <td class="pb-1 text-center">{{ $data->sum('newly_acquired') }}</td>
-        <td class="pb-1 text-center">{{ $data->sum('discarded') }}</td>
-        <td class="pb-1 text-center">{{ $data->sum('present_inventory') }}</td>
+      <tr class="border-2 border-slate-900 dark:border-gray-600">
+        <td class="pb-1 pl-2 pr-2 text-right border-2 border-slate-300 dark:border-slate-700" colspan="2">Total:</td>
+        <td class="pb-1 pl-2 border-2 border-slate-300 dark:border-slate-700">{{ $data->sum('previous_inventory') }}</td>
+        <td class="pb-1 pl-2 border-2 border-slate-300 dark:border-slate-700">{{ $data->sum('newly_acquired') }}</td>
+        <td class="pb-1 pl-2 border-2 border-slate-300 dark:border-slate-700">{{ $data->sum('discarded') }}</td>
+        <td class="pb-1 pl-2 border-2 border-slate-300 dark:border-slate-700">{{ $data->sum('present_inventory') }}</td>
       </tr>
     </tbody>
   </table>
