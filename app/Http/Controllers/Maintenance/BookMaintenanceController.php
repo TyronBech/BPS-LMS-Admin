@@ -10,6 +10,7 @@ use Dompdf\Dompdf;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use Milon\Barcode\DNS1D;
 
 class BookMaintenanceController extends Controller
@@ -21,12 +22,12 @@ class BookMaintenanceController extends Controller
         $category = $request->input('category', '');
         $categories = Category::select('id', 'name')->get();
         $books = Book::with('category')
-                    ->orderBy('accession', 'asc')
-                    ->paginate($perPage)
-                    ->appends([
-                        'perPage' => $perPage,
-                        'search' => $search,
-                    ]);
+            ->orderBy('accession', 'asc')
+            ->paginate($perPage)
+            ->appends([
+                'perPage' => $perPage,
+                'search' => $search,
+            ]);
         return view('maintenance.books.books', compact('books', 'perPage', 'search', 'categories', 'category'));
     }
     public function create()
@@ -34,7 +35,7 @@ class BookMaintenanceController extends Controller
         $books = new Book();
         $categories     = Category::all()->pluck('name', 'id');
         $condition      = $this->extract_enums($books->getTable(), 'condition_status');
-        $availability   = $this->extract_enums($books->getTable(), 'availability_status');     
+        $availability   = $this->extract_enums($books->getTable(), 'availability_status');
         $remarks        = $this->extract_enums($books->getTable(), 'remarks');
         $book_types     = $this->extract_enums($books->getTable(), 'book_type');
         return view('maintenance.books.create', compact('categories', 'condition', 'availability', 'remarks', 'book_types'));
@@ -54,26 +55,26 @@ class BookMaintenanceController extends Controller
             'copyright'         => 'required|string|max:50',
             'cover_image'       => 'nullable',
             'digital_copy_url'  => 'nullable|string',
-            'remarks'           => 'required|in:'.implode(',', $this->extract_enums($books->getTable(), 'remarks')),
-            'category'          => 'required|in:'.implode(',', Category::all()->pluck('id')->toArray()),
-            'book_type'         => 'required|in:'.implode(',', $this->extract_enums($books->getTable(), 'book_type')),
-            'condition'         => 'required|in:'.implode(',', $this->extract_enums($books->getTable(), 'condition_status')),
-            'availability'      => 'required|in:'.implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
+            'remarks'           => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'remarks')),
+            'category'          => 'required|in:' . implode(',', Category::all()->pluck('id')->toArray()),
+            'book_type'         => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'book_type')),
+            'condition'         => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'condition_status')),
+            'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
         ]);
-        if($validator->fails()){
+        if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
-        if(Book::where('accession', $request->input('accession'))->exists()){
+        if (Book::where('accession', $request->input('accession'))->exists()) {
             return redirect()->back()->with('toast-error', 'Book with this accession number already exists!');
         }
-        if($request->hasFile('cover_image')){
+        if ($request->hasFile('cover_image')) {
             $image = $request->file('cover_image');
             $imageContent = file_get_contents($image->getRealPath());
             $base64Image = base64_encode($imageContent);
             $request->merge(['cover_image' => $base64Image]);
         }
         DB::beginTransaction();
-        try{
+        try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $barcode = new DNS1D();
             Book::create([
@@ -97,9 +98,9 @@ class BookMaintenanceController extends Controller
                 'created_at'            => now(),
                 'updated_at'            => now()
             ]);
-        }catch(\Illuminate\Database\QueryException $e){
+        } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
-            if($e->getCode() == 23000){
+            if ($e->getCode() == 23000) {
                 return redirect()->back()->with('toast-error', 'Book with this accession number already exists!');
             } else {
                 return redirect()->back()->with('toast-error', $e->getMessage());
@@ -111,16 +112,16 @@ class BookMaintenanceController extends Controller
     public function edit(Request $request)
     {
         $book = null;
-        try{
+        try {
             $id = $request->input('id');
             $book = Book::findOrFail($id);
             $books = new Book();
             $categories     = Category::all()->pluck('name', 'id');
             $condition      = $this->extract_enums($books->getTable(), 'condition_status');
-            $availability   = $this->extract_enums($books->getTable(), 'availability_status');     
+            $availability   = $this->extract_enums($books->getTable(), 'availability_status');
             $remarks        = $this->extract_enums($books->getTable(), 'remarks');
             $book_types     = $this->extract_enums($books->getTable(), 'book_type');
-        } catch(\Exception $e){
+        } catch (\Exception $e) {
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         return view('maintenance.books.edit', compact('book', 'categories', 'condition', 'availability', 'remarks', 'book_types'));
@@ -152,9 +153,11 @@ class BookMaintenanceController extends Controller
                 'search' => $search,
                 'category' => $category,
             ])->withQueryString();
+
         return view('maintenance.books.books', compact('books', 'perPage', 'search', 'category', 'categories'));
     }
-    public function search_category(Request $request){
+    public function search_category(Request $request)
+    {
         $category = $request->input('category', '');
         $search = $request->input('search', '');
         $perPage = $request->input('perPage', 10);
@@ -176,13 +179,18 @@ class BookMaintenanceController extends Controller
             ])->withQueryString();
         return view('maintenance.books.books', compact('books', 'perPage', 'search', 'category', 'categories'));
     }
-    public function view(Request $request){
+    public function view(Request $request)
+    {
         $accession = $request->input('accession');
         $book = Book::with('category')->where('accession', $accession)->first();
-        if(!$book){
+        $cover = $this->getBookImage($book->title);
+        if (!$cover) {
+            $cover = $book->cover_image;
+        }
+        if (!$book) {
             return redirect()->back()->with('toast-error', 'Book not found!');
         }
-        return view('maintenance.books.view', compact('book'));
+        return view('maintenance.books.view', compact('book', 'cover'));
     }
     public function update(Request $request)
     {
@@ -199,24 +207,24 @@ class BookMaintenanceController extends Controller
             'copyright'         => 'required|string|max:50',
             'cover_image'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
             'digital_copy_url'  => 'nullable|string|url',
-            'remarks'           => 'required|in:'.implode(',', $this->extract_enums($books->getTable(), 'remarks')),
-            'category'          => 'required|in:'.implode(',', Category::all()->pluck('id')->toArray()),
-            'book_type'         => 'required|in:'.implode(',', $this->extract_enums($books->getTable(), 'book_type')),
-            'condition'         => 'required|in:'.implode(',', $this->extract_enums($books->getTable(), 'condition_status')),
-            'availability'      => 'required|in:'.implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
+            'remarks'           => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'remarks')),
+            'category'          => 'required|in:' . implode(',', Category::all()->pluck('id')->toArray()),
+            'book_type'         => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'book_type')),
+            'condition'         => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'condition_status')),
+            'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
         ]);
-        if($validator->fails()){
+        if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
         //dd($request->all());
-        if($request->hasFile('cover_image')){
+        if ($request->hasFile('cover_image')) {
             $image = $request->file('cover_image');
             $imageContent = file_get_contents($image->getRealPath());
             $base64Image = base64_encode($imageContent);
             $request->merge(['cover_image' => $base64Image]);
         }
         DB::beginTransaction();
-        try{
+        try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $barcode = new DNS1D();
             $book = Book::findOrFail($request->input('id'));
@@ -239,7 +247,7 @@ class BookMaintenanceController extends Controller
                 'condition_status'      => $request->input('condition'),
                 'availability_status'   => $request->input('availability'),
             ]);
-        }catch(\Illuminate\Database\QueryException $e){
+        } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             return redirect()->back()->with('toast-error', $e->getMessage());
         }
@@ -251,7 +259,7 @@ class BookMaintenanceController extends Controller
         ini_set('memory_limit', '1024M');
         $category = $request->input('category', '');
         $books = null;
-        if(empty($category)){
+        if (empty($category)) {
             $books = Book::select('barcode', 'accession')->get();
         } else {
             $books = Book::where('category_id', $category)->select('barcode', 'accession')->get();
@@ -269,11 +277,11 @@ class BookMaintenanceController extends Controller
     public function destroy(Request $request)
     {
         DB::beginTransaction();
-        try{
+        try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $id = $request->input('id');
             Book::find($id)->delete();
-        }catch(\Illuminate\Database\QueryException $e){
+        } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             return redirect()->route('maintenance.books')->with('toast-error', 'Something went wrong!');
         }
@@ -282,24 +290,71 @@ class BookMaintenanceController extends Controller
     }
     public function bulkDelete(Request $request)
     {
-        $ids = array_filter(explode(',', $request->input('ids')), function($id) {
+        $ids = array_filter(explode(',', $request->input('ids')), function ($id) {
             return is_numeric($id) && $id > 0;
         });
-        if(empty($ids)){
+        if (empty($ids)) {
             return redirect()->back()->with('toast-warning', 'No books selected for deletion!');
         }
         DB::beginTransaction();
-        try{
+        try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             Book::whereIn('id', $ids)->delete();
-        }catch(\Illuminate\Database\QueryException $e){
+        } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         DB::commit();
         return redirect()->route('maintenance.books')->with('toast-success', 'Books deleted successfully');
     }
-    private function extract_enums($table, $columnName){
+    private function getBookImage($title = null)
+    {
+        $apiKey = env('GOOGLE_BOOKS_API_KEY');
+        $url = "https://www.googleapis.com/books/v1/volumes?q=title:{$title}&key={$apiKey}";
+
+        // Path to local CA bundle
+        $caPath = storage_path('certs/cacert.pem');
+
+        try {
+            // Try secure request with CA verification
+            $options = [];
+            if (file_exists($caPath)) {
+                $options['verify'] = $caPath;
+            }
+
+            $response = Http::withOptions($options)->get($url);
+
+            if ($response->successful()) {
+                $data = $response->json();
+
+                if (!empty($data['items'][0]['volumeInfo']['imageLinks']['thumbnail'])) {
+                    return str_replace(
+                        'http://',
+                        'https://',
+                        $data['items'][0]['volumeInfo']['imageLinks']['thumbnail']
+                    );
+                }
+            }
+        } catch (\Exception $e) {
+            // Fallback: Try without verifying SSL (not recommended for production)
+            $response = Http::withoutVerifying()->get($url);
+
+            if ($response->successful()) {
+                $data = $response->json();
+
+                if (!empty($data['items'][0]['volumeInfo']['imageLinks']['thumbnail'])) {
+                    return str_replace(
+                        'http://',
+                        'https://',
+                        $data['items'][0]['volumeInfo']['imageLinks']['thumbnail']
+                    );
+                }
+            }
+        }
+        return null;
+    }
+    private function extract_enums($table, $columnName)
+    {
         $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";
         $column = DB::select($query);
         if (empty($column)) {
