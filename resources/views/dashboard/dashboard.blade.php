@@ -345,7 +345,7 @@
             "rgba(54, 162, 235, 1)",
             "rgba(255, 182, 115, 1)",
           ],
-          hoverOffset: 4,
+          hoverOffset: 25,
         }]
       },
       options: {
@@ -357,14 +357,20 @@
               color: chartColors.fontColor,
             },
           },
+          tooltip: {
+            enabled: false,
+          },
           datalabels: {
-            color: chartColors.fontColor,
-            formatter: (value, context) => {
-              const label = context.chart.data.labels[context.dataIndex];
-              return `${label}: ${value}`;
+            color: '#fff',
+            font: {
+              weight: 'bold',
+              size: 13,
             },
-            anchor: 'end',
-            align: 'start',
+            align: 'center',
+            formatter: (value) => value,
+            textAlign: 'center',
+            textShadowBlur: 10,
+            textShadowColor: 'rgba(0,0,0,0.8)',
           }
         }
       },

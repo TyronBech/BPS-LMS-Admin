@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Category;
 use Dompdf\Dompdf;
+use Exception;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
@@ -183,9 +184,13 @@ class BookMaintenanceController extends Controller
     {
         $accession = $request->input('accession');
         $book = Book::with('category')->where('accession', $accession)->first();
-        $cover = $this->getBookImage($book->title);
-        if (!$cover) {
-            $cover = $book->cover_image;
+        try {
+            $cover = $this->getBookImage($book->title);
+            if (!$cover) {
+                $cover = $book->cover_image;
+            }
+        } catch(Exception $e) {
+            $cover = null;
         }
         if (!$book) {
             return redirect()->back()->with('toast-error', 'Book not found!');
@@ -336,20 +341,7 @@ class BookMaintenanceController extends Controller
                 }
             }
         } catch (\Exception $e) {
-            // Fallback: Try without verifying SSL (not recommended for production)
-            $response = Http::withoutVerifying()->get($url);
-
-            if ($response->successful()) {
-                $data = $response->json();
-
-                if (!empty($data['items'][0]['volumeInfo']['imageLinks']['thumbnail'])) {
-                    return str_replace(
-                        'http://',
-                        'https://',
-                        $data['items'][0]['volumeInfo']['imageLinks']['thumbnail']
-                    );
-                }
-            }
+            return null;
         }
         return null;
     }

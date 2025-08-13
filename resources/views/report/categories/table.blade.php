@@ -13,12 +13,12 @@
     <tbody id="students-activity">
       @forelse($data as $item)
       <tr class="text-left text-slate-200 border-2 border-slate-300 dark:border-slate-700">
-        <td class="pl-2 border-r-2 border-slate-300 dark:border-slate-700">{{ $item->legend }}</td>
-        <td class="pl-2 border-r-2 border-slate-300 dark:border-slate-700 text-left">{{ $item->name }}</td>
-        <td class="pl-2 border-r-2 border-slate-300 dark:border-slate-700 text-left">{{ $item->previous_inventory }}</td>
-        <td class="pl-2 border-r-2 border-slate-300 dark:border-slate-700 text-left">{{ $item->newly_acquired }}</td>
-        <td class="pl-2 border-r-2 border-slate-300 dark:border-slate-700 text-left">{{ $item->discarded }}</td>
-        <td class="pl-2 border-r-2 border-slate-300 dark:border-slate-700 text-left">{{ $item->present_inventory }}</td>
+        <td class="pl-2 border-2 border-slate-300 dark:border-slate-700">{{ $item->legend }}</td>
+        <td class="pl-2 border-2 border-slate-300 dark:border-slate-700 text-left">{{ $item->name }}</td>
+        <td class="pl-2 border-2 border-slate-300 dark:border-slate-700 text-left">{{ $item->previous_inventory }}</td>
+        <td class="pl-2 border-2 border-slate-300 dark:border-slate-700 text-left">{{ $item->newly_acquired }}</td>
+        <td class="pl-2 border-2 border-slate-300 dark:border-slate-700 text-left">{{ $item->discarded }}</td>
+        <td class="pl-2 border-2 border-slate-300 dark:border-slate-700 text-left">{{ $item->present_inventory }}</td>
       </tr>
       @empty
       <tr>
