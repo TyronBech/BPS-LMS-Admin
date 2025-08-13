@@ -39,6 +39,7 @@ use App\Http\Middleware\InventoryAuthentication;
 use App\Http\Middleware\ReportAuthentication;
 use App\Http\Middleware\PrivilegeAuthentication;
 use App\Http\Middleware\BookCategoriesAuthentication;
+use App\Http\Middleware\ImportAuthentication;
 use App\Http\Middleware\PenaltyRuleMiddleware;
 
 Route::get('/', function () {
@@ -102,7 +103,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::post('transactions', [TransactionAuditController::class, 'search'])  ->name('report.audit-trail.transactions-search');
         });
     });
-    Route::prefix('import')->group(function () {
+    Route::prefix('import')->middleware(ImportAuthentication::class)->group(function () {
         Route::get('students',                      [StudentImportController::class, 'index'])                  ->name('import.import-students');
         Route::post('students',                     [StudentImportController::class, 'upload'])                 ->name('import.upload-students');
         Route::post('store-students',               [StudentImportController::class, 'store'])                  ->name('import.store-students');
