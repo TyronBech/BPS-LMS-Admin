@@ -1,6 +1,8 @@
+@use('App\Enum\PermissionsEnum')
 @extends('layouts.admin-app')
 @section('content')
 <h1 class="font-semibold text-center text-4xl p-5">Home</h1>
+@if(auth()->user()->can(PermissionsEnum::VIEW_DASHBOARD))
 <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
   <div class="flex flex-col min-h-96 justify-between max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <div>
@@ -413,4 +415,15 @@
   document.addEventListener('DOMContentLoaded', fetchYearlyAquiredBooks);
   document.addEventListener('DOMContentLoaded', fetchRegisteredUsers);
 </script>
+@else
+
+<div class="flex flex-col items-center max-w-sm p-6 my-28 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+<svg class="w-16 h-16 opacity-70 mb-3 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14v3m-3-6V7a3 3 0 1 1 6 0v4m-8 0h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1Z"/>
+</svg>
+<h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Access Restricted</h5>
+<p class="font-normal text-center text-gray-700 dark:text-gray-400">Sorry, you don't have access to view the dashboard page. Please contact your administrator.</p>
+</div>
+
+@endif
 @endsection
