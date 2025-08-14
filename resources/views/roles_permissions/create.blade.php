@@ -16,7 +16,7 @@
     @csrf
     <h6 class="mb-1 text-xl font-semibold tracking-tight text-gray-800 dark:text-white">Role Information</h6>
     <div class="mb-5">
-      <label for="role"class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Role Name:</label>
+      <label for="role" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Role Name:</label>
       <input type="text" id="role" name="role" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Admin">
       @error('role')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
@@ -24,11 +24,14 @@
       </div>
       @enderror
     </div>
-    <div class="mb-5 flex flex-col">
+    <div class="mb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3">
       @foreach($permissions as $permission)
-      <div class="flex items-center mb-4">
-        <input id="{{ $permission->id }}" name="permissions[]" type="checkbox" value="{{ $permission->name }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-        <label for="{{ $permission->id }}"class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">{{ $permission->name }}</label>
+      <div class="flex items-center">
+        <input id="{{ $permission->id }}" name="permissions[]" type="checkbox" value="{{ $permission->name }}"
+          class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+        <label for="{{ $permission->id }}" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
+          {{ $permission->name }}
+        </label>
       </div>
       @error('permissions.' . $loop->index)
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
