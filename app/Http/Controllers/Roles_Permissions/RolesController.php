@@ -11,22 +11,19 @@ use Illuminate\Support\Facades\DB;
 
 class RolesController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+        $perPage                = request('perPage', 10);
         $roles_with_permissions = Role::with('permissions')
                                     ->whereHas('permissions', function ($query) {
                                         $query->where('guard_name', 'admin')
                                                 ->where('name', '!=', 'Modify Admins');
                                     })
                                     ->get();
-        $permissions_with_roles = Permission::with('roles')
-                                    ->where('guard_name', 'admin')
-                                    ->where('name', '!=', 'Modify Admins')
-                                    ->get();
-        //dd($roles_with_permissions, $permissions_with_roles);
+        $permissions            = Permission::where('guard_name', 'admin')->paginate($perPage)->appends(['perPage' => $perPage]);
         $admins = User::all();
-        return view('roles_permissions.roles', compact('roles_with_permissions', 'permissions_with_roles', 'admins'));
+        return view('roles_permissions.roles', compact('roles_with_permissions', 'permissions', 'admins', 'perPage'));
     }
     public function create()
     {

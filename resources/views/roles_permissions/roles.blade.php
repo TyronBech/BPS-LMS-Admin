@@ -40,11 +40,47 @@ $roleID = null;
         $roleID = ['id' => $role->id];
         @endphp
         @if($role->name != 'Super Admin')
-          <button data-modal-target="popup-modal" data-modal-toggle="popup-modal" class="deleteBtn focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2" type="button" value="{{ $role->id }}">Delete</button>
+        <button data-modal-target="popup-modal" data-modal-toggle="popup-modal" class="deleteBtn focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2" type="button" value="{{ $role->id }}">Delete</button>
         @endif
       </div>
     </div>
     @endforeach
+  </div>
+  <h1 id="permissions" class="font-semibold text-center text-4xl p-5">Permissions</h1>
+  <hr class="mb-2 border-gray-600 dark:border-gray-500">
+  <div>
+    <form method="GET" class="m-2">
+      <label for="perPage" class="mr-2 text-sm font-medium text-gray-700">Show</label>
+      <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2, dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+        <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+        <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+        <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+      </select>
+      <span class="ml-2 text-sm text-gray-600">entries per page</span>
+    </form>
+    <table class="table-fixed w-full bg-white dark:bg-gray-800">
+      <thead class="bg-blue-400 text-left font-bold text-slate-200 border-2 border-slate-300 dark:border-slate-700">
+        <th class="w-[10%] pl-2 border-slate-300 dark:border-slate-700">No.</th>
+        <th class="w-[90%] pl-2 border-slate-300 dark:border-slate-700">Name</th>
+        <th class="w-[10%] pl-2 border-slate-300 dark:border-slate-700">Assigned No.</th>
+      </thead>
+      <tbody>
+        @forelse($permissions as $item)
+        <tr class="text-left border-2 border-slate-300 dark:border-slate-700">
+          <td class="pb-1 pl-2 border-slate-300 dark:border-slate-700">{{ $permissions->firstItem() + $loop->index }}</td>
+          <td class="pb-1 pl-2 border-slate-300 dark:border-slate-700">{{ $item->name }}</td>
+          <td class="pb-1 pl-2 text-center border-slate-300 dark:border-slate-700">{{ $item->roles->count() }}</td>
+        </tr>
+        @empty
+        <tr>
+          <td colspan="3" class="text-center">No data found.</td>
+        </tr>
+        @endforelse
+      </tbody>
+    </table>
+    <div class="m-4">
+      {{ $permissions->withQueryString()->fragment('permissions')->links() }}
+    </div>
   </div>
 </div>
 <div id="popup-modal" tabindex="-1" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
