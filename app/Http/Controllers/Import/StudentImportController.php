@@ -36,6 +36,16 @@ class StudentImportController extends Controller
         $users                  = new User();
         DB::beginTransaction();
         foreach ($dataArray as $item) {
+            if((!isset($item['rfid']) || $item['rfid'] == null || $item['rfid'] == "") &&
+                (!isset($item['id_number']) || $item['id_number'] == null || $item['id_number'] == "") &&
+                (!isset($item['grade_level']) || $item['grade_level'] == null || $item['grade_level'] == "") &&
+                (!isset($item['section']) || $item['section'] == null || $item['section'] == "") &&
+                (!isset($item['first_name']) || $item['first_name'] == null || $item['first_name'] == "") &&
+                (!isset($item['last_name']) || $item['last_name'] == null || $item['last_name'] == "") &&
+                (!isset($item['email']) || $item['email'] == null || $item['email'] == "") &&
+                (!isset($item['gender']) || $item['gender'] == null || $item['gender'] == "") &&
+                (!isset($item['middle_name']) || $item['middle_name'] == null || $item['middle_name'] == "") &&
+                (!isset($item['suffix']) || $item['suffix'] == null || $item['suffix'] == "")) continue;
             $validator = Validator::make($item, [
                 'rfid'          => 'required|string|min:10',
                 'first_name'    => 'required|string|max:50',
@@ -156,6 +166,17 @@ class StudentImportController extends Controller
                 return redirect()->route('import.import-students')->with('toast-error', "Excel file is empty.");
             }
             for($i = 19; $i < count($rows); $i++){
+                if($rows[$i][0] == null &&
+                    $rows[$i][1] == null &&
+                    $rows[$i][2] == null &&
+                    $rows[$i][3] == null &&
+                    $rows[$i][4] == null &&
+                    $rows[$i][5] == null &&
+                    $rows[$i][6] == null &&
+                    $rows[$i][7] == null &&
+                    $rows[$i][8] == null &&
+                    $rows[$i][9] == null &&
+                    $rows[$i][10] == null) continue;
                 $temp = array(
                         'rfid'          => $rows[$i][1],
                         'first_name'    => $rows[$i][2],

@@ -35,7 +35,7 @@
     }
 
     .barcode-image {
-      max-width: 97%;
+      max-width: 95%;
       height: auto;
       padding: 0;
       margin: 0;

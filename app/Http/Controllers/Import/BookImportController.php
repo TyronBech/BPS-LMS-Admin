@@ -107,7 +107,7 @@ class BookImportController extends Controller
                     'publisher'             => $item['publisher'],
                     'copyrights'            => $item['copyrights'],
                     'category_id'           => $category->id,
-                    'barcode'               => $barcode->getBarcodeJPG($item['accession'], 'C39+', 2, 80, array(0, 0, 0, 0), false),
+                    'barcode'               => $barcode->getBarcodeJPG($item['accession'], 'C39', 2, 80, array(0, 0, 0, 0), false),
                     'digital_copy_url'      => $item['digital_copy_url'] ?? null,
                     'remarks'               => 'On Shelf',
                     'availability_status'   => 'Available',

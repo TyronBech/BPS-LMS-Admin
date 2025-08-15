@@ -6,6 +6,7 @@
         <tr>
           <th scope="col" class="p-2 text-center">Legend</th>
           <th scope="col" class="p-2 text-center">Name</th>
+          <th scope="col" class="p-2 text-center">Duration of Borrow (in days)</th>
           <th scope="col" class="p-2 text-center">Actions</th>
         </tr>
       </thead>
@@ -14,6 +15,7 @@
         <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
           <td class="min-w-40 h-14">{{ $item->legend }}</td>
           <td class="min-w-40 h-14">{{ $item->name }}</td>
+          <td class="min-w-40 h-14">{{ $item->borrow_duration_days ?? 'None' }}</td>
           <td class="pb-1 flex justify-center">
             @if(auth()->user()->can(PermissionsEnum::EDIT_CATEGORIES))
             <button type="button" data-modal-target="edit-category-modal" data-modal-toggle="edit-category-modal" value="{{ $item->id }}" class="editBtn focus:outline-none text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2">Edit</button>

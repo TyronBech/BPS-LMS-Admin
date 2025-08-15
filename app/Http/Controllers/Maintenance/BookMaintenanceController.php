@@ -81,7 +81,7 @@ class BookMaintenanceController extends Controller
             Book::create([
                 'accession'             => $request->input('accession'),
                 'call_number'           => $request->input('call_number') ?? null,
-                'barcode'               => $barcode->getBarcodeJPG($request->input('accession'), 'C39+', 2, 80, array(0, 0, 0, 0), false),
+                'barcode'               => $barcode->getBarcodeJPG($request->input('accession'), 'C39', 2, 80, array(0, 0, 0, 0), false),
                 'title'                 => $request->input('title'),
                 'author'                => $request->input('authors') ?? null,
                 'description'           => $request->input('description') ?? null,
@@ -236,7 +236,7 @@ class BookMaintenanceController extends Controller
             $book->update([
                 'accession'             => $request->input('accession'),
                 'call_number'           => $request->input('call_number'),
-                'barcode'               => $barcode->getBarcodeJPG($request->input('accession'), 'C39+', 2, 80, array(0, 0, 0, 0), false),
+                'barcode'               => $barcode->getBarcodeJPG($request->input('accession'), 'C39', 2, 80, array(0, 0, 0, 0), false),
                 'title'                 => $request->input('title'),
                 'author'                => $request->input('authors'),
                 'description'           => $request->input('description'),

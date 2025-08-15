@@ -18,9 +18,9 @@
           <td class="min-w-40 h-14">{{ $item->description ?? 'None' }}</td>
           <td class="min-w-40 h-14">{{ $item->rate }}</td>
           @if($item->per_day == 0)
-          <td class="min-w-40 h-14">False</td>
+          <td class="min-w-40 h-14">No</td>
           @else
-          <td class="min-w-40 h-14">True</td>
+          <td class="min-w-40 h-14">Yes</td>
           @endif
           <td class="pb-1 flex justify-center">
             @if(auth()->user()->can(PermissionsEnum::EDIT_PENALTY_RULES))
@@ -155,7 +155,7 @@
       editInputType.value         = event.target.parentElement.parentElement.children[0].textContent;
       editInputDescription.value  = event.target.parentElement.parentElement.children[1].textContent;
       editInputRate.value         = event.target.parentElement.parentElement.children[2].textContent;
-      if (event.target.parentElement.parentElement.children[3].textContent == 'True') {
+      if (event.target.parentElement.parentElement.children[3].textContent == 'Yes') {
         per_day_1.checked = true;
         per_day_2.checked = false;
       } else {
