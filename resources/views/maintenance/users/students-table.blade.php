@@ -16,12 +16,22 @@ $increment = 0;
         @endcan
       </div>
     </div>
+    <form method="GET" class="justify-end m-2">
+      <input type="hidden" name="search" value="{{ request('search', '') }}">
+      <label for="perPage" class="mr-2 text-sm font-medium text-gray-700">Show</label>
+      <select name="perStudentPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2, dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+        <option value="10" {{ $perStudentPage == 10 ? 'selected' : '' }}>10</option>
+        <option value="25" {{ $perStudentPage == 25 ? 'selected' : '' }}>25</option>
+        <option value="50" {{ $perStudentPage == 50 ? 'selected' : '' }}>50</option>
+      </select>
+      <span class="ml-2 text-sm text-gray-600">entries per page</span>
+    </form>
   </div>
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
     <table class="w-full text-sm text-left rtl:text-right whitespace-nowrap table-auto">
       <thead class="text-xs py-2 text-gray-700 uppercase bg-gray-300 text-center dark:bg-gray-500 dark:text-white">
         <tr class="">
-          <th scope="col" class="p-2 text-center min-w-32">
+          <th scope="col" class="p-2 text-center max-w-3">
             <div class="flex items-center ml-4">
               <input id="selectAllStudents" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
               <label for="selectAllStudents" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"></label>
@@ -29,19 +39,14 @@ $increment = 0;
           </th>
           <th scope="col" class="p-2 text-center min-w-32">RFID</th>
           <th scope="col" class="p-2 text-center min-w-44">Name</th>
-          <th scope="col" class="p-2 text-center min-w-30">Suffix</th>
-          <th scope="col" class="p-2 text-center min-w-32">Gender</th>
-          <th scope="col" class="p-2 text-center min-w-32">LRN</th>
           <th scope="col" class="p-2 text-center min-w-24">Grade</th>
           <th scope="col" class="p-2 text-center min-w-11">Section</th>
-          <th scope="col" class="p-2 text-center min-w-60">Email</th>
           <th scope="col" class="p-2 text-center">Actions</th>
         </tr>
       </thead>
       <tbody>
-        @forelse($users as $item)
+        @foreach($students as $item)
         <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
-          @if($item->students)
           @php
           $increment++;
           @endphp
@@ -51,14 +56,10 @@ $increment = 0;
               <label for="studentCheck" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"></label>
             </div>
           </td>
-          <td class="py-4 pl-2">{{ $item->rfid }}</td>
-          <td class="py-4">{{ $item->first_name }} {{ $item->middle_name ? $item->middle_name : '' }} {{ $item->last_name }}</td>
-          <td class="py-4">{{ $item->suffix ? $item->suffix : '-' }}</td>
-          <td class="py-4">{{ $item->gender }}</td>
-          <td class="py-4">{{ $item->students->id_number }}</td>
+          <td class="py-4">{{ $item->rfid }}</td>
+          <td class="py-4">{{ $item->first_name }} {{ $item->middle_name ?? '' }} {{ $item->last_name }} {{ $item->suffix ?? '' }}</td>
           <td class="py-4">{{ $item->students->level }}</td>
           <td class="py-4">{{ $item->students->section }}</td>
-          <td class="py-4 px-5">{{ $item->email }}</td>
           <td class="py-4 flex justify-center">
             @can(PermissionsEnum::EDIT_USERS, 'admin')
             <a href="{{ route('maintenance.edit-student', $item->id) }}" id="editBtn" name="editBtn" class="text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2">Edit</a>
@@ -69,13 +70,8 @@ $increment = 0;
             @endcan
             @endif
           </td>
-          @endif
         </tr>
-        @empty
-        <tr>
-          <td colspan="10" class="text-center py-1.5">No data found.</td>
-        </tr>
-        @endforelse
+        @endforeach
         @if($increment == 0)
         <tr>
           <td colspan="10" class="text-center py-1.5">No data found.</td>
@@ -83,6 +79,9 @@ $increment = 0;
         @endif
       </tbody>
     </table>
+    <div class="m-4">
+      {{ $students->withQueryString()->fragment('studentHeader')->links() }}
+    </div>
   </div>
 </div>
 <div id="delete-student-modal" tabindex="-1" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
@@ -148,12 +147,12 @@ $increment = 0;
       deleteStudentID.value = studentId;
     });
   });
-  let checkedStudents             = 0;
-  const studentCheck              = document.querySelectorAll('#studentCheck');
-  const checkedStudentsContainer  = document.getElementById('checked-students');
-  const bulkDeleteStudentIds      = document.getElementById('bulk-delete_student_ids');
-  const bulkDeleteStudentBtn      = document.getElementById('bulkDeleteStudentBtn');
-  const selectedStudentHeader     = document.getElementById('selectedStudentHeader');
+  let checkedStudents = 0;
+  const studentCheck = document.querySelectorAll('#studentCheck');
+  const checkedStudentsContainer = document.getElementById('checked-students');
+  const bulkDeleteStudentIds = document.getElementById('bulk-delete_student_ids');
+  const bulkDeleteStudentBtn = document.getElementById('bulkDeleteStudentBtn');
+  const selectedStudentHeader = document.getElementById('selectedStudentHeader');
   const selectAllStudentsCheckbox = document.getElementById('selectAllStudents');
   bulkDeleteStudentIds.value = '';
   bulkDeleteStudentBtn.value = '';

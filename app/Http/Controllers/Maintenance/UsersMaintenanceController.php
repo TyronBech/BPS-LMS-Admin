@@ -14,17 +14,29 @@ use App\Models\StagingUser;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AccountEmailMessage;
+use App\Models\EmployeeDetail;
+use App\Models\StudentDetail;
 use Illuminate\Support\Facades\Auth;
 
 class UsersMaintenanceController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::with('students', 'employees')
-                    ->orderBy('id', 'asc')
-                    ->get();
+        $perStudentPage = $request->input('perStudentPage', 10);
+        $perEmployeePage = $request->input('perEmployeePage', 10);
+        $search = $request->input('search-users', '');
+        $students = User::whereHas('students')
+            ->with('students')
+            ->orderBy('id', 'asc')
+            ->paginate($perStudentPage)
+            ->appends(['perPage' => $perStudentPage]);
+        $employees = User::whereHas('employees')
+            ->with('employees')
+            ->orderBy('id', 'asc')
+            ->paginate($perEmployeePage)
+            ->appends(['perPage' => $perEmployeePage]);
         //dd($users->toArray());
-        return view('maintenance.users.users', compact('users'));
+        return view('maintenance.users.users', compact('students', 'employees', 'perStudentPage', 'perEmployeePage', 'search'));
     }
     public function create_student()
     {
@@ -33,81 +45,91 @@ class UsersMaintenanceController extends Controller
     public function create_employee()
     {
         $groups = UserGroup::where(DB::raw('lower(category)'), '!=', 'visitor')
-                            ->where(DB::raw('lower(category)'), '!=', 'student')
-                            ->pluck('category');
+            ->where(DB::raw('lower(category)'), '!=', 'student')
+            ->pluck('category');
         return view('maintenance.users.create-employee', compact('groups'));
     }
     public function show(Request $request)
     {
-        $search = strtolower($request->input('search-users'));
-        $users = User::where(DB::raw('lower(first_name)'), 'like', '%'.$search.'%')
-                    ->orWhere(DB::raw('lower(middle_name)'), 'like', '%'.$search.'%')
-                    ->orWhere(DB::raw('lower(last_name)'), 'like', '%'.$search.'%')
-                    ->orWhere(DB::raw('lower(concat(first_name, " ", middle_name, " ", last_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(middle_name, " ", last_name, ", ", first_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $search . '%')
-                    ->orWhere('email', 'like', '%'.$search.'%')
-                    ->orWhere('rfid', 'like', '%'.$search.'%')
-                    ->orWhereHas('students', function ($q) use ($search) {
-                        $q->where('id_number', 'like', '%'.$search.'%')
-                          ->orWhere('level', 'like', '%'.$search.'%')
-                          ->orWhere('section', 'like', '%'.$search.'%');
-                    })
-                    ->orWhereHas('employees', function ($q) use ($search) {
-                        $q->where('employee_id', 'like', '%'.$search.'%');
-                    })
-                    ->orWhereHas('privileges', function ($q) use ($search) {
-                        $q->where('user_type', 'like', '%'.$search.'%');
-                    })
-                    ->get();
-        return view('maintenance.users.users', compact('users'));
+        $perStudentPage  = $request->input('perStudentPage', 10);
+        $perEmployeePage = $request->input('perEmployeePage', 10);
+        $search          = strtolower($request->input('search-users', ''));
+
+        // Common search filter closure
+        $searchFilter = function ($query) use ($search) {
+            $query->where(DB::raw('lower(first_name)'), 'like', "%{$search}%")
+                ->orWhere(DB::raw('lower(middle_name)'), 'like', "%{$search}%")
+                ->orWhere(DB::raw('lower(last_name)'), 'like', "%{$search}%")
+                ->orWhere(DB::raw('lower(concat(first_name, " ", middle_name, " ", last_name))'), 'like', "%{$search}%")
+                ->orWhere(DB::raw('lower(concat(middle_name, " ", last_name, ", ", first_name))'), 'like', "%{$search}%")
+                ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name, " ", middle_name))'), 'like', "%{$search}%")
+                ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name))'), 'like', "%{$search}%")
+                ->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%")
+                ->orWhere('rfid', 'like', "%{$search}%");
+        };
+
+        // Students query
+        $students = User::whereHas('students')
+            ->where(function ($q) use ($searchFilter) {
+                $searchFilter($q);
+            })
+            ->orWhereHas('students', function ($q) use ($search) {
+                $q->where('id_number', 'like', "%{$search}%")
+                    ->orWhere('level', 'like', "%{$search}%")
+                    ->orWhere('section', 'like', "%{$search}%");
+            })
+            ->orderBy('id', 'asc')
+            ->paginate($perStudentPage, ['*'], 'students_page')
+            ->appends([
+                'perStudentPage' => $perStudentPage,
+                'search-users'   => $search
+            ]);
+
+        // Employees query
+        $employees = User::whereHas('employees')
+            ->where(function ($q) use ($searchFilter) {
+                $searchFilter($q);
+            })
+            ->orWhereHas('employees', function ($q) use ($search) {
+                $q->where('employee_id', 'like', "%{$search}%");
+            })
+            ->orderBy('id', 'asc')
+            ->paginate($perEmployeePage, ['*'], 'employees_page')
+            ->appends([
+                'perEmployeePage' => $perEmployeePage,
+                'search-users'    => $search
+            ]);
+
+        return view('maintenance.users.users', compact('students', 'employees', 'perStudentPage', 'perEmployeePage', 'search'));
     }
+
     public function store_student(Request $request)
     {
+        $users = new User();
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|min:10',
-            'first-name'    => 'required|string|max:50',
-            'middle-name'   => 'nullable|string|max:50',
-            'last-name'     => 'required|string|max:50',
-            'suffix'        => 'nullable|string|max:10',
-            'gender'        => 'required|in:' . implode(',', $this->extract_enums((new User())->getTable(), 'gender')),
-            'id_number'     => 'required|min:12',
+            'rfid'          => 'required|string|min:10|unique:' . $users->getTable() . ',rfid',
+            'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+            'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+            'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+            'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
+            'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
+            'id_number'     => 'required|numeric|min:12|unique:' . (new StudentDetail())->getTable() . ',id_number',
             'level'         => 'required|numeric|min:7|max:12',
             'section'       => 'required|max:50',
-            'email'         => 'required|string|email',
+            'email'         => 'required|string|email|unique:' . $users->getTable() . ',email',
         ]);
-        if($validator->fails()){
+        if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
-        if(!preg_match('/^[0-9]+$/', $request->input('rfid') || strlen($request->input('rfid')) != 10)){
-            return redirect()->back()->with('toast-warning', 'RFID number is invalid')->withInput();
-        } else if($this->has_invalid_characters($request->input('first-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s name contains invalid characters')->withInput();
-        } else if($request->input('middle-name') != null && $this->has_invalid_characters($request->input('middle-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s middle name contains invalid characters')->withInput();
-        } else if($this->has_invalid_characters($request->input('last-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s last name contains invalid characters')->withInput();
-        } else if(!in_array($request->input('suffix'), ['Jr.', 'Sr.', 'II', 'III', 'IV', ''])){
-            return redirect()->back()->with('toast-warning', 'User\'s suffix is invalid')->withInput();
-        } else if($request->input('level') != null && !preg_match('/^(?:[7-9]|1[0-2])$/', $request->input('level'))){
-            return redirect()->back()->with('toast-warning', 'User\'s grade level is invalid')->withInput();
-        } else if($request->input('id_number') == null || !preg_match('/^[0-9]+$/', $request->input('id_number'))){
-            return redirect()->back()->with('toast-warning', 'User\'s LRN is invalid')->withInput();
-        } else if(User::where('email', $request->input('email'))->exists()){
-            return redirect()->back()->with('toast-warning', 'User with email ' . $request->input('email') . ' already exists')->withInput();
-        } else if(User::where('rfid', $request->input('rfid'))->exists()){
-            return redirect()->back()->with('toast-warning', 'User with RFID ' . $request->input('rfid') . ' already exists')->withInput();
-        }
-        if($request->hasFile('profile-image')){
+        if ($request->hasFile('profile-image')) {
             $image = $request->file('profile-image');
             $imageContent = file_get_contents($image->getRealPath());
             $base64Image = base64_encode($imageContent);
             $request->merge(['profile-image' => $base64Image]);
         }
         DB::beginTransaction();
-        try{
+        try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $password = Str::password(8, true, true, false, false);
             StagingUser::create([
@@ -130,7 +152,7 @@ class UsersMaintenanceController extends Controller
             return redirect()->back()->with('toast-error', 'User with RFID or email ' . $request->input('rfid') . ' already exists. Error code: ' . $e->getMessage())->withInput();
         }
         DB::commit();
-        try{
+        try {
             DB::statement('CALL DistributeStagingUsers()');
         } catch (\Illuminate\Database\QueryException $e) {
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage())->withInput();
@@ -142,42 +164,27 @@ class UsersMaintenanceController extends Controller
     {
         $users = new User();
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|min:10',
-            'first-name'    => 'required|string|max:50',
-            'middle-name'   => 'nullable|string|max:50',
-            'last-name'     => 'required|string|max:50',
-            'suffix'        => 'nullable|string|max:10',
+            'rfid'          => 'required|string|min:10|unique:' . $users->getTable() . ',rfid',
+            'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+            'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+            'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+            'suffix'        => 'nullable|string|max:10||regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
-            'employee_id'   => 'required|string|max:50',
+            'employee_id'   => 'required|string|max:50|unique:' . (new EmployeeDetail())->getTable() . ',employee_id',
             'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
-            'email'         => 'required|string|email',
+            'email'         => 'required|string|email|unique:' . $users->getTable() . ',email',
         ]);
-        if($validator->fails()){
+        if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
-        if(!preg_match('/^[0-9]+$/', $request->input('rfid')) || strlen($request->input('rfid')) != 10){
-            return redirect()->back()->with('toast-warning', 'RFID number is invalid')->withInput();
-        } else if($this->has_invalid_characters($request->input('first-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s name contains invalid characters')->withInput();
-        } else if($request->input('middle-name') != null && $this->has_invalid_characters($request->input('middle-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s middle name contains invalid characters')->withInput();
-        } else if($this->has_invalid_characters($request->input('last-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s last name contains invalid characters')->withInput();
-        } else if(!in_array($request->input('suffix'), ['Jr.', 'Sr.', 'II', 'III', 'IV', ''])){
-            return redirect()->back()->with('toast-warning', 'User\'s suffix is invalid')->withInput();
-        } else if(User::where('email', $request->input('email'))->exists()){
-            return redirect()->back()->with('toast-warning', 'User with email ' . $request->input('email') . ' already exists')->withInput();
-        } else if(User::where('rfid', $request->input('rfid'))->exists()){
-            return redirect()->back()->with('toast-warning', 'User with RFID ' . $request->input('rfid') . ' already exists')->withInput();
-        }
-        if($request->hasFile('profile-image')){
+        if ($request->hasFile('profile-image')) {
             $image = $request->file('profile-image');
             $imageContent = file_get_contents($image->getRealPath());
             $base64Image = base64_encode($imageContent);
             $request->merge(['profile-image' => $base64Image]);
         }
         DB::beginTransaction();
-        try{
+        try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $password = Str::password(8, true, true, false, false);
             StagingUser::create([
@@ -199,7 +206,7 @@ class UsersMaintenanceController extends Controller
             return redirect()->back()->with('toast-error', 'User with RFID or email ' . $request->input('rfid') . ' already exists. Error code: ' . $e->getMessage())->withInput();
         }
         DB::commit();
-        try{
+        try {
             DB::statement('CALL DistributeStagingUsers()');
         } catch (\Illuminate\Database\QueryException $e) {
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage())->withInput();
@@ -210,10 +217,10 @@ class UsersMaintenanceController extends Controller
     public function edit_student(Request $request)
     {
         $user = null;
-        try{
+        try {
             $id = array_keys($request->all())[0];
             $user = User::with('students')->where('id', $id)->first();
-        } catch(\Illuminate\Database\QueryException $e){
+        } catch (\Illuminate\Database\QueryException $e) {
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         return view('maintenance.users.edit-student', compact('user'));
@@ -221,13 +228,13 @@ class UsersMaintenanceController extends Controller
     public function edit_employee(Request $request)
     {
         $user = null;
-        try{
+        try {
             $id = array_keys($request->all())[0];
             $user = User::with('employees', 'privileges')->where('id', $id)->first();
             $privileges = UserGroup::where(DB::raw('lower(user_type)'), '!=', 'visitor')
-                        ->where(DB::raw('lower(user_type)'), '!=', 'student')
-                        ->pluck('category');
-        } catch(\Illuminate\Database\QueryException $e){
+                ->where(DB::raw('lower(user_type)'), '!=', 'student')
+                ->pluck('category');
+        } catch (\Illuminate\Database\QueryException $e) {
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         return view('maintenance.users.edit-employee', compact('user', 'privileges'));
@@ -236,46 +243,31 @@ class UsersMaintenanceController extends Controller
     {
         $users = new User();
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|min:10',
-            'first-name'    => 'required|string|max:50',
-            'middle-name'   => 'nullable|string|max:50',
-            'last-name'     => 'required|string|max:50',
-            'suffix'        => 'nullable|string|max:10',
+            'rfid'          => 'required|string|min:10|unique:' . $users->getTable() . ',rfid',
+            'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+            'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+            'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+            'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
-            'id_number'     => 'required|min:12',
+            'id_number'     => 'required|numeric|min:12|unique:' . (new StudentDetail())->getTable() . ',id_number',
             'level'         => 'required|numeric|min:7|max:12',
             'section'       => 'required|max:50',
-            'email'         => 'required|string|email',
+            'email'         => 'required|string|email|unique:' . $users->getTable() . ',email',
         ]);
-        if($validator->fails()){
+        if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
-        if(!preg_match('/^[0-9]+$/', $request->input('rfid') || strlen($request->input('rfid')) != 10)){
-            return redirect()->back()->with('toast-warning', 'RFID number is invalid')->withInput();
-        } else if($this->has_invalid_characters($request->input('first-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s name contains invalid characters')->withInput();
-        } else if($request->input('middle-name') != null && $this->has_invalid_characters($request->input('middle-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s middle name contains invalid characters')->withInput();
-        } else if($this->has_invalid_characters($request->input('last-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s last name contains invalid characters')->withInput();
-        } else if(!in_array($request->input('suffix'), ['Jr.', 'Sr.', 'II', 'III', 'IV', ''])){
-            return redirect()->back()->with('toast-warning', 'User\'s suffix is invalid')->withInput();
-        } else if($request->input('level') != null && !preg_match('/^(?:[7-9]|1[0-2])$/', $request->input('level'))){
-            return redirect()->back()->with('toast-warning', 'User\'s grade level is invalid')->withInput();
-        } else if($request->input('id_number') == null || !preg_match('/^[0-9]+$/', $request->input('id_number'))){
-            return redirect()->back()->with('toast-warning', 'User\'s LRN is invalid')->withInput();
-        }
-        if($request->hasFile('profile-image')){
+        if ($request->hasFile('profile-image')) {
             $image = $request->file('profile-image');
             $imageContent = file_get_contents($image->getRealPath());
             $base64Image = base64_encode($imageContent);
             $request->merge(['profile-image' => $base64Image]);
         }
         DB::beginTransaction();
-        try{
+        try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $student = User::with('students')->where('id', $request->input('id'))->first();
-            if($student){
+            if ($student) {
                 $student->update([
                     'rfid'          => $request->input('rfid'),
                     'first_name'    => $request->input('first-name'),
@@ -293,7 +285,7 @@ class UsersMaintenanceController extends Controller
                 ]);
             }
         } catch (\Illuminate\Database\QueryException $e) {
-            DB::rollBack(); 
+            DB::rollBack();
             return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
         }
         DB::commit();
@@ -303,43 +295,32 @@ class UsersMaintenanceController extends Controller
     {
         $users = new User();
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|min:10',
-            'first-name'    => 'required|string|max:50',
-            'middle-name'   => 'nullable|string|max:50',
-            'last-name'     => 'required|string|max:50',
-            'suffix'        => 'nullable|string|max:10',
+            'rfid'          => 'required|string|min:10|unique:' . $users->getTable() . ',rfid',
+            'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+            'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+            'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+            'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
-            'employee_id'   => 'required|string|max:50',
+            'employee_id'   => 'required|string|max:50|unique:' . (new EmployeeDetail())->getTable() . ',employee_id',
             'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
-            'email'         => 'required|string|email',
+            'email'         => 'required|string|email|unique:' . $users->getTable() . ',email',
         ]);
-        if($validator->fails()){
+        if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
-        if(!preg_match('/^[0-9]+$/', $request->input('rfid') || strlen($request->input('rfid')) != 10)){
-            return redirect()->back()->with('toast-warning', 'RFID number is invalid')->withInput();
-        } else if($this->has_invalid_characters($request->input('first-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s name contains invalid characters')->withInput();
-        } else if($request->input('middle-name') != null && $this->has_invalid_characters($request->input('middle-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s middle name contains invalid characters')->withInput();
-        } else if($this->has_invalid_characters($request->input('last-name'))){
-            return redirect()->back()->with('toast-warning', 'User\'s last name contains invalid characters')->withInput();
-        } elseif(!in_array($request->input('suffix'), ['Jr.', 'Sr.', 'II', 'III', 'IV', ''])){
-            return redirect()->back()->with('toast-warning', 'User\'s suffix is invalid')->withInput();
-        }
-        if($request->hasFile('profile-image')){
+        if ($request->hasFile('profile-image')) {
             $image = $request->file('profile-image');
             $imageContent = file_get_contents($image->getRealPath());
             $base64Image = base64_encode($imageContent);
             $request->merge(['profile-image' => $base64Image]);
         }
         $privileges = UserGroup::where(DB::raw('lower(user_type)'), '!=', 'visitor')
-                        ->where(DB::raw('lower(user_type)'), '!=', 'student')->pluck('id', 'category')->toArray();
-        if(!array_key_exists($request->input('employee_role'), $privileges)){
+            ->where(DB::raw('lower(user_type)'), '!=', 'student')->pluck('id', 'category')->toArray();
+        if (!array_key_exists($request->input('employee_role'), $privileges)) {
             return redirect()->back()->with('toast-warning', 'User role is invalid')->withInput();
         }
         DB::beginTransaction();
-        try{
+        try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $employee = User::with('employees')->where('id', $request->input('id'))->first();
             $employee->update([
@@ -375,7 +356,7 @@ class UsersMaintenanceController extends Controller
             if ($user->hasRole(RolesEnum::SUPER_ADMIN)) {
                 DB::rollBack(); // Rollback transaction before redirecting
                 return redirect()->back()->with('delete-error', 'Cannot delete a super admin user');
-            } else if($user->getRoleNames()){
+            } else if ($user->getRoleNames()) {
                 $user->syncRoles([]);
             }
 
@@ -393,64 +374,68 @@ class UsersMaintenanceController extends Controller
         DB::commit();
         return redirect()->back()->with('toast-success', 'User deleted successfully');
     }
-    public function bulk_delete_student(Request $request){
-        $ids = array_filter(explode(',', $request->input('student_ids')), function($id) {
+    public function bulk_delete_student(Request $request)
+    {
+        $ids = array_filter(explode(',', $request->input('student_ids')), function ($id) {
             return is_numeric($id) && $id > 0;
         });
-        if(empty($ids)){
+        if (empty($ids)) {
             return redirect()->back()->with('toast-warning', 'No students selected for deletion!');
         }
         DB::beginTransaction();
-        try{
+        try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             User::whereIn('id', $ids)->delete();
-        }catch(\Illuminate\Database\QueryException $e){
+        } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         DB::commit();
         return redirect()->route('maintenance.users')->with('toast-success', 'Users deleted successfully');
     }
-    public function bulk_delete_employee(Request $request){
-        $ids = array_filter(explode(',', $request->input('employee_ids')), function($id) {
+    public function bulk_delete_employee(Request $request)
+    {
+        $ids = array_filter(explode(',', $request->input('employee_ids')), function ($id) {
             return is_numeric($id) && $id > 0;
         });
-        if(empty($ids)){
+        if (empty($ids)) {
             return redirect()->back()->with('toast-warning', 'No employees selected for deletion!');
         }
         DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
         $user = User::whereIn('id', $ids)->get();
-        if($user->contains(function($u) {
+        if ($user->contains(function ($u) {
             return $u->hasRole(RolesEnum::SUPER_ADMIN);
-        })){
+        })) {
             return redirect()->back()->with('toast-warning', 'Cannot delete a super admin user');
         }
         DB::beginTransaction();
-        try{
-            if($user->contains(function($u) {
+        try {
+            if ($user->contains(function ($u) {
                 return $u->getRoleNames();
-            })){
-                $user->each(function($u) {
+            })) {
+                $user->each(function ($u) {
                     $u->syncRoles([]);
                 });
             }
             User::whereIn('id', $ids)->delete();
-        }catch(\Illuminate\Database\QueryException $e){
+        } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         DB::commit();
         return redirect()->route('maintenance.users')->with('toast-success', 'Users deleted successfully');
     }
-    private function account_notification($user, $password){
+    private function account_notification($user, $password)
+    {
         Mail::to($user->email)->send(new AccountEmailMessage($user, $password));
     }
-    private function extract_enums($table, $columnName){
+    private function extract_enums($table, $columnName)
+    {
         $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";
         $column = DB::select($query);
         if (empty($column)) {
             return ['N/A'];
-        }   
+        }
         $type = $column[0]->Type;
         // Extract enum values
         preg_match('/enum\((.*)\)$/', $type, $matches);
@@ -460,8 +445,9 @@ class UsersMaintenanceController extends Controller
         }
         return $enumValues;
     }
-    private function has_invalid_characters($name) {
+    private function has_invalid_characters($name)
+    {
         $pattern = '/^[a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+$/';
-        return !(bool) preg_match($pattern, $name); 
+        return !(bool) preg_match($pattern, $name);
     }
 }

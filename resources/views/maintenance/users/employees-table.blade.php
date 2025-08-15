@@ -15,12 +15,22 @@ $increment = 0;
         @endcan
       </div>
     </div>
+    <form method="GET" class="justify-end m-2">
+      <input type="hidden" name="search" value="{{ request('search', '') }}">
+      <label for="perPage" class="mr-2 text-sm font-medium text-gray-700">Show</label>
+      <select name="perEmployeePage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2, dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+        <option value="10" {{ $perEmployeePage == 10 ? 'selected' : '' }}>10</option>
+        <option value="25" {{ $perEmployeePage == 25 ? 'selected' : '' }}>25</option>
+        <option value="50" {{ $perEmployeePage == 50 ? 'selected' : '' }}>50</option>
+      </select>
+      <span class="ml-2 text-sm text-gray-600">entries per page</span>
+    </form>
   </div>
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
     <table class="w-full text-sm text-left rtl:text-right whitespace-nowrap table-auto">
       <thead class="text-xs py-2 text-gray-700 uppercase bg-gray-300 text-center dark:bg-gray-500 dark:text-white">
         <tr>
-          <th scope="col" class="p-2 text-center min-w-32">
+          <th scope="col" class="p-2 text-center max-w-3">
             <div class="flex items-center ml-4">
               <input id="selectAllEmployees" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
               <label for="selectAllEmployees" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"></label>
@@ -37,9 +47,8 @@ $increment = 0;
         </tr>
       </thead>
       <tbody>
-        @forelse($users as $item)
+        @foreach($employees as $item)
         <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
-          @if($item->employees)
           @php
           $increment++;
           @endphp
@@ -66,13 +75,8 @@ $increment = 0;
             @endcan
             @endif
           </td>
-          @endif
         </tr>
-        @empty
-        <tr>
-          <td colspan="9" class="text-center py-1.5">No data found.</td>
-        </tr>
-        @endforelse
+        @endforeach
         @if($increment == 0)
         <tr>
           <td colspan="9" class="text-center py-1.5">No data found.</td>
@@ -80,6 +84,9 @@ $increment = 0;
         @endif
       </tbody>
     </table>
+     <div class="m-4">
+      {{ $employees->withQueryString()->fragment('employeeHeader')->links() }}
+    </div>
   </div>
 </div>
 <div id="delete-employee-modal" tabindex="-1" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
