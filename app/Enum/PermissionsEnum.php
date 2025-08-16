@@ -10,7 +10,7 @@ enum PermissionsEnum : string
     case ADD_BOOKS                          = 'Add Books';
     case EDIT_BOOKS                         = 'Edit Books';
     case DELETE_BOOKS                       = 'Delete Books';
-    case MODIFY_ADMIN                       = 'Modify Admin';
+    case MODIFY_ADMIN                       = 'Modify Admins';
     case CREATE_REPORTS                     = 'Create Reports';
     case BOOK_INVENTORY                     = 'Book Inventory';
     case IMPORT_USERS                       = 'Import Users';

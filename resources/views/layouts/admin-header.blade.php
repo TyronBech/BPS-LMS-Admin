@@ -184,19 +184,13 @@
             </div>
           </li>
           @endif
-          @if(auth()->user()->can(PermissionsEnum::ADD_USERS)
-          || auth()->user()->can(PermissionsEnum::EDIT_USERS)
-          || auth()->user()->can(PermissionsEnum::DELETE_USERS)
-          || auth()->user()->can(PermissionsEnum::ADD_BOOKS)
-          || auth()->user()->can(PermissionsEnum::EDIT_BOOKS)
-          || auth()->user()->can(PermissionsEnum::DELETE_BOOKS)
-          || auth()->user()->can(PermissionsEnum::ADD_CATEGORIES)
-          || auth()->user()->can(PermissionsEnum::EDIT_CATEGORIES)
-          || auth()->user()->can(PermissionsEnum::DELETE_CATEGORIES)
-          || auth()->user()->can(PermissionsEnum::ADD_PRIVILEGES)
-          || auth()->user()->can(PermissionsEnum::EDIT_PRIVILEGES)
-          || auth()->user()->can(PermissionsEnum::DELETE_PRIVILEGES)
-          || auth()->user()->hasRole(App\Enum\RolesEnum::SUPER_ADMIN))
+          @if(auth()->user()->can(PermissionsEnum::VIEW_USERS_MAINTENANCE) ||
+          auth()->user()->can(PermissionsEnum::VIEW_BOOKS_MAINTENANCE) ||
+          auth()->user()->can(PermissionsEnum::VIEW_BOOK_CATEGORIES_MAINTENANCE) ||
+          auth()->user()->can(PermissionsEnum::VIEW_PRIVILEGES_MAINTENANCE) ||
+          auth()->user()->can(PermissionsEnum::VIEW_PENALTY_RULES_MAINTENANCE) ||
+          auth()->user()->can(PermissionsEnum::VIEW_TRANSACTIONS_MAINTENANCE) ||
+          auth()->user()->can(PermissionsEnum::MODIFY_ADMIN))
           <li>
             <button id="dropdownNavbarLink" data-dropdown-toggle="navbarMaintenance" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:underline lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-100 lg:p-0 lg:w-auto">Maintenance <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
@@ -204,9 +198,7 @@
             <!-- Dropdown menu -->
             <div id="navbarMaintenance" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
               <ul class="py-2 text-sm text-gray-900" aria-labelledby="dropdownLargeButton">
-                @if(auth()->user()->can(PermissionsEnum::ADD_USERS)
-                || auth()->user()->can(PermissionsEnum::EDIT_USERS)
-                || auth()->user()->can(PermissionsEnum::DELETE_USERS))
+                @can(PermissionsEnum::VIEW_USERS_MAINTENANCE)
                 <li>
                   <a href="{{ route('maintenance.users') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
                     <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
@@ -215,10 +207,8 @@
                     <span class="ms-2">Users</span>
                   </a>
                 </li>
-                @endif
-                @if(auth()->user()->can(PermissionsEnum::ADD_BOOKS)
-                || auth()->user()->can(PermissionsEnum::EDIT_BOOKS)
-                || auth()->user()->can(PermissionsEnum::DELETE_BOOKS))
+                @endcan
+                @can(PermissionsEnum::VIEW_BOOKS_MAINTENANCE)
                 <li>
                   <a href="{{ route('maintenance.books') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
                     <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
@@ -227,10 +217,8 @@
                     <span class="ms-2">Books</span>
                   </a>
                 </li>
-                @endif
-                @if(auth()->user()->can(PermissionsEnum::ADD_CATEGORIES)
-                || auth()->user()->can(PermissionsEnum::EDIT_CATEGORIES)
-                || auth()->user()->can(PermissionsEnum::DELETE_CATEGORIES))
+                @endcan
+                @can(PermissionsEnum::VIEW_BOOK_CATEGORIES_MAINTENANCE)
                 <li>
                   <a href="{{ route('maintenance.categories') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
                     <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -239,10 +227,8 @@
                     <span class="ms-2">Book Categories</span>
                   </a>
                 </li>
-                @endif
-                @if(auth()->user()->can(PermissionsEnum::ADD_PRIVILEGES)
-                || auth()->user()->can(PermissionsEnum::EDIT_PRIVILEGES)
-                || auth()->user()->can(PermissionsEnum::DELETE_PRIVILEGES))
+                @endcan
+                @can(PermissionsEnum::VIEW_PRIVILEGES_MAINTENANCE)
                 <li>
                   <a href="{{ route('maintenance.privileges') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
                     <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
@@ -252,10 +238,8 @@
                     <span class="ms-2">Privileges</span>
                   </a>
                 </li>
-                @endif
-                @if(auth()->user()->can(PermissionsEnum::ADD_PENALTY_RULES)
-                || auth()->user()->can(PermissionsEnum::EDIT_PENALTY_RULES)
-                || auth()->user()->can(PermissionsEnum::DELETE_PENALTY_RULES))
+                @endcan
+                @can(PermissionsEnum::VIEW_PENALTY_RULES_MAINTENANCE)
                 <li>
                   <a href="{{ route('maintenance.penalty-rules') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
                     <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
@@ -265,8 +249,8 @@
                     <span class="ms-2">Penalty Rules</span>
                   </a>
                 </li>
-                @endif
-                @can(PermissionsEnum::EDIT_TRANSACTIONS)
+                @endcan
+                @can(PermissionsEnum::VIEW_TRANSACTIONS_MAINTENANCE)
                 <li>
                   <a href="{{ route('maintenance.transactions') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
                     <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
@@ -276,7 +260,7 @@
                   </a>
                 </li>
                 @endcan
-                @if(auth()->user()->hasRole(App\Enum\RolesEnum::SUPER_ADMIN))
+                @if(auth()->user()->hasRole(App\Enum\RolesEnum::SUPER_ADMIN) && auth()->user()->can(PermissionsEnum::MODIFY_ADMIN))
                 <li aria-labelledby="dropdownNavbarLink">
                   <button id="doubleDropdownButton" data-dropdown-toggle="doubleDropdown" data-dropdown-placement="right-start" type="button" class="flex items-center w-full px-4 pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
                     <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">

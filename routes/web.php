@@ -40,6 +40,7 @@ use App\Http\Middleware\ReportAuthentication;
 use App\Http\Middleware\PrivilegeAuthentication;
 use App\Http\Middleware\BookCategoriesAuthentication;
 use App\Http\Middleware\ImportAuthentication;
+use App\Http\Middleware\MaintenanceAuthentication;
 use App\Http\Middleware\PenaltyRuleMiddleware;
 
 Route::get('/', function () {
@@ -123,7 +124,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::patch('update',  [InventoryController::class, 'update']) ->name('inventory.update');
         Route::delete('delete', [InventoryController::class, 'destroy'])->name('inventory.delete');
     });
-    Route::prefix('maintenance')->group(function () {
+    Route::prefix('maintenance')->middleware(MaintenanceAuthentication::class)->group(function () {
         Route::prefix('books')->middleware(BookAuthentication::class)->group(function () {
             Route::get('books',                 [BookMaintenanceController::class, 'index'])            ->name('maintenance.books');
             Route::get('add-book',              [BookMaintenanceController::class, 'create'])           ->name('maintenance.create-book');
