@@ -60,16 +60,16 @@ $roleID = null;
     </form>
     <table class="table-fixed w-full bg-white dark:bg-gray-800">
       <thead class="bg-blue-400 text-left font-bold text-slate-200 border-2 border-slate-300 dark:border-slate-700">
-        <th class="w-[10%] pl-2 border-slate-300 dark:border-slate-700">No.</th>
-        <th class="w-[90%] pl-2 border-slate-300 dark:border-slate-700">Name</th>
+        <th class="w-[5%] pl-2 border-slate-300 dark:border-slate-700">No.</th>
+        <th class="w-[85%] pl-2 border-slate-300 dark:border-slate-700">Name</th>
         <th class="w-[10%] pl-2 border-slate-300 dark:border-slate-700">Assigned No.</th>
       </thead>
       <tbody>
         @forelse($permissions as $item)
         <tr class="text-left border-2 border-slate-300 dark:border-slate-700">
-          <td class="pb-1 pl-2 border-slate-300 dark:border-slate-700">{{ $permissions->firstItem() + $loop->index }}</td>
-          <td class="pb-1 pl-2 border-slate-300 dark:border-slate-700">{{ $item->name }}</td>
-          <td class="pb-1 pl-2 text-center border-slate-300 dark:border-slate-700">{{ $item->roles->count() }}</td>
+          <td class="pb-1 pl-2 border-2 border-slate-300 dark:border-slate-700">{{ $permissions->firstItem() + $loop->index }}</td>
+          <td class="pb-1 pl-2 border-2 border-slate-300 dark:border-slate-700">{{ $item->name }}</td>
+          <td class="pb-1 pl-2 border-2 text-center border-slate-300 dark:border-slate-700">{{ $item->roles->count() }}</td>
         </tr>
         @empty
         <tr>

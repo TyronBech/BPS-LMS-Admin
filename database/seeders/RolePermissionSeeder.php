@@ -82,5 +82,7 @@ class RolePermissionSeeder extends Seeder
         // $role1 = Role::findById(1, 'admin');
         // $role2 = Role::findById(2, 'admin');
         // $role3 = Role::findById(3, 'admin');
+        $role = Role::findById(1, 'admin');
+        $role->givePermissionTo('Modify Admins');
     }
 }

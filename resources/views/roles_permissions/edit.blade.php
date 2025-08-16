@@ -2,7 +2,7 @@
 @section('content')
 @use('App\Enum\RolesEnum')
 <h1 class="font-semibold text-center text-4xl p-5">Maintenance</h1>
-<div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow  dark:bg-gray-900 dark:border-gray-600">
+<div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-900 dark:border-gray-600">
   <div class="flex justify-between">
     <h5 class="mb-1 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Edit Role</h5>
     <a href="{{ route('maintenance.roles-and-permissions.management') }}" class="inline-flex items-center px-3 py-1 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
@@ -36,8 +36,7 @@
     <div class="mb-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3">
       @foreach($permissions as $permission)
       <div class="flex items-center">
-        <input id="{{ $permission->id }}" name="permissions[]" type="checkbox" value="{{ $permission->name }}"
-          class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
+        <input id="{{ $permission->id }}" name="permissions[]" type="checkbox" value="{{ $permission->name }}" data-permission="{{ $permission->name }}" class="perm-checkbox w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
           @if($role->hasPermissionTo($permission->name)) checked @endif>
         <label for="{{ $permission->id }}" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">
           {{ $permission->name }}
@@ -50,7 +49,55 @@
       @enderror
       @endforeach
     </div>
+    <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">Note: <span class="font-medium">View</span> is required to add, edit, or delete permissions in maintenance.</p>
     <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Submit</button>
   </form>
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", function() {
+    const restrictions = {
+      "View Users Maintenance": ["Add Users", "Edit Users", "Delete Users"],
+      "View Books Maintenance": ["Add Books", "Edit Books", "Delete Books"],
+      "View Book Categories Maintenance": ["Add Categories", "Edit Categories", "Delete Categories"],
+      "View Privileges Maintenance": ["Add Privileges", "Edit Privileges", "Delete Privileges"],
+      "View Penalty Rules Maintenance": ["Add Penalty Rule", "Edit Penalty Rule", "Delete Penalty Rule"],
+      "View Transactions Maintenance": ["Edit Transactions"]
+    };
+
+    function toggleRestrictions(view, actions) {
+      const viewCheckbox = document.querySelector(`[data-permission='${view}']`);
+      const isChecked = viewCheckbox && viewCheckbox.checked;
+
+      actions.forEach(action => {
+        const actionCheckbox = document.querySelector(`[data-permission='${action}']`);
+        if (actionCheckbox) {
+          const label = actionCheckbox.nextElementSibling;
+          actionCheckbox.disabled = !isChecked;
+
+          if (!isChecked) {
+            actionCheckbox.checked = false;
+            actionCheckbox.classList.add("opacity-50", "cursor-not-allowed");
+            if (label) label.classList.add("opacity-50", "cursor-not-allowed");
+          } else {
+            actionCheckbox.classList.remove("opacity-50", "cursor-not-allowed");
+            if (label) label.classList.remove("opacity-50", "cursor-not-allowed");
+          }
+        }
+      });
+    }
+
+    // Initialize + attach listeners
+    Object.entries(restrictions).forEach(([view, actions]) => {
+      const viewCheckbox = document.querySelector(`[data-permission='${view}']`);
+      if (viewCheckbox) {
+        // Run on load (important for pre-checked permissions)
+        toggleRestrictions(view, actions);
+
+        // Listen for changes
+        viewCheckbox.addEventListener("change", () => toggleRestrictions(view, actions));
+      }
+    });
+  });
+</script>
 @endsection
