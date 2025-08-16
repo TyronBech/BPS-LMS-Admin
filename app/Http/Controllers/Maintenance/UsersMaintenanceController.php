@@ -38,6 +38,26 @@ class UsersMaintenanceController extends Controller
         //dd($users->toArray());
         return view('maintenance.users.users', compact('students', 'employees', 'perStudentPage', 'perEmployeePage', 'search'));
     }
+    public function view_student(Request $request)
+    {
+        $studentID = $request->input('id_number');
+        $student = User::whereHas('students', function ($query) use ($studentID) {
+            $query->where('id_number', $studentID);
+        })
+            ->with('students')
+            ->first();
+        return view('maintenance.users.view-student', compact('student'));
+    }
+    public function view_employee(Request $request)
+    {
+        $employeeID = $request->input('employee_id');
+        $employee = User::whereHas('employees', function ($query) use ($employeeID) {
+            $query->where('employee_id', $employeeID);
+        })
+            ->with('employees')
+            ->first();
+        return view('maintenance.users.view-employee', compact('employee'));
+    }
     public function create_student()
     {
         return view('maintenance.users.create-student',);

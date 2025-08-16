@@ -145,6 +145,8 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         });
         Route::prefix('users')->middleware(UserAuthentication::class)->group(function () {
             Route::get('users',                     [UsersMaintenanceController::class, 'index'])                   ->name('maintenance.users');
+            Route::get('view-student',              [UsersMaintenanceController::class, 'view_student'])            ->name('maintenance.view-student');
+            Route::get('view-employee',             [UsersMaintenanceController::class, 'view_employee'])           ->name('maintenance.view-employee');
             Route::get('add-student',               [UsersMaintenanceController::class, 'create_student'])          ->name('maintenance.create-student');
             Route::post('add-student',              [UsersMaintenanceController::class, 'store_student'])           ->name('maintenance.store-student');
             Route::get('add-employee',              [UsersMaintenanceController::class, 'create_employee'])         ->name('maintenance.create-employee');
