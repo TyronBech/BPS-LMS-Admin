@@ -27,11 +27,13 @@ use App\Http\Controllers\Report\ComputerUseController;
 use App\Http\Controllers\Report\PenaltiesController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\Backup\BackupController;
 use App\Http\Controllers\Maintenance\PenaltyRuleController;
 use App\Http\Controllers\Maintenance\TransactionMaintenanceController;
 use App\Http\Controllers\Report\BookAuditController;
 use App\Http\Controllers\Report\TransactionAuditController;
 use App\Http\Controllers\Report\UserAuditController;
+use App\Http\Middleware\BackupAuthentication;
 use App\Http\Middleware\BookAuthentication;
 use App\Http\Middleware\SuperAdminAuthentication;
 use App\Http\Middleware\UserAuthentication;
@@ -203,6 +205,11 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
                 Route::delete('delete-role',    [RolesController::class, 'destroy'])    ->name('maintenance.roles-and-permissions.delete-role');
             });
         });
+    });
+    Route::prefix('backup')->middleware(BackupAuthentication::class)->group(function () {
+        Route::get('backup',    [BackupController::class, 'index'])     ->name('backup.index');
+        Route::post('create',   [BackupController::class, 'create'])    ->name('backup.create');
+        Route::post('download', [BackupController::class, 'download'])  ->name('backup.download');
     });
     Route::post('logout', [AdminLoginController::class, 'destroy'])->name('admin.logout');
 });

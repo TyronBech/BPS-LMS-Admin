@@ -8,7 +8,11 @@ return [
          * the backups.
          */
         'name' => env('APP_NAME', 'laravel-backup'),
-
+        'dump' => [
+            'mysql' => [
+                'dump_binary_path' => env('MYSQL_DUMP_PATH'),
+            ],
+        ],
         'source' => [
             'files' => [
                 /*
@@ -151,7 +155,7 @@ return [
              * The disk names on which the backups will be stored.
              */
             'disks' => [
-                'local',
+                'backups',
             ],
         ],
 
