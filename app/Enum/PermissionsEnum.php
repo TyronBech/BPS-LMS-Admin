@@ -42,5 +42,6 @@ enum PermissionsEnum : string
     case VIEW_PENALTY_RULES_MAINTENANCE     = 'View Penalty Rules Maintenance';
     case VIEW_TRANSACTIONS_MAINTENANCE      = 'View Transactions Maintenance';
     case VIEW_DASHBOARD                     = 'View Dashboard';
+    case CREATE_BACKUPS                     = 'Create Backups';
 
 }

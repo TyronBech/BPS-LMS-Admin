@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers\Roles_Permissions;
 
+use App\Enum\PermissionsEnum;
+use App\Enum\RolesEnum;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
@@ -96,10 +98,16 @@ class RolesController extends Controller
     }
     public function update(Request $request)
     {
-        $request->validate([
-            'role' => 'required|string|max:50',
-            'permissions' => 'array',
-        ]);
+        if($request->input('role_id') == 1) {
+            $request->validate([
+                'permissions' => 'array',
+            ]);
+        } else {
+            $request->validate([
+                'role' => 'required|string|max:50',
+                'permissions' => 'array',
+            ]);
+        }
         $permissions = $request->input('permissions');
         if ($permissions == null) {
             return redirect()->back()->with('toast-warning', 'Please select at least one permission');
@@ -129,7 +137,10 @@ class RolesController extends Controller
                 $role->name = $request->input('role');
                 $role->save();
             }
-            $role->syncPermissions($request->input('permissions'));
+            if($request->input('role_id') == 1) {
+                $permissions[] = PermissionsEnum::MODIFY_ADMIN;
+            }
+            $role->syncPermissions($permissions);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             return redirect()->back()->with('toast-error', 'Something went wrong');
