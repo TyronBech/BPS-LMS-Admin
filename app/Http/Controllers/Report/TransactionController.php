@@ -35,11 +35,10 @@ class TransactionController extends Controller
         $type           = $request->input('type', 'All');
         $perPage        = $request->input('perPage', 10);
         $validator = Validator::make($request->all(), [
-            'start'         => 'nullable',
-            'end'           => 'nullable',
-            'last-name'     => 'nullable',
-            'first-name'    => 'nullable',
+            'start'         => 'nullable|date',
+            'end'           => 'nullable|date',
             'type'          => 'nullable|in:All,Borrowed,Reserved',
+            'perPage'       => 'nullable|numeric|in:10,25,50'
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());

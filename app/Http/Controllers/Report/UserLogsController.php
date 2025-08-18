@@ -51,10 +51,10 @@ class UserLogsController extends Controller
         $perPage        = $request->input('perPage', 10);
         $tableName      = new Log();
         $validator = Validator::make($request->all(), [
-            'start'         => 'nullable',
-            'end'           => 'nullable',
-            'last-name'     => 'nullable',
+            'start'         => 'nullable|date',
+            'end'           => 'nullable|date',
             'search'        => 'nullable',
+            'perPage'       => 'nullable|numeric|in:10,25,50'
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());

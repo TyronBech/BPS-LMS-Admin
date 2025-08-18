@@ -14,6 +14,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class InventoriesController extends Controller
 {
@@ -31,7 +32,14 @@ class InventoriesController extends Controller
         $start          = null;
         $end            = null;
         $data           = Inventory::with('book')->where('checked_at', '!=', null);
-        
+        $validator = Validator::make($request->all(), [
+            'start'         => 'nullable|date',
+            'end'           => 'nullable|date',
+            'perPage'       => 'nullable|numeric|in:10,25,50',
+        ]);
+        if ($validator->fails()) {
+            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+        }
         if($request->input('submit') == 'pdf'){
             $data = $this->generateData($request, new Inventory(), true);
             $this->generatePDF($data);

@@ -37,6 +37,7 @@ class BookCirculationController extends Controller
             'availability'  => 'nullable|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
             'title'         => 'nullable',
             'barcode'       => 'nullable',
+            'perPage'       => 'nullable|numeric|in:10,25,50',
         ]);
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());

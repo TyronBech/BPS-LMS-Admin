@@ -50,10 +50,10 @@ class ComputerUseController extends Controller
         $perPage        = $request->input('perPage', 10);
         $peak_hour      = "00:00";
         $validator = Validator::make($request->all(), [
-            'start'         => 'nullable',
-            'end'           => 'nullable',
-            'last-name'     => 'nullable',
+            'start'         => 'nullable|date',
+            'end'           => 'nullable|date',
             'search'        => 'nullable',
+            'perPage'       => 'nullable|numeric|in:10,25,50'
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
