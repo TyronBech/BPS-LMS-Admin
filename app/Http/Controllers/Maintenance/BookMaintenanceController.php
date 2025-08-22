@@ -132,7 +132,7 @@ class BookMaintenanceController extends Controller
         $search = $request->input('search', '');
         $category = $request->input('category', '');
         $perPage = $request->input('perPage', 10);
-        if($request->input('barcodeBtn')) {
+        if ($request->input('barcodeBtn') === 'barcode') {
             $this->export_barcode($request);
         }
         // Fetch categories for dropdown
@@ -274,43 +274,52 @@ class BookMaintenanceController extends Controller
     public function export_barcode(Request $request)
     {
         ini_set('memory_limit', '1024M');
+
         $search   = $request->input('search', '');
         $category = $request->input('category', '');
+        $ids      = array_filter(explode(',', $request->input('ids')), function ($id) {
+            return is_numeric($id) && $id > 0;
+        });
 
         // Start query
         $booksQuery = Book::select('barcode', 'accession');
 
-        // Apply category filter if provided
-        if ($category) {
-            $validator = Validator::make($request->all(), [
-                'category' => 'sometimes|integer|in:' . implode(',', Category::pluck('id')->toArray()),
-            ]);
+        // ✅ If $ids provided, prioritize specific books
+        if (!empty($ids)) {
+            $booksQuery->whereIn('id', $ids);
+        } else {
+            // Apply category filter if provided
+            if ($category && $category !== 'all') {
+                $validator = Validator::make($request->all(), [
+                    'category' => 'sometimes|integer|in:' . implode(',', Category::pluck('id')->toArray()),
+                ]);
 
-            if ($validator->fails()) {
-                return redirect()->back()->with('toast-error', $validator->errors()->first());
+                if ($validator->fails()) {
+                    return redirect()->back()->with('toast-error', $validator->errors()->first());
+                }
+
+                $booksQuery->where('category_id', $category);
             }
 
-            $booksQuery->where('category_id', $category);
-        }
-
-        // Apply search filter if provided
-        if ($search) {
-            $booksQuery->where(function ($q) use ($search) {
-                $q->where('accession', 'like', '%' . $search . '%')
-                    ->orWhere('title', 'like', '%' . $search . '%')
-                    ->orWhere('author', 'like', '%' . $search . '%')
-                    ->orWhere('publisher', 'like', '%' . $search . '%')
-                    ->orWhere('place_of_publication', 'like', '%' . $search . '%')
-                    ->orWhere('edition', 'like', '%' . $search . '%')
-                    ->orWhere('call_number', 'like', '%' . $search . '%')
-                    ->orWhere('copyrights', 'like', '%' . $search . '%')
-                    ->orWhere('digital_copy_url', 'like', '%' . $search . '%')
-                    ->orWhere('remarks', 'like', '%' . $search . '%')
-                    ->orWhereHas('category', function ($q2) use ($search) {
-                        $q2->where('name', 'like', '%' . $search . '%')
-                            ->orWhere('legend', 'like', '%' . $search . '%');
-                    });
-            });
+            // Apply search filter if provided
+            if ($search) {
+                $booksQuery->where(function ($q) use ($search) {
+                    $q->where('accession', 'like', '%' . $search . '%')
+                        ->orWhere('title', 'like', '%' . $search . '%')
+                        ->orWhere('author', 'like', '%' . $search . '%')
+                        ->orWhere('publisher', 'like', '%' . $search . '%')
+                        ->orWhere('place_of_publication', 'like', '%' . $search . '%')
+                        ->orWhere('edition', 'like', '%' . $search . '%')
+                        ->orWhere('call_number', 'like', '%' . $search . '%')
+                        ->orWhere('copyrights', 'like', '%' . $search . '%')
+                        ->orWhere('digital_copy_url', 'like', '%' . $search . '%')
+                        ->orWhere('remarks', 'like', '%' . $search . '%')
+                        ->orWhereHas('category', function ($q2) use ($search) {
+                            $q2->where('name', 'like', '%' . $search . '%')
+                                ->orWhere('legend', 'like', '%' . $search . '%');
+                        });
+                });
+            }
         }
 
         // Get books
@@ -323,6 +332,7 @@ class BookMaintenanceController extends Controller
         // Generate barcodes
         $barcodeGenerator = new DNS1D();
         $dompdf = new Dompdf();
+
         $html = view('pdf.barcode-export-template', compact('books', 'barcodeGenerator'))->render();
         $dompdf->loadHtml($html);
         $dompdf->setPaper('legal', 'portrait');
