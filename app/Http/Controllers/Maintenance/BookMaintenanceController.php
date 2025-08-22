@@ -132,54 +132,66 @@ class BookMaintenanceController extends Controller
         $search = $request->input('search', '');
         $category = $request->input('category', '');
         $perPage = $request->input('perPage', 10);
+        if($request->input('barcodeBtn')) {
+            $this->export_barcode($request);
+        }
+        // Fetch categories for dropdown
         $categories = Category::select('id', 'name')->get();
-        $books = Book::where('accession', 'like', '%' . $search . '%')
-            ->orWhere('title', 'like', '%' . $search . '%')
-            ->orWhere('author', 'like', '%' . $search . '%')
-            ->orWhere('publisher', 'like', '%' . $search . '%')
-            ->orWhere('place_of_publication', 'like', '%' . $search . '%')
-            ->orWhere('edition', 'like', '%' . $search . '%')
-            ->orWhere('call_number', 'like', '%' . $search . '%')
-            ->orWhere('copyrights', 'like', '%' . $search . '%')
-            ->orWhere('digital_copy_url', 'like', '%' . $search . '%')
-            ->orWhere('remarks', 'like', '%' . $search . '%')
-            ->orWhereHas('category', function ($q) use ($search) {
-                $q->where('name', 'like', '%' . $search . '%')
-                    ->orWhere('legend', 'like', '%' . $search . '%');
-            })
-            ->orderBy('accession', 'asc')
+
+        // Validate category only if present
+        if ($category) {
+            $validator = Validator::make($request->all(), [
+                'category' => 'sometimes|integer|in:' . implode(',', $categories->pluck('id')->toArray()),
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->back()->with('toast-error', $validator->errors()->first());
+            }
+        }
+
+        // Start query
+        $books = Book::query();
+
+        // Apply category filter if provided
+        if ($category) {
+            $books->whereHas('category', function ($q) use ($category) {
+                $q->where('id', $category);
+            });
+        }
+
+        // Apply search filter if provided
+        if ($search) {
+            $books->where(function ($q) use ($search) {
+                $q->where('accession', 'like', '%' . $search . '%')
+                    ->orWhere('title', 'like', '%' . $search . '%')
+                    ->orWhere('author', 'like', '%' . $search . '%')
+                    ->orWhere('publisher', 'like', '%' . $search . '%')
+                    ->orWhere('place_of_publication', 'like', '%' . $search . '%')
+                    ->orWhere('edition', 'like', '%' . $search . '%')
+                    ->orWhere('call_number', 'like', '%' . $search . '%')
+                    ->orWhere('copyrights', 'like', '%' . $search . '%')
+                    ->orWhere('digital_copy_url', 'like', '%' . $search . '%')
+                    ->orWhere('remarks', 'like', '%' . $search . '%')
+                    ->orWhereHas('category', function ($q2) use ($search) {
+                        $q2->where('name', 'like', '%' . $search . '%')
+                            ->orWhere('legend', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        // Finalize query
+        $books = $books->orderBy('accession', 'asc')
             ->paginate($perPage)
             ->appends([
                 'perPage' => $perPage,
                 'search' => $search,
                 'category' => $category,
-            ])->withQueryString();
+            ])
+            ->withQueryString();
 
         return view('maintenance.books.books', compact('books', 'perPage', 'search', 'category', 'categories'));
     }
-    public function search_category(Request $request)
-    {
-        $category = $request->input('category', '');
-        $search = $request->input('search', '');
-        $perPage = $request->input('perPage', 10);
-        $categories = Category::select('id', 'name')->get();
-        $validator = Validator::make($request->all(), [
-            'category' => 'sometimes|string|in:' . implode(',', Category::all()->pluck('id')->toArray()),
-        ]);
-        if ($validator->fails()) {
-            return redirect()->back()->with('toast-error', $validator->errors()->first());
-        }
-        $books = Book::whereHas('category', function ($q) use ($category) {
-            $q->where('id', $category);
-        })->orderBy('accession', 'asc')
-            ->paginate($perPage)
-            ->appends([
-                'perPage' => $perPage,
-                'search' => $search,
-                'category' => $category,
-            ])->withQueryString();
-        return view('maintenance.books.books', compact('books', 'perPage', 'search', 'category', 'categories'));
-    }
+
     public function view(Request $request)
     {
         $accession = $request->input('accession');
@@ -189,7 +201,7 @@ class BookMaintenanceController extends Controller
             if (!$cover) {
                 $cover = $book->cover_image;
             }
-        } catch(Exception $e) {
+        } catch (Exception $e) {
             $cover = null;
         }
         if (!$book) {
@@ -262,17 +274,56 @@ class BookMaintenanceController extends Controller
     public function export_barcode(Request $request)
     {
         ini_set('memory_limit', '1024M');
+        $search   = $request->input('search', '');
         $category = $request->input('category', '');
-        $books = null;
-        if (empty($category)) {
-            $books = Book::select('barcode', 'accession')->get();
-        } else {
-            $books = Book::where('category_id', $category)->select('barcode', 'accession')->get();
+
+        // Start query
+        $booksQuery = Book::select('barcode', 'accession');
+
+        // Apply category filter if provided
+        if ($category) {
+            $validator = Validator::make($request->all(), [
+                'category' => 'sometimes|integer|in:' . implode(',', Category::pluck('id')->toArray()),
+            ]);
+
+            if ($validator->fails()) {
+                return redirect()->back()->with('toast-error', $validator->errors()->first());
+            }
+
+            $booksQuery->where('category_id', $category);
         }
+
+        // Apply search filter if provided
+        if ($search) {
+            $booksQuery->where(function ($q) use ($search) {
+                $q->where('accession', 'like', '%' . $search . '%')
+                    ->orWhere('title', 'like', '%' . $search . '%')
+                    ->orWhere('author', 'like', '%' . $search . '%')
+                    ->orWhere('publisher', 'like', '%' . $search . '%')
+                    ->orWhere('place_of_publication', 'like', '%' . $search . '%')
+                    ->orWhere('edition', 'like', '%' . $search . '%')
+                    ->orWhere('call_number', 'like', '%' . $search . '%')
+                    ->orWhere('copyrights', 'like', '%' . $search . '%')
+                    ->orWhere('digital_copy_url', 'like', '%' . $search . '%')
+                    ->orWhere('remarks', 'like', '%' . $search . '%')
+                    ->orWhereHas('category', function ($q2) use ($search) {
+                        $q2->where('name', 'like', '%' . $search . '%')
+                            ->orWhere('legend', 'like', '%' . $search . '%');
+                    });
+            });
+        }
+
+        // Get books
+        $books = $booksQuery->orderBy('accession', 'asc')->get();
+
+        if ($books->isEmpty()) {
+            return redirect()->back()->with('toast-warning', 'No books found for barcode export!');
+        }
+
+        // Generate barcodes
         $barcodeGenerator = new DNS1D();
         $dompdf = new Dompdf();
-
-        $html = view('pdf.barcode-export-template', compact('books'))->render();
+        $html = view('pdf.barcode-export-template', compact('books', 'barcodeGenerator'))->render();
         $dompdf->loadHtml($html);
         $dompdf->setPaper('legal', 'portrait');
         $dompdf->render();
