@@ -28,6 +28,7 @@
         </button>
       </form>
     </div>
+    <p class="mb-2 text-xs text-gray-500 dark:text-gray-400">Note: You only can download a backup if you have created one.</p>
     @endcan
   </div>
 </div>
