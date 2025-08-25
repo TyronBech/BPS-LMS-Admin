@@ -84,7 +84,10 @@ class AdminMaintenanceController extends Controller
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $role = $request->input('role');
-            $admin = User::where('rfid', $request->input('adminID'))->first();
+            $admin = User::with('privileges')->where('rfid', $request->input('adminID'))->first();
+            if($admin->privileges->user_type === 'student' && $role === 'Super Admin'){
+                return redirect()->route('maintenance.create-admin')->with('toast-warning', 'A student cannot be assigned as Super Admin');
+            }
             $admin->assignRole($role);
             $this->notification($admin, $role);
         } catch (\Illuminate\Database\QueryException $e) {
