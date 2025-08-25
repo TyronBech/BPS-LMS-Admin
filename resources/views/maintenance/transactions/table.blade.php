@@ -19,7 +19,7 @@
           <td class="max-w-72 overflow-hidden text-ellipsis">{{ $item->book->title }}</td>
           <td class="max-w-60">{{ $item->date_borrowed }}</td>
           <td class="max-w-36">{{ $item->due_date ?? '-' }}</td>
-          <td class="max-w-36">{{ $item->returned_date ?? 'Not Returned' }}</td>
+          <td class="max-w-36">{{ $item->return_date ?? 'Not Returned' }}</td>
           <td class="pb-1 flex justify-center">
             <form action="{{ route('maintenance.show-transactions') }}" method="GET" class="inline-block">
               @csrf

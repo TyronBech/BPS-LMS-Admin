@@ -34,7 +34,7 @@
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->transaction->due_date ?? '-' }}</td>
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->transaction->return_date ?? '-' }}</td>
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->penaltyRule->type }}</td>
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->amount }}</td>
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->transaction->penalty_total }}</td>
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->transaction->penalty_status }}</td>
       @empty
       <tr>
