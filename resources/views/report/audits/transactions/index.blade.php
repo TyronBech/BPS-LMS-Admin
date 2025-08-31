@@ -28,10 +28,10 @@
       <label for="types" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"></label>
       <select id="types" name="types" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         <option selected disabled>Choose a type</option>
-        <option value="ALL" {{ $types === 'ALL' ? 'selected' : '' }}>All</option>
-        <option value="INSERT" {{ $types === 'INSERT' ? 'selected' : '' }}>Insert</option>
-        <option value="UPDATE" {{ $types === 'UPDATE' ? 'selected' : '' }}>Update</option>
-        <option value="DELETE" {{ $types === 'DELETE' ? 'selected' : '' }}>Delete</option>
+        <option value="ALL" {{ $types === 'ALL' ? 'selected' : '' }}>ALL</option>
+        <option value="INSERT" {{ $types === 'INSERT' ? 'selected' : '' }}>INSERT</option>
+        <option value="UPDATE" {{ $types === 'UPDATE' ? 'selected' : '' }}>UPDATE</option>
+        <option value="DELETE" {{ $types === 'DELETE' ? 'selected' : '' }}>DELETE</option>
       </select>
     </div>
     <div class="sm:col-span-2 sm:col-start-1 flex items-center">

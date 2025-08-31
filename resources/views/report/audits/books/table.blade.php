@@ -8,7 +8,7 @@
     <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2, dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
       <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
       <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
-      <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+      <option value="50" {  { $perPage == 50 ? 'selected' : '' }}>50</option>
     </select>
     <span class="ml-2 text-sm text-gray-600">entries per page</span>
   </form>
@@ -42,14 +42,14 @@
         @else
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->new_value ?? 'null' }}</td>
         @endif
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->change_type ?? 'null' }}</td>
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->action_type ?? 'null' }}</td>
         @if($item->changedBy)
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->changedBy->last_name }}, {{ $item->changedBy->first_name }} {{ $item->changedBy->middle_name ?? '' }}</td>
         @else
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">System</td>
         @endif
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ \Carbon\Carbon::parse($item->changed_date)->format('Y-m-d') ?? 'null' }}</td>
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ \Carbon\Carbon::parse($item->changed_date)->format('g:i A') ?? 'null' }}</td>
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ \Carbon\Carbon::parse($item->created_at)->format('Y-m-d') ?? 'null' }}</td>
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ \Carbon\Carbon::parse($item->created_at)->format('g:i A') ?? 'null' }}</td>
       </tr>
       @empty
       <tr>

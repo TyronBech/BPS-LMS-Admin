@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Report;
 
 use App\Http\Controllers\Controller;
+use App\Models\AuditTrail;
+use App\Models\EmployeeDetail;
+use App\Models\StudentDetail;
+use App\Models\User;
 use App\Models\UserAudit;
 use DateTime;
 use Illuminate\Http\Request;
@@ -17,7 +21,7 @@ class UserAuditController extends Controller
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
         $perPage        = $request->input('perPage', 10);
-        $data           = $this->generateData($request, new UserAudit(), false);
+        $data           = $this->generateData($request, new AuditTrail(), false);
         return view('report.audits.users.index', compact('data', 'types', 'fromInputDate', 'toInputDate', 'perPage'));
     }
     public function search(Request $request)
@@ -26,11 +30,11 @@ class UserAuditController extends Controller
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
         $perPage        = $request->input('perPage', 10);
-        $tableName      = new UserAudit();
+        $tableName      = new AuditTrail();
         $validator = Validator::make($request->all(), [
             'start'         => 'nullable|date',
             'end'           => 'nullable|date',
-            'types'         => 'in:ALL,INSERT,UPDATE,DELETE',
+            'types'         => 'in:ALL,INSERT,UPDATE,DELETE,LOGIN,LOGOUT',
             'perPage'       => 'nullable|numeric|in:10,25,50'
         ]);
         if ($validator->fails()) {
@@ -48,7 +52,7 @@ class UserAuditController extends Controller
         $data = $this->generateData($request, $tableName, false);
         return view('report.audits.users.index', compact('data', 'types', 'fromInputDate', 'toInputDate', 'perPage'));
     }
-    private function generateData(Request $request, UserAudit $tableName, $isExport = false)
+    private function generateData(Request $request, AuditTrail $tableName, $isExport = false)
     {
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
@@ -67,14 +71,19 @@ class UserAuditController extends Controller
             'newPrivilege' => function ($query) {
                 $query->withTrashed();
             },
-        ])->orderBy('created_at', 'desc');
-        if (strlen($fromInputDate) > 0) {
-            $fromInputDate = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
-            $toInputDate = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
-            $data->whereBetween(DB::raw('DATE(' . $tableName->getTable() . '.created_at)'), [$fromInputDate, $toInputDate]);
+        ])->where(function ($query) {
+            $query->where('source_table', (new User())->getTable())
+                ->orWhere('source_table', (new StudentDetail())->getTable())
+                ->orWhere('source_table', (new EmployeeDetail())->getTable())
+                ->orWhere('source_table', 'sessions');
+        });
+        if (!empty($fromInputDate) && !empty($toInputDate)) {
+            $from = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
+            $to = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
+            $data->whereBetween(DB::raw('DATE(' . $tableName->getTable() . '.created_at)'), [$from, $to]);
         }
-        if ($types !== 'ALL') {
-            $data->where(DB::raw('upper(' . $tableName->getTable() . '.change_type)'), $types);
+        if ($types != 'ALL') {
+            $data->where($tableName->getTable() . '.action_type', $types);
         }
         if ($isExport) {
             $data = $data->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.created_at)'), 'asc')
@@ -82,12 +91,12 @@ class UserAuditController extends Controller
                 ->get();
         } else {
             $data = $data->paginate($perPage)
-                ->appends([
-                    'start' => $fromInputDate,
-                    'end' => $toInputDate,
-                    'types' => $types,
-                    'perPage' => $perPage,
-                ]);
+            ->appends([
+                'start' => $fromInputDate,
+                'end' => $toInputDate,
+                'types' => $types,
+                'perPage' => $perPage,
+            ]);
         }
         return $data;
     }

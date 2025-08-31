@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Report;
 
 use App\Http\Controllers\Controller;
 use App\Models\BookAudit;
+use App\Models\AuditTrail;
+use App\Models\Book;
+use App\Models\Category;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -17,7 +20,7 @@ class BookAuditController extends Controller
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
         $perPage        = $request->input('perPage', 10);
-        $data = $this->generateData($request, new BookAudit(), false);
+        $data = $this->generateData($request, new AuditTrail(), false);
         return view('report.audits.books.index', compact('data', 'types', 'fromInputDate', 'toInputDate', 'perPage'));
     }
     public function search(Request $request)
@@ -26,7 +29,7 @@ class BookAuditController extends Controller
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
         $perPage        = $request->input('perPage', 10);
-        $tableName      = new BookAudit();
+        $tableName      = new AuditTrail();
         $validator = Validator::make($request->all(), [
             'start'         => 'nullable|date',
             'end'           => 'nullable|date',
@@ -48,7 +51,7 @@ class BookAuditController extends Controller
         $data = $this->generateData($request, $tableName, false);
         return view('report.audits.books.index', compact('data', 'types', 'fromInputDate', 'toInputDate', 'perPage'));
     }
-    private function generateData(Request $request, BookAudit $tableName, $isExport = false)
+    private function generateData(Request $request, AuditTrail $tableName, $isExport = false)
     {
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
@@ -67,18 +70,21 @@ class BookAuditController extends Controller
             'newCategory' => function ($query) {
                 $query->withTrashed();
             }
-        ])->orderBy('created_at', 'desc');
-        if (strlen($fromInputDate) > 0) {
-            $fromInputDate = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
-            $toInputDate = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
-            $data->whereBetween(DB::raw('DATE(' . $tableName->getTable() . '.created_at)'), [$fromInputDate, $toInputDate]);
+        ])->where(function ($query) {
+            $query->where('source_table', (new Book())->getTable())
+                ->orWhere('source_table', (new Category())->getTable());
+        });
+        if (!empty($fromInputDate) && !empty($toInputDate)) {
+            $from = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
+            $to = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
+            $data->whereBetween(DB::raw('DATE(' . $tableName->getTable() . '.created_at)'), [$from, $to]);
         }
-        if ($types !== 'ALL') {
-            $data->where(DB::raw('upper(' . $tableName->getTable() . '.change_type)'), $types);
+        if ($types != 'ALL') {
+            $data->where($tableName->getTable() . '.action_type', $types);
         }
         if ($isExport) {
-            $data = $data->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.created_at)'), 'asc')
-                ->orderBy(DB::raw('TIME(' . $tableName->getTable() . '.created_at)'), 'asc')
+            $data = $data->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.created_at)'), 'desc')
+                ->orderBy(DB::raw('TIME(' . $tableName->getTable() . '.created_at)'), 'desc')
                 ->get();
         } else {
             $data = $data->paginate($perPage)

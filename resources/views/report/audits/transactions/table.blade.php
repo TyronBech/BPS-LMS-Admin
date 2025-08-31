@@ -54,8 +54,8 @@
         @endif
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->change_type ?? 'null' }}</td>
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->changed_by ?? 'null' }}</td>
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ \Carbon\Carbon::parse($item->changed_date)->format('Y-m-d') ?? 'null' }}</td>
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ \Carbon\Carbon::parse($item->changed_date)->format('g:i A') ?? 'null' }}</td>
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ \Carbon\Carbon::parse($item->created_at)->format('Y-m-d') ?? 'null' }}</td>
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ \Carbon\Carbon::parse($item->created_at)->format('g:i A') ?? 'null' }}</td>
         @endif
         @endif
       </tr>
