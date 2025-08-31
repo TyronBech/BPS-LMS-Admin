@@ -263,7 +263,7 @@ class UsersMaintenanceController extends Controller
     {
         $users = new User();
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|min:10|unique:' . $users->getTable() . ',rfid',
+            'rfid'          => 'required|string|min:10',
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
@@ -315,7 +315,7 @@ class UsersMaintenanceController extends Controller
     {
         $users = new User();
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|min:10|unique:' . $users->getTable() . ',rfid',
+            'rfid'          => 'required|string|min:10',
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',

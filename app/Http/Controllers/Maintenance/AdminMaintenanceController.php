@@ -81,11 +81,13 @@ class AdminMaintenanceController extends Controller
         if ($request->input('role') == 'None') {
             return redirect()->route('maintenance.create-admin')->with('toast-warning', 'Please select a role');
         }
+        DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $role = $request->input('role');
             $admin = User::with('privileges')->where('rfid', $request->input('adminID'))->first();
             if($admin->privileges->user_type === 'student' && $role === 'Super Admin'){
+                DB::rollBack();
                 return redirect()->route('maintenance.create-admin')->with('toast-warning', 'A student cannot be assigned as Super Admin');
             }
             $admin->assignRole($role);
@@ -93,6 +95,7 @@ class AdminMaintenanceController extends Controller
         } catch (\Illuminate\Database\QueryException $e) {
             return redirect()->route('maintenance.create-admin')->with('toast-error', $e->getMessage());
         }
+        DB::commit();
         return redirect()->route('maintenance.admins')->with('toast-success', 'Admin created successfully');
     }
     public function edit(Request $request)
@@ -136,7 +139,12 @@ class AdminMaintenanceController extends Controller
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $authAdmin = User::findOrFail(Auth::guard('admin')->user()->id);
             if ($authAdmin->hasAnyRole(RolesEnum::SUPER_ADMIN, RolesEnum::ADMIN)) {
-                $admin = User::findOrFail($request->input('id'));
+                $role = Role::findById($request->input('role'));
+                $admin = User::with('privileges')->findOrFail($request->input('id'));
+                if($admin->privileges->user_type == 'student' && $role->name == 'Super Admin'){
+                    DB::rollBack();
+                    return redirect()->back()->with('toast-warning', 'A student cannot be assigned as Super Admin');
+                }
                 $admin->update([
                     'first_name'    => $request->input('first-name'),
                     'middle_name'   => $request->input('middle-name'),
