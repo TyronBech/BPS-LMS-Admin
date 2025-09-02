@@ -212,6 +212,13 @@ class ComputerUseController extends Controller
             $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), 'desc')
                 ->orderBy(DB::raw('TIME(' . $tableName->getTable() . '.time_in)'), 'desc')
                 ->get();
+            $minDate = $data->min(fn($item) => \Carbon\Carbon::parse($item->time_in));
+            $maxDate = $data->max(fn($item) => \Carbon\Carbon::parse($item->time_in));
+            if ($minDate && $maxDate) {
+                $data->reporting_period = $minDate->format('F j, Y') . ' to ' . $maxDate->format('F j, Y');
+            } else {
+                $data->reporting_period = 'N/A';
+            }
         } else {
             $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), 'desc')
                 ->orderBy(DB::raw('TIME(' . $tableName->getTable() . '.time_in)'), 'desc')

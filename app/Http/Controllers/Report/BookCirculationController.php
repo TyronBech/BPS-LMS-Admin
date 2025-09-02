@@ -154,7 +154,7 @@ class BookCirculationController extends Controller
             $query->where('availability_status', $availability);
         }
         if ($isExport) {
-            $data = $query->get();
+            $data = $query->orderBy(DB::raw('DATE(created_at)'), 'desc')->get();
         } else {
             $data = $query->paginate($perPage)->appends([
                 'barcode'       => $barcode,

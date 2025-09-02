@@ -181,6 +181,13 @@ class PenaltiesController extends Controller
         }
         if($isExport) {
             $data = $query->orderBy(DB::raw('DATE(tr_penalties.created_at)'), 'desc')->get();
+            $minDate = $data->min(fn($item) => \Carbon\Carbon::parse($item->created_at));
+            $maxDate = $data->max(fn($item) => \Carbon\Carbon::parse($item->created_at));
+            if ($minDate && $maxDate) {
+                $data->reporting_period = $minDate->format('F j, Y') . ' to ' . $maxDate->format('F j, Y');
+            } else {
+                $data->reporting_period = 'N/A';
+            }
         } else {
             $data = $query->orderBy(DB::raw('DATE(tr_penalties.created_at)'), 'desc')
                 ->paginate($perPage)

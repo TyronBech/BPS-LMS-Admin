@@ -143,6 +143,13 @@ class InventoriesController extends Controller
         }
         if($isExport){
             $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.checked_at)'), 'desc')->get();
+            $minDate = $data->min(fn($item) => \Carbon\Carbon::parse($item->checked_at));
+            $maxDate = $data->max(fn($item) => \Carbon\Carbon::parse($item->checked_at));
+            if ($minDate && $maxDate) {
+                $data->reporting_period = $minDate->format('F j, Y') . ' to ' . $maxDate->format('F j, Y');
+            } else {
+                $data->reporting_period = 'N/A';
+            }
             return $data;
         }
         return $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.checked_at)'), 'desc')->paginate($perPage)->appends([

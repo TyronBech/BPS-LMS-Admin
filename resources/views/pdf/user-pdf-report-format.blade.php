@@ -113,6 +113,7 @@
   <div class="generated-date">{{ $date }}</div>
 
   <main class="table-container">
+    <p>{{ $data->reporting_period }}</p>
     <table>
       <thead>
         <tr>
@@ -127,7 +128,7 @@
           @if($item->user)
             <tr>
               <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
-              <td>{{ \Carbon\Carbon::parse($item->time_in)->format('Y-m-d') }}</td>
+              <td>{{ \Carbon\Carbon::parse($item->time_in)->format('F j, Y') }}</td>
               <td>{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
               <td>{{ \Carbon\Carbon::parse($item->time_out)->format('g:i A') }}</td>
             </tr>

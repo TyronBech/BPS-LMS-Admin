@@ -2,6 +2,8 @@
 
 namespace Database\Factories;
 
+use App\Models\PenaltyRule;
+use App\Models\Transaction;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -17,8 +19,8 @@ class PenaltyFactory extends Factory
     public function definition(): array
     {
         return [
-            'transaction_id'    => $this->faker->randomElement([64, 67, 69, 73, 74]),
-            'penalty_rule_id'   => $this->faker->numberBetween(1, 4),
+            'transaction_id'    => $this->faker->randomElement(Transaction::pluck('id')->toArray()),
+            'penalty_rule_id'   => $this->faker->randomElement(PenaltyRule::pluck('id')->toArray()),
             'amount'            => $this->faker->randomFloat(5, 50, 100),
         ];
     }
