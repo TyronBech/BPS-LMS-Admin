@@ -1,3 +1,9 @@
+@use('App\Models\User')
+@use('App\Models\Book')
+@use('App\Models\Transaction')
+@use('App\Models\StudentDetail')
+@use('App\Models\EmployeeDetail')
+@use('App\Models\VisitorDetail')
 <div class="flex flex-col border-collapse border-2 overflow-x-auto border-slate-900 mt-2 mb-4 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600">
   <h2 class="text-center mb-4 mt-4 font-semibold text-2xl">Report Table for User Audits</h2>
   <form method="GET" class="m-2">
@@ -14,9 +20,8 @@
   </form>
   <table class="table-fixed w-full overflow-x-visible m-4 bg-white dark:bg-gray-800">
     <thead class="bg-blue-400 text-left font-bold text-slate-200 border-2 border-slate-300 dark:border-slate-700">
-      <th class="pl-2 border-r w-[12%] border-slate-300 dark:border-slate-700">Name</th>
-      <th class="pl-2 border-r w-[15%] border-slate-300 dark:border-slate-700">Source Table</th>
-      <th class="pl-2 border-r w-[10%] border-slate-300 dark:border-slate-700">Field Changed</th>
+      <th class="pl-2 border-r w-[20%] border-slate-300 dark:border-slate-700">Record</th>
+      <th class="pl-2 border-r w-[20%] border-slate-300 dark:border-slate-700">Field Changed</th>
       <th class="pl-2 border-r w-[30%] border-slate-300 dark:border-slate-700">Old Value</th>
       <th class="pl-2 border-r w-[30%] border-slate-300 dark:border-slate-700">New Value</th>
       <th class="pl-2 border-r w-[8%] border-slate-300 dark:border-slate-700">Change Type</th>
@@ -27,35 +32,36 @@
     <tbody>
       @forelse($data as $item)
       <tr class="text-left border-2 border-slate-300 dark:border-slate-700">
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->source_table ?? 'null' }}</td>
-        @if($item->field_changed !='created_at' && $item->field_changed !='updated_at')
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->field_changed ?? 'null' }}</td>
+        <!-- Record -->
+        @if($item->source_table == User::getTableName() || $item->source_table == EmployeeDetail::getTableName() || $item->source_table == StudentDetail::getTableName())
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->user->last_name ?? 'user data' }}, {{ $item->user->first_name ?? '' }} {{ $item->user->middle_name ?? '' }}</td>
+        @elseif($item->source_table == Book::getTableName())
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->book->title ?? 'book data' }}</td>
+        @elseif($item->source_table == Transaction::getTableName())
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->transaction->book->title ?? 'transaction data' }}</td>
+        @elseif($item->source_table == VisitorDetail::getTableName())
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">Visitor Data</td>
+        @else
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">Session Record</td>
         @endif
-        @if($item->field_changed == 'password' && $item->old_value != '')
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->field_changed ?? 'unknown field' }}</td>
+        @if($item->field_changed == 'password')
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700 italic">hidden</td>
         @else
-        @if($item->oldPrivilege)
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->oldPrivilege->category ?? 'null' }}</td>
-        @else
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->old_value ?? 'null' }}</td>
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->old_value ?? 'unknown old value' }}</td>
         @endif
-        @endif
-        @if($item->field_changed == 'password' && $item->new_value != '')
+        @if($item->field_changed == 'password')
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700 italic">hidden</td>
         @else
-        @if($item->newPrivilege)
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->newPrivilege->category ?? 'null' }}</td>
-        @else
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->new_value ?? 'null' }}</td>
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->new_value ?? 'unknown new value' }}</td>
         @endif
-        @endif
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->action_type ?? 'null' }}</td>
+        <!-- Changed By -->
         @if($item->changedBy)
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->changedBy->last_name }}, {{ $item->changedBy->first_name }} {{ $item->changedBy->middle_name ?? '' }}</td>
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->changedBy->last_name }}, {{ $item->changedBy->first_name }} {{ $item->changedBy->middle_name ?? 'unknown' }}</td>
         @else
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">System</td>
         @endif
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->action_type ?? 'null' }}</td>
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ \Carbon\Carbon::parse($item->created_at)->format('Y-m-d') ?? 'null' }}</td>
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ \Carbon\Carbon::parse($item->created_at)->format('g:i A') ?? 'null' }}</td>
       </tr>

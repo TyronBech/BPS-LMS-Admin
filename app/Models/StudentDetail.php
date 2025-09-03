@@ -16,6 +16,10 @@ class StudentDetail extends Model
         'level',
         'section',
     ];
+    public static function getTableName()
+    {
+        return (new self())->getTable();
+    }
     public function users() : BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'id');

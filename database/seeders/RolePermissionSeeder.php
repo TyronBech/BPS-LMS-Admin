@@ -55,7 +55,16 @@ class RolePermissionSeeder extends Seeder
         // Permission::create(['name' => 'View Penalty Rules Maintenance',      'guard_name' => 'admin']);
         // Permission::create(['name' => 'View Transactions Maintenance',       'guard_name' => 'admin']);
         // Permission::create(['name' => 'View Dashboard',                      'guard_name' => 'admin']);
-        Permission::create(['name' => 'Create Backups',                       'guard_name' => 'admin']);
+        // Permission::create(['name' => 'Create Backups',                      'guard_name' => 'admin']);
+        // Permission::create(['name' => 'View Audit Reports',                  'guard_name' => 'admin']);
+
+
+        $permission = Permission::findByName('View User Audit Reports', 'admin');
+        $permission->delete();
+        $permission = Permission::findByName('View Book Audit Reports', 'admin');
+        $permission->delete();
+        $permission = Permission::findByName('View Transaction Audit Reports', 'admin');
+        $permission->delete();
 
         
         // $role1 = Role::create(['name' => 'Super Admin',  'guard_name' => 'admin']);

@@ -25,14 +25,12 @@ use App\Http\Controllers\Report\InventoriesController;
 use App\Http\Controllers\Analytics\FetchDataController;
 use App\Http\Controllers\Report\ComputerUseController;
 use App\Http\Controllers\Report\PenaltiesController;
+use App\Http\Controllers\Report\AuditTrailController;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Backup\BackupController;
 use App\Http\Controllers\Maintenance\PenaltyRuleController;
 use App\Http\Controllers\Maintenance\TransactionMaintenanceController;
-use App\Http\Controllers\Report\BookAuditController;
-use App\Http\Controllers\Report\TransactionAuditController;
-use App\Http\Controllers\Report\UserAuditController;
 use App\Http\Middleware\BackupAuthentication;
 use App\Http\Middleware\BookAuthentication;
 use App\Http\Middleware\SuperAdminAuthentication;
@@ -97,14 +95,8 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::post('inventory-report', [InventoriesController::class, 'search'])       ->name('report.inventory-search');
         Route::get('penalties',         [PenaltiesController::class, 'index'])          ->name('report.penalties');
         Route::post('penalties',        [PenaltiesController::class, 'search'])         ->name('report.penalties-search');
-        Route::prefix('audit-trail')->group(function () {
-            Route::get('users',         [UserAuditController::class, 'index'])          ->name('report.audit-trail.users');
-            Route::post('users',        [UserAuditController::class, 'search'])         ->name('report.audit-trail.users-search');
-            Route::get('books',         [BookAuditController::class, 'index'])          ->name('report.audit-trail.books');
-            Route::post('books',        [BookAuditController::class, 'search'])         ->name('report.audit-trail.books-search');
-            Route::get('transactions',  [TransactionAuditController::class, 'index'])   ->name('report.audit-trail.transactions');
-            Route::post('transactions', [TransactionAuditController::class, 'search'])  ->name('report.audit-trail.transactions-search');
-        });
+        Route::get('audit-trail',       [AuditTrailController::class, 'index'])         ->name('report.audit-trail');
+        Route::post('audit-trail',       [AuditTrailController::class, 'search'])       ->name('report.audit-trail-search');
     });
     Route::prefix('import')->middleware(ImportAuthentication::class)->group(function () {
         Route::get('students',                      [StudentImportController::class, 'index'])                  ->name('import.import-students');

@@ -26,6 +26,10 @@ class Transaction extends Model
         'penalty_status',
         'remarks',
     ];
+    public static function getTableName()
+    {
+        return (new self())->getTable();
+    }
     public function book() : BelongsTo
     {
         return $this->belongsTo(Book::class, 'book_id', 'id');

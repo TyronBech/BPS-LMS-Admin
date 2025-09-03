@@ -2,7 +2,7 @@
 @section('content')
 @use('App\Enum\PermissionsEnum')
 <h1 class="font-semibold text-center text-4xl p-5">Report Document For Audits</h1>
-<form action="{{ route('report.audit-trail.books-search') }}" method="POST">
+<form action="{{ route('report.audit-trail-search') }}" method="POST">
   @csrf
   <div class="container flex flex-row justify-center">
     <div id="date-range-picker" date-rangepicker class="flex items-center">
@@ -31,6 +31,8 @@
         <option value="INSERT" {{ $types === 'INSERT' ? 'selected' : '' }}>INSERT</option>
         <option value="UPDATE" {{ $types === 'UPDATE' ? 'selected' : '' }}>UPDATE</option>
         <option value="DELETE" {{ $types === 'DELETE' ? 'selected' : '' }}>DELETE</option>
+        <option value="LOGIN" {{ $types === 'LOGIN' ? 'selected' : '' }}>LOGIN</option>
+        <option value="LOGOUT" {{ $types === 'LOGOUT' ? 'selected' : '' }}>LOGOUT</option>
       </select>
     </div>
     <div class="sm:col-span-2 sm:col-start-1 flex items-center">
@@ -42,5 +44,5 @@
     </div>
   </div>
 </form>
-@include('report.audits.books.table')
+@include('report.audits.table')
 @endsection

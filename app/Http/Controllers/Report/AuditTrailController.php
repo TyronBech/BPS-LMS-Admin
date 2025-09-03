@@ -4,16 +4,12 @@ namespace App\Http\Controllers\Report;
 
 use App\Http\Controllers\Controller;
 use App\Models\AuditTrail;
-use App\Models\EmployeeDetail;
-use App\Models\StudentDetail;
-use App\Models\User;
-use App\Models\UserAudit;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 
-class UserAuditController extends Controller
+class AuditTrailController extends Controller
 {
     public function index(Request $request)
     {
@@ -22,7 +18,7 @@ class UserAuditController extends Controller
         $toInputDate    = $request->input('end', '');
         $perPage        = $request->input('perPage', 10);
         $data           = $this->generateData($request, new AuditTrail(), false);
-        return view('report.audits.users.index', compact('data', 'types', 'fromInputDate', 'toInputDate', 'perPage'));
+        return view('report.audits.index', compact('data', 'types', 'fromInputDate', 'toInputDate', 'perPage'));
     }
     public function search(Request $request)
     {
@@ -50,7 +46,7 @@ class UserAuditController extends Controller
             return redirect()->route('report.audit-trail.users')->with('toast-success', 'Successfully exported to Excel');
         }
         $data = $this->generateData($request, $tableName, false);
-        return view('report.audits.users.index', compact('data', 'types', 'fromInputDate', 'toInputDate', 'perPage'));
+        return view('report.audits.index', compact('data', 'types', 'fromInputDate', 'toInputDate', 'perPage'));
     }
     private function generateData(Request $request, AuditTrail $tableName, $isExport = false)
     {
@@ -62,6 +58,9 @@ class UserAuditController extends Controller
             'user' => function ($query) {
                 $query->withTrashed();
             },
+            'visitor' => function ($query) {
+                $query->withTrashed();
+            },
             'changedBy' => function ($query) {
                 $query->withTrashed();
             },
@@ -71,12 +70,31 @@ class UserAuditController extends Controller
             'newPrivilege' => function ($query) {
                 $query->withTrashed();
             },
-        ])->where(function ($query) {
-            $query->where('source_table', (new User())->getTable())
-                ->orWhere('source_table', (new StudentDetail())->getTable())
-                ->orWhere('source_table', (new EmployeeDetail())->getTable())
-                ->orWhere('source_table', 'sessions');
-        });
+            'book' => function ($query) {
+                $query->withTrashed();
+            },
+            'oldCategory' => function ($query) {
+                $query->withTrashed();
+            },
+            'newCategory' => function ($query) {
+                $query->withTrashed();
+            },
+            'transaction' => function ($query) {
+                $query->withTrashed();
+            },
+            'oldBook' => function ($query) {
+                $query->withTrashed();
+            },
+            'newBook' => function ($query) {
+                $query->withTrashed();
+            },
+            'oldUser' => function ($query) {
+                $query->withTrashed();
+            },
+            'newUser' => function ($query) {
+                $query->withTrashed();
+            }
+        ]);
         if (!empty($fromInputDate) && !empty($toInputDate)) {
             $from = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
             $to = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');

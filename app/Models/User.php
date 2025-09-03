@@ -58,6 +58,10 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
         ];
     }
+    public static function getTableName()
+    {
+        return (new self())->getTable();
+    }
     public function students() : HasOne
     {
         return $this->hasOne(StudentDetail::class, 'user_id', 'id');

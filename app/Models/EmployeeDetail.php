@@ -14,6 +14,10 @@ class EmployeeDetail extends Model
         'employee_id',
         'employee_role',
     ];
+    public static function getTableName()
+    {
+        return (new self())->getTable();
+    }
     public function users() : BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'id');

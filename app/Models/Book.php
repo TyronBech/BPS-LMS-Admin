@@ -32,6 +32,10 @@ class Book extends Model
         'availability_status',
         'condition_status',
     ];
+    public static function getTableName()
+    {
+        return (new self())->getTable();
+    }
     public function category() : BelongsTo
     {
         return $this->belongsTo(Category::class, 'category_id', 'id');

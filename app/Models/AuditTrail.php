@@ -18,11 +18,14 @@ class AuditTrail extends Model
     {
         return $this->belongsTo(User::class, 'record_id', 'id');
     }
+    public function visitor() : BelongsTo
+    {
+        return $this->belongsTo(VisitorDetail::class, 'record_id', 'id');
+    }
     public function oldPrivilege() : BelongsTo
     {
         return $this->belongsTo(UserGroup::class, 'old_value', 'id');
     }
-
     public function newPrivilege() : BelongsTo
     {
         return $this->belongsTo(UserGroup::class, 'new_value', 'id');
