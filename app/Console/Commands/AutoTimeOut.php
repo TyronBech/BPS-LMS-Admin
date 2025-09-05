@@ -29,6 +29,7 @@ class AutoTimeOut extends Command
     public function handle()
     {
         try{
+            Log::info('Auto time out command started.');
             DB::statement('CALL AutoTimeoutUsers()');
         } catch (Exception $e) {
             Log::error('Error in AutoTimeOut command: ' . $e->getMessage());
