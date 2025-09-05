@@ -30,7 +30,7 @@ $increment = 0;
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
     <table class="w-full text-sm text-left rtl:text-right whitespace-nowrap table-auto">
       <thead class="text-xs py-2 text-gray-700 uppercase bg-gray-300 text-center dark:bg-gray-500 dark:text-white">
-        <tr class="">
+        <tr>
           <th scope="col" class="p-2 text-center max-w-3">
             <div class="flex items-center ml-4">
               <input id="selectAllStudents" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">

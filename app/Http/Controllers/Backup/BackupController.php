@@ -6,25 +6,48 @@ use App\Http\Controllers\Controller;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Storage;
-use Spatie\Backup\Helpers\Format;
-use Spatie\Backup\Tasks\Backup\BackupDestination;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Validator;
 use ZipArchive;
 
 class BackupController extends Controller
 {
     public function index()
     {
-        return view('backup.index');
+        $files = glob(storage_path('app/backups/Laravel/*.zip'));
+
+        // Convert them into a collection with filename & created date
+        $backups = collect($files)->map(function ($file) {
+            return [
+                'filename' => basename($file),
+                'type'     => 'Database',
+                'size'     => round(filesize($file) / 1024 / 1024, 2) . ' MB',
+                'created'  => date('Y-m-d H:i:s', filemtime($file)),
+            ];
+        })->sortByDesc('created');
+        return view('backup.index', compact('backups'));
     }
     public function create(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            '_token' => 'required',
+        ]);
+        if ($validator->fails()) {
+            return back()->with('toast-error', 'Invalid request!');
+        }
         try {
             // Run backup
+            Log::info("Starting database backup...");
             Artisan::queue('backup:run --only-db');
+            $output = Artisan::output();
+            if (str_contains($output, 'Backup failed')) {
+                throw new Exception($output);
+            }
         } catch (Exception $e) {
-            return back()->with('toast-error', $e->getMessage());
+            Log::error("Database backup failed: " . $e->getMessage());
+            return back()->with('toast-error', 'Backup failed!');
         }
+        Log::info("Database backup completed!");
         return back()->with('toast-success', 'Database backup created successfully!');
     }
 
@@ -33,73 +56,74 @@ class BackupController extends Controller
      */
     public function download(Request $request)
     {
+        $validator = Validator::make($request->all(), [
+            '_token' => 'required',
+            'filename' => 'required|regex:/^[a-zA-Z0-9._-]+$/',
+        ]);
+        if ($validator->fails()) {
+            return back()->with('toast-error', 'Invalid request!');
+        }
         try {
-            // Get all backup zip files
-            $files = glob(storage_path('app/backups/Laravel/*.zip'));
-
-            if (empty($files)) {
-                return back()->with('toast-error', 'No backup file found!');
+            $filePath = storage_path('app/backups/Laravel/' . $request->filename);
+            if (!file_exists($filePath)) {
+                return back()->with('toast-error', 'Backup file not found!');
             }
-
-            // Sort by modification time descending and pick the first (latest)
-            $latest = collect($files)
-                ->sortByDesc(fn($file) => filemtime($file))
-                ->first();
-
-            // Download the latest backup
-            return response()->download($latest, 'database-backup.zip');
+            return response()->download($filePath, $request->filename);
         } catch (\Exception $e) {
-            return back()->with('toast-error', 'Backup failed: ' . $e->getMessage());
+            return back()->with('toast-error', 'Backup download failed: ' . $e->getMessage());
         }
     }
-    // Todo: Implement restore functionality
     public function restore(Request $request)
     {
-        try {
-            // Path to the latest backup (same logic as download)
-            $files = glob(storage_path('app/backups/Laravel/*.zip'));
+        // Todo: Implement restore functionality
+    }
+    public function destroy(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            '_token'  => 'required',
+            'filename' => 'required|regex:/^[a-zA-Z0-9._-]+$/',
+        ]);
 
-            if (empty($files)) {
-                return back()->with('toast-error', 'No backup file found!');
-            }
-
-            $latest = collect($files)
-                ->sortByDesc(fn($file) => filemtime($file))
-                ->first();
-
-            // If it's a zip, extract it first
-            $zip = new ZipArchive;
-            if ($zip->open($latest) === TRUE) {
-                $zip->extractTo(storage_path('app/backups/Laravel/temp'));
-                $zip->close();
-
-                // Assume the zip contains a single SQL file
-                $sqlFiles = glob(storage_path('app/backups/Laravel/temp/*.sql'));
-                $sqlFile = $sqlFiles[0] ?? null;
-
-                if (!$sqlFile) {
-                    return back()->with('toast-error', 'No SQL file found in the backup!');
-                }
-            } else {
-                return back()->with('toast-error', 'Failed to open zip backup.');
-            }
-
-            // Database credentials from .env
-            $dbHost = env('DB_HOST');
-            $dbName = env('DB_DATABASE');
-            $dbUser = env('DB_USERNAME');
-            $dbPass = env('DB_PASSWORD');
-
-            // Execute MySQL restore command
-            $command = "mysql -h $dbHost -u $dbUser -p$dbPass $dbName < $sqlFile";
-            exec($command, $output, $returnVar);
-
-            if ($returnVar !== 0) {
-                return back()->with('toast-error', 'Database restore failed!');
-            }
-        } catch (Exception $e) {
-            return back()->with('toast-error', 'Restore failed: ' . $e->getMessage());
+        if ($validator->fails()) {
+            return back()->with('toast-error', 'Invalid request!');
         }
-        return back()->with('toast-success', 'Database restored successfully!');
+        try {
+            $filePath = storage_path('app/backups/Laravel/' . $request->filename);
+
+            if (!file_exists($filePath)) {
+                return back()->with('toast-error', 'Backup file not found!');
+            }
+
+            unlink($filePath);
+
+            return back()->with('toast-success', 'Backup deleted successfully!');
+        } catch (\Exception $e) {
+            return back()->with('toast-error', 'Failed to delete backup: ' . $e->getMessage());
+        }
+    }
+    /**
+     * Recursively delete a directory and its contents
+     */
+    private function deleteDirectory($dir)
+    {
+        if (!file_exists($dir)) {
+            return;
+        }
+
+        $it = new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS);
+        $files = new \RecursiveIteratorIterator(
+            $it,
+            \RecursiveIteratorIterator::CHILD_FIRST
+        );
+
+        foreach ($files as $file) {
+            if ($file->isDir()) {
+                @rmdir($file->getPathname());
+            } else {
+                @unlink($file->getPathname());
+            }
+        }
+
+        @rmdir($dir);
     }
 }

@@ -201,7 +201,9 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     Route::prefix('backup')->middleware(BackupAuthentication::class)->group(function () {
         Route::get('backup',    [BackupController::class, 'index'])     ->name('backup.index');
         Route::post('create',   [BackupController::class, 'create'])    ->name('backup.create');
+        Route::post('restore',  [BackupController::class, 'restore'])   ->name('backup.restore');
         Route::post('download', [BackupController::class, 'download'])  ->name('backup.download');
+        Route::delete('delete', [BackupController::class, 'destroy'])   ->name('backup.destroy');
     });
     Route::post('logout', [AdminLoginController::class, 'destroy'])->name('admin.logout');
 });
