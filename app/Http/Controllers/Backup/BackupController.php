@@ -8,7 +8,6 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
-use ZipArchive;
 
 class BackupController extends Controller
 {
@@ -50,7 +49,6 @@ class BackupController extends Controller
         Log::info("Database backup completed!");
         return back()->with('toast-success', 'Database backup created successfully!');
     }
-
     /**
      * Create a fresh database backup and download it.
      */
@@ -72,10 +70,6 @@ class BackupController extends Controller
         } catch (\Exception $e) {
             return back()->with('toast-error', 'Backup download failed: ' . $e->getMessage());
         }
-    }
-    public function restore(Request $request)
-    {
-        // Todo: Implement restore functionality
     }
     public function destroy(Request $request)
     {
@@ -100,30 +94,5 @@ class BackupController extends Controller
         } catch (\Exception $e) {
             return back()->with('toast-error', 'Failed to delete backup: ' . $e->getMessage());
         }
-    }
-    /**
-     * Recursively delete a directory and its contents
-     */
-    private function deleteDirectory($dir)
-    {
-        if (!file_exists($dir)) {
-            return;
-        }
-
-        $it = new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS);
-        $files = new \RecursiveIteratorIterator(
-            $it,
-            \RecursiveIteratorIterator::CHILD_FIRST
-        );
-
-        foreach ($files as $file) {
-            if ($file->isDir()) {
-                @rmdir($file->getPathname());
-            } else {
-                @unlink($file->getPathname());
-            }
-        }
-
-        @rmdir($dir);
     }
 }
