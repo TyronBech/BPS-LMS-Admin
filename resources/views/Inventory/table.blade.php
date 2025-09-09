@@ -13,16 +13,16 @@
       <th>Action</th>
     </thead>
     <tbody class="text-center">
-      @forelse($books as $book)
+      @forelse($inventory as $item)
       <tr>
-        <td class="mt-1">{{ $book->accession }}</td>
-        <td class="mt-1">{{ $book->call_number }}</td>
-        <td class="mt-1">{{ $book->title }}</td>
-        <td class="mt-1">{{ $book->author }}</td>
+        <td class="mt-1">{{ $item->book->accession }}</td>
+        <td class="mt-1">{{ $item->book->call_number }}</td>
+        <td class="mt-1">{{ $item->book->title }}</td>
+        <td class="mt-1">{{ $item->book->author }}</td>
         <td class="mt-1 mx-2">
-          <select name="remarks[{{ $book->accession }}]" id="remarks" class="w-full p-2 border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+          <select name="remarks[{{ $item->book->accession }}]" id="remarks" class="w-full p-2 border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
             @foreach($remarks as $remark)
-            @if($remark == $book->remarks)
+            @if($remark == $item->book->remarks)
             <option value="{{ $remark }}" selected>{{ $remark }}</option>
             @else
             <option value="{{ $remark }}">{{ $remark }}</option>
@@ -31,9 +31,9 @@
           </select>
         </td>
         <td class="mt-1 mx-2">
-          <select name="condition[{{ $book->accession }}]" id="condition" class="w-full p-2 border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+          <select name="condition[{{ $item->book->accession }}]" id="condition" class="w-full p-2 border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
             @foreach($conditions as $condition)
-            @if($condition == $book->condition_status)
+            @if($condition == $item->book->condition_status)
             <option value="{{ $condition }}" selected>{{ $condition }}</option>
             @else
             <option value="{{ $condition }}">{{ $condition }}</option>
@@ -42,7 +42,7 @@
           </select>
         </td>
         <td class="mt-1">
-          <button type="button" data-modal-target="popup-modal" data-modal-toggle="popup-modal" value="{{ $book->accession }}"  class="deleteBtn focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">Delete</button>
+          <button type="button" data-modal-target="popup-modal" data-modal-toggle="popup-modal" value="{{ $item->book->accession }}"  class="deleteBtn focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">Delete</button>
         </td>
       </tr>
       @empty

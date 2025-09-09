@@ -15,13 +15,11 @@ class InventoryController extends Controller
     {
         $conditions = $this->extract_enums('bk_books', 'condition_status');
         $remarks = $this->extract_enums('bk_books', 'remarks');
-        $books = Book::with('inventory')
-            ->whereHas('inventory', function ($query) {
-                $query->where('checked_at', null);
-            })
+        $inventory = Inventory::with('book')
+            ->where('checked_at', null)
             ->orderBy('created_at', 'desc')
             ->get();
-        return view('inventory.inventory', compact('books', 'conditions', 'remarks'));
+        return view('inventory.inventory', compact('inventory', 'conditions', 'remarks'));
     }
     public function search(Request $request)
     {
