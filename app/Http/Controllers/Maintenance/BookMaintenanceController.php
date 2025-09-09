@@ -335,7 +335,7 @@ class BookMaintenanceController extends Controller
 
         $html = view('pdf.barcode-export-template', compact('books', 'barcodeGenerator'))->render();
         $dompdf->loadHtml($html);
-        $dompdf->setPaper('legal', 'portrait');
+        $dompdf->setPaper('A4', 'portrait');
         $dompdf->render();
 
         return $dompdf->stream('barcodes.pdf');
