@@ -8,7 +8,7 @@
     <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Scan the book or type it below.</p>
     <form action="{{ route('inventory.search') }}" id="search-form" method="POST" class="flex flex-col items-center">
       @csrf
-      <input type="text" name="barcode" id="barcode" class="w-full p-2 mb-2 border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300" placeholder="Barcode" required>
+      <input type="text" name="barcode" id="barcode" class="w-full p-2 mb-2 border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300" placeholder="Barcode" autofocus required>
       <button type="submit" class="w-full p-2 mb-2 text-white bg-blue-500 border border-blue-500 rounded-lg shadow-sm hover:bg-blue-600 dark:border-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800">Add</button>
     </form>
   </div>
