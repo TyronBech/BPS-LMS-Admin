@@ -25,6 +25,9 @@
       <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
       <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
       <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+      <option value="100" {{ $perPage == 100 ? 'selected' : '' }}>100</option>
+      <option value="250" {{ $perPage == 250 ? 'selected' : '' }}>250</option>
+      <option value="500" {{ $perPage == 500 ? 'selected' : '' }}>500</option>
     </select>
     <span class="ml-2 text-sm text-gray-600">entries per page</span>
   </form>
