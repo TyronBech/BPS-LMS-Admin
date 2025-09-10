@@ -80,6 +80,8 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     Route::prefix('report')->middleware(ReportAuthentication::class)->group(function () {
         Route::get('user-report',       [UserLogsController::class, 'index'])           ->name('report.user');
         Route::post('user-report',      [UserLogsController::class, 'search'])          ->name('report.user-search');
+        Route::get('user-graph',        [UserLogsController::class, 'graph'])           ->name('report.user-graph');
+        Route::post('export-graph',     [UserLogsController::class, 'exportGraph'])     ->name('report.graph-export-pdf');
         Route::get('computer-use',      [ComputerUseController::class, 'index'])        ->name('report.computer-use');
         Route::post('computer-use',     [ComputerUseController::class, 'search'])       ->name('report.computer-use-search');
         Route::get('visitor-report',    [VisitorLogsController::class, 'index'])        ->name('report.visitor');

@@ -85,6 +85,19 @@ class UserLogsController extends Controller
         }
         return view('report.users.user-logs', compact('data', 'search', 'fromInputDate', 'toInputDate', 'peak_hour', 'perPage'));
     }
+    public function graph(Request $request)
+    {
+        $data = Log::with('user')->groupBy(DB::raw('DATE(time_in)'))
+            ->select(DB::raw('DATE(time_in) as date'), DB::raw('COUNT(*) as count'))
+            ->orderBy(DB::raw('DATE(time_in)'), 'asc')
+            ->limit(30)
+            ->get();
+        $labels = $data->pluck('date')->map(function ($item) {
+            return Carbon::parse($item)->format('M d, Y');
+        });
+        $counts = $data->pluck('count');
+        return response()->json(['labels' => $labels, 'counts' => $counts]);
+    }
     private function findPeakHour($times)
     {
         $hourCounts = array();
@@ -101,6 +114,41 @@ class UserLogsController extends Controller
             }
         }
         return $peakHour;
+    }
+    public function exportGraph(Request $request)
+    {
+        try {
+            $chart = $request->input('chart');
+
+            $items = [
+                'title'   => 'Attendance Monitoring Report Graph',
+                'school'  => "Bicutan Parochial School, Inc.",
+                'address' => "Manuel L. Quezon St., Lower Bicutan, Taguig City",
+                'logo'    => base64_encode(file_get_contents(public_path('img/BPSLogoFull.png'))),
+                'user'    => Auth::user()->first_name . ' ' . Auth::user()->last_name,
+                'date'    => now()->format('F d, Y'),
+                'chart'   => $chart
+            ];
+
+            $options = new Options();
+            $options->set('isHtml5ParserEnabled', true);
+            $options->set('isPhpEnabled', true);
+            $options->set('isRemoteEnabled', true);
+
+            $pdf = new Dompdf($options);
+            $pdf->setPaper('A4', 'landscape');
+            $pdf->loadHtml(view('pdf.user-graph-pdf-report', $items)->render());
+            $pdf->render();
+
+            $output = $pdf->output();
+
+            return response($output, 200)
+                ->header('Content-Type', 'application/pdf')
+                ->header('Content-Disposition', 'attachment; filename="user-logs-graph-' . date('Y-m-d') . '.pdf"');
+        } catch (\Exception $e) {
+            Log::error('PDF generation failed: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
     private function generatePDF($data)
     {
@@ -130,7 +178,7 @@ class UserLogsController extends Controller
         $spreadsheet    = new Spreadsheet();
         $logo           = new Drawing();
         $sheet          = $spreadsheet->getActiveSheet();
-        
+
         $logo->setName('BPS Logo');
         $logo->setDescription('BPS Logo');
         $logo->setPath(public_path('img/BPSLogoFull.png'));
@@ -162,7 +210,7 @@ class UserLogsController extends Controller
         $sheet->setCellValue('D10', 'Time out');
         $row = 11;
         foreach ($data as $item) {
-            if(!$item->user) {
+            if (!$item->user) {
                 continue; // Skip if users relationship is not loaded
             }
             $sheet->setCellValue('A' . $row, $item->user->last_name . ', ' . $item->user->first_name . ' ' . $item->user->middle_name);
@@ -184,7 +232,7 @@ class UserLogsController extends Controller
     }
     private function generateData(Request $request, Log $tableName, bool $isExport = false)
     {
-        $fromInputDate  = $request->input('start' , '');
+        $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
         $search      = strtolower($request->input('search', ''));
         $perPage        = $request->input('perPage', 10);
@@ -209,7 +257,7 @@ class UserLogsController extends Controller
                     ->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $search . '%');
             });
         }
-        if($isExport) {
+        if ($isExport) {
             $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), 'asc')
                 ->orderBy(DB::raw('TIME(' . $tableName->getTable() . '.time_in)'), 'asc')
                 ->get();
