@@ -47,7 +47,7 @@
 
     .user {
       text-align: right;
-      margin-top: 20px;
+      margin-top: 40px;
       font-size: 10px;
     }
 
@@ -69,6 +69,7 @@
   <div class="title">{{ $title }}</div>
   <div class="generated-date">{{ $date }}</div>
   <main>
+    <p>{{ $range }}</p>
     <img class="chart" src="{{ $chart }}" alt="Chart">
   </main>
 

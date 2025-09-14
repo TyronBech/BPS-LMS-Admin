@@ -91,7 +91,13 @@ class UserLogsController extends Controller
         $query->whereNotNull('time_in')
             ->where('computer_use', 'No');
         // Handle filtering based on request type
-        if ($request->type === 'daily') {
+        if ($request->start_date && $request->end_date) {
+            // Custom date range
+            $query->whereBetween(DB::raw('DATE(time_in)'), [
+                DateTime::createFromFormat('m/d/Y', $request->start_date)->format('Y-m-d'),
+                DateTime::createFromFormat('m/d/Y', $request->end_date)->format('Y-m-d')
+            ]);
+        } elseif ($request->type === 'daily') {
             // Current day
             $query->whereDate('time_in', Carbon::today());
         } elseif ($request->type === 'weekly') {
@@ -101,12 +107,6 @@ class UserLogsController extends Controller
             // Current month
             $query->whereMonth('time_in', Carbon::now()->month)
                 ->whereYear('time_in', Carbon::now()->year);
-        } elseif ($request->start_date && $request->end_date) {
-            // Custom date range
-            $query->whereBetween('time_in', [
-                Carbon::parse($request->start_date)->startOfDay(),
-                Carbon::parse($request->end_date)->endOfDay()
-            ]);
         }
 
         // Group by hour, but only between 7 AM (07) and 5 PM (17)
@@ -155,6 +155,41 @@ class UserLogsController extends Controller
     {
         try {
             $chart = $request->input('chart');
+            $type  = strtolower($request->input('type')); // daily, weekly, monthly
+            $start = $request->input('start_date');
+            $end   = $request->input('end_date');
+            
+            $validator = Validator::make($request->all(), [
+                'type'          => 'nullable|in:daily,weekly,monthly',
+                'start_date'    => 'nullable|date|required_with:end_date',
+                'end_date'      => 'nullable|date|required_with:start_date|after_or_equal:start_date',
+            ]);
+            if ($validator->fails()) {
+                return response()->json(['error' => $validator->errors()->first()], 400);
+            }
+            // build range string
+            $range = '';
+            if ($start && $end) {
+                // custom date range
+                $range = 'from ' . Carbon::parse($start)->format('F d, Y') . ' to ' . Carbon::parse($end)->format('F d, Y');
+            } elseif ($type === 'daily') {
+                // today
+                $range = Carbon::today()->format('F d, Y');
+            } elseif ($type === 'weekly') {
+                // from Monday to today (but cap at Friday if weekend)
+                $monday = Carbon::now()->startOfWeek(Carbon::MONDAY);
+                $today  = Carbon::now();
+
+                if ($today->isSaturday() || $today->isSunday()) {
+                    $friday = Carbon::now()->startOfWeek(Carbon::MONDAY)->addDays(4); // Friday
+                    $range  = 'from ' . $monday->format('F d, Y') . ' to ' . $friday->format('F d, Y');
+                } else {
+                    $range = 'from ' . $monday->format('F d, Y') . ' to ' . $today->format('F d, Y');
+                }
+            } elseif ($type === 'monthly') {
+                // current month + year
+                $range = Carbon::now()->format('F Y');
+            }
 
             $items = [
                 'title'   => 'Attendance Monitoring Report Graph',
@@ -163,7 +198,8 @@ class UserLogsController extends Controller
                 'logo'    => base64_encode(file_get_contents(public_path('img/BPSLogoFull.png'))),
                 'user'    => Auth::user()->first_name . ' ' . Auth::user()->last_name,
                 'date'    => now()->format('F d, Y'),
-                'chart'   => $chart
+                'chart'   => $chart,
+                'range'   => $range
             ];
 
             $options = new Options();
