@@ -96,7 +96,7 @@ class UserLogsController extends Controller
             $query->whereDate('time_in', Carbon::today());
         } elseif ($request->type === 'weekly') {
             // Current week
-            $query->whereBetween('time_in', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()]);
+            $query->whereBetween('time_in', [Carbon::now()->monday(), Carbon::now()->friday()]);
         } elseif ($request->type === 'monthly') {
             // Current month
             $query->whereMonth('time_in', Carbon::now()->month)
