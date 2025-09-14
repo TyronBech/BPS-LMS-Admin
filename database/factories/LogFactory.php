@@ -21,7 +21,7 @@ class LogFactory extends Factory
         return [
             'user_id'       => $this->faker->randomElement(User::pluck('id')->toArray()),
             'computer_use'  => $this->faker->randomElement(['Yes', 'No']),
-            'time_in'       => $this->faker->dateTimeBetween('-1 month', 'now'),
+            'time_in'       => $this->faker->dateTimeBetween('-7 months', 'now'),
             'time_out'      => $this->faker->optional()->dateTimeBetween('now', '+1 month'),
             'remarks'       => null,
         ];

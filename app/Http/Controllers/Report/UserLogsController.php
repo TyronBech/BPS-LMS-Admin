@@ -87,16 +87,52 @@ class UserLogsController extends Controller
     }
     public function graph(Request $request)
     {
-        $data = Log::with('user')->groupBy(DB::raw('DATE(time_in)'))
-            ->select(DB::raw('DATE(time_in) as date'), DB::raw('COUNT(*) as count'))
-            ->orderBy(DB::raw('DATE(time_in)'), 'asc')
-            ->limit(30)
+        $query = Log::query();
+        $query->whereNotNull('time_in')
+            ->where('computer_use', 'No');
+        // Handle filtering based on request type
+        if ($request->type === 'daily') {
+            // Current day
+            $query->whereDate('time_in', Carbon::today());
+        } elseif ($request->type === 'weekly') {
+            // Current week
+            $query->whereBetween('time_in', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()]);
+        } elseif ($request->type === 'monthly') {
+            // Current month
+            $query->whereMonth('time_in', Carbon::now()->month)
+                ->whereYear('time_in', Carbon::now()->year);
+        } elseif ($request->start_date && $request->end_date) {
+            // Custom date range
+            $query->whereBetween('time_in', [
+                Carbon::parse($request->start_date)->startOfDay(),
+                Carbon::parse($request->end_date)->endOfDay()
+            ]);
+        }
+
+        // Group by hour, but only between 7 AM (07) and 5 PM (17)
+        $data = $query->select(
+            DB::raw('HOUR(time_in) as hour'),
+            DB::raw('COUNT(*) as count')
+        )
+            ->whereBetween(DB::raw('HOUR(time_in)'), [7, 17])
+            ->groupBy(DB::raw('HOUR(time_in)'))
+            ->orderBy(DB::raw('HOUR(time_in)'))
             ->get();
-        $labels = $data->pluck('date')->map(function ($item) {
-            return Carbon::parse($item)->format('M d, Y');
+
+        // Create labels for all hours between 7 AM and 5 PM
+        $labels = collect(range(7, 17))->map(function ($hour) {
+            return Carbon::createFromTime($hour)->format('h A');
         });
-        $counts = $data->pluck('count');
-        return response()->json(['labels' => $labels, 'counts' => $counts]);
+
+        // Match counts to hours (fill missing with 0)
+        $counts = collect(range(7, 17))->map(function ($hour) use ($data) {
+            return $data->firstWhere('hour', $hour)->count ?? 0;
+        });
+
+        return response()->json([
+            'labels' => $labels,
+            'counts' => $counts
+        ]);
     }
     private function findPeakHour($times)
     {
@@ -141,7 +177,7 @@ class UserLogsController extends Controller
             $pdf->render();
 
             $output = $pdf->output();
-
+            session()->flash('toast-success', 'Your data has been saved successfully!');
             return response($output, 200)
                 ->header('Content-Type', 'application/pdf')
                 ->header('Content-Disposition', 'attachment; filename="user-logs-graph-' . date('Y-m-d') . '.pdf"');
