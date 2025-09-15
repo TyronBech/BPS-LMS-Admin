@@ -66,7 +66,7 @@ class BookImportController extends Controller
         foreach ($dataArray as $item) {
             $item['book_type'] = strtolower($item['book_type']);
             $validator = Validator::make($item, [
-                'accession'             => 'required|string|unique:' . Book::class . ',accession|max:50',
+                'accession'             => 'required|string|max:50',
                 'call_number'           => 'nullable|string|max:50',
                 'title'                 => 'required|string|max:255',
                 'authors'               => 'nullable|string|max:255',

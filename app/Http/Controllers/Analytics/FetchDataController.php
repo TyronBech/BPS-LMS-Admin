@@ -26,6 +26,7 @@ class FetchDataController extends Controller
     }
     public function timeoutAllUsers(){
         try {
+            DB::statement("SET time_zone = '+08:00'");
             DB::statement('CALL AutoTimeoutUsers()');
             LogFacade::info('Auto time out command executed.');
         } catch (\Exception $e) {

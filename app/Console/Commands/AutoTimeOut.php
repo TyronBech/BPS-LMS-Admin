@@ -30,6 +30,7 @@ class AutoTimeOut extends Command
     {
         try{
             Log::info('Auto time out command started.');
+            DB::statement("SET time_zone = '+08:00'");
             DB::statement('CALL AutoTimeoutUsers()');
         } catch (Exception $e) {
             Log::error('Error in AutoTimeOut command: ' . $e->getMessage());

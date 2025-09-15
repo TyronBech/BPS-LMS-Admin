@@ -45,7 +45,7 @@ class BookMaintenanceController extends Controller
     {
         $books = new Book();
         $validator = Validator::make($request->all(), [
-            'accession'         => 'required|string|max:50|unique:' . $books->getTable() . ',accession',
+            'accession'         => 'required|string|max:50',
             'call_number'       => 'nullable|string|max:50',
             'title'             => 'required|string|max:150',
             'authors'           => 'nullable|string|max:1024',
