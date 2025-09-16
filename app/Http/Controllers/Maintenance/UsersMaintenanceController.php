@@ -134,7 +134,7 @@ class UsersMaintenanceController extends Controller
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
-            'id_number'     => 'required|numeric|min:12|unique:' . (new StudentDetail())->getTable() . ',id_number',
+            'id_number'     => 'required|numeric|min:12',
             'level'         => 'required|numeric|min:7|max:12',
             'section'       => 'required|max:50',
             'email'         => 'required|string|email|unique:' . $users->getTable() . ',email',
@@ -190,9 +190,9 @@ class UsersMaintenanceController extends Controller
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'suffix'        => 'nullable|string|max:10||regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
-            'employee_id'   => 'required|string|max:50|unique:' . (new EmployeeDetail())->getTable() . ',employee_id',
+            'employee_id'   => 'required|string|max:50',
             'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
-            'email'         => 'required|string|email|unique:' . $users->getTable() . ',email',
+            'email'         => 'required|string|email',
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
@@ -269,10 +269,10 @@ class UsersMaintenanceController extends Controller
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
-            'id_number'     => 'required|numeric|min:12|unique:' . (new StudentDetail())->getTable() . ',id_number',
+            'id_number'     => 'required|numeric|min:12',
             'level'         => 'required|numeric|min:7|max:12',
             'section'       => 'required|max:50',
-            'email'         => 'required|string|email|unique:' . $users->getTable() . ',email',
+            'email'         => 'required|string|email',
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
@@ -321,9 +321,9 @@ class UsersMaintenanceController extends Controller
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
-            'employee_id'   => 'required|string|max:50|unique:' . (new EmployeeDetail())->getTable() . ',employee_id',
+            'employee_id'   => 'required|string|max:50',
             'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
-            'email'         => 'required|string|email|unique:' . $users->getTable() . ',email',
+            'email'         => 'required|string|email',
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();

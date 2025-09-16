@@ -90,6 +90,7 @@ class UserLogsController extends Controller
         $query = Log::query();
         $query->whereNotNull('time_in')
             ->where('computer_use', 'No');
+
         // Handle filtering based on request type
         if ($request->start_date && $request->end_date) {
             // Custom date range
@@ -98,35 +99,30 @@ class UserLogsController extends Controller
                 DateTime::createFromFormat('m/d/Y', $request->end_date)->format('Y-m-d')
             ]);
         } elseif ($request->type === 'daily') {
-            // Current day
             $query->whereDate('time_in', Carbon::today());
         } elseif ($request->type === 'weekly') {
-            // Current week
             $query->whereBetween('time_in', [Carbon::now()->monday(), Carbon::now()->friday()]);
         } elseif ($request->type === 'monthly') {
-            // Current month
             $query->whereMonth('time_in', Carbon::now()->month)
                 ->whereYear('time_in', Carbon::now()->year);
         }
 
-        // Group by hour, but only between 7 AM (07) and 5 PM (17)
-        $data = $query->select(
-            DB::raw('HOUR(time_in) as hour'),
-            DB::raw('COUNT(*) as count')
-        )
-            ->whereBetween(DB::raw('HOUR(time_in)'), [7, 17])
-            ->groupBy(DB::raw('HOUR(time_in)'))
-            ->orderBy(DB::raw('HOUR(time_in)'))
+        // Wrap the hour extraction once
+        $data = $query->selectRaw('HOUR(time_in) as hour, COUNT(*) as count')
+            ->whereRaw('HOUR(time_in) BETWEEN 7 AND 17')
+            ->groupBy('hour')
+            ->orderBy('hour')
             ->get();
 
-        // Create labels for all hours between 7 AM and 5 PM
+        // Labels: 7AM–5PM
         $labels = collect(range(7, 17))->map(function ($hour) {
             return Carbon::createFromTime($hour)->format('h A');
         });
 
-        // Match counts to hours (fill missing with 0)
+        // Fill missing hours with 0
         $counts = collect(range(7, 17))->map(function ($hour) use ($data) {
-            return $data->firstWhere('hour', $hour)->count ?? 0;
+            $row = $data->firstWhere('hour', $hour);
+            return $row ? $row->count : 0;
         });
 
         return response()->json([
@@ -134,6 +130,7 @@ class UserLogsController extends Controller
             'counts' => $counts
         ]);
     }
+
     private function findPeakHour($times)
     {
         $hourCounts = array();
@@ -158,7 +155,7 @@ class UserLogsController extends Controller
             $type  = strtolower($request->input('type')); // daily, weekly, monthly
             $start = $request->input('start_date');
             $end   = $request->input('end_date');
-            
+
             $validator = Validator::make($request->all(), [
                 'type'          => 'nullable|in:daily,weekly,monthly',
                 'start_date'    => 'nullable|date|required_with:end_date',
@@ -306,10 +303,10 @@ class UserLogsController extends Controller
     {
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
-        $search      = strtolower($request->input('search', ''));
+        $search         = strtolower($request->input('search', ''));
         $perPage        = $request->input('perPage', 10);
 
-        $query = Log::with('user');
+        $query = Log::with('user')->where("computer_use", "No")->whereNotNull('time_in');
 
         if (strlen($fromInputDate) > 0) {
             $fromInputDate = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
