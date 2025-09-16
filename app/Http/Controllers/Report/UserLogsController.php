@@ -91,6 +91,9 @@ class UserLogsController extends Controller
         $query->whereNotNull('time_in')
             ->where('computer_use', 'No');
 
+        if($request->start_date && !$request->end_date) {
+            return redirect()->back()->with('toast-warning', 'Please select an end date.');
+        }
         // Handle filtering based on request type
         if ($request->start_date && $request->end_date) {
             // Custom date range
