@@ -23,7 +23,7 @@ class BookMaintenanceController extends Controller
         $category = $request->input('category', '');
         $categories = Category::select('id', 'name')->get();
         $books = Book::with('category')
-            ->orderBy('accession', 'asc')
+            ->orderBy('created_at', 'desc')
             ->paginate($perPage)
             ->appends([
                 'perPage' => $perPage,
@@ -197,7 +197,7 @@ class BookMaintenanceController extends Controller
         $accession = $request->input('accession');
         $book = Book::with('category')->where('accession', $accession)->first();
         try {
-            $cover = $this->getBookImage($book->title);
+            $cover = $this->getBookImage($book->title, $book->author, $book->isbn ?? null);
             if (!$cover) {
                 $cover = $book->cover_image;
             }
@@ -373,26 +373,47 @@ class BookMaintenanceController extends Controller
         DB::commit();
         return redirect()->route('maintenance.books')->with('toast-success', 'Books deleted successfully');
     }
-    private function getBookImage($title = null)
+    private function getBookImage($title = null, $author = null, $isbn = null)
     {
         $apiKey = env('GOOGLE_BOOKS_API_KEY');
-        $url = "https://www.googleapis.com/books/v1/volumes?q=title:{$title}&key={$apiKey}";
-
+        $url = null;
+    
+        if ($title || $author || $isbn) {
+            $queryParts = [];
+    
+            if ($title) {
+                $queryParts[] = "intitle:" . urlencode($title);
+            }
+            if ($author) {
+                $queryParts[] = "inauthor:" . urlencode($author);
+            }
+            if ($isbn) {
+                $queryParts[] = "isbn:" . urlencode($isbn);
+            }
+    
+            $queryURL = implode("+", $queryParts);
+            $url = "https://www.googleapis.com/books/v1/volumes?q={$queryURL}&key={$apiKey}";
+        }
+    
+        if (!$url) {
+            return null;
+        }
+    
         // Path to local CA bundle
         $caPath = storage_path('certs/cacert.pem');
-
+    
         try {
             // Try secure request with CA verification
             $options = [];
             if (file_exists($caPath)) {
                 $options['verify'] = $caPath;
             }
-
+    
             $response = Http::withOptions($options)->get($url);
-
+    
             if ($response->successful()) {
                 $data = $response->json();
-
+    
                 if (!empty($data['items'][0]['volumeInfo']['imageLinks']['thumbnail'])) {
                     return str_replace(
                         'http://',
@@ -404,8 +425,10 @@ class BookMaintenanceController extends Controller
         } catch (\Exception $e) {
             return null;
         }
+    
         return null;
     }
+
     private function extract_enums($table, $columnName)
     {
         $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";
