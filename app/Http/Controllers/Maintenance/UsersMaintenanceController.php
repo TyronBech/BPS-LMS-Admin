@@ -14,8 +14,6 @@ use App\Models\StagingUser;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AccountEmailMessage;
-use App\Models\EmployeeDetail;
-use App\Models\StudentDetail;
 use Illuminate\Support\Facades\Auth;
 
 class UsersMaintenanceController extends Controller

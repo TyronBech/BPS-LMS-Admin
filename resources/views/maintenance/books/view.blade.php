@@ -4,7 +4,7 @@
 <h5 class="mb-1 text-xl font-bold tracking-tight">Book Information</h5>
 <div class="flex flex-col items-center justify-center bg-white border border-gray-200 rounded-lg shadow-sm md:flex-row min-w-[700px] hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
   @if($book->cover_image)
-  <img class="object-cover w-full rounded-t-lg h-96 md:h-auto md:w-48 md:rounded-none md:rounded-s-lg" src="data:image/jpeg;base64, {{ $book->cover_image }}" alt="Book Image">
+  <img class="object-cover w-full rounded-t-lg h-96 md:h-auto md:w-48 md:rounded-none md:rounded-s-lg" src="data:{{ $mimeType }};base64, {{ $book->cover_image }}" alt="Book Image">
   @elseif($cover)
   <img class="object-cover w-full rounded max-w-48 md:h-auto mx-4" src="{{ $cover }}" alt="Book Image">
   @else

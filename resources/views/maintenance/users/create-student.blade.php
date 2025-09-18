@@ -12,7 +12,7 @@
     </a>
   </div>
   <hr class="h-px my-3 bg-gray-200 border-0">
-  <form action="{{ route('maintenance.store-student') }}" class="max-w-2xl mx-auto" method="POST">
+  <form action="{{ route('maintenance.store-student') }}" class="max-w-2xl mx-auto" method="POST" enctype="multipart/form-data">
     @csrf
     <h6 class="mb-1 text-xl font-semibold tracking-tight">Student Information</h6>
     <hr class="h-px my-1 bg-gray-200 border-0 mb-3">

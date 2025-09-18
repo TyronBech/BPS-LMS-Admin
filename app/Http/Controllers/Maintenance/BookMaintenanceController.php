@@ -43,6 +43,7 @@ class BookMaintenanceController extends Controller
     }
     public function store(Request $request)
     {
+        ini_set('memory_limit', '4096M');
         $books = new Book();
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string|max:50',
@@ -54,7 +55,7 @@ class BookMaintenanceController extends Controller
             'publication'       => 'required|string|max:50',
             'publisher'         => 'required|string|max:100',
             'copyright'         => 'required|string|max:50',
-            'cover_image'       => 'nullable',
+            'cover_image'       => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'digital_copy_url'  => 'nullable|string',
             'remarks'           => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'remarks')),
             'category'          => 'required|in:' . implode(',', Category::all()->pluck('id')->toArray()),
@@ -194,12 +195,21 @@ class BookMaintenanceController extends Controller
 
     public function view(Request $request)
     {
+        $mimeType = null;
         $accession = $request->input('accession');
         $book = Book::with('category')->where('accession', $accession)->first();
         try {
             $cover = $this->getBookImage($book->title, $book->author, $book->isbn ?? null);
             if (!$cover) {
                 $cover = $book->cover_image;
+                if ($cover) {
+                    $imageData = base64_decode($cover);
+
+                    // Detect MIME type
+                    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+                    $mimeType = finfo_buffer($finfo, $imageData);
+                    finfo_close($finfo);
+                }
             }
         } catch (Exception $e) {
             $cover = null;
@@ -207,10 +217,11 @@ class BookMaintenanceController extends Controller
         if (!$book) {
             return redirect()->back()->with('toast-error', 'Book not found!');
         }
-        return view('maintenance.books.view', compact('book', 'cover'));
+        return view('maintenance.books.view', compact('book', 'cover', 'mimeType'));
     }
     public function update(Request $request)
     {
+        ini_set('memory_limit', '4096M');
         $books = new Book();
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string|max:50',
@@ -222,7 +233,7 @@ class BookMaintenanceController extends Controller
             'publication'       => 'required|string|max:50',
             'publisher'         => 'required|string|max:100',
             'copyright'         => 'required|string|max:50',
-            'cover_image'       => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+            'cover_image'       => 'nullable|image|mimes:jpeg,png,jpg|max:5120',
             'digital_copy_url'  => 'nullable|string|url',
             'remarks'           => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'remarks')),
             'category'          => 'required|in:' . implode(',', Category::all()->pluck('id')->toArray()),
@@ -377,10 +388,10 @@ class BookMaintenanceController extends Controller
     {
         $apiKey = env('GOOGLE_BOOKS_API_KEY');
         $url = null;
-    
+
         if ($title || $author || $isbn) {
             $queryParts = [];
-    
+
             if ($title) {
                 $queryParts[] = "intitle:" . urlencode($title);
             }
@@ -390,30 +401,30 @@ class BookMaintenanceController extends Controller
             if ($isbn) {
                 $queryParts[] = "isbn:" . urlencode($isbn);
             }
-    
+
             $queryURL = implode("+", $queryParts);
             $url = "https://www.googleapis.com/books/v1/volumes?q={$queryURL}&key={$apiKey}";
         }
-    
+
         if (!$url) {
             return null;
         }
-    
+
         // Path to local CA bundle
         $caPath = storage_path('certs/cacert.pem');
-    
+
         try {
             // Try secure request with CA verification
             $options = [];
             if (file_exists($caPath)) {
                 $options['verify'] = $caPath;
             }
-    
+
             $response = Http::withOptions($options)->get($url);
-    
+
             if ($response->successful()) {
                 $data = $response->json();
-    
+
                 if (!empty($data['items'][0]['volumeInfo']['imageLinks']['thumbnail'])) {
                     return str_replace(
                         'http://',
@@ -425,7 +436,7 @@ class BookMaintenanceController extends Controller
         } catch (\Exception $e) {
             return null;
         }
-    
+
         return null;
     }
 
