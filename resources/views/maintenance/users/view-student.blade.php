@@ -3,8 +3,8 @@
 <h1 class="font-semibold text-center text-4xl p-5">Maintenance</h1>
 <h5 class="mb-1 text-xl font-bold tracking-tight">Student Information</h5>
 <div class="flex flex-col items-center max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-  @if($student->profile_image)
-    <img class="rounded-full w-48" src="data:image/jpeg;base64, {{ $student->profile_image }}" alt="Student Image">
+  @if($student->profile_image && $mimeType)
+    <img class="rounded-full w-48" src="data:{{ $mimeType }};base64, {{ $student->profile_image }}" alt="Student Image">
   @else
     <img class="hidden rounded-full w-48 dark:block" src="{{ asset('img/User-dark.png') }}" alt="Student Image">
     <img class="rounded-full w-48 dark:hidden" src="{{ asset('img/User-light.png') }}" alt="Student Image">

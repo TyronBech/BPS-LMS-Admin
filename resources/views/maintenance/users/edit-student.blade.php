@@ -12,7 +12,7 @@
     </a>
   </div>
   <hr class="h-px my-3 bg-gray-200 border-0">
-  <form action="{{ route('maintenance.update-student') }}" class="max-w-2xl mx-auto" method="POST">
+  <form action="{{ route('maintenance.update-student') }}" class="max-w-2xl mx-auto" method="POST" enctype="multipart/form-data">
     @csrf
     @method('PUT')
     <input type="hidden" id="id" name="id" value="{{ $user->id }}">

@@ -40,23 +40,49 @@ class UsersMaintenanceController extends Controller
     }
     public function view_student(Request $request)
     {
+        $mimeType = null;
         $studentID = $request->input('id_number');
         $student = User::whereHas('students', function ($query) use ($studentID) {
             $query->where('id_number', $studentID);
         })
             ->with('students')
             ->first();
-        return view('maintenance.users.view-student', compact('student'));
+        if(!$student) {
+            return redirect()->back()->with('toast-error', 'Student not found.');
+        }
+        $base64Image = $student->profile_image;
+        if (!empty($base64Image)) {
+            $imageData = base64_decode($base64Image);
+
+            // Detect MIME type
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mimeType = finfo_buffer($finfo, $imageData);
+            finfo_close($finfo);
+        }
+        return view('maintenance.users.view-student', compact('student', 'mimeType'));
     }
     public function view_employee(Request $request)
     {
+        $mimeType = null;
         $employeeID = $request->input('employee_id');
         $employee = User::whereHas('employees', function ($query) use ($employeeID) {
             $query->where('employee_id', $employeeID);
         })
             ->with('employees')
             ->first();
-        return view('maintenance.users.view-employee', compact('employee'));
+        if(!$employee) {
+            return redirect()->back()->with('toast-error', 'Employee not found.');
+        }
+        $base64Image = $employee->profile_image;
+        if (!empty($base64Image)) {
+            $imageData = base64_decode($base64Image);
+
+            // Detect MIME type
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mimeType = finfo_buffer($finfo, $imageData);
+            finfo_close($finfo);
+        }
+        return view('maintenance.users.view-employee', compact('employee', 'mimeType'));
     }
     public function create_student()
     {
@@ -126,6 +152,7 @@ class UsersMaintenanceController extends Controller
 
     public function store_student(Request $request)
     {
+        ini_set('memory_limit', '4096M');
         $users = new User();
         $validator = Validator::make($request->all(), [
             'rfid'          => 'required|string|min:10',
@@ -134,6 +161,7 @@ class UsersMaintenanceController extends Controller
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
+            'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'id_number'     => 'required|numeric|min:12',
             'level'         => 'required|numeric|min:7|max:12',
             'section'       => 'required|max:50',
@@ -182,6 +210,7 @@ class UsersMaintenanceController extends Controller
     }
     public function store_employee(Request $request)
     {
+        ini_set('memory_limit', '4096M');
         $users = new User();
         $validator = Validator::make($request->all(), [
             'rfid'          => 'required|string|min:10',
@@ -190,6 +219,7 @@ class UsersMaintenanceController extends Controller
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'suffix'        => 'nullable|string|max:10||regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
+            'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'employee_id'   => 'required|string|max:50',
             'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
             'email'         => 'required|string|email',
@@ -261,6 +291,7 @@ class UsersMaintenanceController extends Controller
     }
     public function update_student(Request $request)
     {
+        ini_set('memory_limit', '4096M');
         $users = new User();
         $validator = Validator::make($request->all(), [
             'rfid'          => 'required|string|min:10',
@@ -270,6 +301,7 @@ class UsersMaintenanceController extends Controller
             'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
             'id_number'     => 'required|numeric|min:12',
+            'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'level'         => 'required|numeric|min:7|max:12',
             'section'       => 'required|max:50',
             'email'         => 'required|string|email',
@@ -313,6 +345,7 @@ class UsersMaintenanceController extends Controller
     }
     public function update_employee(Request $request)
     {
+        ini_set('memory_limit', '4096M');
         $users = new User();
         $validator = Validator::make($request->all(), [
             'rfid'          => 'required|string|min:10',
@@ -321,6 +354,7 @@ class UsersMaintenanceController extends Controller
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
+            'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'employee_id'   => 'required|string|max:50',
             'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
             'email'         => 'required|string|email',

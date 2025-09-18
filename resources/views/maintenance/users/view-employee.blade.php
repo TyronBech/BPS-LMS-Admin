@@ -4,7 +4,7 @@
 <h5 class="mb-1 text-xl font-bold tracking-tight">Employee Information</h5>
 <div class="flex flex-col items-center max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
   @if($employee->profile_image)
-    <img class="rounded-full w-48" src="data:image/jpeg;base64, {{ $employee->profile_image }}" alt="Employee Image">
+    <img class="rounded-full w-48" src="data:image/{{ $mimeType }};base64, {{ $employee->profile_image }}" alt="Employee Image">
   @else
     <img class="hidden rounded-full w-48 dark:block" src="{{ asset('img/User-dark.png') }}" alt="Employee Image">
     <img class="rounded-full w-48 dark:hidden" src="{{ asset('img/User-light.png') }}" alt="Employee Image">
