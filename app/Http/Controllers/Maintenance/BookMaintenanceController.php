@@ -282,6 +282,67 @@ class BookMaintenanceController extends Controller
         DB::commit();
         return redirect()->back()->with('toast-success', 'Book updated successfully');
     }
+    public function copy(Request $request)
+    {
+        ini_set('memory_limit', '4096M');
+        $books = new Book();
+        $validator = Validator::make($request->all(), [
+            'accession'         => 'required|string|max:50',
+            'call_number'       => 'nullable|string|max:50',
+            'title'             => 'required|string|max:150',
+            'authors'           => 'nullable|string|max:1024',
+            'description'       => 'nullable|string',
+            'edition'           => 'nullable|string|max:50',
+            'publication'       => 'required|string|max:50',
+            'publisher'         => 'required|string|max:100',
+            'copyright'         => 'required|string|max:50',
+            'cover_image'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'digital_copy_url'  => 'nullable|string|url',
+            'remarks'           => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'remarks')),
+            'category'          => 'required|in:' . implode(',', Category::all()->pluck('id')->toArray()),
+            'book_type'         => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'book_type')),
+            'condition'         => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'condition_status')),
+            'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
+        ]);
+        if ($validator->fails()) {
+            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+        }
+        if ($request->hasFile('cover_image')) {
+            $image = $request->file('cover_image');
+            $imageContent = file_get_contents($image->getRealPath());
+            $base64Image = base64_encode($imageContent);
+            $request->merge(['cover_image' => $base64Image]);
+        }
+        DB::beginTransaction();
+        try {
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
+            $barcode = new DNS1D();
+            Book::create([
+                'accession'             => $request->input('accession'),
+                'call_number'           => $request->input('call_number'),
+                'barcode'               => $barcode->getBarcodeJPG($request->input('accession'), 'C39', 2, 80, array(0, 0, 0, 0), false),
+                'title'                 => $request->input('title'),
+                'author'                => $request->input('authors'),
+                'description'           => $request->input('description'),
+                'edition'               => $request->input('edition'),
+                'place_of_publication'  => $request->input('publication'),
+                'publisher'             => $request->input('publisher'),
+                'copyrights'            => $request->input('copyright'),
+                'cover_image'           => $request->input('cover_image'),
+                'digital_copy_url'      => $request->input('digital_copy_url'),
+                'remarks'               => $request->input('remarks'),
+                'category_id'           => $request->input('category'),
+                'book_type'             => $request->input('book_type'),
+                'condition_status'      => $request->input('condition'),
+                'availability_status'   => $request->input('availability'),
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
+            return redirect()->back()->with('toast-error', $e->getMessage());
+        }
+        DB::commit();
+        return redirect()->back()->with('toast-success', 'Book copy created successfully');
+    }
     public function export_barcode(Request $request)
     {
         ini_set('memory_limit', '1024M');

@@ -127,6 +127,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::post('add-book',             [BookMaintenanceController::class, 'store'])            ->name('maintenance.store-book');
             Route::get('edit-book',             [BookMaintenanceController::class, 'edit'])             ->name('maintenance.edit-book');
             Route::put('edit-book',             [BookMaintenanceController::class, 'update'])           ->name('maintenance.update-book');
+            Route::post('copy-book',            [BookMaintenanceController::class, 'copy'])             ->name('maintenance.copy-book');
             Route::get('show-books',            [BookMaintenanceController::class, 'show'])             ->name('maintenance.show-books');
             Route::get('show-book',             [BookMaintenanceController::class, 'view'])             ->name('maintenance.view-book');
             Route::get('category',              [BookMaintenanceController::class, 'search_category'])  ->name('maintenance.search-category');
