@@ -223,7 +223,7 @@
         </button>
       </div>
       <!-- Modal body -->
-      <form action="{{ route('maintenance.copy-book') }}" method="POST">
+      <form action="{{ route('maintenance.copy-book') }}" method="POST" enctype="multipart/form-data">
         @csrf
         <div class="p-4 md:p-5 space-y-4">
           <h6 class="mb-1 text-xl font-semibold tracking-tight">Book Information</h6>
