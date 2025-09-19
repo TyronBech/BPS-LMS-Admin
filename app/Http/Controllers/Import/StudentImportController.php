@@ -47,12 +47,12 @@ class StudentImportController extends Controller
                 (!isset($item['middle_name']) || $item['middle_name'] == null || $item['middle_name'] == "") &&
                 (!isset($item['suffix']) || $item['suffix'] == null || $item['suffix'] == "")) continue;
             $validator = Validator::make($item, [
-                'rfid'          => 'required|string|min:10',
-                'first_name'    => 'required|string|max:50',
-                'middle_name'   => 'nullable|string|max:50',
-                'last_name'     => 'required|string|max:50',
-                'suffix'        => 'nullable|string|max:10',
-                'id_number'     => 'required|string|min:10',
+                'rfid'          => 'nullable|string|min:10|regex:/^[0-9]+$/u',
+                'first_name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+                'middle_name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+                'last_name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+                'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
+                'id_number'     => 'required|string|min:10|regex:/^[0-9]+$/u',
                 'grade_level'   => 'required|numeric|min:7|max:12',
                 'section'       => 'required|string|max:50',
                 'gender'        => 'required|string|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
