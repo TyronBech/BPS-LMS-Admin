@@ -46,7 +46,7 @@ class BookMaintenanceController extends Controller
         ini_set('memory_limit', '4096M');
         $books = new Book();
         $validator = Validator::make($request->all(), [
-            'accession'         => 'required|string|max:50',
+            'accession'         => 'required|string',
             'call_number'       => 'nullable|string|max:50',
             'title'             => 'required|string|max:150',
             'authors'           => 'nullable|string|max:1024',
@@ -64,10 +64,10 @@ class BookMaintenanceController extends Controller
             'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
         ]);
         if ($validator->fails()) {
-            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         if (Book::where('accession', $request->input('accession'))->exists()) {
-            return redirect()->back()->with('toast-error', 'Book with this accession number already exists!');
+            return redirect()->back()->with('toast-error', 'Book with this accession number already exists!')->withInput();
         }
         if ($request->hasFile('cover_image')) {
             $image = $request->file('cover_image');
@@ -78,34 +78,35 @@ class BookMaintenanceController extends Controller
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
-            $barcode = new DNS1D();
-            Book::create([
-                'accession'             => $request->input('accession'),
-                'call_number'           => $request->input('call_number') ?? null,
-                'barcode'               => $barcode->getBarcodeJPG($request->input('accession'), 'C39', 2, 80, array(0, 0, 0, 0), false),
-                'title'                 => $request->input('title'),
-                'author'                => $request->input('authors') ?? null,
-                'description'           => $request->input('description') ?? null,
-                'edition'               => $request->input('edition') ?? null,
-                'place_of_publication'  => $request->input('publication'),
-                'publisher'             => $request->input('publisher'),
-                'copyrights'            => $request->input('copyright'),
-                'cover_image'           => $request->input('cover_image') ?? null,
-                'digital_copy_url'      => $request->input('digital_copy_url') ?? null,
-                'remarks'               => $request->input('remarks'),
-                'category_id'           => $request->input('category'),
-                'book_type'             => $request->input('book_type'),
-                'condition_status'      => $request->input('condition'),
-                'availability_status'   => $request->input('availability'),
-                'created_at'            => now(),
-                'updated_at'            => now()
-            ]);
+            $accessions = array_map('trim', explode(',', $request->input('accession')));
+            foreach ($accessions as $accession) {
+                $barcode = new DNS1D();
+                Book::create([
+                    'accession'             => $accession,
+                    'call_number'           => $request->input('call_number') ?? null,
+                    'barcode'               => $barcode->getBarcodeJPG($accession, 'C39', 2, 80, array(0, 0, 0, 0), false),
+                    'title'                 => $request->input('title'),
+                    'author'                => $request->input('authors') ?? null,
+                    'description'           => $request->input('description') ?? null,
+                    'edition'               => $request->input('edition') ?? null,
+                    'place_of_publication'  => $request->input('publication'),
+                    'publisher'             => $request->input('publisher'),
+                    'copyrights'            => $request->input('copyright'),
+                    'cover_image'           => $request->input('cover_image') ?? null,
+                    'digital_copy_url'      => $request->input('digital_copy_url') ?? null,
+                    'remarks'               => $request->input('remarks'),
+                    'category_id'           => $request->input('category'),
+                    'book_type'             => $request->input('book_type'),
+                    'condition_status'      => $request->input('condition'),
+                    'availability_status'   => $request->input('availability'),
+                ]);
+            }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             if ($e->getCode() == 23000) {
-                return redirect()->back()->with('toast-error', 'Book with this accession number already exists!');
+                return redirect()->back()->with('toast-error', 'Book with this accession number already exists!')->withInput();
             } else {
-                return redirect()->back()->with('toast-error', $e->getMessage());
+                return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
             }
         }
         DB::commit();
@@ -242,7 +243,7 @@ class BookMaintenanceController extends Controller
             'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
         ]);
         if ($validator->fails()) {
-            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         //dd($request->all());
         if ($request->hasFile('cover_image')) {
@@ -277,7 +278,7 @@ class BookMaintenanceController extends Controller
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
-            return redirect()->back()->with('toast-error', $e->getMessage());
+            return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
         }
         DB::commit();
         return redirect()->back()->with('toast-success', 'Book updated successfully');
@@ -287,7 +288,7 @@ class BookMaintenanceController extends Controller
         ini_set('memory_limit', '4096M');
         $books = new Book();
         $validator = Validator::make($request->all(), [
-            'accession'         => 'required|string|max:50',
+            'accession'         => 'required|string',
             'call_number'       => 'nullable|string|max:50',
             'title'             => 'required|string|max:150',
             'authors'           => 'nullable|string|max:1024',
@@ -305,7 +306,7 @@ class BookMaintenanceController extends Controller
             'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
         ]);
         if ($validator->fails()) {
-            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         if ($request->hasFile('cover_image')) {
             $image = $request->file('cover_image');
@@ -316,29 +317,32 @@ class BookMaintenanceController extends Controller
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
-            $barcode = new DNS1D();
-            Book::create([
-                'accession'             => $request->input('accession'),
-                'call_number'           => $request->input('call_number'),
-                'barcode'               => $barcode->getBarcodeJPG($request->input('accession'), 'C39', 2, 80, array(0, 0, 0, 0), false),
-                'title'                 => $request->input('title'),
-                'author'                => $request->input('authors'),
-                'description'           => $request->input('description'),
-                'edition'               => $request->input('edition'),
-                'place_of_publication'  => $request->input('publication'),
-                'publisher'             => $request->input('publisher'),
-                'copyrights'            => $request->input('copyright'),
-                'cover_image'           => $request->input('cover_image'),
-                'digital_copy_url'      => $request->input('digital_copy_url'),
-                'remarks'               => $request->input('remarks'),
-                'category_id'           => $request->input('category'),
-                'book_type'             => $request->input('book_type'),
-                'condition_status'      => $request->input('condition'),
-                'availability_status'   => $request->input('availability'),
-            ]);
+            $accessions = array_map('trim', explode(',', $request->input('accession')));
+            foreach ($accessions as $accession) {
+                $barcode = new DNS1D();
+                Book::create([
+                    'accession'             => $accession,
+                    'call_number'           => $request->input('call_number'),
+                    'barcode'               => $barcode->getBarcodeJPG($request->input('accession'), 'C39', 2, 80, array(0, 0, 0, 0), false),
+                    'title'                 => $request->input('title'),
+                    'author'                => $request->input('authors'),
+                    'description'           => $request->input('description'),
+                    'edition'               => $request->input('edition'),
+                    'place_of_publication'  => $request->input('publication'),
+                    'publisher'             => $request->input('publisher'),
+                    'copyrights'            => $request->input('copyright'),
+                    'cover_image'           => $request->input('cover_image'),
+                    'digital_copy_url'      => $request->input('digital_copy_url'),
+                    'remarks'               => $request->input('remarks'),
+                    'category_id'           => $request->input('category'),
+                    'book_type'             => $request->input('book_type'),
+                    'condition_status'      => $request->input('condition'),
+                    'availability_status'   => $request->input('availability'),
+                ]);
+            }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
-            return redirect()->back()->with('toast-error', $e->getMessage());
+            return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
         }
         DB::commit();
         return redirect()->back()->with('toast-success', 'Book copy created successfully');

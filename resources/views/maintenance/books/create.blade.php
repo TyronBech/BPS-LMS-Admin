@@ -16,7 +16,7 @@
     @csrf
     <h6 class="mb-1 text-xl font-semibold tracking-tight">Book Information</h6>
     <div class="mb-5">
-      <label for="accession" class="block mb-2 text-sm font-medium">Accession Number:</label>
+      <label for="accession" class="block mb-2 text-sm font-medium">Accession Number: <span class="mb-2 text-xs text-gray-500 dark:text-gray-400">Note: You can add multiple accession numbers separated by a comma.</span></label>
       <input type="text" id="accession" name="accession" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="FIL0123456789">
       @error('accession')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
