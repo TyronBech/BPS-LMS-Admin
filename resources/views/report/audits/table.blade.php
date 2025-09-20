@@ -8,7 +8,7 @@
   <h2 class="text-center mb-4 mt-4 font-semibold text-2xl">Report Table for User Audits</h2>
   <form method="GET" class="m-2">
     <label for="perPage" class="mr-2 text-sm font-medium text-gray-700">Show</label>
-    <input type="hidden" name="search" value="{{ request('type') }}">
+    <input type="hidden" name="search" value="{{ request('types') }}">
     <input type="hidden" name="start" value="{{ request('start') }}">
     <input type="hidden" name="end" value="{{ request('end') }}">
     <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2, dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
@@ -58,7 +58,7 @@
           @elseif($item->source_table == 'sessions')
           <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">Authentication</td>
           @endif
-          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->field_changed ?? 'unknown field' }}</td>
+          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ str_replace('_', ' ', $item->field_changed) ?? $item->field_changed ?? 'unknown field' }}</td>
           @if($item->field_changed == 'password')
           <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700 italic">hidden</td>
           @else

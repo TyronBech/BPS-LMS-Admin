@@ -31,7 +31,7 @@ class AuditTrailController extends Controller
             'start'         => 'nullable|date',
             'end'           => 'nullable|date',
             'types'         => 'in:ALL,INSERT,UPDATE,DELETE,LOGIN,LOGOUT',
-            'perPage'       => 'nullable|numeric|in:10,25,50'
+            'perPage'       => 'nullable|numeric|in:10,25,50,100,250,500,1000',
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -104,9 +104,7 @@ class AuditTrailController extends Controller
             $data->where($tableName->getTable() . '.action_type', $types);
         }
         if ($isExport) {
-            $data = $data->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.created_at)'), 'asc')
-                ->orderBy(DB::raw('TIME(' . $tableName->getTable() . '.created_at)'), 'asc')
-                ->get();
+            $data = $data->orderBy($tableName->getTable() . '.created_at)', 'desc')->get();
         } else {
             $data = $data->paginate($perPage)
             ->appends([
