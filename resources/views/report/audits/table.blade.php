@@ -25,7 +25,7 @@
     <table class="table-auto w-full overflow-x-auto m-4 bg-white dark:bg-gray-800">
       <thead class="bg-blue-400 text-left font-bold text-slate-200 border-2 border-slate-300 dark:border-slate-700">
         <th class="pl-2 border-r w-[250px] border-slate-300 dark:border-slate-700">Record</th>
-        <th class="pl-2 border-r w-[200px] border-slate-300 dark:border-slate-700">Source Table</th>
+        <th class="pl-2 border-r w-[200px] border-slate-300 dark:border-slate-700">Source</th>
         <th class="pl-2 border-r w-[200px] border-slate-300 dark:border-slate-700">Field Changed</th>
         <th class="pl-2 border-r w-[300px] border-slate-300 dark:border-slate-700">Old Value</th>
         <th class="pl-2 border-r w-[300px] border-slate-300 dark:border-slate-700">New Value</th>
@@ -38,7 +38,7 @@
         @forelse($data as $item)
         <tr class="text-left border-2 border-slate-300 dark:border-slate-700">
           <!-- Record -->
-          @if($item->source_table == User::getTableName() || $item->source_table == EmployeeDetail::getTableName() || $item->source_table == StudentDetail::getTableName())
+          @if($item->source_table == User::getTableName() || $item->source_table == EmployeeDetail::getTableName() || $item->source_table == StudentDetail::getTableName() || VisitorDetail::getTableName())
           <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->user->last_name ?? 'user data' }}, {{ $item->user->first_name ?? '' }} {{ $item->user->middle_name ?? '' }}</td>
           @elseif($item->source_table == Book::getTableName())
           <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->book->title ?? 'book data' }}</td>
@@ -49,7 +49,15 @@
           @else
           <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">Session Record</td>
           @endif
-          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->source_table ?? 'unknown table' }}</td>
+          @if($item->source_table == User::getTableName() || $item->source_table == EmployeeDetail::getTableName() || $item->source_table == StudentDetail::getTableName() || VisitorDetail::getTableName())
+          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">User</td>
+          @elseif($item->source_table == Book::getTableName())
+          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">Books</td>
+          @elseif($item->source_table == Transaction::getTableName())
+          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">Transaction</td>
+          @elseif($item->source_table == 'sessions')
+          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">Authentication</td>
+          @endif
           <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->field_changed ?? 'unknown field' }}</td>
           @if($item->field_changed == 'password')
           <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700 italic">hidden</td>

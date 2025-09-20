@@ -497,9 +497,4 @@ class UsersMaintenanceController extends Controller
         }
         return $enumValues;
     }
-    private function has_invalid_characters($name)
-    {
-        $pattern = '/^[a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+$/';
-        return !(bool) preg_match($pattern, $name);
-    }
 }

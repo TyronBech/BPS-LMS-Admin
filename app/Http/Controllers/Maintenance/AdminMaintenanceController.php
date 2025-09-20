@@ -121,19 +121,12 @@ class AdminMaintenanceController extends Controller
     public function update(Request $request)
     {
         $request->validate([
-            'first-name'    => 'required|string|max:50',
-            'middle-name'   => 'sometimes|max:50',
-            'last-name'     => 'required|string|max:50',
+            'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+            'middle-name'   => 'sometimes|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+            'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'email'         => 'required|email',
-            'role'          => 'required',
+            'role'          => 'required|exists:' . Role::class . ',id',
         ]);
-        if ($this->has_invalid_characters($request->input('first-name'))) {
-            return redirect()->back()->with('toast-warning', 'Admin\'s name contains invalid characters');
-        } else if ($request->input('middle-name') != null && $this->has_invalid_characters($request->input('middle-name'))) {
-            return redirect()->back()->with('toast-warning', 'Admin\'s middle name contains invalid characters');
-        } else if ($this->has_invalid_characters($request->input('last-name'))) {
-            return redirect()->back()->with('toast-warning', 'Admin\'s last name contains invalid characters');
-        }
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
@@ -189,10 +182,5 @@ class AdminMaintenanceController extends Controller
     private function notification(User $user, $role)
     {
         Mail::to($user->email)->send(new RoleEmailMessage($user, $role));
-    }
-    private function has_invalid_characters($name)
-    {
-        $pattern = '/^[a-zA-ZáéíóúñÁÉÍÓÚÑ\s]+$/';
-        return !(bool) preg_match($pattern, $name);
     }
 }
