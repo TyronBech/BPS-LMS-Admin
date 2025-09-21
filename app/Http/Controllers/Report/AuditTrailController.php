@@ -95,6 +95,7 @@ class AuditTrailController extends Controller
                 $query->withTrashed();
             }
         ]);
+        $data->orderBy($tableName->getTable() . '.created_at', 'desc');
         if (!empty($fromInputDate) && !empty($toInputDate)) {
             $from = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
             $to = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
@@ -104,7 +105,7 @@ class AuditTrailController extends Controller
             $data->where($tableName->getTable() . '.action_type', $types);
         }
         if ($isExport) {
-            $data = $data->orderBy($tableName->getTable() . '.created_at)', 'desc')->get();
+            $data = $data->get();
         } else {
             $data = $data->paginate($perPage)
             ->appends([
