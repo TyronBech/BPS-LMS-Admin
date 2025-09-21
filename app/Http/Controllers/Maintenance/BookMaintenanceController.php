@@ -34,7 +34,13 @@ class BookMaintenanceController extends Controller
     public function create()
     {
         $books = new Book();
-        $categories     = Category::all()->pluck('name', 'id');
+        $categories = Category::select('id', 'name')
+            ->with(['books' => function ($query) {
+                $query->select('category_id', 'accession') // must include category_id for relation
+                    ->orderByDesc('accession')
+                    ->limit(1);
+            }])
+            ->get();
         $condition      = $this->extract_enums($books->getTable(), 'condition_status');
         $availability   = $this->extract_enums($books->getTable(), 'availability_status');
         $remarks        = $this->extract_enums($books->getTable(), 'remarks');

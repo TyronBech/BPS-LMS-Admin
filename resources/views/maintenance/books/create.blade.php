@@ -16,6 +16,20 @@
     @csrf
     <h6 class="mb-1 text-xl font-semibold tracking-tight">Book Information</h6>
     <div class="mb-5">
+      <label for="category" class="block mb-2 text-sm font-medium">Category:</label>
+      <select id="category" name="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <option selected disabled>Choose a category</option>
+        @foreach($categories as $key => $category)
+        <option value="{{ $key }}">{{ $category->name }}</option>
+        @endforeach
+      </select>
+      @error('category')
+      <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+        <span class="font-medium">{{ $message }}</span>
+      </div>
+      @enderror
+    </div>
+    <div class="mb-5">
       <label for="accession" class="block mb-2 text-sm font-medium">Accession Number: <span class="mb-2 text-xs text-gray-500 dark:text-gray-400">Note: You can add multiple accession number for the same book separated by a comma.</span></label>
       <input type="text" id="accession" name="accession" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="FIL0123456789">
       @error('accession')
@@ -115,24 +129,10 @@
       @enderror
     </div>
     <div class="mb-5">
-      <label for="category" class="block mb-2 text-sm font-medium">Category:</label>
-      <select id="category" name="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-        <option selected disabled>Choose a category</option>
-        @foreach($categories as $key => $category)
-        <option value="{{ $key }}">{{ $category }}</option>
-        @endforeach
-      </select>
-      @error('category')
-      <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
-        <span class="font-medium">{{ $message }}</span>
-      </div>
-      @enderror
-    </div>
-    <div class="mb-5">
       <label for="remarks" class="block mb-2 text-sm font-medium">Select Remarks:</label>
       <select id="remarks" name="remarks" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         @foreach($remarks as $value)
-        <option value="{{ $value }}">{{ $value }}</option>        
+        <option value="{{ $value }}">{{ $value }}</option>
         @endforeach
       </select>
       @error('remarks')
@@ -183,4 +183,41 @@
     <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Submit</button>
   </form>
 </div>
+@endsection
+@section('scripts')
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const category = document.getElementById('category');
+    const accession = document.getElementById('accession');
+    const categories = <?php echo json_encode($categories); ?>;
+
+    console.log(categories);
+
+    category.addEventListener('change', function() {
+      const selectedCategoryKey = this.value;
+
+      if (
+        selectedCategoryKey &&
+        categories[selectedCategoryKey] &&
+        categories[selectedCategoryKey].books &&
+        categories[selectedCategoryKey].books.length > 0
+      ) {
+        const lastAccession = categories[selectedCategoryKey].books[0].accession;
+
+        // extract prefix + number
+        const prefix = lastAccession.replace(/\d+$/, '');
+        const number = parseInt(lastAccession.match(/\d+$/)?.[0] ?? 0, 10);
+
+        // set accession = lastAccession + 1 (with padding)
+        const nextAccession = prefix + String(number + 1).padStart(6, '0');
+
+        accession.value = nextAccession;
+        accession.textContent = nextAccession;
+      } else {
+        accession.value = '';
+        accession.textContent = '';
+      }
+    });
+  });
+</script>
 @endsection
