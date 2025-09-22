@@ -18,20 +18,20 @@
       </tr>
     </thead>
     <tbody class="text-center">
-      @forelse($data as $item)
+      @forelse($data as $index => $item)
         <tr>
-          <td>{{ $item['accession'] ?? '-' }}</td>
-          <td>{{ $item['call_number'] ?? '-' }}</td>
-          <td>{{ $item['title'] ?? '-' }}</td>
-          <td>{{ $item['authors'] ?? '-' }}</td>
-          <td>{{ $item['book_type'] ?? '-' }}</td>
-          <td>{{ $item['description'] ?? '-' }}</td>
-          <td>{{ $item['edition'] ?? '-' }}</td>
-          <td>{{ $item['place_of_publication'] ?? '-' }}</td>
-          <td>{{ $item['publisher'] ?? '-' }}</td>
-          <td>{{ $item['copyrights'] ?? '-' }}</td>
-          <td>{{ $item['category'] ?? '-' }}</td>
-          <td>{{ $item['digital_copy_url'] ?? '-' }}</td>
+          <td><input type="text" name="books[{{ $index }}][accession]" value="{{ $item['accession'] ?? '' }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="books[{{ $index }}][call_number]" value="{{ $item['call_number'] ?? '' }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="books[{{ $index }}][title]" value="{{ $item['title'] ?? '' }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="books[{{ $index }}][authors]" value="{{ $item['authors'] ?? '' }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="books[{{ $index }}][book_type]" value="{{ $item['book_type'] ?? '' }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="books[{{ $index }}][description]" value="{{ $item['description'] ?? '' }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="books[{{ $index }}][edition]" value="{{ $item['edition'] ?? '' }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="books[{{ $index }}][place_of_publication]" value="{{ $item['place_of_publication'] ?? '' }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="books[{{ $index }}][publisher]" value="{{ $item['publisher'] ?? '' }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="books[{{ $index }}][copyrights]" value="{{ $item['copyrights'] ?? '' }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="books[{{ $index }}][category]" value="{{ $item['category'] ?? '' }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="books[{{ $index }}][digital_copy_url]" value="{{ $item['digital_copy_url'] ?? '' }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
         </tr>
       @empty
         <tr>

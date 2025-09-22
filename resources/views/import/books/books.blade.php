@@ -13,11 +13,12 @@
   </form>
 </div>
 @else
-@include('import.books.table')
-<form action="{{ route('import.store-books') }}" method="POST" class="flex justify-center">
+<form action="{{ route('import.store-books') }}" method="POST" class="w-full">
   @csrf
-  <input type="hidden" name="data" value="{{ json_encode($data) }}">
-  <button type="submit" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-2 focus:ring-green-300 font-medium rounded-lg text-md px-4 py-2 me-2 mb-2 mt-4">Insert to Database</button>
+  @include('import.books.table')
+  <div class="flex justify-center">
+    <button type="submit" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-2 focus:ring-green-300 font-medium rounded-lg text-md px-4 py-2 me-2 mb-2 mt-4">Insert to Database</button>
+  </div>
 </form>
 @endif
 @if(!$showTable)

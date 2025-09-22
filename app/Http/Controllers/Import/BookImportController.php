@@ -57,13 +57,12 @@ class BookImportController extends Controller
     }
     public function store(Request $request)
     {
-        $data       = $request->input('data');
-        $dataArray  = json_decode($data, true);
+        $data       = $request->input('books');
         $errors     = "";
         $newBooksCount = 0;
         $books = new Book();
         DB::beginTransaction();
-        foreach ($dataArray as $item) {
+        foreach ($data as $item) {
             $item['book_type'] = strtolower($item['book_type']);
             $validator = Validator::make($item, [
                 'accession'             => 'required|string|max:50',

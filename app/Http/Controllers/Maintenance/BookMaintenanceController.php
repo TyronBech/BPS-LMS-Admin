@@ -208,15 +208,7 @@ class BookMaintenanceController extends Controller
         try {
             $cover = $this->getBookImage($book->title, $book->author, $book->isbn ?? null);
             if (!$cover) {
-                $cover = $book->cover_image;
-                if ($cover) {
-                    $imageData = base64_decode($cover);
-
-                    // Detect MIME type
-                    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-                    $mimeType = finfo_buffer($finfo, $imageData);
-                    finfo_close($finfo);
-                }
+                $cover = null;
             }
         } catch (Exception $e) {
             $cover = null;
@@ -474,7 +466,7 @@ class BookMaintenanceController extends Controller
             }
 
             $queryURL = implode("+", $queryParts);
-            $url = "https://www.googleapis.com/books/v1/volumes?q={$queryURL}&key={$apiKey}";
+            $url = "https://www.googleapis.com/books/v1/volumes?q={$queryURL}&key={$apiKey}&maxResults=1";
         }
 
         if (!$url) {
