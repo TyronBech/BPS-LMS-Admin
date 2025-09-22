@@ -27,9 +27,9 @@ class FacultyStaffImportController extends Controller
     }
     public function store(Request $request)
     {
-        $newData                = json_decode($request->input('newData'), true);
-        $existingData           = json_decode($request->input('existingData'), true);
-        $dataArray              = array_merge($newData, $existingData);
+        $newEmployees           = $request->input('new_employees');
+        $existingEmployees      = $request->input('existing_employees');
+        $dataArray              = array_merge($newEmployees ?? [], $existingEmployees ?? []);
         $errors                 = null;
         $staged_users           = array();
         $newFacultiesCount      = 0;
@@ -37,6 +37,10 @@ class FacultyStaffImportController extends Controller
         $users                  = new User();
         DB::beginTransaction();
         foreach ($dataArray as $item) {
+            // skip empty rows
+            if (empty(array_filter($item))) {
+                continue;
+            }
             $validator = Validator::make($item, [
                 'rfid'          => 'nullable|string|min:10|regex:/^[0-9]+$/u',
                 'first_name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
@@ -48,7 +52,7 @@ class FacultyStaffImportController extends Controller
                 'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
                 'employee_id'   => 'required|string|min:10|regex:/^[0-9]+$/u',
             ]);
-            if($validator->fails()){
+            if ($validator->fails()) {
                 DB::rollBack();
                 $errors = 'Validation error: ' . $validator->errors()->first() . ' for faculty/staff: ' . $item['first_name'] . ' ' . $item['last_name'];
                 return redirect()->route('import.import-faculties-staffs')->with('toast-error', $errors);
@@ -59,16 +63,19 @@ class FacultyStaffImportController extends Controller
                     $query->where('employee_id', $item['employee_id']);
                 })->with('employees')->first();
                 if ($existingEmployee) {
-                    if ($existingEmployee->rfid                     == $item['rfid']
-                    && $existingEmployee->first_name                == $item['first_name']
-                    && $existingEmployee->middle_name               == $item['middle_name']
-                    && $existingEmployee->last_name                 == $item['last_name']
-                    && $existingEmployee->suffix                    == $item['suffix']
-                    && $existingEmployee->gender                    == $item['gender']
-                    && $existingEmployee->email                     == $item['email']
-                    && $existingEmployee->employees->employee_role  == $item['employee_role']
-                    && $existingEmployee->employees->employee_id    == $item['employee_id']) 
-                    { continue; }
+                    if (
+                        $existingEmployee->rfid                         == $item['rfid']
+                        && $existingEmployee->first_name                == $item['first_name']
+                        && $existingEmployee->middle_name               == $item['middle_name']
+                        && $existingEmployee->last_name                 == $item['last_name']
+                        && $existingEmployee->suffix                    == $item['suffix']
+                        && $existingEmployee->gender                    == $item['gender']
+                        && $existingEmployee->email                     == $item['email']
+                        && $existingEmployee->employees->employee_role  == $item['employee_role']
+                        && $existingEmployee->employees->employee_id    == $item['employee_id']
+                    ) {
+                        continue;
+                    }
                     $existingEmployee->update([
                         'first_name'    => $item['first_name'],
                         'middle_name'   => $item['middle_name'],
@@ -124,22 +131,22 @@ class FacultyStaffImportController extends Controller
             }
         }
         DB::commit();
-        try{
+        try {
             DB::statement('CALL DistributeStagingUsers()');
         } catch (\Illuminate\Database\QueryException $e) {
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage());
         }
         foreach ($staged_users as $user) {
             $employee = User::where('email', $user['email'])->first();
-            if($employee == null) continue;
+            if ($employee == null) continue;
             $this->account_notification($employee, $user['password']);
         }
         return redirect()->route('import.import-faculties-staffs')->with('toast-success', 'Faculties & Staffs imported successfully: ' . $newFacultiesCount . ' added & ' . $existingFacultiesCount . ' updated');
     }
     public function upload(Request $request)
     {
-        try{
-            if($request->file('file') == null) return redirect()->route('import.import-faculties-staffs')->with('toast-warning', "Please select a file.");
+        try {
+            if ($request->file('file') == null) return redirect()->route('import.import-faculties-staffs')->with('toast-warning', "Please select a file.");
             $showTable      = true;
             $file           = $request->file('file');
             $reader         = new ReaderXlsx();
@@ -150,12 +157,12 @@ class FacultyStaffImportController extends Controller
             $existingData   = array();
             $new            = false;
             $existing       = false;
-            if($rows[0][0] == null){
+            if ($rows[0][0] == null) {
                 return redirect()->route('import.import-faculties-staffs')->with('toast-error', "Excel file is empty.");
-            } else if(count($rows[0]) > 11 || count($rows[0]) < 11){
+            } else if (count($rows[0]) > 11 || count($rows[0]) < 11) {
                 return redirect()->route('import.import-faculties-staffs')->with('toast-error', "An error occurred while saving faculties & staffs: Wrong number of columns.");
             }
-            for($i = 19; $i < count($rows); $i++){
+            for ($i = 19; $i < count($rows); $i++) {
                 $temp = array(
                     'rfid'          => $rows[$i][1],
                     'first_name'    => $rows[$i][2],
@@ -165,9 +172,9 @@ class FacultyStaffImportController extends Controller
                     'gender'        => $rows[$i][6],
                     'email'         => $rows[$i][7],
                     'employee_id'   => $rows[$i][8],
-                    'employee_role' => $rows[$i][9], 
+                    'employee_role' => $rows[$i][9],
                 );
-                if(EmployeeDetail::where('employee_id', $temp['employee_id'])->exists()){
+                if (EmployeeDetail::where('employee_id', $temp['employee_id'])->exists()) {
                     $existingData[] = $temp;
                     $existing = true;
                 } else {
@@ -175,7 +182,7 @@ class FacultyStaffImportController extends Controller
                     $new = true;
                 }
             }
-        } catch(\Exception $e){
+        } catch (\Exception $e) {
             $errors = "An error occurred while loading the students";
             return redirect()->route('import.import-faculties-staffs')->with('toast-error', $errors);
         }
@@ -190,15 +197,17 @@ class FacultyStaffImportController extends Controller
         }
         abort(404, 'File not found.');
     }
-    private function account_notification($user, $password){
+    private function account_notification($user, $password)
+    {
         Mail::to($user->email)->send(new AccountEmailMessage($user, $password));
     }
-    private function extract_enums($table, $columnName){
+    private function extract_enums($table, $columnName)
+    {
         $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";
         $column = DB::select($query);
         if (empty($column)) {
             return ['N/A'];
-        }   
+        }
         $type = $column[0]->Type;
         // Extract enum values
         preg_match('/enum\((.*)\)$/', $type, $matches);

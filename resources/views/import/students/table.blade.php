@@ -21,18 +21,18 @@
       </tr>
     </thead>
     <tbody class="text-center">
-      @forelse($newData as $item)
+      @forelse($newData as $index => $item)
       <tr>
-        <td>{{ $item['rfid'] }}</td>
-        <td>{{ $item['first_name'] }}</td>
-        <td>{{ $item['middle_name'] }}</td>
-        <td>{{ $item['last_name'] }}</td>
-        <td>{{ $item['suffix'] ?? '-' }}</td>
-        <td>{{ $item['gender'] }}</td>
-        <td>{{ $item['email'] }}</td>
-        <td>{{ $item['id_number'] }}</td>
-        <td>{{ $item['grade_level'] }}</td>
-        <td>{{ $item['section'] }}</td>
+        <td><input type="text" name="new_students[{{ $index }}][rfid]" value="{{ $item['rfid'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+        <td><input type="text" name="new_students[{{ $index }}][first_name]" value="{{ $item['first_name'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+        <td><input type="text" name="new_students[{{ $index }}][middle_name]" value="{{ $item['middle_name'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+        <td><input type="text" name="new_students[{{ $index }}][last_name]" value="{{ $item['last_name'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+        <td><input type="text" name="new_students[{{ $index }}][suffix]" value="{{ $item['suffix'] ?? '' }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+        <td><input type="text" name="new_students[{{ $index }}][gender]" value="{{ $item['gender'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+        <td><input type="text" name="new_students[{{ $index }}][email]" value="{{ $item['email'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+        <td><input type="text" name="new_students[{{ $index }}][id_number]" value="{{ $item['id_number'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+        <td><input type="text" name="new_students[{{ $index }}][grade_level]" value="{{ $item['grade_level'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+        <td><input type="text" name="new_students[{{ $index }}][section]" value="{{ $item['section'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
       </tr>
       @empty
       <tr>
@@ -63,18 +63,18 @@
       </tr>
     </thead>
     <tbody class="text-center">
-      @forelse($existingData as $item)
+      @forelse($existingData as $index => $item)
       <tr>
-        <td>{{ $item['rfid'] }}</td>
-        <td>{{ $item['first_name'] }}</td>
-        <td>{{ $item['middle_name'] }}</td>
-        <td>{{ $item['last_name'] }}</td>
-        <td>{{ $item['suffix'] ?? '-' }}</td>
-        <td>{{ $item['gender'] }}</td>
-        <td>{{ $item['email'] }}</td>
-        <td>{{ $item['id_number'] }}</td>
-        <td>{{ $item['grade_level'] }}</td>
-        <td>{{ $item['section'] }}</td>
+        <td><input type="text" name="existing_students[{{ $index }}][rfid]" value="{{ $item['rfid'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+        <td><input type="text" name="existing_students[{{ $index }}][first_name]" value="{{ $item['first_name'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+        <td><input type="text" name="existing_students[{{ $index }}][middle_name]" value="{{ $item['middle_name'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+        <td><input type="text" name="existing_students[{{ $index }}][last_name]" value="{{ $item['last_name'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+        <td><input type="text" name="existing_students[{{ $index }}][suffix]" value="{{ $item['suffix'] ?? '' }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+        <td><input type="text" name="existing_students[{{ $index }}][gender]" value="{{ $item['gender'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+        <td><input type="text" name="existing_students[{{ $index }}][email]" value="{{ $item['email'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+        <td><input type="text" name="existing_students[{{ $index }}][id_number]" value="{{ $item['id_number'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+        <td><input type="text" name="existing_students[{{ $index }}][grade_level]" value="{{ $item['grade_level'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+        <td><input type="text" name="existing_students[{{ $index }}][section]" value="{{ $item['section'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
       </tr>
       @empty
       <tr>

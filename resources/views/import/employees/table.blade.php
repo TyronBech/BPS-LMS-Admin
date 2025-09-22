@@ -20,17 +20,17 @@
       </tr>
     </thead>
     <tbody class="text-center">
-      @forelse($newData as $item)
+      @forelse($newData as $index => $item)
         <tr>
-          <td>{{ $item['rfid'] }}</td>
-          <td>{{ $item['first_name'] }}</td>
-          <td>{{ $item['middle_name'] ?? '-' }}</td>
-          <td>{{ $item['last_name'] }}</td>
-          <td>{{ $item['suffix'] ?? '-' }}</td>
-          <td>{{ $item['gender'] }}</td>
-          <td>{{ $item['email'] }}</td>
-          <td>{{ $item['employee_id'] }}</td>
-          <td>{{ $item['employee_role'] }}</td>
+          <td><input type="text" name="new_employees[{{ $index }}][rfid]" value="{{ $item['rfid'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="new_employees[{{ $index }}][first_name]" value="{{ $item['first_name'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="new_employees[{{ $index }}][middle_name]" value="{{ $item['middle_name'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="new_employees[{{ $index }}][last_name]" value="{{ $item['last_name'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="new_employees[{{ $index }}][suffix]" value="{{ $item['suffix'] ?? '' }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="new_employees[{{ $index }}][gender]" value="{{ $item['gender'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="new_employees[{{ $index }}][email]" value="{{ $item['email'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="new_employees[{{ $index }}][employee_id]" value="{{ $item['employee_id'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="new_employees[{{ $index }}][employee_role]" value="{{ $item['employee_role'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
         </tr>
       @empty
         <tr>
@@ -60,17 +60,17 @@
       </tr>
     </thead>
     <tbody class="text-center">
-      @forelse($existingData as $item)
+      @forelse($existingData as $index => $item)
         <tr>
-          <td>{{ $item['rfid'] }}</td>
-          <td>{{ $item['first_name'] }}</td>
-          <td>{{ $item['middle_name'] ?? '-' }}</td>
-          <td>{{ $item['last_name'] }}</td>
-          <td>{{ $item['suffix'] ?? '-' }}</td>
-          <td>{{ $item['gender'] }}</td>
-          <td>{{ $item['email'] }}</td>
-          <td>{{ $item['employee_id'] }}</td>
-          <td>{{ $item['employee_role'] }}</td>
+          <td><input type="text" name="existing_employees[{{ $index }}][rfid]" value="{{ $item['rfid'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="existing_employees[{{ $index }}][first_name]" value="{{ $item['first_name'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="existing_employees[{{ $index }}][middle_name]" value="{{ $item['middle_name'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="existing_employees[{{ $index }}][last_name]" value="{{ $item['last_name'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="existing_employees[{{ $index }}][suffix]" value="{{ $item['suffix'] ?? '' }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="existing_employees[{{ $index }}][gender]" value="{{ $item['gender'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="existing_employees[{{ $index }}][email]" value="{{ $item['email'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="existing_employees[{{ $index }}][employee_id]" value="{{ $item['employee_id'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
+          <td><input type="text" name="existing_employees[{{ $index }}][employee_role]" value="{{ $item['employee_role'] }}" class="p-1 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2"></td>
         </tr>
       @empty
         <tr>
