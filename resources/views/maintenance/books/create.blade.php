@@ -19,8 +19,8 @@
       <label for="category" class="block mb-2 text-sm font-medium">Category:</label>
       <select id="category" name="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         <option selected disabled>Choose a category</option>
-        @foreach($categories as $key => $category)
-        <option value="{{ $key }}">{{ $category->name }}</option>
+        @foreach($categories as $category)
+        <option value="{{ $category->id }}">{{ $category->name }}</option>
         @endforeach
       </select>
       @error('category')
@@ -187,35 +187,62 @@
 @section('scripts')
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    const category = document.getElementById('category');
-    const accession = document.getElementById('accession');
-    const categories = <?php echo json_encode($categories); ?>;
+    const categorySelect = document.getElementById('category');
+    const accessionInput = document.getElementById('accession');
 
-    console.log(categories);
+    // from PHP: an array of category objects (id, name, legend, books, ...)
+    const categoriesArray = <?php echo json_encode($categories); ?> || [];
 
-    category.addEventListener('change', function() {
-      const selectedCategoryKey = this.value;
+    // build a lookup map keyed by category id (string keys)
+    const categories = {};
+    categoriesArray.forEach(cat => {
+      if (cat && typeof cat.id !== 'undefined') {
+        categories[String(cat.id)] = cat;
+      }
+    });
 
-      if (
-        selectedCategoryKey &&
-        categories[selectedCategoryKey] &&
-        categories[selectedCategoryKey].books &&
-        categories[selectedCategoryKey].books.length > 0
-      ) {
-        const lastAccession = categories[selectedCategoryKey].books[0].accession;
+    // returns next accession string given a last accession like "FIL000123"
+    function getNextAccessionFromLast(lastAccession) {
+      if (!lastAccession || typeof lastAccession !== 'string') return null;
 
-        // extract prefix + number
-        const prefix = lastAccession.replace(/\d+$/, '');
-        const number = parseInt(lastAccession.match(/\d+$/)?.[0] ?? 0, 10);
+      // capture trailing digits
+      const match = lastAccession.match(/(\d+)$/);
+      const numberStr = match ? match[1] : null;
 
-        // set accession = lastAccession + 1 (with padding)
-        const nextAccession = prefix + String(number + 1).padStart(6, '0');
+      // prefix = everything before the trailing digits (or whole string if none)
+      const prefix = numberStr ? lastAccession.slice(0, -numberStr.length) : lastAccession;
 
-        accession.value = nextAccession;
-        accession.textContent = nextAccession;
+      // numeric value and width (keep same digit length as last accession)
+      const num = numberStr ? parseInt(numberStr, 10) : 0;
+      const width = numberStr ? numberStr.length : 6;
+
+      const nextNumberStr = String(num + 1).padStart(width, '0');
+      return prefix + nextNumberStr;
+    }
+
+    categorySelect.addEventListener('change', function() {
+      const selectedId = String(this.value);
+      const cat = categories[selectedId];
+
+      if (!cat) {
+        accessionInput.value = '';
+        return;
+      }
+
+      const books = Array.isArray(cat.books) ? cat.books : [];
+
+      if (books.length > 0 && books[0].accession) {
+        // increment last accession, preserving numeric width
+        const next = getNextAccessionFromLast(books[0].accession);
+        accessionInput.value = next || '';
       } else {
-        accession.value = '';
-        accession.textContent = '';
+        // no books yet -> build a starting accession using legend (or name fallback)
+        let prefix = (cat.legend && String(cat.legend).trim()) || '';
+        if (!prefix && cat.name) {
+          prefix = String(cat.name).replace(/\s+/g, '').slice(0, 3).toUpperCase();
+        }
+        if (!prefix) prefix = 'ACC';
+        accessionInput.value = prefix + '000001';
       }
     });
   });

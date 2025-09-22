@@ -34,7 +34,7 @@ class BookMaintenanceController extends Controller
     public function create()
     {
         $books = new Book();
-        $categories = Category::select('id', 'name')
+        $categories = Category::select('id', 'name', 'legend')
             ->with(['books' => function ($query) {
                 $query->select('category_id', 'accession') // must include category_id for relation
                     ->orderByDesc('accession')
