@@ -4,9 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <meta name="description" content="BPS Library Management System">
+  <meta name="description" content="BPS Library Management System - Bicutan Parochial School's digital library platform for managing books, users, and resources with an easy-to-use online dashboard.">
   <meta name="keywords" content="BPS, Library, Management, System, Books Management, User Management, Admin Dashboard">
-  <meta name="author" content="BPS Team">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="author" content="OwlQuery">
   <title>BPS Library Management System</title>
   @vite(['resources/css/app.css', 'resources/js/app.js'])
   <link rel="icon" href="{{ asset('img/BPSLogo.png') }}">

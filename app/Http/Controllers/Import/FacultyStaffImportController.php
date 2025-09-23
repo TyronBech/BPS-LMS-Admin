@@ -29,7 +29,7 @@ class FacultyStaffImportController extends Controller
     {
         $newEmployees           = $request->input('new_employees');
         $existingEmployees      = $request->input('existing_employees');
-        $dataArray              = array_merge($newEmployees ?? [], $existingEmployees ?? []);
+        $dataArray              = array_merge($newEmployees ?? array(), $existingEmployees ?? array());
         $errors                 = null;
         $staged_users           = array();
         $newFacultiesCount      = 0;
@@ -163,16 +163,29 @@ class FacultyStaffImportController extends Controller
                 return redirect()->route('import.import-faculties-staffs')->with('toast-error', "An error occurred while saving faculties & staffs: Wrong number of columns.");
             }
             for ($i = 19; $i < count($rows); $i++) {
+                if (
+                    $rows[$i][1] == null &&
+                    $rows[$i][2] == null &&
+                    $rows[$i][3] == null &&
+                    $rows[$i][4] == null &&
+                    $rows[$i][5] == null &&
+                    $rows[$i][6] == null &&
+                    $rows[$i][7] == null
+                ) continue;
+                $fullName = $this->extractNameParts($rows[$i][2] ?? '');
+                if (empty($fullName['first_name']) || empty($fullName['last_name']) || empty($fullName['last_name'])) {
+                    return redirect()->route('import.import-faculties-staffs')->with('toast-error', "Invalid format in row " . ($i + 1) . ". Please ensure that the 'Full Name' field are correctly filled.");
+                }
                 $temp = array(
                     'rfid'          => $rows[$i][1],
-                    'first_name'    => $rows[$i][2],
-                    'middle_name'   => $rows[$i][3],
-                    'last_name'     => $rows[$i][4],
-                    'suffix'        => $rows[$i][5],
-                    'gender'        => $rows[$i][6],
-                    'email'         => $rows[$i][7],
-                    'employee_id'   => $rows[$i][8],
-                    'employee_role' => $rows[$i][9],
+                    'first_name'    => $fullName['first_name'],
+                    'middle_name'   => $fullName['middle_name'],
+                    'last_name'     => $fullName['last_name'],
+                    'suffix'        => $rows[$i][3],
+                    'gender'        => $rows[$i][4],
+                    'email'         => $rows[$i][5],
+                    'employee_id'   => $rows[$i][6],
+                    'employee_role' => $rows[$i][7],
                 );
                 if (EmployeeDetail::where('employee_id', $temp['employee_id'])->exists()) {
                     $existingData[] = $temp;
@@ -196,6 +209,21 @@ class FacultyStaffImportController extends Controller
             return Response::download($filePath, 'Employee-template.xlsx');
         }
         abort(404, 'File not found.');
+    }
+    private function extractNameParts(String $fullName): array
+    {
+        $parts = explode(',', $fullName);
+        $lastName = trim($parts[0] ?? '');
+        // Handle "FirstName MiddleName" part
+        $otherParts = trim($parts[1] ?? '');
+        $namePieces = preg_split('/\s+/', $otherParts);
+        $firstName = $namePieces[0] ?? '';
+        $middleName = isset($namePieces[1]) ? implode(' ', array_slice($namePieces, 1)) : '';
+        return [
+            'first_name'  => $firstName,
+            'middle_name' => $middleName,
+            'last_name'   => $lastName,
+        ];
     }
     private function account_notification($user, $password)
     {

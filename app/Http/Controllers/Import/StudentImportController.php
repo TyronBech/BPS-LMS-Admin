@@ -28,13 +28,13 @@ class StudentImportController extends Controller
     {
         $newStudents            = $request->input('new_students');
         $existingStudents       = $request->input('existing_students');
+        $students               = array_merge($newStudents ?? array(), $existingStudents ?? array());
         $errors                 = null;
         $staged_users           = array();
         $newStudentsCount       = 0;
         $existingStudentsCount  = 0;
         $users                  = new User();
         // Merge both datasets so we can loop once
-        $students = array_merge($newStudents, $existingStudents);
         DB::beginTransaction();
         foreach ($students as $item) {
             // skip empty rows
@@ -165,7 +165,6 @@ class StudentImportController extends Controller
             }
             for ($i = 19; $i < count($rows); $i++) {
                 if (
-                    $rows[$i][0] == null &&
                     $rows[$i][1] == null &&
                     $rows[$i][2] == null &&
                     $rows[$i][3] == null &&
@@ -173,21 +172,23 @@ class StudentImportController extends Controller
                     $rows[$i][5] == null &&
                     $rows[$i][6] == null &&
                     $rows[$i][7] == null &&
-                    $rows[$i][8] == null &&
-                    $rows[$i][9] == null &&
-                    $rows[$i][10] == null
+                    $rows[$i][8] == null
                 ) continue;
+                $fullName = $this->extractNameParts($rows[$i][2] ?? '');
+                if (empty($fullName['first_name']) || empty($fullName['last_name']) || empty($fullName['last_name'])) {
+                    return redirect()->route('import.import-students')->with('toast-error', "Invalid format in row " . ($i + 1) . ". Please ensure that the 'Full Name' field are correctly filled.");
+                }
                 $temp = array(
                     'rfid'          => $rows[$i][1],
-                    'first_name'    => $rows[$i][2],
-                    'middle_name'   => $rows[$i][3],
-                    'last_name'     => $rows[$i][4],
-                    'suffix'        => $rows[$i][5],
-                    'gender'        => $rows[$i][6],
-                    'email'         => $rows[$i][7],
-                    'id_number'     => $rows[$i][8],
-                    'grade_level'   => $rows[$i][9],
-                    'section'       => $rows[$i][10],
+                    'first_name'    => $fullName['first_name'],
+                    'middle_name'   => $fullName['middle_name'],
+                    'last_name'     => $fullName['last_name'],
+                    'suffix'        => $rows[$i][3],
+                    'gender'        => $rows[$i][4],
+                    'email'         => $rows[$i][5],
+                    'id_number'     => $rows[$i][6],
+                    'grade_level'   => $rows[$i][7],
+                    'section'       => $rows[$i][8],
                 );
                 if (StudentDetail::where('id_number', $rows[$i][8])->exists()) {
                     $existingData[] = $temp;
@@ -211,6 +212,21 @@ class StudentImportController extends Controller
             return Response::download($filePath, 'Student-template.xlsx');
         }
         abort(404, 'File not found.');
+    }
+    private function extractNameParts(String $fullName): array
+    {
+        $parts = explode(',', $fullName);
+        $lastName = trim($parts[0] ?? '');
+        // Handle "FirstName MiddleName" part
+        $otherParts = trim($parts[1] ?? '');
+        $namePieces = preg_split('/\s+/', $otherParts);
+        $firstName = $namePieces[0] ?? '';
+        $middleName = isset($namePieces[1]) ? implode(' ', array_slice($namePieces, 1)) : '';
+        return [
+            'first_name'  => $firstName,
+            'middle_name' => $middleName,
+            'last_name'   => $lastName,
+        ];
     }
     private function account_notification($user, $password)
     {
