@@ -34,7 +34,10 @@
   <h5 class="text-lg font-bold tracking-tight text-gray-900 dark:text-white" id="studentHeader">Students</h5>
   @include('maintenance.users.students-table')
   <div class="h-px my-5"></div>
-  <h5 class="mb-1 text-lg font-bold tracking-tight text-gray-900 dark:text-white" id="employeeHeader">Faculty & Staff</h5>
+  <h5 class="mb-1 text-lg font-bold tracking-tight text-gray-900 dark:text-white" id="employeeHeader">Faculties & Staffs</h5>
   @include('maintenance.users.employees-table')
+  <div class="h-px my-5"></div>
+  <h5 class="mb-1 text-lg font-bold tracking-tight text-gray-900 dark:text-white" id="employeeHeader">Visitors</h5>
+  @include('maintenance.users.visitors-table')
 </div>
 @endsection

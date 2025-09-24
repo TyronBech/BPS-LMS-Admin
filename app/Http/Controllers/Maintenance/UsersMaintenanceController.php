@@ -20,9 +20,10 @@ class UsersMaintenanceController extends Controller
 {
     public function index(Request $request)
     {
-        $perStudentPage = $request->input('perStudentPage', 10);
-        $perEmployeePage = $request->input('perEmployeePage', 10);
-        $search = $request->input('search-users', '');
+        $perStudentPage     = $request->input('perStudentPage', 10);
+        $perEmployeePage    = $request->input('perEmployeePage', 10);
+        $perVisitorPage     = $request->input('perVisitorPage', 10);
+        $search             = $request->input('search-users', '');
         $students = User::whereHas('students')
             ->with('students')
             ->orderBy('id', 'asc')
@@ -33,8 +34,13 @@ class UsersMaintenanceController extends Controller
             ->orderBy('id', 'asc')
             ->paginate($perEmployeePage)
             ->appends(['perPage' => $perEmployeePage]);
+        $visitors = User::whereHas('visitors')
+            ->with('visitors')
+            ->orderBy('id', 'asc')
+            ->paginate($perVisitorPage)
+            ->appends(['perPage' => $perVisitorPage]);
         //dd($users->toArray());
-        return view('maintenance.users.users', compact('students', 'employees', 'perStudentPage', 'perEmployeePage', 'search'));
+        return view('maintenance.users.users', compact('students', 'employees', 'visitors', 'perStudentPage', 'perEmployeePage', 'perVisitorPage', 'search'));
     }
     public function view_student(Request $request)
     {
@@ -95,9 +101,10 @@ class UsersMaintenanceController extends Controller
     }
     public function show(Request $request)
     {
-        $perStudentPage  = $request->input('perStudentPage', 10);
-        $perEmployeePage = $request->input('perEmployeePage', 10);
-        $search          = strtolower($request->input('search-users', ''));
+        $perStudentPage     = $request->input('perStudentPage', 10);
+        $perEmployeePage    = $request->input('perEmployeePage', 10);
+        $perVisitorPage     = $request->input('perVisitorPage', 10);
+        $search             = strtolower($request->input('search-users', ''));
 
         // Common search filter closure
         $searchFilter = function ($query) use ($search) {
@@ -144,8 +151,24 @@ class UsersMaintenanceController extends Controller
                 'perEmployeePage' => $perEmployeePage,
                 'search-users'    => $search
             ]);
+        
+        // Visitors query
+        $visitors = User::whereHas('visitors')
+            ->where(function ($q) use ($searchFilter) {
+                $searchFilter($q);
+            })
+            ->orWhereHas('visitors', function ($q) use ($search) {
+                $q->where('school_org', 'like', "%{$search}%")
+                    ->orwhere('purpose', 'like', "%{$search}%");
+            })
+            ->orderBy('id', 'asc')
+            ->paginate($perEmployeePage, ['*'], 'visitors_page')
+            ->appends([
+                'perEmployeePage' => $perEmployeePage,
+                'search-users'    => $search
+            ]);
 
-        return view('maintenance.users.users', compact('students', 'employees', 'perStudentPage', 'perEmployeePage', 'search'));
+        return view('maintenance.users.users', compact('students', 'employees', 'visitors', 'perStudentPage', 'perEmployeePage', 'perVisitorPage', 'search'));
     }
 
     public function store_student(Request $request)
@@ -287,6 +310,17 @@ class UsersMaintenanceController extends Controller
         }
         return view('maintenance.users.edit-employee', compact('user', 'privileges'));
     }
+    public function edit_visitor(Request $request)
+    {
+        $user = null;
+        try {
+            $id = array_keys($request->all())[0];
+            $user = User::with('visitors')->where('id', $id)->first();
+        } catch (\Illuminate\Database\QueryException $e) {
+            return redirect()->back()->with('toast-error', 'Something went wrong!');
+        }
+        return view('maintenance.users.edit-visitor', compact('user'));
+    }
     public function update_student(Request $request)
     {
         ini_set('memory_limit', '4096M');
@@ -397,6 +431,48 @@ class UsersMaintenanceController extends Controller
         DB::commit();
         return redirect()->back()->with('toast-success', 'User updated successfully');
     }
+    public function update_visitor(Request $request)
+    {
+        ini_set('memory_limit', '4096M');
+        $users = new User();
+        $validator = Validator::make($request->all(), [
+            'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+            'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+            'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+            'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
+            'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
+            'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+            'email'         => 'required|string|email',
+        ]);
+        if ($validator->fails()) {
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+        }
+        if ($request->hasFile('profile-image')) {
+            $image = $request->file('profile-image');
+            $imageContent = file_get_contents($image->getRealPath());
+            $base64Image = base64_encode($imageContent);
+            $request->merge(['profile-image' => $base64Image]);
+        }
+        DB::beginTransaction();
+        try {
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
+            $visitor = User::where('id', $request->input('id'))->first();
+            $visitor->update([
+                'first_name'    => $request->input('first-name'),
+                'middle_name'   => $request->input('middle-name')   == '' ? null : $request->input('middle-name'),
+                'last_name'     => $request->input('last-name'),
+                'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
+                'gender'        => $request->input('gender'),
+                'email'         => $request->input('email'),
+                'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
+            return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
+        }
+        DB::commit();
+        return redirect()->back()->with('toast-success', 'User updated successfully');
+    }
     public function destroy(Request $request)
     {
         DB::beginTransaction();
@@ -469,6 +545,26 @@ class UsersMaintenanceController extends Controller
                     $u->syncRoles([]);
                 });
             }
+            User::whereIn('id', $ids)->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
+            return redirect()->back()->with('toast-error', 'Something went wrong!');
+        }
+        DB::commit();
+        return redirect()->route('maintenance.users')->with('toast-success', 'Users deleted successfully');
+    }
+    public function bulk_delete_visitor(Request $request)
+    {
+        $ids = array_filter(explode(',', $request->input('visitor_ids')), function ($id) {
+            return is_numeric($id) && $id > 0;
+        });
+        if (empty($ids)) {
+            return redirect()->back()->with('toast-warning', 'No visitors selected for deletion!');
+        }
+        dd($ids);
+        DB::beginTransaction();
+        try {
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             User::whereIn('id', $ids)->delete();
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();

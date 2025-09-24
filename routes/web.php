@@ -154,10 +154,13 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::put('update-student',            [UsersMaintenanceController::class, 'update_student'])          ->name('maintenance.update-student');
             Route::get('edit-employee',             [UsersMaintenanceController::class, 'edit_employee'])           ->name('maintenance.edit-employee');
             Route::put('update-employee',           [UsersMaintenanceController::class, 'update_employee'])         ->name('maintenance.update-employee');
+            Route::get('edit-visitor',              [UsersMaintenanceController::class, 'edit_visitor'])            ->name('maintenance.edit-visitor');
+            Route::put('update-visitor',            [UsersMaintenanceController::class, 'update_visitor'])          ->name('maintenance.update-visitor');
             Route::get('show-users',                [UsersMaintenanceController::class, 'show'])                    ->name('maintenance.show-users');
             Route::delete('delete-user',            [UsersMaintenanceController::class, 'destroy'])                 ->name('maintenance.delete-user');
             Route::delete('bulk-delete-student',    [UsersMaintenanceController::class, 'bulk_delete_student'])     ->name('maintenance.bulk-delete-student');
             Route::delete('bulk-delete-employee',   [UsersMaintenanceController::class, 'bulk_delete_employee'])    ->name('maintenance.bulk-delete-employee');
+            Route::delete('bulk-delete-visitor',    [UsersMaintenanceController::class, 'bulk_delete_visitor'])     ->name('maintenance.bulk-delete-visitor');
         });
         Route::prefix('privileges')->middleware(PrivilegeAuthentication::class)->group(function () {
             Route::get('privileges',            [PrivilegeMaintenanceController::class, 'index'])               ->name('maintenance.privileges');

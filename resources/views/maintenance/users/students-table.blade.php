@@ -9,7 +9,7 @@ $increment = 0;
     <div class="justify-start flex items-center">
       <div id="checked-students" class="hidden flex-row">
         <h5 id="selectedStudentHeader" class="text-sm font-bold tracking-tight border-2 rounded-lg px-5 py-2 me-2">Selected</h5>
-        @can(PermissionsEnum::DELETE_BOOKS, 'admin')
+        @can(PermissionsEnum::DELETE_USERS, 'admin')
         <button data-modal-target="bulk-delete-student-modal" data-modal-toggle="bulk-delete-student-modal" class="bulkDeleteStudentBtn focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2" type="button" value="">
           Delete
         </button>
