@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Report;
 
 use App\Http\Controllers\Controller;
+use App\Models\Book;
 use Illuminate\Http\Request;
 use App\Models\Transaction;
 use DateTime;
@@ -24,8 +25,9 @@ class TransactionController extends Controller
         $search         = $request->input('search', '');
         $perPage        = $request->input('perPage', 10);
         $type           = $request->input('type', 'All');
+        $availability   = $this->extract_enums((new Transaction())->getTable(), 'transaction_type');
         $data           = $this->generateData($request, false);
-        return view('report.transactions.transactions', compact('data', 'search', 'fromInputDate', 'toInputDate', 'type', 'perPage'));
+        return view('report.transactions.transactions', compact('data', 'search', 'fromInputDate', 'toInputDate', 'type', 'perPage', 'availability'));
     }
     public function search(Request $request)
     {
@@ -33,11 +35,12 @@ class TransactionController extends Controller
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
         $type           = $request->input('type', 'All');
+        $availability   = $this->extract_enums((new Transaction())->getTable(), 'transaction_type');
         $perPage        = $request->input('perPage', 10);
         $validator = Validator::make($request->all(), [
             'start'         => 'nullable|date',
             'end'           => 'nullable|date',
-            'type'          => 'nullable|in:All,Borrowed,Reserved',
+            'type'          => 'nullable|in:' . implode(',', $this->extract_enums((new Transaction())->getTable(), 'transaction_type')),
             'perPage'       => 'nullable|numeric|in:10,25,50'
         ]);
         if ($validator->fails()) {
@@ -53,7 +56,7 @@ class TransactionController extends Controller
             return redirect()->route('report.transaction')->with('toast-success', 'Successfully exported to Excel');
         }
         $data = $this->generateData($request, false);
-        return view('report.transactions.transactions', compact('data', 'search', 'fromInputDate', 'toInputDate', 'type', 'perPage'));
+        return view('report.transactions.transactions', compact('data', 'search', 'fromInputDate', 'toInputDate', 'type', 'perPage', 'availability'));
     }
     private function generatePDF($data, $type)
     {
@@ -86,7 +89,7 @@ class TransactionController extends Controller
         $sheet          = $spreadsheet->getActiveSheet();
         $cells1          = null;
         $cells2          = null;
-        
+
         $logo->setName('BPS Logo');
         $logo->setDescription('BPS Logo');
         $logo->setPath(public_path('img/BPSLogoFull.png'));
@@ -109,7 +112,7 @@ class TransactionController extends Controller
         $sheet->getColumnDimension('E')->setWidth(20);
         $sheet->getColumnDimension('F')->setWidth(20);
         $sheet->getColumnDimension('G')->setWidth(20);
-        if($type && $type == 'All') {
+        if ($type && $type == 'All') {
             $cells1 = 'A7:J8';
             $cells2 = 'A10:J10';
             $sheet->getColumnDimension('H')->setWidth(20);
@@ -124,7 +127,7 @@ class TransactionController extends Controller
             $sheet->setCellValue('H10', 'Returned');
             $sheet->setCellValue('I10', 'Transaction Type');
             $sheet->setCellValue('J10', 'Status');
-        } else if($type && $type == 'Borrowed') {
+        } else if ($type && $type == 'Borrowed') {
             $cells1 = 'A7:H8';
             $cells2 = 'A10:H10';
             $sheet->getColumnDimension('H')->setWidth(20);
@@ -135,7 +138,7 @@ class TransactionController extends Controller
             $sheet->setCellValue('F10', 'Returned');
             $sheet->setCellValue('G10', 'Transaction Type');
             $sheet->setCellValue('H10', 'Status');
-        } else if($type && $type == 'Reserved') {
+        } else if ($type && $type == 'Reserved') {
             $cells1 = 'A7:G8';
             $cells2 = 'A10:G10';
             $sheet->mergeCells('A7:G7');
@@ -154,13 +157,13 @@ class TransactionController extends Controller
         $sheet->getStyle($cells2)->getFont()->setBold(true);
         $row = 11;
         foreach ($data as $item) {
-            if(!$item->book || !$item->user) {
+            if (!$item->book || !$item->user) {
                 continue; // Skip if book or user relationship is not loaded
             }
             $sheet->setCellValue('A' . $row, $item->book->accession);
             $sheet->setCellValue('B' . $row, $item->book->title);
             $sheet->setCellValue('C' . $row, $item->user->first_name . ' ' . $item->user->last_name);
-            if($type && $type == 'All') {
+            if ($type && $type == 'All') {
                 $sheet->setCellValue('D' . $row, $item->reserved_date ? $item->reserved_date : 'Not Reserved');
                 $sheet->setCellValue('E' . $row, $item->pickup_deadline ? $item->pickup_deadline : 'Not Set');
                 $sheet->setCellValue('F' . $row, $item->date_borrowed ? $item->date_borrowed : 'Not Borrowed');
@@ -168,13 +171,13 @@ class TransactionController extends Controller
                 $sheet->setCellValue('H' . $row, $item->return_date ? $item->return_date : 'Not Returned');
                 $sheet->setCellValue('I' . $row, $item->transaction_type);
                 $sheet->setCellValue('J' . $row, $item->status);
-            } else if($type && $type == 'Borrowed') {
+            } else if ($type && $type == 'Borrowed') {
                 $sheet->setCellValue('D' . $row, $item->date_borrowed ? $item->date_borrowed : 'Not Borrowed');
                 $sheet->setCellValue('E' . $row, $item->due_date ? $item->due_date : 'Not Set');
                 $sheet->setCellValue('F' . $row, $item->return_date ? $item->return_date : 'Not Returned');
                 $sheet->setCellValue('G' . $row, $item->transaction_type);
                 $sheet->setCellValue('H' . $row, $item->status);
-            } else if($type && $type == 'Reserved') {
+            } else if ($type && $type == 'Reserved') {
                 $sheet->setCellValue('D' . $row, $item->reserved_date ? $item->reserved_date : 'Not Reserved');
                 $sheet->setCellValue('E' . $row, $item->pickup_deadline ? $item->pickup_deadline : 'Not Set');
                 $sheet->setCellValue('F' . $row, $item->transaction_type);
@@ -191,10 +194,11 @@ class TransactionController extends Controller
     }
     private function generateData(Request $request, bool $isExport = false)
     {
-        $fromInputDate  = $request->input('start', ''  );
+        $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
         $search         = strtolower($request->input('search', ''));
         $type           = $request->input('type', 'All');
+        $perPage        = $request->input('perPage', 10);
 
         $query = Transaction::with('book', 'user');
         if (strlen($fromInputDate) > 0) {
@@ -235,6 +239,7 @@ class TransactionController extends Controller
             $data = $query->orderBy(DB::raw('DATE(date_borrowed)'), 'desc')
                 ->paginate($request->input('perPage', 10))
                 ->appends([
+                    'perPage' => $perPage,
                     'start' => $fromInputDate,
                     'end' => $toInputDate,
                     'search' => $search,
@@ -242,5 +247,23 @@ class TransactionController extends Controller
                 ]);
         }
         return $data;
+    }
+    private function extract_enums($table, $columnName)
+    {
+        $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";
+        $column = DB::select($query);
+        if (empty($column)) {
+            return ['N/A'];
+        }
+        $type = $column[0]->Type;
+        // Extract enum values
+        preg_match('/enum\((.*)\)$/', $type, $matches);
+        $enumValues = [];
+
+        if (isset($matches[1])) {
+            $enumValues = str_getcsv($matches[1], ',', "'");
+        }
+        $enumValues = array_merge(['All'], $enumValues);
+        return $enumValues;
     }
 }

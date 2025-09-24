@@ -34,19 +34,9 @@
       <label for="type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"></label>
       <select id="type" name="type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
         <option selected disabled>Select a Type</option>
-        @if($type === 'All')
-        <option value="All" selected>All</option>
-        <option value="Borrowed">Borrowed</option>
-        <option value="Reserved">Reserved</option>
-        @elseif($type === 'Borrowed')
-        <option value="All">All</option>
-        <option value="Borrowed" selected>Borrowed</option>
-        <option value="Reserved">Reserved</option>
-        @elseif($type === 'Reserved')
-        <option value="All">All</option>
-        <option value="Borrowed">Borrowed</option>
-        <option value="Reserved" selected>Reserved</option>
-        @endif
+        @foreach($availability as $typeOption)
+        <option value="{{ $typeOption }}" {{ request('type') == $typeOption ? 'selected' : '' }}>{{ $typeOption }}</option>
+        @endforeach
       </select>
     </div>
     <div class="sm:col-span-2 sm:col-start-1 flex items-center">
