@@ -35,6 +35,16 @@
         <option value="LOGOUT" {{ $types === 'LOGOUT' ? 'selected' : '' }}>LOGOUT</option>
       </select>
     </div>
+    <div class="sm:col-span-2 sm:col-start-1 flex items-center ml-3">
+      <label for="tableType" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white"></label>
+      <select id="tableType" name="tableType" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <option value="All" {{ $tableType === 'All' ? 'selected' : '' }}>All</option>
+        <option value="Users" {{ $tableType === 'Users' ? 'selected' : '' }}>Users</option>
+        <option value="Books" {{ $tableType === 'Books' ? 'selected' : '' }}>Books</option>
+        <option value="Transactions" {{ $tableType === 'Transactions' ? 'selected' : '' }}>Transactions</option>
+        <option value="Sessions" {{ $tableType === 'Sessions' ? 'selected' : '' }}>Sessions</option>
+      </select>
+    </div>
     <div class="sm:col-span-2 sm:col-start-1 flex items-center">
       <button type="submit" id="submit" name="submit" value="find" class="bg-blue-500 hover:bg-blue-700 active:bg-blue-900 text-white text-sm font-bold py-1 px-4 rounded h-12 mt-2 mb-2 ml-4 mr-4 w-20">Find</button>
     </div>

@@ -9,6 +9,7 @@
   <form method="GET" class="m-2">
     <label for="perPage" class="mr-2 text-sm font-medium text-gray-700">Show</label>
     <input type="hidden" name="types" value="{{ request('types') }}">
+    <input type="hidden" name="tableType" value="{{ request('tableType') }}">
     <input type="hidden" name="start" value="{{ request('start') }}">
     <input type="hidden" name="end" value="{{ request('end') }}">
     <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2, dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
@@ -49,10 +50,10 @@
           @else
           <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">Session Record</td>
           @endif
-          @if($item->source_table == User::getTableName() || $item->source_table == EmployeeDetail::getTableName() || $item->source_table == StudentDetail::getTableName() || VisitorDetail::getTableName())
+          @if($item->source_table == User::getTableName() || $item->source_table == EmployeeDetail::getTableName() || $item->source_table == StudentDetail::getTableName() || $item->source_table == VisitorDetail::getTableName())
           <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">User</td>
           @elseif($item->source_table == Book::getTableName())
-          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">Books</td>
+          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">Book</td>
           @elseif($item->source_table == Transaction::getTableName())
           <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">Transaction</td>
           @elseif($item->source_table == 'sessions')
