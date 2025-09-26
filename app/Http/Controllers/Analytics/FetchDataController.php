@@ -15,16 +15,18 @@ use Illuminate\Support\Facades\Log as LogFacade;
 
 class FetchDataController extends Controller
 {
-    public function fetchCurrentTimeInUsers(){
+    public function fetchCurrentTimeInUsers()
+    {
         $today = Carbon::today();
 
-        $activeCount = Log::where('time_in' , '!=', null)
+        $activeCount = Log::where('time_in', '!=', null)
             ->where('time_out', null)
             ->whereDate('time_in', $today)
             ->count();
         return response()->json(['active_count' => $activeCount]);
     }
-    public function timeoutAllUsers(){
+    public function timeoutAllUsers()
+    {
         try {
             DB::statement("SET time_zone = '+08:00'");
             DB::statement('CALL AutoTimeoutUsers()');
@@ -41,55 +43,57 @@ class FetchDataController extends Controller
             'message' => 'All users have been timed out successfully.'
         ]);
     }
-    public function fetchMonthlyUsers(){
+    public function fetchMonthlyUsers()
+    {
         $monthlyRecord = Log::select(
             DB::raw("DATE_FORMAT(time_in, '%Y %M') as month"),
             DB::raw('COUNT(*) as count')
         )
-        ->where('time_in', '!=', null)
-        ->groupBy(DB::raw("DATE_FORMAT(time_in, '%Y %M')"))
-        ->orderBy(DB::raw("MIN(time_in)")) // optional: to order correctly from oldest to newest
-        ->limit(12)
-        ->get();
+            ->where('time_in', '!=', null)
+            ->groupBy(DB::raw("DATE_FORMAT(time_in, '%Y %M')"))
+            ->orderBy(DB::raw("MIN(time_in)")) // optional: to order correctly from oldest to newest
+            ->limit(12)
+            ->get();
         return response()->json($monthlyRecord);
     }
-    public function totalBooks(){
+    public function totalBooks()
+    {
         $totalBooks = Book::count();
         return response()->json(['total_books' => $totalBooks]);
     }
-    public function fetchTransactionHistory(){
+    public function fetchTransactionHistory()
+    {
         $monthlyRecord = Transaction::select(
             DB::raw("DATE_FORMAT(date_borrowed, '%Y %M') as month"),
             DB::raw('COUNT(*) as count')
-        )->
-        groupBy(DB::raw("DATE_FORMAT(date_borrowed, '%Y %M')"))
-        ->orderBy(DB::raw("MIN(date_borrowed)")) // optional: to order correctly from oldest to newest
-        ->limit(12)
-        ->get();
+        )->groupBy(DB::raw("DATE_FORMAT(date_borrowed, '%Y %M')"))
+            ->orderBy(DB::raw("MIN(date_borrowed)")) // optional: to order correctly from oldest to newest
+            ->limit(12)
+            ->get();
         $borrowed = Transaction::select(
             DB::raw('COUNT(*) as count')
         )
-        ->where('transaction_type', 'Borrowed')
-        ->groupBy(DB::raw("DATE_FORMAT(date_borrowed, '%Y %M')"))
-        ->orderBy(DB::raw("MIN(date_borrowed)")) // optional: to order correctly from oldest to newest
-        ->limit(12)
-        ->get();
+            ->where('transaction_type', 'Borrowed')
+            ->groupBy(DB::raw("DATE_FORMAT(date_borrowed, '%Y %M')"))
+            ->orderBy(DB::raw("MIN(date_borrowed)")) // optional: to order correctly from oldest to newest
+            ->limit(12)
+            ->get();
         $returned = Transaction::select(
             DB::raw('COUNT(*) as count')
         )
-        ->where('transaction_type', 'Returned')
-        ->groupBy(DB::raw("DATE_FORMAT(date_borrowed, '%Y %M')"))
-        ->orderBy(DB::raw("MIN(date_borrowed)")) // optional: to order correctly from oldest to newest
-        ->limit(12)
-        ->get();
+            ->where('transaction_type', 'Returned')
+            ->groupBy(DB::raw("DATE_FORMAT(date_borrowed, '%Y %M')"))
+            ->orderBy(DB::raw("MIN(date_borrowed)")) // optional: to order correctly from oldest to newest
+            ->limit(12)
+            ->get();
         $reserved = Transaction::select(
             DB::raw('COUNT(*) as count')
         )
-        ->where('transaction_type', 'Reserved')
-        ->groupBy(DB::raw("DATE_FORMAT(date_borrowed, '%Y %M')"))
-        ->orderBy(DB::raw("MIN(date_borrowed)")) // optional: to order correctly from oldest to newest
-        ->limit(12)
-        ->get();
+            ->where('transaction_type', 'Reserved')
+            ->groupBy(DB::raw("DATE_FORMAT(date_borrowed, '%Y %M')"))
+            ->orderBy(DB::raw("MIN(date_borrowed)")) // optional: to order correctly from oldest to newest
+            ->limit(12)
+            ->get();
         return response()->json([
             'transaction_history' => $monthlyRecord,
             'borrowed' => $borrowed,
@@ -97,21 +101,23 @@ class FetchDataController extends Controller
             'reserved' => $reserved
         ]);
     }
-    public function fetchYearlyAquiredBooks(){
+    public function fetchYearlyAquiredBooks()
+    {
         $yearlyRecord = Book::select(
             DB::raw("DATE_FORMAT(created_at, '%Y') as year"),
             DB::raw('COUNT(*) as count')
         )
-        ->groupBy(DB::raw("DATE_FORMAT(created_at, '%Y')"))
-        ->orderBy(DB::raw("MIN(created_at)")) // optional: to order correctly from oldest to newest
-        ->get();
+            ->groupBy(DB::raw("DATE_FORMAT(created_at, '%Y')"))
+            ->orderBy(DB::raw("MIN(created_at)")) // optional: to order correctly from oldest to newest
+            ->get();
         return response()->json($yearlyRecord);
     }
-    public function fetchRegisteredUsers(){
+    public function fetchRegisteredUsers()
+    {
         $students = User::whereHas('privileges', function ($query) {
             $query->where('user_type', 'student');
         })->count();
-        
+
         $employees = User::whereHas('privileges', function ($query) {
             $query->where('user_type', 'employee');
         })->count();
@@ -123,5 +129,27 @@ class FetchDataController extends Controller
             'employees' => $employees,
             'visitors' => $visitors
         ]);
+    }
+    public function mostVisitedStudents()
+    {
+        try {
+            $top = User::whereHas('students')
+                ->with('students')
+                ->withCount(['logs as logs_count' => function ($query) {
+                    $query->whereNotNull('time_in')
+                        ->whereYear('time_in', Carbon::now()->year)
+                        ->select(DB::raw('COUNT(DISTINCT DATE(time_in))'));
+                }])
+                ->orderByDesc('logs_count')
+                ->take(10)
+                ->get();
+
+            return response()->json($top->values(), 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], 500);
+        }
     }
 }

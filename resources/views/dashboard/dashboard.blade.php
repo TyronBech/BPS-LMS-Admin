@@ -47,6 +47,27 @@
       <canvas id="registered-users" width="250" height="250"></canvas>
     </div>
   </div>
+  <div class="flex flex-col col-span-4 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <h5 class="mb-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 10 Most Visited Students</h5>
+    <div class="mb-5">
+      <table class="table-fixed bg-white dark:bg-gray-800 w-full">
+        <thead class="bg-blue-400 text-left font-bold text-slate-200 border-2 border-slate-300 dark:border-slate-700">
+          <tr>
+            <th class="pl-2 border-r w-16 border-slate-300 dark:border-slate-700">Top</th>
+            <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Name</th>
+            <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Total Visits</th>
+            <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Grade Level</th>
+            <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Section</th>
+          </tr>
+        </thead>
+        <tbody id="top-students-body">
+          <tr>
+            <td colspan="5" class="text-center">Loading...</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
   <div class="sticky z-index-100 bottom-10 left-20">
     <button type="button" id="refresh" class="flex text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
       <span class="">Refresh</span>
@@ -67,6 +88,38 @@
       document.getElementById('timed-in-count').textContent = '...';
     }
   }
+  async function topVisitedStudents() {
+    try {
+      const response = await fetch("{{ route('fetch-most-visited-students') }}");
+      const top = await response.json();
+
+      const tbody = document.getElementById('top-students-body');
+      tbody.innerHTML = ''; // clear old rows
+
+      if (top.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="text-center">No data found.</td></tr>`;
+        return;
+      }
+      top.forEach((item, index) => {
+        const row = `
+        <tr class="text-left border-2 border-slate-300 dark:border-slate-700">
+          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">${index + 1}</td>
+          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">
+            ${item.last_name}, ${item.first_name} ${item.middle_name ?? ''}
+          </td>
+          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">${item.logs_count}</td>
+          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">${item.students.level}</td>
+          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">${item.students.section}</td>
+        </tr>
+      `;
+        tbody.insertAdjacentHTML('beforeend', row);
+      });
+    } catch (error) {
+      console.error('Error fetching top visited students:', error);
+      document.getElementById('top-students-body').innerHTML =
+        `<tr><td colspan="5" class="text-center">Error loading data.</td></tr>`;
+    }
+  }
   // Timeout all users
   document.getElementById('timeout-all-users').addEventListener('click', async () => {
     try {
@@ -79,7 +132,6 @@
       });
       const data = await response.json();
       location.reload();
-      console.log(data);
     } catch (error) {
       console.error('Error timing out users:', error);
     }
@@ -407,6 +459,7 @@
   setInterval(fetchTransactionHistory, 60000);
   setInterval(fetchYearlyAquiredBooks, 60000);
   setInterval(fetchRegisteredUsers, 60000);
+  setInterval(topVisitedStudents, 60000);
 
   document.addEventListener('DOMContentLoaded', fetchActiveCount);
   document.addEventListener('DOMContentLoaded', fetchMonthlyCount);
@@ -414,15 +467,16 @@
   document.addEventListener('DOMContentLoaded', fetchTransactionHistory);
   document.addEventListener('DOMContentLoaded', fetchYearlyAquiredBooks);
   document.addEventListener('DOMContentLoaded', fetchRegisteredUsers);
+  document.addEventListener('DOMContentLoaded', topVisitedStudents);
 </script>
 @else
 
 <div class="flex flex-col items-center max-w-sm p-6 my-28 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-<svg class="w-16 h-16 opacity-70 mb-3 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14v3m-3-6V7a3 3 0 1 1 6 0v4m-8 0h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1Z"/>
-</svg>
-<h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Access Restricted</h5>
-<p class="font-normal text-center text-gray-700 dark:text-gray-400">Sorry, you don't have access to view the dashboard page. Please contact your administrator.</p>
+  <svg class="w-16 h-16 opacity-70 mb-3 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14v3m-3-6V7a3 3 0 1 1 6 0v4m-8 0h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1Z" />
+  </svg>
+  <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Access Restricted</h5>
+  <p class="font-normal text-center text-gray-700 dark:text-gray-400">Sorry, you don't have access to view the dashboard page. Please contact your administrator.</p>
 </div>
 
 @endif
