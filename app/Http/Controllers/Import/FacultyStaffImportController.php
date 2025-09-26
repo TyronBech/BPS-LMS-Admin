@@ -173,7 +173,7 @@ class FacultyStaffImportController extends Controller
                     $rows[$i][7] == null
                 ) continue;
                 $fullName = $this->extractNameParts($rows[$i][2] ?? '');
-                if (empty($fullName['first_name']) || empty($fullName['last_name']) || empty($fullName['last_name'])) {
+                if (empty($fullName['first_name']) || empty($fullName['last_name'])) {
                     return redirect()->route('import.import-faculties-staffs')->with('toast-error', "Invalid format in row " . ($i + 1) . ". Please ensure that the 'Full Name' field are correctly filled.");
                 }
                 $temp = array(
@@ -181,7 +181,7 @@ class FacultyStaffImportController extends Controller
                     'first_name'    => $fullName['first_name'],
                     'middle_name'   => $fullName['middle_name'],
                     'last_name'     => $fullName['last_name'],
-                    'suffix'        => $rows[$i][3],
+                    'suffix'        => $fullName['suffix'],
                     'gender'        => $rows[$i][4],
                     'email'         => $rows[$i][5],
                     'employee_id'   => $rows[$i][6],
@@ -210,19 +210,61 @@ class FacultyStaffImportController extends Controller
         }
         abort(404, 'File not found.');
     }
-    private function extractNameParts(String $fullName): array
+    private function extractNameParts(string $fullName): array
     {
-        $parts = explode(',', $fullName);
+        // Expand this list if you have more suffixes
+        $suffixes = ['Jr', 'Jr.', 'Sr', 'Sr.', 'II', 'III', 'IV', 'V', 'PhD', 'MD', 'Esq'];
+
+        // normalized suffix set for matching (strip trailing dot and lowercase)
+        $normSuffixes = array_map(fn($s) => strtolower(rtrim($s, '.')), $suffixes);
+
+        // split into "Last" and "rest" (limit=2 in case there's a comma in names)
+        $parts = explode(',', $fullName, 2);
         $lastName = trim($parts[0] ?? '');
-        // Handle "FirstName MiddleName" part
         $otherParts = trim($parts[1] ?? '');
+
+        if ($otherParts === '') {
+            return [
+                'first_name'  => '',
+                'middle_name' => '',
+                'last_name'   => $lastName,
+                'suffix'      => ''
+            ];
+        }
+
         $namePieces = preg_split('/\s+/', $otherParts);
-        $firstName = $namePieces[0] ?? '';
-        $middleName = isset($namePieces[1]) ? implode(' ', array_slice($namePieces, 1)) : '';
+
+        $firstName = '';
+        $middleName = '';
+        $suffix = '';
+
+        // look for a suffix starting from the second word (suffix sits between first name and middle name)
+        $suffixIndex = null;
+        for ($i = 1; $i < count($namePieces); $i++) {
+            $normalized = strtolower(rtrim($namePieces[$i], '.'));
+            if (in_array($normalized, $normSuffixes, true)) {
+                $suffixIndex = $i;
+                $suffix = $namePieces[$i]; // keep original (with period if present)
+                break;
+            }
+        }
+
+        if ($suffixIndex !== null) {
+            // first_name = all words before the suffix (so second given name is included)
+            $firstName = implode(' ', array_slice($namePieces, 0, $suffixIndex));
+            // middle_name = everything after the suffix
+            $middleName = implode(' ', array_slice($namePieces, $suffixIndex + 1));
+        } else {
+            // no suffix found -> first is the first word, rest is middle name
+            $firstName = $namePieces[0] ?? '';
+            $middleName = count($namePieces) > 1 ? implode(' ', array_slice($namePieces, 1)) : '';
+        }
+
         return [
             'first_name'  => $firstName,
             'middle_name' => $middleName,
             'last_name'   => $lastName,
+            'suffix'      => $suffix,
         ];
     }
     private function account_notification($user, $password)
