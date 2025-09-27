@@ -37,7 +37,7 @@
                    focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5
                    dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400
                    dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-      <option value="all" selected>All</option>
+      <option value="" selected disabled>Choose a type</option>
       <option value="daily">Daily</option>
       <option value="weekly">Weekly</option>
       <option value="monthly">Monthly</option>
@@ -76,7 +76,14 @@
       },
       success: function(response) {
         let ctx = document.getElementById('logsChart').getContext('2d');
-
+        let chartTitle = 'User Logs';
+        if (type === 'daily') {
+          chartTitle = 'User Logs (7AM - 5PM)';
+        } else if (type === 'weekly') {
+          chartTitle = 'User Logs (Mon - Fri)';
+        } else if (type === 'monthly') {
+          chartTitle = 'User Logs (Monthly Totals)';
+        }
         if (chartInstance) {
           chartInstance.destroy();
           chartInstance = null;
@@ -105,7 +112,7 @@
               },
               title: {
                 display: true,
-                text: 'User Logs (7AM - 5PM)'
+                text: response.chart_title,
               }
             },
             scales: {
@@ -138,7 +145,7 @@
 
     // Auto reload on date changes (when user picks start or end)
     $('#datepicker-range-graph-start, #datepicker-range-graph-end').on('change blur', function() {
-      document.getElementById('type').value = 'all';
+      document.getElementById('type').value = '';
       loadGraph();
     });
   });
