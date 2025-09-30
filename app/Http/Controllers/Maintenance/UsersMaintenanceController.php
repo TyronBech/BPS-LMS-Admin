@@ -561,7 +561,6 @@ class UsersMaintenanceController extends Controller
         if (empty($ids)) {
             return redirect()->back()->with('toast-warning', 'No visitors selected for deletion!');
         }
-        dd($ids);
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
