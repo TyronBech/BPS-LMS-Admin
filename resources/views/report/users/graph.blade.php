@@ -41,6 +41,7 @@
       <option value="daily">Daily</option>
       <option value="weekly">Weekly</option>
       <option value="monthly">Monthly</option>
+      <option value="yearly">Yearly</option>
     </select>
   </div>
 
@@ -83,20 +84,23 @@
           chartTitle = 'User Logs (Mon - Fri)';
         } else if (type === 'monthly') {
           chartTitle = 'User Logs (Monthly Totals)';
+        } else if (type === 'yearly') {
+          chartTitle = 'User Logs (Yearly Totals)';
         }
         if (chartInstance) {
           chartInstance.destroy();
           chartInstance = null;
         }
-
+        console.log(response);
         chartInstance = new Chart(ctx, {
-          type: 'line',
+          type: 'bar',
           data: {
             labels: response.labels,
             datasets: [{
               label: 'Number of Logs',
               data: response.counts,
               fill: false,
+              backgroundColor: 'rgba(54, 162, 235, 0.7)',
               borderColor: 'rgba(54, 162, 235, 1)',
               tension: 0.3,
               pointBackgroundColor: 'rgba(54, 162, 235, 1)',
@@ -108,7 +112,8 @@
             plugins: {
               datalabels: false,
               legend: {
-                display: false
+                display: false,
+
               },
               title: {
                 display: true,

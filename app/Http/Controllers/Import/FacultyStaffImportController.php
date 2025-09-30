@@ -50,7 +50,7 @@ class FacultyStaffImportController extends Controller
                 'gender'        => 'required|string|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
                 'email'         => 'required|string|email|max:255',
                 'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
-                'employee_id'   => 'required|string|min:10|regex:/^[0-9]+$/u',
+                'employee_id'   => 'required|string|min:6|max:12|regex:/^[0-9]+$/u',
             ]);
             if ($validator->fails()) {
                 DB::rollBack();

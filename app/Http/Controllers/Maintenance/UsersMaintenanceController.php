@@ -26,17 +26,17 @@ class UsersMaintenanceController extends Controller
         $search             = $request->input('search-users', '');
         $students = User::whereHas('students')
             ->with('students')
-            ->orderBy('id', 'asc')
+            ->orderBy('created_at', 'desc')
             ->paginate($perStudentPage)
             ->appends(['perPage' => $perStudentPage]);
         $employees = User::whereHas('employees')
             ->with('employees')
-            ->orderBy('id', 'asc')
+            ->orderBy('created_at', 'desc')
             ->paginate($perEmployeePage)
             ->appends(['perPage' => $perEmployeePage]);
         $visitors = User::whereHas('visitors')
             ->with('visitors')
-            ->orderBy('id', 'asc')
+            ->orderBy('created_at', 'desc')
             ->paginate($perVisitorPage)
             ->appends(['perPage' => $perVisitorPage]);
         //dd($users->toArray());
@@ -241,7 +241,7 @@ class UsersMaintenanceController extends Controller
             'suffix'        => 'nullable|string|max:10||regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
             'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'employee_id'   => 'required|string|min:10|regex:/^[0-9]+$/u',
+            'employee_id'   => 'required|string|min:6|max:12|regex:/^[0-9]+$/u',
             'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
             'email'         => 'required|string|email',
         ]);
@@ -387,7 +387,7 @@ class UsersMaintenanceController extends Controller
             'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
             'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'employee_id'   => 'required|string|min:10|regex:/^[0-9]+$/u',
+            'employee_id'   => 'required|string|min:6|max:12|regex:/^[0-9]+$/u',
             'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
             'email'         => 'required|string|email',
         ]);
