@@ -20,9 +20,10 @@ class UserLogsController extends Controller
 {
     public function index(Request $request)
     {
-        $search      = $request->input('search', '');
+        $search         = $request->input('search', '');
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
+        $userType       = $request->input('user_type', 'all');
         $peak_hour      = "00:00";
         $perPage        = $request->input('perPage', 10);
         $data           = $this->generateData($request, new Log(), false);
@@ -40,13 +41,14 @@ class UserLogsController extends Controller
         } else {
             $peak_hour = $hour . ":00 AM";
         }
-        return view('report.users.user-logs', compact('data', 'search', 'fromInputDate', 'toInputDate', 'peak_hour', 'perPage'));
+        return view('report.users.user-logs', compact('data', 'search', 'fromInputDate', 'toInputDate', 'peak_hour', 'perPage', 'userType'));
     }
     public function search(Request $request)
     {
-        $search      = $request->input('search', '');
+        $search         = $request->input('search', '');
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
+        $userType       = $request->input('user_type', 'all');
         $peak_hour      = "00:00";
         $perPage        = $request->input('perPage', 10);
         $tableName      = new Log();
@@ -54,7 +56,8 @@ class UserLogsController extends Controller
             'start'         => 'nullable|date',
             'end'           => 'nullable|date',
             'search'        => 'nullable',
-            'perPage'       => 'nullable|numeric|in:10,25,50'
+            'perPage'       => 'nullable|numeric|in:10,25,50',
+            'user_type'     => 'in:all,student,employee,visitor',
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
@@ -83,7 +86,7 @@ class UserLogsController extends Controller
         } else {
             $peak_hour = $hour . ":00 AM";
         }
-        return view('report.users.user-logs', compact('data', 'search', 'fromInputDate', 'toInputDate', 'peak_hour', 'perPage'));
+        return view('report.users.user-logs', compact('data', 'search', 'fromInputDate', 'toInputDate', 'peak_hour', 'perPage', 'userType'));
     }
     public function graph(Request $request)
     {
@@ -386,6 +389,7 @@ class UserLogsController extends Controller
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
         $search         = strtolower($request->input('search', ''));
+        $userType       = $request->input('user_type', 'all');
         $perPage        = $request->input('perPage', 10);
 
         $query = Log::with('user')->where("computer_use", "No")->whereNotNull('time_in');
@@ -408,6 +412,19 @@ class UserLogsController extends Controller
                     ->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $search . '%');
             });
         }
+        if($userType != 'all') {
+            $query->whereHas('user', function ($q) use ($userType) {
+                $q->whereHas('privileges', function ($q2) use ($userType) {
+                    if ($userType == 'student') {
+                        $q2->where('user_type', 'student');
+                    } else if ($userType == 'employee') {
+                        $q2->where('user_type', 'employee');
+                    } else if ($userType == 'visitor') {
+                        $q2->where('user_type', 'visitor');
+                    }
+                });
+            });
+        }
         if ($isExport) {
             $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), 'asc')
                 ->orderBy(DB::raw('TIME(' . $tableName->getTable() . '.time_in)'), 'asc')
@@ -428,6 +445,7 @@ class UserLogsController extends Controller
                     'search' => $search,
                     'start' => $fromInputDate,
                     'end' => $toInputDate,
+                    'user_type' => $userType,
                 ]);
         }
         return $data;

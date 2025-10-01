@@ -26,10 +26,19 @@
       </div>
     </div>
     <div class="sm:col-span-2 sm:col-start-1 flex items-center">
-      <label for="search" class="block text-sm/6 font-medium mr-2 ml-4">Name:</label>
+      <label for="search" class="block text-sm/6 font-medium mr-2 ml-4">Search:</label>
       <div class="">
         <input type="text" name="search" id="search" placeholder="Juan" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value="<?php echo $search; ?>">
       </div>
+    </div>
+    <div class="sm:col-span-2 sm:col-start-1 flex items-center">
+      <label for="user_type" class="block mb-2 ml-4 text-sm font-medium text-gray-900 dark:text-white"></label>
+      <select id="user_type" name="user_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+        <option value="all" {{ $userType === 'all' ? 'selected' : '' }}>All</option>
+        <option value="student" {{ $userType === 'student' ? 'selected' : '' }}>Students</option>
+        <option value="employee" {{ $userType === 'employee' ? 'selected' : '' }}>Faculties & Staff</option>
+        <option value="visitor" {{ $userType === 'visitor' ? 'selected' : '' }}>Visitors</option>
+      </select>
     </div>
     <div class="sm:col-span-2 sm:col-start-1 flex items-center">
       <button type="submit" id="submit" name="submit" value="find" class="bg-blue-500 hover:bg-blue-700 active:bg-blue-900 text-white text-sm font-bold py-1 px-4 rounded h-12 mt-2 mb-2 ml-4 mr-4 w-20">Find</button>

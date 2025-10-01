@@ -1,10 +1,11 @@
-<div class="container flex flex-col border-collapse border-2 overflow-x-auto border-slate-900 mt-2 mb-4 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600">
+<div id="tabular" class="container flex flex-col border-collapse border-2 overflow-x-auto border-slate-900 mt-2 mb-4 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600">
   <h2 class="text-center mb-4 mt-4 font-semibold text-2xl">Report Table for Users</h2>
   <form method="GET" class="m-2">
     <label for="perPage" class="mr-2 text-sm font-medium text-gray-700">Show</label>
     <input type="hidden" name="search" value="{{ request('search') }}">
     <input type="hidden" name="start" value="{{ request('start') }}">
     <input type="hidden" name="end" value="{{ request('end') }}">
+    <input type="hidden" name="user_type" value="{{ request('user_type') }}">
     <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2, dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
       <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
       <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
@@ -43,6 +44,6 @@
     </tbody>
   </table>
   <div class="m-4">
-    {{ $data->links() }}
+    {{ $data->withQueryString()->fragment('tabular')->links() }}
   </div>
 </div>

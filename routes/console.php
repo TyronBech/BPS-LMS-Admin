@@ -17,5 +17,5 @@ Schedule::command('app:auto-time-out')->dailyAt('18:29');
 // Database backup: daily at 1:00 AM
 Schedule::command('app:db-backup')->dailyAt('01:00');
 
-// Cleanup old backups: once a week, Sunday at 2:00 AM
-Schedule::command('backup:clean')->weeklyOn(0, '02:00');
+// Clean old backups: daily at 2:00 AM
+Schedule::command('backup:clean')->dailyAt('02:00');
