@@ -160,10 +160,10 @@ class PenaltiesController extends Controller
 
         // Date filter (created_at column from penalties table)
         if (!empty($fromInputDate) && !empty($toInputDate)) {
-            $from = Carbon::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
-            $to = Carbon::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
+            $start = Carbon::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
+            $end = Carbon::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
 
-            $query->whereBetween(DB::raw('DATE(tr_penalties.created_at)'), [$from, $to]);
+            $query->whereBetween(DB::raw('DATE(tr_penalties.created_at)'), [$start, $end]);
         }
 
         // Name search through transaction.user

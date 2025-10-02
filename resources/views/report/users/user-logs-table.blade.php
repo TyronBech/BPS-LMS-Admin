@@ -15,6 +15,7 @@
   </form>
   <table class="table-fixed m-4 bg-white dark:bg-gray-800">
     <thead id="today-header" class="bg-blue-400 text-left font-bold text-slate-200 border-2 border-slate-300 dark:border-slate-700">
+      <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Type</th>
       <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Name</th>
       <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Date</th>
       <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Time in</th>
@@ -25,6 +26,7 @@
       @forelse($data as $item)
       @if($item->user)
       <tr class="text-left border-2 border-slate-300 dark:border-slate-700">
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->user->privileges->user_type }}</td>
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ \Carbon\Carbon::parse($item->time_in)->format('Y-m-d') }}</td>
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
@@ -38,7 +40,7 @@
       @endif
       @empty
       <tr>
-        <td colspan="8" class="text-center">No data found.</td>
+        <td colspan="6" class="text-center">No data found.</td>
       </tr>
       @endforelse
     </tbody>

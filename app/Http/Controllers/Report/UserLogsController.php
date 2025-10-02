@@ -394,10 +394,10 @@ class UserLogsController extends Controller
 
         $query = Log::with('user')->where("computer_use", "No")->whereNotNull('time_in');
 
-        if (strlen($fromInputDate) > 0) {
-            $fromInputDate = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
-            $toInputDate = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
-            $query->whereBetween(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), [$fromInputDate, $toInputDate]);
+        if (!empty($fromInputDate) && !empty($toInputDate)) {
+            $start = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
+            $end = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
+            $query->whereBetween(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), [$start, $end]);
         }
 
         if (strlen($search) > 0) {

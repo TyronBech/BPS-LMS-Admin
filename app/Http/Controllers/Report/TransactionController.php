@@ -201,10 +201,10 @@ class TransactionController extends Controller
         $perPage        = $request->input('perPage', 10);
 
         $query = Transaction::with('book', 'user');
-        if (strlen($fromInputDate) > 0) {
-            $fromInputDate = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
-            $toInputDate = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
-            $query->whereBetween(DB::raw('DATE(date_borrowed)'), [$fromInputDate, $toInputDate]);
+        if (!empty($fromInputDate) && !empty($toInputDate)) {
+            $start = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
+            $end = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
+            $query->whereBetween(DB::raw('DATE(date_borrowed)'), [$start, $end]);
         }
 
         if (strlen($search) > 0) {

@@ -107,9 +107,9 @@ class AuditTrailController extends Controller
             }
         ]);
         if (!empty($fromInputDate) && !empty($toInputDate)) {
-            $from = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
-            $to = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
-            $data->whereBetween(DB::raw('DATE(' . $tableName->getTable() . '.created_at)'), [$from, $to]);
+            $start = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
+            $end = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
+            $data->whereBetween(DB::raw('DATE(' . $tableName->getTable() . '.created_at)'), [$start, $end]);
         }
         if ($types != 'ALL') {
             $data->where($tableName->getTable() . '.action_type', $types);
