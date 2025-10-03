@@ -121,7 +121,7 @@
     </div>
     <div class="mb-5">
       <label for="rfid" class="block mb-2 text-sm font-medium">RFID Number:</label>
-      <input type="text" id="rfid" name="rfid" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="0123456789" value="{{ old('rfid') }}" required>
+      <input type="text" id="rfid" name="rfid" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="0123456789" value="{{ old('rfid') }}">
       @error('rfid')
       <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
