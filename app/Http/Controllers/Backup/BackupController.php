@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use ZipArchive;
 
 class BackupController extends Controller
 {
@@ -31,23 +32,73 @@ class BackupController extends Controller
         $validator = Validator::make($request->all(), [
             '_token' => 'required',
         ]);
+
         if ($validator->fails()) {
             return back()->with('toast-error', 'Invalid request!');
         }
+
         try {
-            // Run backup
             Log::info("Starting database backup...");
             Artisan::call('backup:run --only-db');
             $output = Artisan::output();
+
             if (str_contains($output, 'Backup failed')) {
                 throw new Exception($output);
+            }
+
+            // Find the latest backup ZIP file
+            $backupPath = storage_path('app/backups/Laravel');
+            $files = glob("$backupPath/*.zip");
+            $latestFile = collect($files)->sortByDesc('filemtime')->first();
+
+            if ($latestFile) {
+                $password = env('BACKUP_ZIP_PASSWORD', 'MyStrongPassword123!');
+                $newFile = str_replace('.zip', '_secured.zip', $latestFile);
+
+                $zip = new ZipArchive();
+                if ($zip->open($newFile, ZipArchive::CREATE) === TRUE) {
+
+                    // Extract old zip contents temporarily
+                    $tempDir = storage_path('app/backups/tmp_extract');
+                    if (!file_exists($tempDir)) mkdir($tempDir, 0775, true);
+
+                    $oldZip = new ZipArchive();
+                    if ($oldZip->open($latestFile) === TRUE) {
+                        $oldZip->extractTo($tempDir);
+                        $oldZip->close();
+
+                        // Add files to new zip with password
+                        $iterator = new \RecursiveIteratorIterator(
+                            new \RecursiveDirectoryIterator($tempDir),
+                            \RecursiveIteratorIterator::LEAVES_ONLY
+                        );
+
+                        foreach ($iterator as $file) {
+                            if (!$file->isDir()) {
+                                $filePath = $file->getRealPath();
+                                $relativePath = substr($filePath, strlen($tempDir) + 1);
+                                $zip->addFile($filePath, $relativePath);
+                                $zip->setEncryptionName($relativePath, ZipArchive::EM_AES_256, $password);
+                            }
+                        }
+                    }
+
+                    $zip->close();
+
+                    // Cleanup temp and delete old unencrypted backup
+                    $this->deleteDirectory($tempDir);
+                    unlink($latestFile);
+
+                    Log::info("Backup secured with password (AES-256)!");
+                }
             }
         } catch (Exception $e) {
             Log::error("Database backup failed: " . $e->getMessage());
             return back()->with('toast-error', 'Backup failed!');
         }
+
         Log::info("Database backup completed!");
-        return back()->with('toast-success', 'Database backup created successfully!');
+        return back()->with('toast-success', 'Database backup created and secured successfully!');
     }
     /**
      * Create a fresh database backup and download it.
@@ -94,5 +145,15 @@ class BackupController extends Controller
         } catch (\Exception $e) {
             return back()->with('toast-error', 'Failed to delete backup: ' . $e->getMessage());
         }
+    }
+    private function deleteDirectory($dir)
+    {
+        if (!is_dir($dir)) return;
+        $files = array_diff(scandir($dir), ['.', '..']);
+        foreach ($files as $file) {
+            $path = "$dir/$file";
+            (is_dir($path)) ? $this->deleteDirectory($path) : unlink($path);
+        }
+        rmdir($dir);
     }
 }
