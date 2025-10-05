@@ -48,26 +48,14 @@
     </div>
   </div>
   <div class="flex flex-col col-span-4 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-    <h5 class="mb-4 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 10 Most Visited Students</h5>
-    <div class="mb-5">
-      <table class="table-fixed bg-white dark:bg-gray-800 w-full">
-        <thead class="bg-blue-400 text-left font-bold text-slate-200 border-2 border-slate-300 dark:border-slate-700">
-          <tr>
-            <th class="pl-2 border-r w-16 border-slate-300 dark:border-slate-700">Top</th>
-            <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Name</th>
-            <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Total Visits</th>
-            <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Grade Level</th>
-            <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Section</th>
-          </tr>
-        </thead>
-        <tbody id="top-students-body">
-          <tr>
-            <td colspan="5" class="text-center">Loading...</td>
-          </tr>
-        </tbody>
-      </table>
+    <h5 class="mb-6 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+      Top 6 Most Visited Students per Grade Level
+    </h5>
+    <div id="top-students-container" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <p class="text-center text-gray-500">Loading...</p>
     </div>
   </div>
+
   <div class="sticky z-index-100 bottom-10 left-20">
     <button type="button" id="refresh" class="flex text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
       <span class="">Refresh</span>
@@ -91,33 +79,71 @@
   async function topVisitedStudents() {
     try {
       const response = await fetch("{{ route('fetch-most-visited-students') }}");
-      const top = await response.json();
+      const data = await response.json();
 
-      const tbody = document.getElementById('top-students-body');
-      tbody.innerHTML = ''; // clear old rows
+      const container = document.getElementById('top-students-container');
+      container.innerHTML = ''; // clear old content
 
-      if (top.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="text-center">No data found.</td></tr>`;
+      if (!data || data.length === 0) {
+        container.innerHTML = `<p class="text-center text-gray-500">No data found.</p>`;
         return;
       }
-      top.forEach((item, index) => {
-        const row = `
-        <tr class="text-left border-2 border-slate-300 dark:border-slate-700">
-          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">${index + 1}</td>
-          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">
-            ${item.last_name}, ${item.first_name} ${item.middle_name ?? ''}
-          </td>
-          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">${item.logs_count}</td>
-          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">${item.students.level}</td>
-          <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">${item.students.section}</td>
-        </tr>
+
+      data.forEach(levelData => {
+        const {
+          level,
+          students
+        } = levelData;
+        let tableHTML = `
+        <div class="bg-white dark:bg-gray-800 border border-slate-300 dark:border-slate-700 rounded-md shadow-sm">
+          <h6 class="bg-blue-400 text-white text-lg font-semibold px-3 py-1 rounded-t-lg">
+            Grade ${level}
+          </h6>
+          <div class="overflow-x-auto">
+            <table class="table-fixed w-full">
+              <thead class="text-left font-bold text-slate-700 dark:text-slate-200 border-b border-slate-300 dark:border-slate-700">
+                <tr>
+                  <th class="pl-3 py-2 w-2/5">Student</th>
+                  <th class="pl-3 py-2 w-1/5">Visits</th>
+                  <th class="pl-3 py-2 w-1/3">Section</th>
+                </tr>
+              </thead>
+              <tbody>
       `;
-        tbody.insertAdjacentHTML('beforeend', row);
+
+        if (!students || students.length === 0) {
+          tableHTML += `
+          <tr>
+            <td colspan="3" class="text-center py-3 text-gray-500">No data found.</td>
+          </tr>
+        `;
+        } else {
+          students.forEach(student => {
+            const s = student.students; // relationship data
+            const fullName = `${student.last_name}, ${student.first_name} ${student.middle_name ?? ''}`.trim();
+            tableHTML += `
+            <tr class="border-t border-slate-300 dark:border-slate-700">
+              <td class="pl-3 py-2">${fullName}</td>
+              <td class="pl-3 py-2">${student.logs_count}</td>
+              <td class="pl-3 py-2">${s?.section ?? ''}</td>
+            </tr>
+          `;
+          });
+        }
+
+        tableHTML += `
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+        container.insertAdjacentHTML('beforeend', tableHTML);
       });
     } catch (error) {
       console.error('Error fetching top visited students:', error);
-      document.getElementById('top-students-body').innerHTML =
-        `<tr><td colspan="5" class="text-center">Error loading data.</td></tr>`;
+      document.getElementById('top-students-container').innerHTML =
+        `<p class="text-center text-red-500">Error loading data.</p>`;
     }
   }
   // Timeout all users

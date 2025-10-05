@@ -133,18 +133,29 @@ class FetchDataController extends Controller
     public function mostVisitedStudents()
     {
         try {
-            $top = User::whereHas('students')
-                ->with('students')
-                ->withCount(['logs as logs_count' => function ($query) {
-                    $query->whereNotNull('time_in')
-                        ->whereYear('time_in', Carbon::now()->year)
-                        ->select(DB::raw('COUNT(DISTINCT DATE(time_in))'));
-                }])
-                ->orderByDesc('logs_count')
-                ->take(10)
-                ->get();
+            $levels = range(7, 12);
+            $results = collect();
 
-            return response()->json($top->values(), 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
+            foreach ($levels as $level) {
+                $topStudents = User::whereHas('students', function ($q) use ($level) {
+                    $q->where('level', $level);
+                })
+                    ->with('students')
+                    ->withCount(['logs as logs_count' => function ($query) {
+                        $query->whereNotNull('time_in')
+                            ->whereYear('time_in', Carbon::now()->year)
+                            ->select(DB::raw('COUNT(DISTINCT DATE(time_in))'));
+                    }])
+                    ->orderByDesc('logs_count')
+                    ->take(6)
+                    ->get();
+
+                $results->push([
+                    'level' => $level,
+                    'students' => $topStudents,
+                ]);
+            }
+            return response()->json($results->values(), 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
         } catch (\Throwable $e) {
             return response()->json([
                 'error' => $e->getMessage(),
