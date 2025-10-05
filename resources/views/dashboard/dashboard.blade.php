@@ -76,76 +76,6 @@
       document.getElementById('timed-in-count').textContent = '...';
     }
   }
-  async function topVisitedStudents() {
-    try {
-      const response = await fetch("{{ route('fetch-most-visited-students') }}");
-      const data = await response.json();
-
-      const container = document.getElementById('top-students-container');
-      container.innerHTML = ''; // clear old content
-
-      if (!data || data.length === 0) {
-        container.innerHTML = `<p class="text-center text-gray-500">No data found.</p>`;
-        return;
-      }
-
-      data.forEach(levelData => {
-        const {
-          level,
-          students
-        } = levelData;
-        let tableHTML = `
-        <div class="bg-white dark:bg-gray-800 border border-slate-300 dark:border-slate-700 rounded-md shadow-sm">
-          <h6 class="bg-blue-400 text-white text-lg font-semibold px-3 py-1 rounded-t-lg">
-            Grade ${level}
-          </h6>
-          <div class="overflow-x-auto">
-            <table class="table-fixed w-full">
-              <thead class="text-left font-bold text-slate-700 dark:text-slate-200 border-b border-slate-300 dark:border-slate-700">
-                <tr>
-                  <th class="pl-3 py-2 w-2/5">Student</th>
-                  <th class="pl-3 py-2 w-1/5">Visits</th>
-                  <th class="pl-3 py-2 w-1/3">Section</th>
-                </tr>
-              </thead>
-              <tbody>
-      `;
-
-        if (!students || students.length === 0) {
-          tableHTML += `
-          <tr>
-            <td colspan="3" class="text-center py-3 text-gray-500">No data found.</td>
-          </tr>
-        `;
-        } else {
-          students.forEach(student => {
-            const s = student.students; // relationship data
-            const fullName = `${student.last_name}, ${student.first_name} ${student.middle_name ?? ''}`.trim();
-            tableHTML += `
-            <tr class="border-t border-slate-300 dark:border-slate-700">
-              <td class="pl-3 py-2">${fullName}</td>
-              <td class="pl-3 py-2">${student.logs_count}</td>
-              <td class="pl-3 py-2">${s?.section ?? ''}</td>
-            </tr>
-          `;
-          });
-        }
-
-        tableHTML += `
-              </tbody>
-            </table>
-          </div>
-        </div>
-      `;
-
-        container.insertAdjacentHTML('beforeend', tableHTML);
-      });
-    } catch (error) {
-      console.error('Error fetching top visited students:', error);
-      document.getElementById('top-students-container').innerHTML =
-        `<p class="text-center text-red-500">Error loading data.</p>`;
-    }
-  }
   // Timeout all users
   document.getElementById('timeout-all-users').addEventListener('click', async () => {
     try {
@@ -225,6 +155,81 @@
       RegisteredUsersPieGraph(labels, counts);
     } catch (error) {
       console.error('Error fetching registered users:', error);
+    }
+  }
+  async function topVisitedStudents() {
+    try {
+      const response = await fetch("{{ route('fetch-most-visited-students') }}");
+      const data = await response.json();
+
+      const container = document.getElementById('top-students-container');
+      container.innerHTML = ''; // clear old content
+
+      if (!data || data.length === 0) {
+        container.innerHTML = `<p class="text-center text-gray-500">No data found.</p>`;
+        return;
+      }
+
+      data.forEach(levelData => {
+        const {
+          level,
+          students
+        } = levelData;
+
+        // Filter out students with 0 visits
+        const filteredStudents = (students || []).filter(s => s.logs_count > 0);
+
+        // Skip this level if no student has visits
+        if (filteredStudents.length === 0) return;
+
+        let tableHTML = `
+        <div class="bg-white dark:bg-gray-800 border border-slate-300 dark:border-slate-700 rounded-md shadow-sm">
+          <h6 class="bg-blue-400 text-white text-lg font-semibold px-3 py-1 rounded-t-lg">
+            Grade ${level}
+          </h6>
+          <div class="overflow-x-auto">
+            <table class="table-fixed w-full">
+              <thead class="text-left font-bold text-slate-700 dark:text-slate-200 border-b border-slate-300 dark:border-slate-700">
+                <tr>
+                  <th class="pl-3 py-2 w-2/5">Student</th>
+                  <th class="pl-3 py-2 w-1/5">Visits</th>
+                  <th class="pl-3 py-2 w-1/3">Section</th>
+                </tr>
+              </thead>
+              <tbody>
+      `;
+
+        filteredStudents.forEach(student => {
+          const s = student.students;
+          const fullName = `${student.last_name}, ${student.first_name} ${student.middle_name ?? ''}`.trim();
+
+          tableHTML += `
+          <tr class="border-t border-slate-300 dark:border-slate-700">
+            <td class="pl-3 py-2">${fullName}</td>
+            <td class="pl-3 py-2">${student.logs_count}</td>
+            <td class="pl-3 py-2">${s?.section ?? ''}</td>
+          </tr>
+        `;
+        });
+
+        tableHTML += `
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+        container.insertAdjacentHTML('beforeend', tableHTML);
+      });
+
+      // If no grade level had students with visits
+      if (container.innerHTML.trim() === '') {
+        container.innerHTML = `<p class="text-center text-gray-500">No students with visits found.</p>`;
+      }
+    } catch (error) {
+      console.error('Error fetching top visited students:', error);
+      document.getElementById('top-students-container').innerHTML =
+        `<p class="text-center text-red-500">Error loading data.</p>`;
     }
   }
   // Initialize the chart variable
