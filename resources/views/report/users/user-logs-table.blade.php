@@ -26,7 +26,7 @@
       @forelse($data as $item)
       @if($item->user)
       <tr class="text-left border-2 border-slate-300 dark:border-slate-700">
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->user->privileges->user_type }}</td>
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->user->privileges->category }}</td>
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ \Carbon\Carbon::parse($item->time_in)->format('Y-m-d') }}</td>
         <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
