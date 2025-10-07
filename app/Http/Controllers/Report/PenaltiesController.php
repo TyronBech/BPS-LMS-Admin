@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Report;
+
 use App\Http\Controllers\Controller;
 
 use Illuminate\Http\Request;
@@ -13,8 +14,8 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Models\Penalty;
+use App\Models\Transaction;
 use Illuminate\Support\Facades\Auth;
-use Svg\Tag\Rect;
 
 class PenaltiesController extends Controller
 {
@@ -82,7 +83,7 @@ class PenaltiesController extends Controller
         $spreadsheet    = new Spreadsheet();
         $logo           = new Drawing();
         $sheet          = $spreadsheet->getActiveSheet();
-        
+
         $logo->setName('BPS Logo');
         $logo->setDescription('BPS Logo');
         $logo->setPath(public_path('img/BPSLogoFull.png'));
@@ -124,18 +125,15 @@ class PenaltiesController extends Controller
         $sheet->setCellValue('I10', 'Status');
         $row = 11;
         foreach ($data as $item) {
-            if(!$item->transaction->user || !$item->transaction->book || !$item->penaltyRule) {
-                continue; // Skip if users relationship is not loaded
-            }
-            $sheet->setCellValue('A' . $row, $item->transaction->user->first_name . ' ' . $item->transaction->user->last_name);
-            $sheet->setCellValue('B' . $row, $item->transaction->book->accession);
-            $sheet->setCellValue('C' . $row, $item->transaction->book->title);
-            $sheet->setCellValue('D' . $row, $item->transaction->date_borrowed);
-            $sheet->setCellValue('E' . $row, $item->transaction->due_date ?? 'Not Returned');
-            $sheet->setCellValue('F' . $row, $item->transaction->return_date ?? 'Not Returned');
-            $sheet->setCellValue('G' . $row, $item->penaltyRule->type);
-            $sheet->setCellValue('H' . $row, $item->amount);
-            $sheet->setCellValue('I' . $row, $item->transaction->penalty_status);
+            $sheet->setCellValue('A' . $row, $item->user->first_name . ' ' . $item->user->last_name);
+            $sheet->setCellValue('B' . $row, $item->book->accession);
+            $sheet->setCellValue('C' . $row, $item->book->title);
+            $sheet->setCellValue('D' . $row, $item->date_borrowed);
+            $sheet->setCellValue('E' . $row, $item->due_date ?? 'Not Returned');
+            $sheet->setCellValue('F' . $row, $item->return_date ?? 'Not Returned');
+            $sheet->setCellValue('G' . $row, $item->violation);
+            $sheet->setCellValue('H' . $row, number_format($item->penalty_total, 2));
+            $sheet->setCellValue('I' . $row, $item->penalty_status);
 
             $row++;
         }
@@ -148,48 +146,59 @@ class PenaltiesController extends Controller
     }
     private function generateData(Request $request, bool $isExport = false)
     {
-        $fromInputDate  = $request->input('start');
-        $toInputDate    = $request->input('end');
-        $search         = strtolower($request->input('search'));
-        $perPage        = $request->input('perPage', 10);
-        $query = Penalty::with([
-            'penaltyRule',
-            'transaction.user',
-            'transaction.book'
-        ]);
+        $fromInputDate = $request->input('start');
+        $toInputDate   = $request->input('end');
+        $search        = strtolower($request->input('search'));
+        $perPage       = $request->input('perPage', 10);
 
-        // Date filter (created_at column from penalties table)
+        // Eager load penalties and their rule
+        $query = Transaction::with(['user', 'book', 'penalties.penaltyRule'])
+            ->whereHas('penalties');
+
         if (!empty($fromInputDate) && !empty($toInputDate)) {
             $start = Carbon::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
-            $end = Carbon::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
-
-            $query->whereBetween(DB::raw('DATE(tr_penalties.created_at)'), [$start, $end]);
+            $end   = Carbon::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
+            $query->whereBetween(DB::raw('DATE(created_at)'), [$start, $end]);
         }
 
-        // Name search through transaction.user
         if (!empty($search)) {
-            $query->whereHas('transaction.user', function ($q) use ($search) {
+            $query->whereHas('user', function ($q) use ($search) {
                 $q->where(DB::raw('LOWER(first_name)'), 'like', '%' . $search . '%')
-                ->orWhere(DB::raw('LOWER(last_name)'), 'like', '%' . $search . '%')
-                ->orWhere(DB::raw('LOWER(middle_name)'), 'like', '%' . $search . '%')
-                ->orWhere(DB::raw('LOWER(CONCAT(first_name, " ", middle_name, " ", last_name))'), 'like', '%' . $search . '%')
-                ->orWhere(DB::raw('LOWER(CONCAT(middle_name, " ", last_name, ", ", first_name))'), 'like', '%' . $search . '%')
-                ->orWhere(DB::raw('LOWER(CONCAT(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $search . '%')
-                ->orWhere(DB::raw('LOWER(CONCAT(last_name, ", ", first_name))'), 'like', '%' . $search . '%')
-                ->orWhere(DB::raw('LOWER(CONCAT(first_name, " ", last_name))'), 'like', '%' . $search . '%');
+                    ->orWhere(DB::raw('LOWER(last_name)'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('LOWER(middle_name)'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('LOWER(CONCAT(first_name, " ", middle_name, " ", last_name))'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('LOWER(CONCAT(middle_name, " ", last_name, ", ", first_name))'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('LOWER(CONCAT(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('LOWER(CONCAT(last_name, ", ", first_name))'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('LOWER(CONCAT(first_name, " ", last_name))'), 'like', '%' . $search . '%');
             });
         }
-        if($isExport) {
-            $data = $query->orderBy(DB::raw('DATE(tr_penalties.created_at)'), 'desc')->get();
-            $minDate = $data->min(fn($item) => \Carbon\Carbon::parse($item->created_at));
-            $maxDate = $data->max(fn($item) => \Carbon\Carbon::parse($item->created_at));
-            if ($minDate && $maxDate) {
-                $data->reporting_period = $minDate->format('F j, Y') . ' to ' . $maxDate->format('F j, Y');
-            } else {
-                $data->reporting_period = 'N/A';
-            }
+
+        if ($isExport) {
+            $transactions = $query->orderBy(DB::raw('DATE(created_at)'), 'desc')->get();
+
+            $transactions = $transactions->map(function ($transaction) {
+                $violations = $transaction->penalties
+                    ->pluck('penaltyRule.type')   // <- correct field name: type
+                    ->filter()                   // drop null/empty
+                    ->unique()
+                    ->values()
+                    ->implode(', ');
+
+                $transaction->violation = $violations ?: '-';
+                return $transaction;
+            });
+
+            $minDate = $transactions->min(fn($item) => Carbon::parse($item->created_at));
+            $maxDate = $transactions->max(fn($item) => Carbon::parse($item->created_at));
+
+            $transactions->reporting_period = $minDate && $maxDate
+                ? $minDate->format('F j, Y') . ' to ' . $maxDate->format('F j, Y')
+                : 'N/A';
+
+            return $transactions;
         } else {
-            $data = $query->orderBy(DB::raw('DATE(tr_penalties.created_at)'), 'desc')
+            $paginated = $query->orderBy(DB::raw('DATE(created_at)'), 'desc')
                 ->paginate($perPage)
                 ->appends([
                     'start' => $fromInputDate,
@@ -197,8 +206,21 @@ class PenaltiesController extends Controller
                     'search' => $search,
                     'perPage' => $perPage
                 ]);
-        }
 
-        return $data;
+            // compute violation on each item in the current page
+            $paginated->getCollection()->transform(function ($transaction) {
+                $violations = $transaction->penalties
+                    ->pluck('penaltyRule.type')
+                    ->filter()
+                    ->unique()
+                    ->values()
+                    ->implode(', ');
+
+                $transaction->violation = $violations ?: '-';
+                return $transaction;
+            });
+
+            return $paginated;
+        }
     }
 }

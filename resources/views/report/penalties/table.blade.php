@@ -5,7 +5,8 @@
     <input type="hidden" name="search" value="{{ request('search') }}">
     <input type="hidden" name="start" value="{{ request('start') }}">
     <input type="hidden" name="end" value="{{ request('end') }}">
-    <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2, dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+    <select name="perPage" id="perPage" onchange="this.form.submit()"
+      class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
       <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
       <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
       <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
@@ -14,31 +15,36 @@
   </form>
   <table class="table-fixed m-4 bg-white dark:bg-gray-800">
     <thead class="bg-blue-400 text-left font-bold text-slate-200 border-2 border-slate-300 dark:border-slate-700">
-      <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Name</th>
-      <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Accession</th>
-      <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Book</th>
-      <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Borrowed</th>
-      <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Due</th>
-      <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Returned</th>
-      <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Violation</th>
-      <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Amount</th>
-      <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Status</th>
+      <tr>
+        <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Name</th>
+        <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Accession</th>
+        <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Book</th>
+        <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Borrowed</th>
+        <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Due</th>
+        <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Returned</th>
+        <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Violation</th>
+        <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Amount</th>
+        <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Status</th>
+      </tr>
     </thead>
     <tbody>
       @forelse($data as $item)
       <tr class="text-left border-2 border-slate-300 dark:border-slate-700">
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->transaction->user->first_name }} {{ $item->transaction->user->last_name }}</td>
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->transaction->book->accession }}</td>
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->transaction->book->title }}</td>
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->transaction->date_borrowed }}</td>
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->transaction->due_date ?? '-' }}</td>
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->transaction->return_date ?? '-' }}</td>
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->penaltyRule->type }}</td>
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->transaction->penalty_total }}</td>
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->transaction->penalty_status }}</td>
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">
+          {{ $item->user->first_name }} {{ $item->user->last_name }}
+        </td>
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->book->accession }}</td>
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->book->title }}</td>
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->date_borrowed }}</td>
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->due_date ?? '-' }}</td>
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->return_date ?? '-' }}</td>
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->violation ?? '-' }}</td>
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ number_format($item->penalty_total, 2) }}</td>
+        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->penalty_status }}</td>
+      </tr>
       @empty
       <tr>
-        <td colspan="9" class="text-center">No data found.</td>
+        <td colspan="9" class="text-center py-2">No data found.</td>
       </tr>
       @endforelse
     </tbody>

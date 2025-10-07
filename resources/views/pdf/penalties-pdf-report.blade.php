@@ -135,15 +135,15 @@
       <tbody>
         @forelse($data as $item)
         <tr>
-          <td>{{ $item->transaction->user->first_name }} {{ $item->transaction->user->last_name }}</td>
-          <td>{{ $item->transaction->book->accession }}</td>
-          <td>{{ $item->transaction->book->title }}</td>
-          <td>{{ $item->transaction->date_borrowed }}</td>
-          <td>{{ $item->transaction->due_date ?? 'N/A' }}</td>
-          <td>{{ $item->transaction->return_date ?? 'N/A' }}</td>
-          <td>{{ $item->penaltyRule->type }}</td>
-          <td>{{ $item->amount }}</td>
-          <td>{{ $item->transaction->penalty_status }}</td>
+          <td>{{ $item->user->first_name }} {{ $item->user->last_name }}</td>
+          <td>{{ $item->book->accession }}</td>
+          <td>{{ $item->book->title }}</td>
+          <td>{{ $item->date_borrowed }}</td>
+          <td>{{ $item->due_date ?? 'N/A' }}</td>
+          <td>{{ $item->return_date ?? 'N/A' }}</td>
+          <td>{{ $item->violation }}</td>
+          <td>{{ number_format($item->penalty_total, 2) }}</td>
+          <td>{{ $item->penalty_status }}</td>
         </tr>
         @empty
         <tr>
