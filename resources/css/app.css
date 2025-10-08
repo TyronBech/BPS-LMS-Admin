@@ -10,3 +10,48 @@
   font-style: normal;
   font-variation-settings: "wdth" 100;
 }
+
+/* Full-screen overlay */
+.loader-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(15, 23, 42, 0.1); /* dark transparent overlay */
+  backdrop-filter: blur(2px);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.loader-overlay.hidden {
+  display: none;
+}
+
+/* Loader animation (light mode default) */
+.loader {
+  width: 60px;
+  aspect-ratio: 1;
+  --dot-color: #20246c;
+  --_c: no-repeat radial-gradient(farthest-side, var(--dot-color) 92%, #0000);
+  background:
+    var(--_c) top,
+    var(--_c) left,
+    var(--_c) right,
+    var(--_c) bottom;
+  background-size: 12px 12px;
+  animation: l7 1s infinite;
+}
+
+/* Dark mode override */
+.dark .loader {
+  --dot-color: #ffffff; /* White dots when dark mode */
+}
+
+@keyframes l7 {
+  to {
+    transform: rotate(.5turn);
+  }
+}

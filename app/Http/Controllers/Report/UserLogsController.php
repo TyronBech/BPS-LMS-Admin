@@ -295,7 +295,7 @@ class UserLogsController extends Controller
             $pdf->render();
 
             $output = $pdf->output();
-            session()->flash('toast-success', 'Your data has been saved successfully!');
+            //session()->flash('toast-success', 'Your data has been saved successfully!');
             return response($output, 200)
                 ->header('Content-Type', 'application/pdf')
                 ->header('Content-Disposition', 'attachment; filename="user-logs-graph-' . date('Y-m-d') . '.pdf"');

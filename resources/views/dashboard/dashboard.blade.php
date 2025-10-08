@@ -567,14 +567,6 @@
     location.reload();
   });
 
-  setInterval(fetchActiveCount, 5000);
-  setInterval(fetchBookCount, 60000);
-  setInterval(fetchTransactionHistory, 60000);
-  setInterval(fetchYearlyAquiredBooks, 60000);
-  setInterval(fetchRegisteredUsers, 60000);
-  setInterval(topVisitedStudents, 60000);
-
-
   document.addEventListener('DOMContentLoaded', fetchActiveCount);
   document.addEventListener('DOMContentLoaded', fetchMonthlyCount);
   document.addEventListener('DOMContentLoaded', fetchBookCount);
