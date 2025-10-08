@@ -51,7 +51,7 @@
     <h5 class="mb-6 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
       Top 6 Most Visited Students per Grade Level
     </h5>
-    <div id="top-students-container" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div id="top-students-container" class="grid grid-cols-1 lg:grid-cols-3 gap-4">
       <p class="text-center text-gray-500">Loading...</p>
     </div>
   </div>
@@ -120,11 +120,12 @@
     try {
       const response = await fetch("{{ route('fetch-transaction-history') }}");
       const data = await response.json();
-      const labels = data.transaction_history.map(item => item.month);
-      const counts = data.transaction_history.map(item => item.count);
-      const borrowed = data.borrowed.map(item => item.count);
-      const reserved = data.reserved.map(item => item.count);
-      const returned = data.returned.map(item => item.count);
+      const labels = data.labels;
+      const counts = data.total;
+      const borrowed = data.borrowed;
+      const reserved = data.reserved;
+      const returned = data.returned;
+
       transactionHistoryBarGraph(labels, counts, borrowed, reserved, returned);
     } catch (error) {
       console.error('Error fetching transaction history:', error);
@@ -191,9 +192,9 @@
             <table class="table-fixed w-full">
               <thead class="text-left font-bold text-slate-700 dark:text-slate-200 border-b border-slate-300 dark:border-slate-700">
                 <tr>
-                  <th class="pl-3 py-2 w-2/5">Student</th>
-                  <th class="pl-3 py-2 w-1/5">Visits</th>
-                  <th class="pl-3 py-2 w-1/3">Section</th>
+                  <th class="px-2 py-2 w-2/5">Student</th>
+                  <th class="px-2 py-2 w-1/5">Visits</th>
+                  <th class="px-2 py-2 w-1/3">Section</th>
                 </tr>
               </thead>
               <tbody>
@@ -205,9 +206,9 @@
 
           tableHTML += `
           <tr class="border-t border-slate-300 dark:border-slate-700">
-            <td class="pl-3 py-2">${fullName}</td>
-            <td class="pl-3 py-2">${student.logs_count}</td>
-            <td class="pl-3 py-2">${s?.section ?? ''}</td>
+            <td class="px-2 py-2">${fullName}</td>
+            <td class="px-2 py-2">${student.logs_count}</td>
+            <td class="px-2 py-2">${s?.section ?? ''}</td>
           </tr>
         `;
         });

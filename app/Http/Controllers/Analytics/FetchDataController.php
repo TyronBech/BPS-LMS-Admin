@@ -63,42 +63,80 @@ class FetchDataController extends Controller
     }
     public function fetchTransactionHistory()
     {
-        $monthlyRecord = Transaction::select(
-            DB::raw("DATE_FORMAT(date_borrowed, '%Y %M') as month"),
-            DB::raw('COUNT(*) as count')
-        )->groupBy(DB::raw("DATE_FORMAT(date_borrowed, '%Y %M')"))
-            ->orderBy(DB::raw("MIN(date_borrowed)")) // optional: to order correctly from oldest to newest
-            ->limit(12)
-            ->get();
-        $borrowed = Transaction::select(
-            DB::raw('COUNT(*) as count')
+        // 1) Define the last 12 months range (from oldest to newest)
+        $now = Carbon::now();
+        $start = $now->copy()->subMonths(11)->startOfMonth();
+
+        // Build a list of months for the last 12 months
+        $months = collect();
+        for ($i = 0; $i < 12; $i++) {
+            $dt = $start->copy()->addMonths($i);
+            $months->push([
+                'key'   => $dt->format('Y-m'),   // e.g. "2025-08" used for lookup
+                'label' => $dt->format('Y F'),   // e.g. "2025 August" for chart
+            ]);
+        }
+
+        // 2) Aggregate all transaction types in a single query
+        $records = Transaction::select(
+            DB::raw("DATE_FORMAT(created_at, '%Y-%m') as ym"),
+            DB::raw("DATE_FORMAT(created_at, '%Y %M') as month_label"),
+            DB::raw("COUNT(*) as total"),
+            DB::raw("SUM(CASE WHEN transaction_type = 'Borrowed' THEN 1 ELSE 0 END) as borrowed"),
+            DB::raw("SUM(CASE WHEN transaction_type = 'Returned' THEN 1 ELSE 0 END) as returned"),
+            DB::raw("SUM(CASE WHEN transaction_type = 'Reserved' THEN 1 ELSE 0 END) as reserved")
         )
-            ->where('transaction_type', 'Borrowed')
-            ->groupBy(DB::raw("DATE_FORMAT(date_borrowed, '%Y %M')"))
-            ->orderBy(DB::raw("MIN(date_borrowed)")) // optional: to order correctly from oldest to newest
-            ->limit(12)
-            ->get();
-        $returned = Transaction::select(
-            DB::raw('COUNT(*) as count')
-        )
-            ->where('transaction_type', 'Returned')
-            ->groupBy(DB::raw("DATE_FORMAT(date_borrowed, '%Y %M')"))
-            ->orderBy(DB::raw("MIN(date_borrowed)")) // optional: to order correctly from oldest to newest
-            ->limit(12)
-            ->get();
-        $reserved = Transaction::select(
-            DB::raw('COUNT(*) as count')
-        )
-            ->where('transaction_type', 'Reserved')
-            ->groupBy(DB::raw("DATE_FORMAT(date_borrowed, '%Y %M')"))
-            ->orderBy(DB::raw("MIN(date_borrowed)")) // optional: to order correctly from oldest to newest
-            ->limit(12)
-            ->get();
+            ->whereBetween('created_at', [$start, $now->copy()->endOfMonth()])
+            ->groupBy('ym', 'month_label')
+            ->orderBy('ym')
+            ->get()
+            ->keyBy('ym');
+
+        // 3) Build aligned arrays for each dataset
+        $labels = [];
+        $total = [];
+        $borrowed = [];
+        $returned = [];
+        $reserved = [];
+
+        foreach ($months as $m) {
+            $labels[] = $m['label'];
+
+            if (isset($records[$m['key']])) {
+                $r = $records[$m['key']];
+                $total[]    = (int) $r->total;
+                $borrowed[] = (int) $r->borrowed;
+                $returned[] = (int) $r->returned;
+                $reserved[] = (int) $r->reserved;
+            } else {
+                $total[] = $borrowed[] = $returned[] = $reserved[] = 0;
+            }
+        }
+
+        // 4) Remove preceding months that have all zeros
+        $firstNonZeroIndex = null;
+        foreach ($total as $i => $value) {
+            if ($value > 0 || $borrowed[$i] > 0 || $returned[$i] > 0 || $reserved[$i] > 0) {
+                $firstNonZeroIndex = $i;
+                break;
+            }
+        }
+
+        if (!is_null($firstNonZeroIndex)) {
+            $labels   = array_slice($labels, $firstNonZeroIndex);
+            $total    = array_slice($total, $firstNonZeroIndex);
+            $borrowed = array_slice($borrowed, $firstNonZeroIndex);
+            $returned = array_slice($returned, $firstNonZeroIndex);
+            $reserved = array_slice($reserved, $firstNonZeroIndex);
+        }
+
+        // 5) Return structured JSON for Chart.js
         return response()->json([
-            'transaction_history' => $monthlyRecord,
-            'borrowed' => $borrowed,
-            'returned' => $returned,
-            'reserved' => $reserved
+            'labels'      => $labels,
+            'total'       => $total,
+            'borrowed'    => $borrowed,
+            'returned'    => $returned,
+            'reserved'    => $reserved,
         ]);
     }
     public function fetchYearlyAquiredBooks()
