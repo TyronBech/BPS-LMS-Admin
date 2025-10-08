@@ -201,4 +201,36 @@ class FetchDataController extends Controller
             ], 500);
         }
     }
+    public function mostBorrowedStudents()
+    {
+        try {
+            $levels = range(7, 12);
+            $results = collect();
+
+            foreach ($levels as $level) {
+                $topStudents = User::whereHas('students', function ($q) use ($level) {
+                    $q->where('level', $level);
+                })
+                    ->with('students')
+                    ->withCount(['transactions as borrow_count' => function ($query) {
+                        $query->whereYear('created_at', Carbon::now()->year);
+                    }])
+                    ->orderByDesc('borrow_count')
+                    ->take(3)
+                    ->get();
+
+                $results->push([
+                    'level' => $level,
+                    'students' => $topStudents,
+                ]);
+            }
+
+            return response()->json($results->values(), 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], 500);
+        }
+    }
 }

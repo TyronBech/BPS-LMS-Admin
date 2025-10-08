@@ -66,7 +66,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     // Route::get('test', function() {
     //     return view('dashboard.dashboard');
     // })->name('test');
-    // Route::get('function-test', [FetchDataController::class, 'mostVisitedStudents'])->name('function-test');
+    Route::get('function-test', [FetchDataController::class, 'mostBorrowedStudents'])->name('function-test');
     Route::post('timeout-all-users', [FetchDataController::class, 'timeoutAllUsers'])->name('timeout-all-users');
     Route::get('profile',   [ProfileController::class, 'index']) ->name('profile');
     Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
@@ -78,6 +78,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::get('yearly-aquired-books',  [FetchDataController::class, 'fetchYearlyAquiredBooks'])    ->name('fetch-yearly-aquired-books');
         Route::get('registered-users',      [FetchDataController::class, 'fetchRegisteredUsers'])       ->name('fetch-registered-users');
         Route::get('most-visited-students', [FetchDataController::class, 'mostVisitedStudents'])        ->name('fetch-most-visited-students');
+        Route::get('most-borrowed-students',[FetchDataController::class, 'mostBorrowedStudents'])       ->name('fetch-most-borrowed-students');
     });
     Route::prefix('report')->middleware(ReportAuthentication::class)->group(function () {
         Route::get('user-report',       [UserLogsController::class, 'index'])           ->name('report.user');

@@ -55,6 +55,14 @@
       <p class="text-center text-gray-500">Loading...</p>
     </div>
   </div>
+  <div class="flex flex-col col-span-4 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <h5 class="mb-6 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+      Top 3 Students with the Most Borrowed Books per Grade Level
+    </h5>
+    <div id="top-borrowed-container" class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <p class="text-center text-gray-500">Loading...</p>
+    </div>
+  </div>
 
   <div class="sticky z-index-100 bottom-10 left-20">
     <button type="button" id="refresh" class="flex text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
@@ -233,6 +241,79 @@
         `<p class="text-center text-red-500">Error loading data.</p>`;
     }
   }
+  async function topBorrowedStudents() {
+    try {
+      const response = await fetch("{{ route('fetch-most-borrowed-students') }}");
+      const data = await response.json();
+
+      const container = document.getElementById('top-borrowed-container');
+      container.innerHTML = ''; // Clear previous content
+
+      if (!data || data.length === 0) {
+        container.innerHTML = `<p class="text-center text-gray-500">No data found.</p>`;
+        return;
+      }
+
+      data.forEach(levelData => {
+        const {
+          level,
+          students
+        } = levelData;
+
+        // Filter out students with 0 borrowed books
+        const filteredStudents = (students || []).filter(s => s.borrow_count > 0);
+        if (filteredStudents.length === 0) return;
+
+        let tableHTML = `
+      <div class="bg-white dark:bg-gray-800 border border-slate-300 dark:border-slate-700 rounded-md shadow-sm">
+        <h6 class="bg-yellow-400 text-gray-900 text-lg font-semibold px-3 py-1 rounded-t-lg">
+          Grade ${level}
+        </h6>
+        <div class="overflow-x-auto">
+          <table class="table-fixed w-full">
+            <thead class="text-left font-bold text-slate-700 dark:text-slate-200 border-b border-slate-300 dark:border-slate-700">
+              <tr>
+                <th class="px-2 py-2 w-2/5">Student</th>
+                <th class="px-2 py-2 w-1/5">Borrowed</th>
+                <th class="px-2 py-2 w-1/3">Section</th>
+              </tr>
+            </thead>
+            <tbody>
+      `;
+
+        filteredStudents.forEach(student => {
+          const s = student.students;
+          const fullName = `${student.last_name}, ${student.first_name} ${student.middle_name ?? ''}`.trim();
+
+          tableHTML += `
+        <tr class="border-t border-slate-300 dark:border-slate-700">
+          <td class="px-2 py-2">${fullName}</td>
+          <td class="px-2 py-2">${student.borrow_count}</td>
+          <td class="px-2 py-2">${s?.section ?? ''}</td>
+        </tr>
+      `;
+        });
+
+        tableHTML += `
+            </tbody>
+          </table>
+        </div>
+      </div>
+      `;
+
+        container.insertAdjacentHTML('beforeend', tableHTML);
+      });
+
+      if (container.innerHTML.trim() === '') {
+        container.innerHTML = `<p class="text-center text-gray-500">No borrowed book data found.</p>`;
+      }
+    } catch (error) {
+      console.error('Error fetching top borrowed students:', error);
+      document.getElementById('top-borrowed-container').innerHTML =
+        `<p class="text-center text-red-500">Error loading data.</p>`;
+    }
+  }
+
   // Initialize the chart variable
   let transactionHistoryChart = null;
   let monthlyLogsChart = null;
@@ -493,6 +574,7 @@
   setInterval(fetchRegisteredUsers, 60000);
   setInterval(topVisitedStudents, 60000);
 
+
   document.addEventListener('DOMContentLoaded', fetchActiveCount);
   document.addEventListener('DOMContentLoaded', fetchMonthlyCount);
   document.addEventListener('DOMContentLoaded', fetchBookCount);
@@ -500,6 +582,7 @@
   document.addEventListener('DOMContentLoaded', fetchYearlyAquiredBooks);
   document.addEventListener('DOMContentLoaded', fetchRegisteredUsers);
   document.addEventListener('DOMContentLoaded', topVisitedStudents);
+  document.addEventListener('DOMContentLoaded', topBorrowedStudents);
 </script>
 @else
 
