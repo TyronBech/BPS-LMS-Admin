@@ -25,6 +25,8 @@ document.addEventListener('DOMContentLoaded', () => {
   const skipButtonIds = [
     'dropdownNavbarLink',       // dropdown
     'doubleDropdownButton',     // another dropdown
+    'decrement-button',      // number input decrement
+    'increment-button',      // number input increment
   ];
 
   // --- 1️⃣ Handle button clicks ---
