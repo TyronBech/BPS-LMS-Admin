@@ -327,24 +327,6 @@
             @enderror
           </div>
           <div class="mb-5">
-            <label for="category" class="block mb-2 text-sm font-medium">Category:</label>
-            <select id="category" name="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required>
-              <option selected disabled>Choose a category</option>
-              @foreach($categories as $key => $category)
-              @if($key == $book->category_id)
-              <option value="{{ $key }}" selected>{{ $category }}</option>
-              @else
-              <option value="{{ $key }}">{{ $category }}</option>
-              @endif
-              @endforeach
-            </select>
-            @error('category')
-            <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
-              <span class="font-medium">{{ $message }}</span>
-            </div>
-            @enderror
-          </div>
-          <div class="mb-5">
             <label for="book_type" class="block mb-2 text-sm font-medium">Select book type:</label>
             <select id="book_type" name="book_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required>
               @foreach($book_types as $value)

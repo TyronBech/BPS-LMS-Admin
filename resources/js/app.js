@@ -23,10 +23,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // IDs or classes you want to skip loader for
   const skipButtonIds = [
-    'dropdownNavbarLink',       // dropdown
-    'doubleDropdownButton',     // another dropdown
-    'decrement-button',      // number input decrement
-    'increment-button',      // number input increment
+    'dropdownNavbarLink',   // dropdown
+    'doubleDropdownButton', // another dropdown
+    'decrement-button',     // number input decrement
+    'increment-button',     // number input increment
+    'createCopy',           // create book copy button
   ];
 
   // --- 1️⃣ Handle button clicks ---

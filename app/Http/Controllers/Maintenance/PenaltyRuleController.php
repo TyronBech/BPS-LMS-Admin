@@ -10,11 +10,30 @@ use Illuminate\Support\Facades\DB;
 
 class PenaltyRuleController extends Controller
 {
+    /**
+     * Displays a list of all penalty rules in the system.
+     * 
+     * @return \Illuminate\Http\Response
+     */
     public function index()
     {
         $rules = PenaltyRule::all();
         return view('maintenance.penalties.index', compact('rules'));
     }
+    /**
+     * Creates a new penalty rule in the system.
+     * 
+     * Validates the request data using the rules specified in the validator.
+     * If the validation fails, it redirects back with a warning toast.
+     * If the validation succeeds, it creates a new PenaltyRule instance with the provided data.
+     * If the creation of the instance fails due to a database query exception,
+     * it rolls back the transaction and redirects back with an error toast.
+     * If the creation of the instance succeeds, it commits the transaction and
+     * redirects back with a success toast.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -41,6 +60,20 @@ class PenaltyRuleController extends Controller
         DB::commit();
         return redirect()->route('maintenance.penalty-rules')->with('toast-success', 'Penalty rule created successfully.');
     }
+    /**
+     * Updates an existing penalty rule in the system.
+     *
+     * Validates the request data using the rules specified in the validator.
+     * If the validation fails, it redirects back with a warning toast.
+     * If the validation succeeds, it updates the existing PenaltyRule instance with the provided data.
+     * If the update of the instance fails due to a database query exception,
+     * it rolls back the transaction and directs back with an error toast.
+     * If the update of the instance succeeds, it commits the transaction and
+     * directs back with a success toast.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
     public function update(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -68,6 +101,20 @@ class PenaltyRuleController extends Controller
         DB::commit();
         return redirect()->route('maintenance.penalty-rules')->with('toast-success', 'Penalty rule updated successfully.');
     }
+    /**
+     * Deletes an existing penalty rule from the system.
+     *
+     * Validates the request data using the rules specified in the validator.
+     * If the validation fails, it redirects back with a warning toast.
+     * If the validation succeeds, it deletes the existing PenaltyRule instance with the provided data.
+     * If the deletion of the instance fails due to a database query exception,
+     * it rolls back the transaction and directs back with an error toast.
+     * If the deletion of the instance succeeds, it commits the transaction and
+     * directs back with a success toast.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
     public function destroy(Request $request)
     {
         DB::beginTransaction();

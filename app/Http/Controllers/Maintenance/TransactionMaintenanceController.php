@@ -13,6 +13,11 @@ use DateTime;
 
 class TransactionMaintenanceController extends Controller
 {
+    /**
+     * Show the list of transactions in the database.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function index()
     {
         $transactions = Transaction::with('user', 'book')
@@ -26,6 +31,12 @@ class TransactionMaintenanceController extends Controller
         $penaltyStatuses        = $this->extract_enums($transaction->getTable(), 'penalty_status');
         return view('maintenance.transactions.index', compact('transactions', 'transactionTypes', 'transactionStatuses', 'conditions', 'penaltyStatuses'));
     }
+    /**
+     * Show a single transaction from the database based on the given id.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     */
     public function show(Request $request)
     {
         $transaction = Transaction::with('user', 'book')
@@ -33,6 +44,14 @@ class TransactionMaintenanceController extends Controller
             ->firstOrFail();
         return view('maintenance.transactions.view', compact('transaction'));
     }
+    /**
+     * Retrieve a single transaction from the database based on the given id.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
     public function retrieve(Request $request)
     {
         $transaction = Transaction::with('user', 'book')
@@ -45,6 +64,17 @@ class TransactionMaintenanceController extends Controller
             'transaction' => $transaction
         ]);
     }
+    /**
+     * Update a transaction in the database.
+     *
+     * This function is used to update a transaction in the database. It validates the request
+     * and updates the transaction with the given details. If there is an error during the
+     * update process, it will rollback the transaction and redirect back with an error message.
+     * If the update is successful, it will redirect back with a success message.
+     *
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     * @throws \Illuminate\Database\QueryException
+     */
     public function update(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -82,6 +112,13 @@ class TransactionMaintenanceController extends Controller
         DB::commit();
         return redirect()->back()->with('toast-success', 'Transaction updated successfully');
     }
+    /**
+     * Extracts the enum values from a given table and column name.
+     *
+     * @param string $table The name of the table to query.
+     * @param string $columnName The name of the column to extract the enum values from.
+     * @return array An array of enum values.
+     */
     private function extract_enums($table, $columnName)
     {
         $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";

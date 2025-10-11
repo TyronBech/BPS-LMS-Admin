@@ -14,7 +14,12 @@ use Illuminate\Support\Facades\Mail;
 
 
 class AdminMaintenanceController extends Controller
-{
+{   
+    /**
+     * Displays a list of all administrators in the system.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function index()
     {
         $admins = User::join('model_has_roles', 'usr_users.id', '=', 'model_has_roles.model_id')
@@ -25,6 +30,11 @@ class AdminMaintenanceController extends Controller
             ->get();
         return view('maintenance.admins.admins', compact('admins'));
     }
+    /**
+     * Returns a view for creating a new admin user.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function create()
     {
         $searched = array();
@@ -32,6 +42,16 @@ class AdminMaintenanceController extends Controller
             ->get();
         return view('maintenance.admins.create', compact('searched', 'roles'));
     }
+    /**
+     * Search for a user in the system.
+     *
+     * This function will take a search query from the request and
+     * search for a user in the system. It will return a view
+     * with the searched users and the available admin roles.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function search_user(Request $request)
     {
         $search = strtolower($request->input('user-info'));
@@ -49,6 +69,27 @@ class AdminMaintenanceController extends Controller
             ->get();
         return view('maintenance.admins.create', compact('searched', 'roles'));
     }
+    /**
+     * Search for an admin user in the system.
+     *
+     * This function will take a search query from the request and
+     * search for an admin user in the system. It will return a view
+     * with the searched admins and the available admin roles.
+     *
+     * The search query will search for the following fields:
+     *      - First name
+     *      - Middle name
+     *      - Last name
+     *      - Email
+     *      - RFID
+     *      - Full name (first name, middle name, last name)
+     *      - Full name (middle name, last name, first name)
+     *      - Full name (last name, first name, middle name)
+     *      - Roles name
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function search_admin(Request $request)
     {
         $search = strtolower($request->input('admin-info'));
@@ -73,6 +114,16 @@ class AdminMaintenanceController extends Controller
             ->get();
         return view('maintenance.admins.admins', compact('admins'));
     }
+    /**
+     * Stores a new admin user in the system.
+     *
+     * This function will take the RFID and role from the request and
+     * store a new admin user in the system. It will roll back the
+     * transaction if there is an error.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function store(Request $request)
     {
         if ($request->input('adminID') == null) {
@@ -98,6 +149,16 @@ class AdminMaintenanceController extends Controller
         DB::commit();
         return redirect()->route('maintenance.admins')->with('toast-success', 'Admin created successfully');
     }
+    /**
+     * Returns a view for editing an admin user.
+     *
+     * This function will take the request and search for an admin user
+     * in the system. It will return a view with the searched admin
+     * and the available admin roles.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function edit(Request $request)
     {
         $admin = null;
@@ -118,6 +179,17 @@ class AdminMaintenanceController extends Controller
         }
         return view('maintenance.admins.edit', compact('admin', 'super_admin', 'roles'));
     }
+    /**
+     * Update an admin user with the given request data.
+     *
+     * This function validates the request and checks if the authenticated
+     * admin has permission to modify the admin. It then updates the admin
+     * and syncs the roles. If there is an error, it rolls back the transaction
+     * and redirects to the previous page with an error message.
+     *
+     * @throws \Illuminate\Database\QueryException
+     * @return \Illuminate\Http\Response
+     */
     public function update(Request $request)
     {
         $request->validate([
@@ -156,6 +228,17 @@ class AdminMaintenanceController extends Controller
         DB::commit();
         return redirect()->route('maintenance.admins')->with('toast-success', 'Admin updated successfully');
     }
+    /**
+     * Delete an admin user with the given request data.
+     *
+     * This function checks if the authenticated user has permission to delete
+     * the admin. It then deletes the admin and syncs the roles. If there
+     * is an error, it rolls back the transaction and directs to the
+     * previous page with an error message.
+     *
+     * @throws \Exception
+     * @return \Illuminate\Http\Response
+     */
     public function destroy(Request $request)
     {
         $userToDelete = User::findOrFail($request->input('id'));
@@ -179,6 +262,12 @@ class AdminMaintenanceController extends Controller
         DB::commit();
         return redirect()->route('maintenance.admins')->with('toast-success', 'Admin deleted successfully.');
     }
+    /**
+     * Sends an email notification to the given user regarding the new role.
+     *
+     * @param User $user The user to send the notification to.
+     * @param string $role The new role of the user.
+     */
     private function notification(User $user, $role)
     {
         Mail::to($user->email)->send(new RoleEmailMessage($user, $role));

@@ -10,11 +10,32 @@ use Illuminate\Support\Facades\DB;
 
 class CategoryMaintenanceController extends Controller
 {
+    /**
+     * Index of categories
+     * 
+     * This function is used to fetch all categories from the database and
+     * pass it to the view.
+     * 
+     * @return \Illuminate\View\View
+     */
     public function index()
     {
         $categories = Category::all();
         return view('maintenance.categories.index', compact('categories'));
     }
+    /**
+     * Store a new category
+     *
+     * This function is used to store a new category in the database.
+     * It first validates the request data, then checks if a category with the same name already exists.
+     * If it does, it redirects back with a warning that the category already exists.
+     * If it doesn't, it attempts to create the new category in the database.
+     * If the creation fails, it rolls back the database transaction and redirects back with an error message.
+     * If the creation succeeds, it commits the database transaction and redirects back with a success message.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -42,6 +63,17 @@ class CategoryMaintenanceController extends Controller
         DB::commit();
         return redirect()->route('maintenance.categories')->with('toast-success', 'Category updated successfully.');
     }
+    /**
+     * This function is used to update a category in the database.
+     * It first validates the request data, then checks if a category with the same name or legend already exists.
+     * If it does, it redirects back with a warning that the category already exists.
+     * If it doesn't, it attempts to update the category in the database.
+     * If the update fails, it rolls back the database transaction and redirects back with an error message.
+     * If the update succeeds, it commits the database transaction and redirects back with a success message.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function update(Request $request)
     {
 
@@ -70,6 +102,16 @@ class CategoryMaintenanceController extends Controller
         DB::commit();
         return redirect()->route('maintenance.categories')->with('toast-success', 'Category updated successfully.');
     }
+    /**
+     * Deletes a category from the database.
+     *
+     * This function first starts a database transaction, then attempts to find and delete the category with the given id.
+     * If the deletion fails, it rolls back the database transaction and redirects back with an error message.
+     * If the deletion succeeds, it commits the database transaction and redirects back with a success message.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function destroy(Request $request)
     {
         DB::beginTransaction();

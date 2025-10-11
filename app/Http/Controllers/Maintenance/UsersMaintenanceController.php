@@ -18,6 +18,12 @@ use Illuminate\Support\Facades\Auth;
 
 class UsersMaintenanceController extends Controller
 {
+    /**
+     * Display a listing of the resource.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function index(Request $request)
     {
         $perStudentPage     = $request->input('perStudentPage', 10);
@@ -42,6 +48,14 @@ class UsersMaintenanceController extends Controller
         //dd($users->toArray());
         return view('maintenance.users.users', compact('students', 'employees', 'visitors', 'perStudentPage', 'perEmployeePage', 'perVisitorPage', 'search'));
     }
+    /**
+     * View a student profile.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     *
+     * @throws \Illuminate\Http\Exceptions\HttpResponseException
+     */
     public function view_student(Request $request)
     {
         $mimeType = null;
@@ -65,6 +79,14 @@ class UsersMaintenanceController extends Controller
         }
         return view('maintenance.users.view-student', compact('student', 'mimeType'));
     }
+    /**
+     * View an employee profile.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     *
+     * @throws \Illuminate\Http\Exceptions\HttpResponseException
+     */
     public function view_employee(Request $request)
     {
         $mimeType = null;
@@ -88,10 +110,24 @@ class UsersMaintenanceController extends Controller
         }
         return view('maintenance.users.view-employee', compact('employee', 'mimeType'));
     }
+    /**
+     * Display the form for creating a new student.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function create_student()
     {
         return view('maintenance.users.create-student',);
     }
+    /**
+     * Display the form for creating a new employee.
+     *
+     * This function will return a view of the form for creating a new employee.
+     * It will also fetch all the groups that are not 'visitor' or 'student' and
+     * pass them to the view.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function create_employee()
     {
         $groups = UserGroup::where(DB::raw('lower(category)'), '!=', 'visitor')
@@ -99,6 +135,16 @@ class UsersMaintenanceController extends Controller
             ->pluck('category');
         return view('maintenance.users.create-employee', compact('groups'));
     }
+    /**
+     * Show the list of students, employees, and visitors.
+     *
+     * This function will return a view of the list of students, employees, and visitors.
+     * It will also fetch the per page values for each and pass them to the view.
+     * A search filter is also applied to the queries.
+     *
+     * @param  \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     */
     public function show(Request $request)
     {
         $perStudentPage     = $request->input('perStudentPage', 10);
@@ -170,7 +216,12 @@ class UsersMaintenanceController extends Controller
 
         return view('maintenance.users.users', compact('students', 'employees', 'visitors', 'perStudentPage', 'perEmployeePage', 'perVisitorPage', 'search'));
     }
-
+    /**
+     * Store a newly created student in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function store_student(Request $request)
     {
         ini_set('memory_limit', '4096M');
@@ -229,6 +280,15 @@ class UsersMaintenanceController extends Controller
         $this->account_notification(User::where('email', $request->input('email'))->first(), $password);
         return redirect()->back()->with('toast-success', 'User added successfully');
     }
+    /**
+     * Store a newly created employee in storage.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     *
+     * @throws \Illuminate\Database\QueryException
+     * @throws \Exception
+     */
     public function store_employee(Request $request)
     {
         ini_set('memory_limit', '4096M');
@@ -285,6 +345,13 @@ class UsersMaintenanceController extends Controller
         $this->account_notification(User::where('email', $request->input('email'))->first(), $password);
         return redirect()->back()->with('toast-success', 'User added successfully');
     }
+    /**
+     * Edit student
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     * @throws \Illuminate\Database\QueryException
+     */
     public function edit_student(Request $request)
     {
         $user = null;
@@ -296,6 +363,13 @@ class UsersMaintenanceController extends Controller
         }
         return view('maintenance.users.edit-student', compact('user'));
     }
+    /**
+     * Edit employee
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     * @throws \Illuminate\Database\QueryException
+     */
     public function edit_employee(Request $request)
     {
         $user = null;
@@ -310,6 +384,13 @@ class UsersMaintenanceController extends Controller
         }
         return view('maintenance.users.edit-employee', compact('user', 'privileges'));
     }
+    /**
+     * Edit a visitor
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     * @throws \Illuminate\Database\QueryException
+     */
     public function edit_visitor(Request $request)
     {
         $user = null;
@@ -321,6 +402,19 @@ class UsersMaintenanceController extends Controller
         }
         return view('maintenance.users.edit-visitor', compact('user'));
     }
+    /**
+     * Update student
+     *
+     * This function updates a student user given a request containing the required data.
+     * The function first validates the request data, then updates the student user.
+     * If the validation fails, the function redirects back with a toast warning and the validation error.
+     * If the update fails, the function rolls back the database transaction and redirects back with a toast error and the exception message.
+     * If the update succeeds, the function commits the database transaction and redirects back with a toast success message.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     * @throws \Illuminate\Database\QueryException
+     */
     public function update_student(Request $request)
     {
         ini_set('memory_limit', '4096M');
@@ -375,6 +469,15 @@ class UsersMaintenanceController extends Controller
         DB::commit();
         return redirect()->back()->with('toast-success', 'User updated successfully');
     }
+    /**
+     * Update an employee user.
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\Response
+     *
+     * @throws \Illuminate\Database\QueryException
+     */
     public function update_employee(Request $request)
     {
         ini_set('memory_limit', '4096M');
@@ -431,6 +534,15 @@ class UsersMaintenanceController extends Controller
         DB::commit();
         return redirect()->back()->with('toast-success', 'User updated successfully');
     }
+    /**
+     * Update a visitor user.
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\Response
+     *
+     * @throws \Illuminate\Database\QueryException
+     */
     public function update_visitor(Request $request)
     {
         ini_set('memory_limit', '4096M');
@@ -473,6 +585,17 @@ class UsersMaintenanceController extends Controller
         DB::commit();
         return redirect()->back()->with('toast-success', 'User updated successfully');
     }
+    /**
+     * Delete a user.
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     * @throws \Illuminate\Database\QueryException
+     * @throws \Exception
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function destroy(Request $request)
     {
         DB::beginTransaction();
@@ -502,6 +625,15 @@ class UsersMaintenanceController extends Controller
         DB::commit();
         return redirect()->back()->with('toast-success', 'User deleted successfully');
     }
+    /**
+     * Bulk delete students.
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @throws \Illuminate\Database\QueryException
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function bulk_delete_student(Request $request)
     {
         $ids = array_filter(explode(',', $request->input('student_ids')), function ($id) {
@@ -521,6 +653,21 @@ class UsersMaintenanceController extends Controller
         DB::commit();
         return redirect()->route('maintenance.users')->with('toast-success', 'Users deleted successfully');
     }
+    /**
+     * Bulk delete employees.
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\Response
+     *
+     * @throws \Illuminate\Database\QueryException
+     *
+     * @throws \Exception
+     *
+     * Bulk deletes employees with the given IDs. Checks if any of the employees
+     * have the super admin role and returns an error if so. Otherwise, deletes
+     * the employees and their roles.
+     */
     public function bulk_delete_employee(Request $request)
     {
         $ids = array_filter(explode(',', $request->input('employee_ids')), function ($id) {
@@ -553,6 +700,20 @@ class UsersMaintenanceController extends Controller
         DB::commit();
         return redirect()->route('maintenance.users')->with('toast-success', 'Users deleted successfully');
     }
+    /**
+     * Bulk deletes visitors with the given IDs.
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\Response
+     *
+     * @throws \Illuminate\Database\QueryException
+     * @throws \Exception
+     *
+     * Bulk deletes visitors with the given IDs. Checks if any of the visitors
+     * have the super admin role and returns an error if so. Otherwise, deletes
+     * the visitors and their roles.
+     */
     public function bulk_delete_visitor(Request $request)
     {
         $ids = array_filter(explode(',', $request->input('visitor_ids')), function ($id) {
@@ -572,10 +733,23 @@ class UsersMaintenanceController extends Controller
         DB::commit();
         return redirect()->route('maintenance.users')->with('toast-success', 'Users deleted successfully');
     }
+    /**
+     * Sends an account notification email to the given user with the given password.
+     *
+     * @param \App\Models\User $user
+     * @param string $password
+     */
     private function account_notification($user, $password)
     {
         Mail::to($user->email)->send(new AccountEmailMessage($user, $password));
     }
+    /**
+     * Extracts the enum values from a given table and column name.
+     *
+     * @param string $table The name of the table to query.
+     * @param string $columnName The name of the column to extract the enum values from.
+     * @return array An array of enum values.
+     */
     private function extract_enums($table, $columnName)
     {
         $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";

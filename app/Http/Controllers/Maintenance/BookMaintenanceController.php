@@ -16,6 +16,12 @@ use Milon\Barcode\DNS1D;
 
 class BookMaintenanceController extends Controller
 {
+    /**
+     * Index of books
+     *
+     * @param Request $request
+     * @return \Illuminate\View\View
+     */
     public function index(Request $request)
     {
         $perPage = $request->input('perPage', 10);
@@ -31,6 +37,11 @@ class BookMaintenanceController extends Controller
             ]);
         return view('maintenance.books.books', compact('books', 'perPage', 'search', 'categories', 'category'));
     }
+    /**
+     * Create a new book
+     *
+     * @return \Illuminate\View\View
+     */
     public function create()
     {
         $books = new Book();
@@ -47,6 +58,15 @@ class BookMaintenanceController extends Controller
         $book_types     = $this->extract_enums($books->getTable(), 'book_type');
         return view('maintenance.books.create', compact('categories', 'condition', 'availability', 'remarks', 'book_types'));
     }
+    /**
+     * Store a new book
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     *
+     * @throws \Illuminate\Database\QueryException
+     */
     public function store(Request $request)
     {
         ini_set('memory_limit', '4096M');
@@ -118,6 +138,16 @@ class BookMaintenanceController extends Controller
         DB::commit();
         return redirect()->back()->with('toast-success', 'Book added successfully');
     }
+    /**
+     * Edit a book
+     *
+     * This function is used to edit a book. It fetches the book object from the database and
+     * passes it to the view along with the categories, condition status, availability status,
+     * remarks, and book types.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\View\View
+     */
     public function edit(Request $request)
     {
         $book = null;
@@ -125,7 +155,13 @@ class BookMaintenanceController extends Controller
             $id = $request->input('id');
             $book = Book::findOrFail($id);
             $books = new Book();
-            $categories     = Category::all()->pluck('name', 'id');
+            $categories     = Category::select('id', 'name', 'legend')
+            ->with(['books' => function ($query) {
+                $query->select('category_id', 'accession') // must include category_id for relation
+                    ->orderByDesc('accession')
+                    ->limit(1);
+            }])
+            ->get();
             $condition      = $this->extract_enums($books->getTable(), 'condition_status');
             $availability   = $this->extract_enums($books->getTable(), 'availability_status');
             $remarks        = $this->extract_enums($books->getTable(), 'remarks');
@@ -135,6 +171,15 @@ class BookMaintenanceController extends Controller
         }
         return view('maintenance.books.edit', compact('book', 'categories', 'condition', 'availability', 'remarks', 'book_types'));
     }
+    /**
+     * Show books
+     *
+     * This function is used to show books. It fetches books from the database based on search
+     * filter and category filter. It also applies pagination to the results.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\View\View
+     */
     public function show(Request $request)
     {
         $search = $request->input('search', '');
@@ -199,7 +244,15 @@ class BookMaintenanceController extends Controller
 
         return view('maintenance.books.books', compact('books', 'perPage', 'search', 'category', 'categories'));
     }
-
+    /**
+     * View a book with given accession number
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Contracts\View\View
+     *
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     */
     public function view(Request $request)
     {
         $mimeType = null;
@@ -218,6 +271,18 @@ class BookMaintenanceController extends Controller
         }
         return view('maintenance.books.view', compact('book', 'cover', 'mimeType'));
     }
+    /**
+     * Update a book
+     *
+     * Validate the request and update the book with the given accession number
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     *
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     * @throws \Illuminate\Database\QueryException
+     */
     public function update(Request $request)
     {
         ini_set('memory_limit', '4096M');
@@ -281,6 +346,18 @@ class BookMaintenanceController extends Controller
         DB::commit();
         return redirect()->back()->with('toast-success', 'Book updated successfully');
     }
+    /**
+     * Copy a book
+     *
+     * Create a new book by copying the given accession number
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     *
+     * @throws \Illuminate\Database\Eloquent\ModelNotFoundException
+     * @throws \Illuminate\Database\QueryException
+     */
     public function copy(Request $request)
     {
         ini_set('memory_limit', '4096M');
@@ -345,6 +422,17 @@ class BookMaintenanceController extends Controller
         DB::commit();
         return redirect()->back()->with('toast-success', 'Book copy created successfully');
     }
+    /**
+     * Export barcodes for selected books
+     *
+     * This function is used to export barcodes for selected books. It fetches books
+     * from the database based on search filter and category filter. It then
+     * generates barcodes for the fetched books.
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Symfony\Component\HttpFoundation\StreamedResponse
+     */
     public function export_barcode(Request $request)
     {
         ini_set('memory_limit', '1024M');
@@ -414,6 +502,18 @@ class BookMaintenanceController extends Controller
 
         return $dompdf->stream('barcodes.pdf');
     }
+    /**
+     * Delete a book
+     *
+     * This function is used to delete a book. It starts a transaction, sets the current user id,
+     * deletes the book and commits the transaction. If there is an error during the deletion,
+     * it rolls back the transaction and redirects the user to the books page with an error message.
+     * If the deletion is successful, it commits the transaction and redirects the user to the books page
+     * with a success message.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function destroy(Request $request)
     {
         DB::beginTransaction();
@@ -428,6 +528,20 @@ class BookMaintenanceController extends Controller
         DB::commit();
         return redirect()->route('maintenance.books')->with('toast-success', 'Book deleted successfully');
     }
+    /**
+     * Bulk delete books
+     *
+     * This function is used to delete multiple books. It fetches IDs from the request,
+     * checks if any IDs are provided, starts a transaction, sets the current user id,
+     * deletes the books and commits the transaction. If there is an error during the deletion,
+     * it rolls back the transaction and redirects the user to the books page with an error message.
+     * If the deletion is successful, it commits the transaction and redirects the user to the books page
+     * with a success message.
+     *
+     * @param \Illuminate\Http\Request $request
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function bulkDelete(Request $request)
     {
         $ids = array_filter(explode(',', $request->input('ids')), function ($id) {
@@ -447,6 +561,17 @@ class BookMaintenanceController extends Controller
         DB::commit();
         return redirect()->route('maintenance.books')->with('toast-success', 'Books deleted successfully');
     }
+    /**
+     * Retrieves the book image from Google Books API.
+     *
+     * @param string|null $title The book title.
+     * @param string|null $author The book author.
+     * @param string|null $isbn The book ISBN.
+     *
+     * @return string|null The book image URL or null if no image is found.
+     *
+     * @throws \Exception
+     */
     private function getBookImage($title = null, $author = null, $isbn = null)
     {
         $apiKey = env('GOOGLE_BOOKS_API_KEY');
@@ -503,6 +628,13 @@ class BookMaintenanceController extends Controller
         return null;
     }
 
+    /**
+     * Extracts the enum values from a given table and column name.
+     *
+     * @param string $table The name of the table to query.
+     * @param string $columnName The name of the column to extract the enum values from.
+     * @return array An array of enum values.
+     */
     private function extract_enums($table, $columnName)
     {
         $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";
