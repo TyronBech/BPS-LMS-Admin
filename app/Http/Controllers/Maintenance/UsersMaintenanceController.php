@@ -251,7 +251,7 @@ class UsersMaintenanceController extends Controller
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
-            $password = Str::password(8, true, true, false, false);
+            $password = Str::password(8, true, true, true, false);
             StagingUser::create([
                 'rfid'          => $request->input('rfid'),
                 'first_name'    => $request->input('first-name'),
@@ -317,7 +317,7 @@ class UsersMaintenanceController extends Controller
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
-            $password = Str::password(8, true, true, false, false);
+            $password = Str::password(8, true, true, true, false);
             StagingUser::create([
                 'rfid'          => $request->input('rfid'),
                 'first_name'    => $request->input('first-name'),
