@@ -153,7 +153,9 @@ class PenaltiesController extends Controller
 
         // Eager load penalties and their rule
         $query = Transaction::with(['user', 'book', 'penalties.penaltyRule'])
-            ->whereHas('penalties');
+            ->whereHas('penalties')
+            ->where('penalty_total', '>', 0)
+            ->orderBy('updated_at', 'desc');
 
         if (!empty($fromInputDate) && !empty($toInputDate)) {
             $start = Carbon::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
@@ -198,7 +200,7 @@ class PenaltiesController extends Controller
 
             return $transactions;
         } else {
-            $paginated = $query->orderBy(DB::raw('DATE(created_at)'), 'desc')
+            $paginated = $query->orderBy(DB::raw('DATE(created_at)'), 'asc')
                 ->paginate($perPage)
                 ->appends([
                     'start' => $fromInputDate,
