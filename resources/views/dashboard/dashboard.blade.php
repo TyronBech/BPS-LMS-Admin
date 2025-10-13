@@ -200,6 +200,7 @@
             <table class="table-fixed w-full">
               <thead class="text-left font-bold text-slate-700 dark:text-slate-200 border-b border-slate-300 dark:border-slate-700">
                 <tr>
+                  <th class="px-2 py-2 w-2/5">Top</th>
                   <th class="px-2 py-2 w-2/5">Student</th>
                   <th class="px-2 py-2 w-1/5">Visits</th>
                   <th class="px-2 py-2 w-1/3">Section</th>
@@ -207,13 +208,14 @@
               </thead>
               <tbody>
       `;
-
+        let rank = 1;
         filteredStudents.forEach(student => {
           const s = student.students;
           const fullName = `${student.last_name}, ${student.first_name} ${student.middle_name ?? ''}`.trim();
 
           tableHTML += `
           <tr class="border-t border-slate-300 dark:border-slate-700">
+            <td class="px-2 py-2">${rank++}</td>
             <td class="px-2 py-2">${fullName}</td>
             <td class="px-2 py-2">${student.logs_count}</td>
             <td class="px-2 py-2">${s?.section ?? ''}</td>
@@ -273,6 +275,7 @@
           <table class="table-fixed w-full">
             <thead class="text-left font-bold text-slate-700 dark:text-slate-200 border-b border-slate-300 dark:border-slate-700">
               <tr>
+                <th class="px-2 py-2 w-2/5">Top</th>
                 <th class="px-2 py-2 w-2/5">Student</th>
                 <th class="px-2 py-2 w-1/5">Borrowed</th>
                 <th class="px-2 py-2 w-1/3">Section</th>
@@ -280,13 +283,14 @@
             </thead>
             <tbody>
       `;
-
+        let rank = 1;
         filteredStudents.forEach(student => {
           const s = student.students;
           const fullName = `${student.last_name}, ${student.first_name} ${student.middle_name ?? ''}`.trim();
 
           tableHTML += `
         <tr class="border-t border-slate-300 dark:border-slate-700">
+          <td class="px-2 py-2">${rank++}</td>
           <td class="px-2 py-2">${fullName}</td>
           <td class="px-2 py-2">${student.borrow_count}</td>
           <td class="px-2 py-2">${s?.section ?? ''}</td>
