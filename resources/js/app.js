@@ -28,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'decrement-button',     // number input decrement
     'increment-button',     // number input increment
     'createCopy',           // create book copy button
+    'exportBarcode',     // export barcode button
   ];
 
   // --- 1️⃣ Handle button clicks ---
@@ -59,6 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
   document.querySelectorAll('form').forEach(form => {
     form.addEventListener('submit', e => {
       const submitter = e.submitter;
+      if (form.classList.contains('skip-loader')) return;
       if (submitter && (submitter.value === 'pdf' || submitter.value === 'excel')) return;
       showLoader();
     });
