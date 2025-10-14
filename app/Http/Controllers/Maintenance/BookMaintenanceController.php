@@ -195,7 +195,13 @@ class BookMaintenanceController extends Controller
                 return redirect()->back()->with('toast-error', $validator->errors()->first());
             }
         }
-
+        // Check if the search if multiple accession
+        $is_multiple_accessions = preg_match('/,/', $search);
+        $trimmed_accessions = [];
+        if($is_multiple_accessions){
+            $accessions = explode(',', $search);
+            $trimmed_accessions = array_map('trim', $accessions);
+        }
         // Start query
         $books = Book::query();
 
@@ -207,7 +213,9 @@ class BookMaintenanceController extends Controller
         }
 
         // Apply search filter if provided
-        if ($search) {
+        if ($is_multiple_accessions) {
+            $books->whereIn('accession', $trimmed_accessions);
+        } elseif ($search) {
             $books->where(function ($q) use ($search) {
                 $q->where('accession', 'like', '%' . $search . '%')
                     ->orWhere('title', 'like', '%' . $search . '%')
