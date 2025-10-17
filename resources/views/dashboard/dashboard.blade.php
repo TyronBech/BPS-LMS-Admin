@@ -63,7 +63,18 @@
       <p class="text-center text-gray-500">Loading...</p>
     </div>
   </div>
-
+  <div class="flex flex-col min-h-96 col-span-2 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 5 Most Borrowed Books</h5>
+    <div>
+      <canvas id="top-borrowed-books" width="" height="84"></canvas>
+    </div>
+  </div>
+  <div class="flex flex-col min-h-96 col-span-2 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 5 Most Borrowed Books per Category</h5>
+    <div>
+      <canvas id="top-borrowed-categories" width="" height="84"></canvas>
+    </div>
+  </div>
   <div class="sticky z-index-100 bottom-10 left-20">
     <button type="button" id="refresh" class="flex text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
       <span class="">Refresh</span>
@@ -317,12 +328,35 @@
         `<p class="text-center text-red-500">Error loading data.</p>`;
     }
   }
-
+  async function fetchTopBorrowedBooks() {
+    try {
+      const response = await fetch("{{ route('fetch-top-books-borrowed') }}");
+      const data = await response.json();
+      const labels = data.labels;
+      const counts = data.counts;
+      topBorrowedBooks(labels, counts);
+    } catch (error) {
+      console.error('Error fetching top borrowed books:', error);
+    }
+  }
+  async function fetchTopBorrowedCategories() {
+    try {
+      const response = await fetch("{{ route('fetch-top-categories-borrowed') }}");
+      const data = await response.json();
+      const labels = data.labels;
+      const counts = data.counts;
+      topBorrowedCategories(labels, counts);
+    } catch (error) {
+      console.error('Error fetching top borrowed books:', error);
+    }
+  }
   // Initialize the chart variable
   let transactionHistoryChart = null;
   let monthlyLogsChart = null;
   let yearlyBooksChart = null;
   let registeredUsersChart = null;
+  let topBorrowedBooksChart = null;
+  let topBorrowedCategoriesChart = null;
   // Create a line graph for monthly logs
   function monthlyLogsLineGraph(labels, counts) {
     const ctx = document.getElementById('monthly-logs').getContext('2d');
@@ -547,6 +581,83 @@
       },
     });
   }
+  // Fetch top borrowed books
+  function topBorrowedBooks(labels, counts) {
+    const ctx = document.getElementById('top-borrowed-books').getContext('2d');
+
+    // Check if the chart already exists
+    if (topBorrowedBooksChart) {
+      topBorrowedBooksChart.destroy(); // 👈 Destroy old chart if exists
+    }
+
+    topBorrowedBooksChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Top Borrowed Books',
+          data: counts,
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 2,
+          pointBackgroundColor: 'white',
+          tension: 0.3,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        indexAxis: 'y',
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        },
+        plugins: {
+          datalabels: false,
+        },
+      }
+    });
+  }
+  // Fetch top borrowed categories
+  function topBorrowedCategories(labels, counts) {
+    const ctx = document.getElementById('top-borrowed-categories').getContext('2d');
+
+    // Check if the chart already exists
+    if (topBorrowedCategoriesChart) {
+      topBorrowedCategoriesChart.destroy(); // 👈 Destroy old chart if exists
+    }
+
+    topBorrowedCategoriesChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Top Borrowed Categories',
+          data: counts,
+          backgroundColor: 'rgba(54, 162, 235, 0.2)',
+          borderColor: 'rgba(54, 162, 235, 1)',
+          borderWidth: 2,
+          pointBackgroundColor: 'white',
+          tension: 0.3,
+          fill: true,
+        }]
+      },
+      options: {
+        responsive: true,
+        indexAxis: 'y',
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        },
+        plugins: {
+          datalabels: false,
+        },
+      }
+    });
+  }
+  
   // Generate random colors for the chart
   function generateRandomColors(count) {
     const colors = [];
@@ -567,6 +678,8 @@
     fetchTransactionHistory();
     fetchYearlyAquiredBooks();
     fetchRegisteredUsers();
+    fetchTopBorrowedBooks();
+    fetchTopBorrowedBooks();
     sessionStorage.setItem('toast-success', 'Data refreshed successfully.');
     location.reload();
   });
@@ -578,7 +691,9 @@
   document.addEventListener('DOMContentLoaded', fetchYearlyAquiredBooks);
   document.addEventListener('DOMContentLoaded', fetchRegisteredUsers);
   document.addEventListener('DOMContentLoaded', topVisitedStudents);
-  document.addEventListener('DOMContentLoaded', topBorrowedStudents);
+  document.addEventListener('DOMContentLoaded', fetchTopBorrowedBooks);
+  document.addEventListener('DOMContentLoaded', fetchTopBorrowedCategories);
+
 </script>
 @else
 

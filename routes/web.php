@@ -71,14 +71,16 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     Route::get('profile',   [ProfileController::class, 'index']) ->name('profile');
     Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::prefix('analytics')->group(function () {
-        Route::get('current-users',         [FetchDataController::class, 'fetchCurrentTimeInUsers'])    ->name('fetch-current-count');
-        Route::get('monthly-users',         [FetchDataController::class, 'fetchMonthlyUsers'])          ->name('fetch-monthly-count');
-        Route::get('total-books',           [FetchDataController::class, 'totalBooks'])                 ->name('fetch-book-count');
-        Route::get('transaction-history',   [FetchDataController::class, 'fetchTransactionHistory'])    ->name('fetch-transaction-history');
-        Route::get('yearly-aquired-books',  [FetchDataController::class, 'fetchYearlyAquiredBooks'])    ->name('fetch-yearly-aquired-books');
-        Route::get('registered-users',      [FetchDataController::class, 'fetchRegisteredUsers'])       ->name('fetch-registered-users');
-        Route::get('most-visited-students', [FetchDataController::class, 'mostVisitedStudents'])        ->name('fetch-most-visited-students');
-        Route::get('most-borrowed-students',[FetchDataController::class, 'mostBorrowedStudents'])       ->name('fetch-most-borrowed-students');
+        Route::get('current-users',             [FetchDataController::class, 'fetchCurrentTimeInUsers'])    ->name('fetch-current-count');
+        Route::get('monthly-users',             [FetchDataController::class, 'fetchMonthlyUsers'])          ->name('fetch-monthly-count');
+        Route::get('total-books',               [FetchDataController::class, 'totalBooks'])                 ->name('fetch-book-count');
+        Route::get('transaction-history',       [FetchDataController::class, 'fetchTransactionHistory'])    ->name('fetch-transaction-history');
+        Route::get('yearly-aquired-books',      [FetchDataController::class, 'fetchYearlyAquiredBooks'])    ->name('fetch-yearly-aquired-books');
+        Route::get('registered-users',          [FetchDataController::class, 'fetchRegisteredUsers'])       ->name('fetch-registered-users');
+        Route::get('most-visited-students',     [FetchDataController::class, 'mostVisitedStudents'])        ->name('fetch-most-visited-students');
+        Route::get('most-borrowed-students',    [FetchDataController::class, 'mostBorrowedStudents'])       ->name('fetch-most-borrowed-students');
+        Route::get('top-books-borrowed',        [FetchDataController::class, 'topBooksBorrowed'])           ->name('fetch-top-books-borrowed');
+        Route::get('top-categories-borrowed',   [FetchDataController::class, 'topCategoriesBorrowed'])      ->name('fetch-top-categories-borrowed');
     });
     Route::prefix('report')->middleware(ReportAuthentication::class)->group(function () {
         Route::get('user-report',       [UserLogsController::class, 'index'])           ->name('report.user');

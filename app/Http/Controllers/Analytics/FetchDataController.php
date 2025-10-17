@@ -233,4 +233,62 @@ class FetchDataController extends Controller
             ], 500);
         }
     }
+    public function topBooksBorrowed()
+    {
+        try {
+            $topBooks = Book::with(['transactions' => function ($query) {
+                $query->whereIn('transaction_type', ['Borrowed', 'Returned']);
+            }])
+                ->get()
+                ->groupBy('title')
+                ->map(function ($groupedBooks) {
+                    return [
+                        'title' => $groupedBooks->first()->title,
+                        'total_borrows' => $groupedBooks->sum(fn($book) => $book->transactions->count()),
+                    ];
+                })
+                ->sortByDesc('total_borrows')
+                ->take(5)
+                ->values();
+
+            return response()->json([
+                'labels' => $topBooks->pluck('title'),
+                'counts' => $topBooks->pluck('total_borrows'),
+            ], 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], 500);
+        }
+    }
+    public function topCategoriesBorrowed()
+    {
+        try {
+            $topCategories = Book::with(['transactions' => function ($query) {
+                $query->whereIn('transaction_type', ['Borrowed', 'Returned']);
+            }])
+                ->get()
+                ->groupBy('category_id')
+                ->map(function ($groupedCategories) {
+                    return [
+                        'category' => $groupedCategories->first()->category->name,
+                        'total_borrows' => $groupedCategories->sum(fn($book) => $book->transactions->count()),
+                    ];
+                })
+                ->sortByDesc('total_borrows')
+                ->take(5)
+                ->values();
+
+            return response()->json([
+                'labels' => $topCategories->pluck('category'),
+                'counts' => $topCategories->pluck('total_borrows'),
+            ], 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ], 500);
+        }
+    }
 }
