@@ -678,8 +678,9 @@
     fetchTransactionHistory();
     fetchYearlyAquiredBooks();
     fetchRegisteredUsers();
+    fetchTopBorrowedStudents();
     fetchTopBorrowedBooks();
-    fetchTopBorrowedBooks();
+    fetchTopBorrowedCategories();
     sessionStorage.setItem('toast-success', 'Data refreshed successfully.');
     location.reload();
   });
@@ -691,6 +692,7 @@
   document.addEventListener('DOMContentLoaded', fetchYearlyAquiredBooks);
   document.addEventListener('DOMContentLoaded', fetchRegisteredUsers);
   document.addEventListener('DOMContentLoaded', topVisitedStudents);
+  document.addEventListener('DOMContentLoaded', topBorrowedStudents);
   document.addEventListener('DOMContentLoaded', fetchTopBorrowedBooks);
   document.addEventListener('DOMContentLoaded', fetchTopBorrowedCategories);
 
