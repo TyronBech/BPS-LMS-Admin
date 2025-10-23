@@ -3,8 +3,8 @@
 @section('content')
 <h1 class="font-semibold text-center text-4xl p-5">Home</h1>
 @if(auth()->user()->can(PermissionsEnum::VIEW_DASHBOARD))
-<div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-  <div class="flex flex-col min-h-96 justify-between max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="flex flex-col min-h-96 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <div>
       <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Current Users</h5>
       <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Total number of users currently timed-in in the library.</p>
@@ -14,13 +14,13 @@
     </div>
     <button type="button" id="timeout-all-users" class="text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Timeout All Users</button>
   </div>
-  <div class="flex flex-col min-h-96 col-span-3 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col min-h-96 md:col-span-1 lg:col-span-3 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Monthly Logs</h5>
-    <div>
-      <canvas id="monthly-logs" width="" height="84"></canvas>
+    <div class="relative h-full">
+      <canvas id="monthly-logs"></canvas>
     </div>
   </div>
-  <div class="flex flex-col min-h-96 justify-between max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col min-h-96 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <div>
       <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Total Books</h5>
       <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Total number of books in the database.</p>
@@ -29,25 +29,25 @@
       <h1 id="book-count" class="text-8xl text-center font-extrabold dark:text-gray-300"></h1>
     </div>
   </div>
-  <div class="flex flex-col min-h-96 col-span-3 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col min-h-96 md:col-span-1 lg:col-span-3 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Transaction History</h5>
-    <div>
-      <canvas id="transaction-history" width="" height="84"></canvas>
+    <div class="relative h-full">
+      <canvas id="transaction-history"></canvas>
     </div>
   </div>
-  <div class="flex flex-col min-h-96 col-span-2 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Yearly Book Acquisition</h5>
-    <div class="mb-5">
-      <canvas id="yearly-books" width="" height="84"></canvas>
+    <div class="relative h-full mb-5">
+      <canvas id="yearly-books"></canvas>
     </div>
   </div>
-  <div class="flex flex-col min-h-96 col-span-2 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Registered Users</h5>
-    <div class="mb-5">
-      <canvas id="registered-users" width="250" height="250"></canvas>
+    <div class="relative h-full mb-5">
+      <canvas id="registered-users"></canvas>
     </div>
   </div>
-  <div class="flex flex-col col-span-4 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col col-span-1 md:col-span-2 lg:col-span-4 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <h5 class="mb-6 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
       Top 6 Most Visited Students per Grade Level
     </h5>
@@ -55,7 +55,7 @@
       <p class="text-center text-gray-500">Loading...</p>
     </div>
   </div>
-  <div class="flex flex-col col-span-4 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col col-span-1 md:col-span-2 lg:col-span-4 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <h5 class="mb-6 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
       Top 3 Students with the Most Borrowed Books per Grade Level
     </h5>
@@ -63,16 +63,16 @@
       <p class="text-center text-gray-500">Loading...</p>
     </div>
   </div>
-  <div class="flex flex-col min-h-96 col-span-2 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 5 Most Borrowed Books</h5>
-    <div>
-      <canvas id="top-borrowed-books" width="" height="84"></canvas>
+    <div class="relative h-full">
+      <canvas id="top-borrowed-books"></canvas>
     </div>
   </div>
-  <div class="flex flex-col min-h-96 col-span-2 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 5 Most Borrowed Books per Category</h5>
-    <div>
-      <canvas id="top-borrowed-categories" width="" height="84"></canvas>
+    <div class="relative h-full">
+      <canvas id="top-borrowed-categories"></canvas>
     </div>
   </div>
   <div class="sticky z-index-100 bottom-10 left-20">
@@ -382,6 +382,7 @@
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         scales: {
           y: {
             beginAtZero: true
@@ -470,6 +471,7 @@
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         plugins: {
           legend: {
             labels: {
@@ -519,6 +521,7 @@
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         scales: {
           y: {
             beginAtZero: true
@@ -607,6 +610,7 @@
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         indexAxis: 'y',
         scales: {
           y: {
@@ -645,6 +649,7 @@
       },
       options: {
         responsive: true,
+        maintainAspectRatio: false,
         indexAxis: 'y',
         scales: {
           y: {
