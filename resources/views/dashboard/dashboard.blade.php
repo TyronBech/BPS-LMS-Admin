@@ -203,21 +203,21 @@
         if (filteredStudents.length === 0) return;
 
         let tableHTML = `
-        <div class="bg-white dark:bg-gray-800 border border-slate-300 dark:border-slate-700 rounded-md shadow-sm">
-          <h6 class="bg-blue-400 text-white text-lg font-semibold px-3 py-1 rounded-t-lg">
+        <div class="bg-white dark:bg-gray-800 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm overflow-hidden">
+          <h6 class="bg-blue-400 text-white text-lg font-semibold px-3 py-2">
             Grade ${level}
           </h6>
           <div class="overflow-x-auto">
-            <table class="table-fixed w-full">
+            <table class="w-full">
               <thead class="text-left font-bold text-slate-700 dark:text-slate-200 border-b border-slate-300 dark:border-slate-700">
                 <tr>
-                  <th class="px-2 py-2 w-2/5">Top</th>
-                  <th class="px-2 py-2 w-2/5">Student</th>
-                  <th class="px-2 py-2 w-1/5">Visits</th>
-                  <th class="px-2 py-2 w-1/3">Section</th>
+                  <th class="px-3 py-2 w-1/6">Top</th>
+                  <th class="px-3 py-2 w-2/6">Student</th>
+                  <th class="px-3 py-2 w-1/6">Visits</th>
+                  <th class="px-3 py-2 w-2/6">Section</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody class="divide-y divide-slate-300 dark:divide-slate-700">
       `;
         let rank = 1;
         filteredStudents.forEach(student => {
@@ -225,11 +225,11 @@
           const fullName = `${student.last_name}, ${student.first_name} ${student.middle_name ?? ''}`.trim();
 
           tableHTML += `
-          <tr class="border-t border-slate-300 dark:border-slate-700">
-            <td class="px-2 py-2">${rank++}</td>
-            <td class="px-2 py-2">${fullName}</td>
-            <td class="px-2 py-2">${student.logs_count}</td>
-            <td class="px-2 py-2">${s?.section ?? ''}</td>
+          <tr>
+            <td class="px-3 py-2">${rank++}</td>
+            <td class="px-3 py-2 truncate" title="${fullName}">${fullName}</td>
+            <td class="px-3 py-2">${student.logs_count}</td>
+            <td class="px-3 py-2 truncate" title="${s?.section ?? ''}">${s?.section ?? ''}</td>
           </tr>
         `;
         });
@@ -278,21 +278,21 @@
         if (filteredStudents.length === 0) return;
 
         let tableHTML = `
-      <div class="bg-white dark:bg-gray-800 border border-slate-300 dark:border-slate-700 rounded-md shadow-sm">
-        <h6 class="bg-yellow-400 text-gray-900 text-lg font-semibold px-3 py-1 rounded-t-lg">
+      <div class="bg-white dark:bg-gray-800 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm overflow-hidden">
+        <h6 class="bg-yellow-400 text-gray-900 text-lg font-semibold px-3 py-2">
           Grade ${level}
         </h6>
         <div class="overflow-x-auto">
-          <table class="table-fixed w-full">
+          <table class="w-full">
             <thead class="text-left font-bold text-slate-700 dark:text-slate-200 border-b border-slate-300 dark:border-slate-700">
               <tr>
-                <th class="px-2 py-2 w-2/5">Top</th>
-                <th class="px-2 py-2 w-2/5">Student</th>
-                <th class="px-2 py-2 w-1/5">Borrowed</th>
-                <th class="px-2 py-2 w-1/3">Section</th>
+                <th class="px-3 py-2 w-1/6">Top</th>
+                <th class="px-3 py-2 w-2/6">Student</th>
+                <th class="px-3 py-2 w-1/6">Borrowed</th>
+                <th class="px-3 py-2 w-2/6">Section</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody class="divide-y divide-slate-300 dark:divide-slate-700">
       `;
         let rank = 1;
         filteredStudents.forEach(student => {
@@ -300,11 +300,11 @@
           const fullName = `${student.last_name}, ${student.first_name} ${student.middle_name ?? ''}`.trim();
 
           tableHTML += `
-        <tr class="border-t border-slate-300 dark:border-slate-700">
-          <td class="px-2 py-2">${rank++}</td>
-          <td class="px-2 py-2">${fullName}</td>
-          <td class="px-2 py-2">${student.borrow_count}</td>
-          <td class="px-2 py-2">${s?.section ?? ''}</td>
+        <tr>
+          <td class="px-3 py-2">${rank++}</td>
+          <td class="px-3 py-2 truncate" title="${fullName}">${fullName}</td>
+          <td class="px-3 py-2">${student.borrow_count}</td>
+          <td class="px-3 py-2 truncate" title="${s?.section ?? ''}">${s?.section ?? ''}</td>
         </tr>
       `;
         });

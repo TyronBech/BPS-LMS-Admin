@@ -1,29 +1,29 @@
 @use('App\Enum\PermissionsEnum')
 <header class="sticky top-0 z-50">
-  <nav class="bg-bpsBlue border-gray-200 dark:bg-bpsBlue min-h-36">
-    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto pt-5">
+  <nav class="bg-bpsBlue border-gray-200 dark:bg-bpsBlue">
+    <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
       <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 rtl:space-x-reverse">
-        <img class="rounded-full w-24 h-24" src="{{ asset('img/BPSLogo.png') }}" alt="School Logo">
+        <img class="rounded-full w-16 h-16 md:w-20 md:h-20" src="{{ asset('img/BPSLogo.png') }}" alt="School Logo">
         <div class="flex flex-col justify-center">
-          <h1 class="xl:2xl lg:text-xl md:text-md text-xs text-white font-semibold text-start">Bicutan Parochial School, Inc.</h1>
-          <hr class="h-px bg-gray-200 border-0">
-          <h1 class="xl:2xl lg:text-xl md:text-md text-xs text-white font-semibold text-start">Library Management System</h1>
+          <h1 class="text-sm md:text-lg lg:text-xl text-white font-semibold text-start">Bicutan Parochial School, Inc.</h1>
+          <hr class="h-px my-1 bg-gray-200 border-0">
+          <h1 class="text-sm md:text-lg lg:text-xl text-white font-semibold text-start">Library Management System</h1>
         </div>
       </a>
-      <button data-collapse-toggle="navbar-dropdown" type="button" class="inline-flex items-center p-2 w-10 h-10 mx-2 justify-center md:bg-blue-300 text-sm text-gray-500 rounded-lg lg:hidden md:hover:bg-blue-100 focus:outline-none focus:ring-2 md:focus:ring-gray-200" aria-controls="navbar-dropdown" aria-expanded="false">
+      <button data-collapse-toggle="navbar-dropdown" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-500 rounded-lg lg:hidden hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-dropdown" aria-expanded="false">
         <span class="sr-only">Open main menu</span>
         <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 17 14">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h15M1 7h15M1 13h15" />
         </svg>
       </button>
-      <div class="hidden w-full lg:block lg:w-auto pt-4" id="navbar-dropdown">
-        <ul class="flex flex-col font-medium p-4 lg:p-0 mt-4 mx-8 mb-4 border border-gray-100 rounded-lg bpsBlue lg:space-x-8 rtl:space-x-reverse lg:flex-row lg:mt-0 lg:border-0 lg:bpsBlue">
+      <div class="hidden w-full lg:block lg:w-auto" id="navbar-dropdown">
+        <ul class="flex flex-col font-medium p-4 lg:p-0 mt-4 border border-gray-100 rounded-lg bg-bpsBlue lg:flex-row lg:space-x-8 rtl:space-x-reverse lg:mt-0 lg:border-0 lg:bg-bpsBlue dark:bg-gray-800 lg:dark:bg-bpsBlue dark:border-gray-700">
           <li>
-            <a href="{{ route('dashboard') }}" class="block py-2 px-3 text-white bpsBlue rounded hover:underline lg:bg-transparent lg:text-white lg:p-0" aria-current="page">Home</a>
+            <a href="{{ route('dashboard') }}" class="block py-2 px-3 text-white rounded hover:bg-blue-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-300 lg:p-0 dark:text-white lg:dark:hover:text-blue-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent" aria-current="page">Home</a>
           </li>
           @can(PermissionsEnum::BOOK_INVENTORY)
           <li>
-            <a href="{{ route('inventory.dashboard') }}" class="block py-2 px-3 text-white bpsBlue rounded hover:underline lg:bg-transparent lg:text-white lg:p-0" aria-current="page">Inventory</a>
+            <a href="{{ route('inventory.dashboard') }}" class="block py-2 px-3 text-white rounded hover:bg-blue-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-300 lg:p-0 dark:text-white lg:dark:hover:text-blue-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent" aria-current="page">Inventory</a>
           </li>
           @endcan
           @if(auth()->user()->can(PermissionsEnum::VIEW_USER_REPORTS)
@@ -32,7 +32,7 @@
           || auth()->user()->can(PermissionsEnum::VIEW_TRANSACTION_REPORTS)
           || auth()->user()->can(PermissionsEnum::VIEW_BOOK_CIRCULATION_REPORTS))
           <li>
-            <button id="dropdownNavbarLink" data-dropdown-toggle="navbarReport" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:underline lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-100 lg:p-0 lg:w-auto">Reports <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+            <button id="dropdownNavbarLink" data-dropdown-toggle="navbarReport" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:bg-blue-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-300 lg:p-0 lg:w-auto dark:text-white lg:dark:hover:text-blue-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent">Reports <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
               </svg></button>
             <!-- Dropdown menu -->
@@ -42,7 +42,7 @@
                 <li>
                   <a href="{{ route('report.user') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
                     <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                      <path fill-rule="evenodd" d="M7 2a2 2 0 0 0-2 2v1a1 1 0 0 0 0 2v1a1 1 0 0 0 0 2v1a1 1 0 1 0 0 2v1a1 1 0 1 0 0 2v1a1 1 0 1 0 0 2v1a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H7Zm3 8a3 3 0 1 1 6 0 3 3 0 0 1-6 0Zm-1 7a3 3 0 0 1 3-3h2a3 3 0 0 1 3 3 1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1Z" clip-rule="evenodd" />
+                      <path fill-rule="evenodd" d="M7 2a2 2 0 0 0-2 2v1a1 1 0 0 0 0 2v1a1 1 0 0 0 0 2v1a1 1 0 1 0 0 2v1a1 1 0 1 0 0 2v1a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H7Zm3 8a3 3 0 1 1 6 0 3 3 0 0 1-6 0Zm-1 7a3 3 0 0 1 3-3h2a3 3 0 0 1 3 3 1 1 0 0 1-1 1h-6a1 1 0 0 1-1-1Z" clip-rule="evenodd" />
                     </svg>
                     <span class="ms-2">Attendance Monitoring</span>
                   </a>
@@ -123,7 +123,7 @@
           @endif
           @if(auth()->user()->can(PermissionsEnum::IMPORT_USERS) || auth()->user()->can(PermissionsEnum::IMPORT_BOOKS))
           <li>
-            <button id="dropdownNavbarLink" data-dropdown-toggle="navbarImport" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:underline lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-100 lg:p-0 lg:w-auto">Imports <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+            <button id="dropdownNavbarLink" data-dropdown-toggle="navbarImport" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:bg-blue-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-300 lg:p-0 lg:w-auto dark:text-white lg:dark:hover:text-blue-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent">Imports <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
               </svg></button>
             <!-- Dropdown menu -->
@@ -173,7 +173,7 @@
           auth()->user()->can(PermissionsEnum::CREATE_BACKUPS) ||
           auth()->user()->can(PermissionsEnum::MODIFY_ADMIN))
           <li>
-            <button id="dropdownNavbarLink" data-dropdown-toggle="navbarMaintenance" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:underline lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-100 lg:p-0 lg:w-auto">Maintenance <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+            <button id="dropdownNavbarLink" data-dropdown-toggle="navbarMaintenance" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:bg-blue-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-300 lg:p-0 lg:w-auto dark:text-white lg:dark:hover:text-blue-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent">Maintenance <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
               </svg></button>
             <!-- Dropdown menu -->
@@ -291,7 +291,7 @@
           </li>
           @endif
           <li>
-            <button id="dropdownNavbarLink" data-dropdown-toggle="userSettings" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:underline lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-100 lg:p-0 lg:w-auto">{{ auth()->user()->first_name }} <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+            <button id="dropdownNavbarLink" data-dropdown-toggle="userSettings" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:bg-blue-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-300 lg:p-0 lg:w-auto dark:text-white lg:dark:hover:text-blue-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent">{{ auth()->user()->first_name }} <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
               </svg></button>
             <!-- Dropdown menu -->
