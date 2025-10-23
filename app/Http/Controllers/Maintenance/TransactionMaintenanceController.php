@@ -93,7 +93,7 @@ class TransactionMaintenanceController extends Controller
         $validator = Validator::make($request->all(), [
             'due_date'          => 'required|date',
             'pickup_date'       => 'nullable|date',
-            'transaction_type' => 'required|in:' . implode(',', $this->extract_enums((new Transaction())->getTable(), 'transaction_type')),
+            'transaction_type'  => 'required|in:' . implode(',', $this->extract_enums((new Transaction())->getTable(), 'transaction_type')),
             'status'            => 'required|in:' . implode(',', $this->extract_enums((new Transaction())->getTable(), 'status')),
             'book_condition'    => 'nullable|in:' . implode(',', $this->extract_enums((new Book())->getTable(), 'condition_status')),
             'penalty_total'     => 'nullable|numeric|min:0',
@@ -109,9 +109,35 @@ class TransactionMaintenanceController extends Controller
             if (!$transaction) {
                 return redirect()->back()->with('toast-error', 'Transaction not found');
             }
+            $dueDateInput = $request->input('due_date');
+            $pickupDateInput = $request->input('pickup_date');
+
+            // Parse due_date
+            $dueDate = DateTime::createFromFormat('m/d/Y', $dueDateInput);
+            if (!$dueDate) {
+                // Fallback: try Y-m-d format
+                $dueDate = DateTime::createFromFormat('Y-m-d', $dueDateInput);
+            }
+            if (!$dueDate) {
+                return redirect()->back()->with('toast-error', 'Invalid due date format');
+            }
+
+            // Parse pickup_date
+            $pickupDate = null;
+            if ($pickupDateInput) {
+                $pickupDate = DateTime::createFromFormat('m/d/Y', $pickupDateInput);
+                if (!$pickupDate) {
+                    // Fallback: try Y-m-d format
+                    $pickupDate = DateTime::createFromFormat('Y-m-d', $pickupDateInput);
+                }
+                if (!$pickupDate) {
+                    return redirect()->back()->with('toast-error', 'Invalid pickup date format');
+                }
+            }
+
             $transaction->update([
-                'due_date'          => DateTime::createFromFormat('m/d/Y', $request->input('due_date'))->format('Y-m-d'),
-                'pickup_date'       => $request->input('pickup_date') ? DateTime::createFromFormat('m/d/Y', $request->input('pickup_date'))->format('Y-m-d') : null,
+                'due_date'          => $dueDate->format('Y-m-d'),
+                'pickup_date'       => $pickupDate ? $pickupDate->format('Y-m-d') : null,
                 'transaction_type'  => $request->input('transcaction_type'),
                 'status'            => $request->input('status'),
                 'book_condition'    => $request->input('book_condition') ?? null,
