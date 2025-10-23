@@ -14,7 +14,7 @@ class BackupController extends Controller
 {
     public function index()
     {
-        $files = glob(storage_path('app/backups/Laravel/*.zip'));
+        $files = glob(storage_path('app/backups/BPS Library Management System/*.zip'));
 
         // Convert them into a collection with filename & created date
         $backups = collect($files)->map(function ($file) {
