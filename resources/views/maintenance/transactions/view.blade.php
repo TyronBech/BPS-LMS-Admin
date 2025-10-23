@@ -3,7 +3,14 @@
 <h1 class="font-semibold text-center text-4xl p-5">Maintenance</h1>
 <h5 class="mb-1 text-xl font-bold tracking-tight">Transction Details</h5>
 <div class="flex flex-col items-center bg-white border border-gray-200 rounded-lg shadow-sm md:flex-row md:max-w-xl hover:bg-gray-100 dark:border-gray-700 dark:bg-gray-800 dark:hover:bg-gray-700">
-  <img class="object-cover w-full rounded-t-lg h-96 md:h-auto md:w-48 md:rounded-none md:rounded-s-lg" src="data:image/jpeg;base64, {{ $transaction->book->cover_image }}" alt="Book Image">
+  @if($cover)
+  <img class="object-cover w-full rounded-t-lg h-96 md:h-auto md:w-48 md:rounded-none md:rounded-s-lg" src="data:{{ $mimeType }};base64, {{ $cover }}" alt="Book Image">
+  @elseif($cover)
+  <img class="object-cover w-full rounded max-w-48 md:h-auto mx-4" src="{{ $cover }}" alt="Book Image">
+  @else
+  <img class="object-cover w-full rounded-t-lg h-96 md:h-auto md:w-48 md:rounded-none md:rounded-s-lg dark:hidden" src="{{ asset('img/Book-light.png') }}" alt="Book Image">
+  <img class="hidden object-cover w-full rounded-t-lg h-96 md:h-auto md:w-48 md:rounded-none md:rounded-s-lg dark:block" src="{{ asset('img/Book-dark.png') }}" alt="Book Image">
+  @endif
   <div class="flex flex-col justify-between p-4 leading-normal">
     <p class="mb-3 font-normal text-gray-700 dark:text-gray-400"><span class="font-bold">User:</span> {{ $transaction->user->first_name }} {{ $transaction->user->last_name }}</p>
     <p class="mb-3 font-normal text-gray-700 dark:text-gray-400"><span class="font-bold">Book:</span> {{ $transaction->book->title }}</p>

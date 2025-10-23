@@ -14,6 +14,7 @@
       </thead>
       <tbody>
         @forelse($transactions as $item)
+        @if($item->book && $item->user)
         <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
           <td class="max-w-40 h-14">{{ $item->user->first_name }} {{ $item->user->last_name }}</td>
           <td class="max-w-72 overflow-hidden text-ellipsis">{{ $item->book->title }}</td>
@@ -30,6 +31,7 @@
             @endif
           </td>
         </tr>
+        @endif
         @empty
         <tr>
           <td colspan="3" class="text-center py-1.5">No data found.</td>

@@ -7,9 +7,11 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Http;
 use App\Models\Transaction;
 use App\Models\Book;
 use DateTime;
+use Exception;
 
 class TransactionMaintenanceController extends Controller
 {
@@ -42,7 +44,18 @@ class TransactionMaintenanceController extends Controller
         $transaction = Transaction::with('user', 'book')
             ->where('id', $request->input('viewBtn'))
             ->firstOrFail();
-        return view('maintenance.transactions.view', compact('transaction'));
+        $mimeType = null;
+        $accession = $transaction->book->accession;
+        $book = $transaction->book;
+        try {
+            $cover = $this->getBookImage($book->title, $book->author, $book->isbn ?? null);
+            if (!$cover) {
+                $cover = null;
+            }
+        } catch (Exception $e) {
+            $cover = null;
+        }
+        return view('maintenance.transactions.view', compact('transaction' , 'cover', 'mimeType'));
     }
     /**
      * Retrieve a single transaction from the database based on the given id.
@@ -111,6 +124,72 @@ class TransactionMaintenanceController extends Controller
         }
         DB::commit();
         return redirect()->back()->with('toast-success', 'Transaction updated successfully');
+    }
+    /**
+     * Retrieves the book image from Google Books API.
+     *
+     * @param string|null $title The book title.
+     * @param string|null $author The book author.
+     * @param string|null $isbn The book ISBN.
+     *
+     * @return string|null The book image URL or null if no image is found.
+     *
+     * @throws \Exception
+     */
+    private function getBookImage($title = null, $author = null, $isbn = null)
+    {
+        $apiKey = env('GOOGLE_BOOKS_API_KEY');
+        $url = null;
+
+        if ($title || $author || $isbn) {
+            $queryParts = [];
+
+            if ($title) {
+                $queryParts[] = "intitle:" . urlencode($title);
+            }
+            if ($author) {
+                $queryParts[] = "inauthor:" . urlencode($author);
+            }
+            if ($isbn) {
+                $queryParts[] = "isbn:" . urlencode($isbn);
+            }
+
+            $queryURL = implode("+", $queryParts);
+            $url = "https://www.googleapis.com/books/v1/volumes?q={$queryURL}&key={$apiKey}&maxResults=1";
+        }
+
+        if (!$url) {
+            return null;
+        }
+
+        // Path to local CA bundle
+        $caPath = storage_path('certs/cacert.pem');
+
+        try {
+            // Try secure request with CA verification
+            $options = [];
+            if (file_exists($caPath)) {
+                $options['verify'] = $caPath;
+            }
+
+            $response = Http::withOptions($options)->get($url);
+
+            if ($response->successful()) {
+                $data = $response->json();
+
+                if (!empty($data['items'][0]['volumeInfo']['imageLinks']['thumbnail'])) {
+                    return str_replace(
+                        'http://',
+                        'https://',
+                        $data['items'][0]['volumeInfo']['imageLinks']['thumbnail']
+                    );
+                }
+            }
+        } catch (\Exception $e) {
+            return null;
+        }
+
+        return null;
     }
     /**
      * Extracts the enum values from a given table and column name.

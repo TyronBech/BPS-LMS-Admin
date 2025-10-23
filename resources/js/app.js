@@ -78,7 +78,8 @@ document.addEventListener('DOMContentLoaded', () => {
         href.startsWith('javascript:') ||
         link.id === 'dropdownNavbarLink' ||
         link.closest('#dropdownNavbarLink') || // nested inside dropdown button
-        link.target === '_blank'
+        link.target === '_blank' ||
+        link.classList.contains('skip-loader') // skip-loader class
       ) {
         return;
       }
