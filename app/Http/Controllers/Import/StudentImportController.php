@@ -171,8 +171,7 @@ class StudentImportController extends Controller
                     $rows[$i][4] == null &&
                     $rows[$i][5] == null &&
                     $rows[$i][6] == null &&
-                    $rows[$i][7] == null &&
-                    $rows[$i][8] == null
+                    $rows[$i][7] == null
                 ) continue;
                 $fullName = $this->extractNameParts($rows[$i][2] ?? '');
                 if (empty($fullName['first_name']) || empty($fullName['last_name'])) {
@@ -184,11 +183,11 @@ class StudentImportController extends Controller
                     'middle_name'   => $fullName['middle_name'],
                     'last_name'     => $fullName['last_name'],
                     'suffix'        => $fullName['suffix'],
-                    'gender'        => $rows[$i][4],
-                    'email'         => $rows[$i][5],
-                    'id_number'     => $rows[$i][6],
-                    'grade_level'   => $rows[$i][7],
-                    'section'       => $rows[$i][8],
+                    'gender'        => $rows[$i][3],
+                    'email'         => $rows[$i][4],
+                    'id_number'     => $rows[$i][5],
+                    'grade_level'   => $rows[$i][6],
+                    'section'       => $rows[$i][7],
                 );
                 if (StudentDetail::where('id_number', $rows[$i][8])->exists()) {
                     $existingData[] = $temp;
