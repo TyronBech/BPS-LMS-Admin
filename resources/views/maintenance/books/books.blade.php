@@ -25,7 +25,12 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
             </svg>
           </div>
-          <input type="text" id="search" name="search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Search by title, author, etc." value="{{ $search }}">
+          <input type="text" id="search" name="search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Search by title, author, etc." value="{{ $search }}" autocomplete="off">
+          <div id="suggestions-container" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-700 dark:border-gray-600 hidden">
+            <ul id="suggestions-list" class="max-h-60 overflow-y-auto text-gray-900 dark:text-white">
+              {{-- Suggestions will be populated by JavaScript --}}
+            </ul>
+          </div>
         </div>
       </div>
 
@@ -59,4 +64,60 @@
     @include('maintenance.books.table')
   </div>
 </div>
+
+@push('scripts')
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('search');
+    const suggestionsContainer = document.getElementById('suggestions-container');
+    const suggestionsList = document.getElementById('suggestions-list');
+    const books = <?php echo json_encode($books->map(function($book) {
+      return [
+        'title' => $book->title,
+        'author' => $book->author,
+        'isbn' => $book->isbn,
+      ];
+    })); ?>;
+
+    searchInput.addEventListener('input', function() {
+      const query = this.value.toLowerCase();
+      suggestionsList.innerHTML = '';
+
+      if (query.length === 0) {
+        suggestionsContainer.classList.add('hidden');
+        return;
+      }
+
+      const filteredBooks = books.filter(book =>
+        book.title.toLowerCase().includes(query) ||
+        book.author.toLowerCase().includes(query) ||
+        (book.isbn && book.isbn.toLowerCase().includes(query))
+      );
+
+      if (filteredBooks.length > 0) {
+        filteredBooks.forEach(book => {
+          const li = document.createElement('li');
+          li.textContent = `${book.title} by ${book.author}`;
+          li.className = 'px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600';
+          li.addEventListener('click', function() {
+            searchInput.value = book.title;
+            suggestionsContainer.classList.add('hidden');
+            searchInput.form.submit();
+          });
+          suggestionsList.appendChild(li);
+        });
+        suggestionsContainer.classList.remove('hidden');
+      } else {
+        suggestionsContainer.classList.add('hidden');
+      }
+    });
+
+    document.addEventListener('click', function(e) {
+      if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+        suggestionsContainer.classList.add('hidden');
+      }
+    });
+  });
+</script>
+@endpush
 @endsection

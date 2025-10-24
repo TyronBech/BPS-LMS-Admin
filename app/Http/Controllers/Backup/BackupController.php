@@ -47,7 +47,7 @@ class BackupController extends Controller
             }
 
             // Find the latest backup ZIP file
-            $backupPath = storage_path('app/backups/Laravel');
+            $backupPath = storage_path('app/backups/BPS Library Management System');
             $files = glob("$backupPath/*.zip");
             $latestFile = collect($files)->sortByDesc('filemtime')->first();
 
@@ -113,7 +113,7 @@ class BackupController extends Controller
             return back()->with('toast-error', 'Invalid request!');
         }
         try {
-            $filePath = storage_path('app/backups/Laravel/' . $request->filename);
+            $filePath = storage_path('app/backups/BPS Library Management System/' . $request->filename);
             if (!file_exists($filePath)) {
                 return back()->with('toast-error', 'Backup file not found!');
             }
@@ -133,7 +133,7 @@ class BackupController extends Controller
             return back()->with('toast-error', 'Invalid request!');
         }
         try {
-            $filePath = storage_path('app/backups/Laravel/' . $request->filename);
+            $filePath = storage_path('app/backups/BPS Library Management System/' . $request->filename);
 
             if (!file_exists($filePath)) {
                 return back()->with('toast-error', 'Backup file not found!');
