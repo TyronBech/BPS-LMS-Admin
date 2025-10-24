@@ -155,13 +155,7 @@ class BookMaintenanceController extends Controller
             $id = $request->input('id');
             $book = Book::findOrFail($id);
             $books = new Book();
-            $categories     = Category::select('id', 'name', 'legend')
-            ->with(['books' => function ($query) {
-                $query->select('category_id', 'accession') // must include category_id for relation
-                    ->orderByDesc('accession')
-                    ->limit(1);
-            }])
-            ->get();
+            $categories     = Category::pluck('name', 'id');
             $condition      = $this->extract_enums($books->getTable(), 'condition_status');
             $availability   = $this->extract_enums($books->getTable(), 'availability_status');
             $remarks        = $this->extract_enums($books->getTable(), 'remarks');
