@@ -32,7 +32,6 @@
         </thead>
         <tbody>
           @forelse($data as $item)
-          @if($item->book && $item->user)
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
             <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
               {{ $item->user->first_name }} {{ $item->user->last_name }}
@@ -46,7 +45,6 @@
             <td class="px-6 py-4 whitespace-nowrap">₱ {{ number_format($item->penalty_total, 2) }}</td>
             <td class="px-6 py-4">{{ $item->penalty_status }}</td>
           </tr>
-          @endif
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
             <td colspan="9" class="px-6 py-4 text-center">No data found.</td>

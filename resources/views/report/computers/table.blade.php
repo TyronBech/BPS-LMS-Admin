@@ -28,7 +28,6 @@
         </thead>
         <tbody>
           @forelse($data as $item)
-          @if($item->user && $item->user->students)
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
             <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
               {{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}
@@ -38,7 +37,6 @@
             <td class="px-6 py-4">{{ \Carbon\Carbon::parse($item->time_in)->format('Y-m-d') }}</td>
             <td class="px-6 py-4">{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
           </tr>
-          @endif
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
             <td colspan="5" class="px-6 py-4 text-center">No data found.</td>
