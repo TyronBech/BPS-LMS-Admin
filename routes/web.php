@@ -42,11 +42,12 @@ use App\Http\Middleware\BookCategoriesAuthentication;
 use App\Http\Middleware\ImportAuthentication;
 use App\Http\Middleware\MaintenanceAuthentication;
 use App\Http\Middleware\PenaltyRuleMiddleware;
+use App\Http\Middleware\PreventBackHistory;
 
 Route::get('/', function () {
     return view('main-welcome');
 });
-Route::middleware('guest', RedirectIfAuthenticated::class)->group(function () {
+Route::middleware('guest', RedirectIfAuthenticated::class, PreventBackHistory::class)->group(function () {
     Route::get('/', function () {
         return view('main-welcome');
     })->name('main-welcome');
