@@ -1,44 +1,54 @@
-<div class="container flex flex-col border-collapse border-2 overflow-x-auto border-slate-900 mt-2 mb-4 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600">
-  <h2 class="text-center mb-4 mt-4 font-semibold text-2xl">Report Table for Computer Use</h2>
-  <form method="GET" class="m-2">
-    <label for="perPage" class="mr-2 text-sm font-medium text-gray-700">Show</label>
-    <input type="hidden" name="search" value="{{ request('search') }}">
-    <input type="hidden" name="start" value="{{ request('start') }}">
-    <input type="hidden" name="end" value="{{ request('end') }}">
-    <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2, dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
-      <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
-      <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
-      <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
-    </select>
-    <span class="ml-2 text-sm text-gray-600">entries per page</span>
-  </form>
-  <table class="table-fixed m-4 bg-white dark:bg-gray-800">
-    <thead id="today-header" class="bg-blue-400 text-left font-bold text-slate-200 border-2 border-slate-300 dark:border-slate-700">
-      <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Name</th>
-      <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Level</th>
-      <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Section</th>
-      <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Date</th>
-      <th class="pl-2 border-r border-slate-300 dark:border-slate-700">Time</th>
-    </thead>
-    <tbody id="students-activity">
-      @forelse($data as $item)
-      @if($item->user && $item->user->students)
-      <tr class="text-left border-2 border-slate-300 dark:border-slate-700">
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->user->students->level }}</td>
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ $item->user->students->section }}</td>
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ \Carbon\Carbon::parse($item->time_in)->format('Y-m-d') }}</td>
-        <td class="pb-1 pl-2 border-r border-slate-300 dark:border-slate-700">{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
-      </tr>
-      @endif
-      @empty
-      <tr>
-        <td colspan="8" class="text-center">No data found.</td>
-      </tr>
-      @endforelse
-    </tbody>
-  </table>
-  <div class="m-4">
-    {{ $data->links() }}
+<div id="tabular" class="container mx-auto mt-2 mb-4">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+    <div class="p-4">
+      <h2 class="text-center mb-4 font-semibold text-2xl dark:text-white">Report Table for Computer Use</h2>
+      <form method="GET" class="flex items-center">
+        <label for="perPage" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Show</label>
+        <input type="hidden" name="search" value="{{ request('search') }}">
+        <input type="hidden" name="start" value="{{ request('start') }}">
+        <input type="hidden" name="end" value="{{ request('end') }}">
+        <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+          <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+          <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+          <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+        </select>
+        <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">entries per page</span>
+      </form>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <tr>
+            <th scope="col" class="px-6 py-3">Name</th>
+            <th scope="col" class="px-6 py-3">Level</th>
+            <th scope="col" class="px-6 py-3">Section</th>
+            <th scope="col" class="px-6 py-3">Date</th>
+            <th scope="col" class="px-6 py-3">Time</th>
+          </tr>
+        </thead>
+        <tbody>
+          @forelse($data as $item)
+          @if($item->user && $item->user->students)
+          <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+              {{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}
+            </th>
+            <td class="px-6 py-4">{{ $item->user->students->level }}</td>
+            <td class="px-6 py-4">{{ $item->user->students->section }}</td>
+            <td class="px-6 py-4">{{ \Carbon\Carbon::parse($item->time_in)->format('Y-m-d') }}</td>
+            <td class="px-6 py-4">{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
+          </tr>
+          @endif
+          @empty
+          <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+            <td colspan="5" class="px-6 py-4 text-center">No data found.</td>
+          </tr>
+          @endforelse
+        </tbody>
+      </table>
+    </div>
+    <div class="p-4">
+      {{ $data->withQueryString()->fragment('tabular')->links() }}
+    </div>
   </div>
 </div>
