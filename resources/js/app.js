@@ -44,7 +44,8 @@ document.addEventListener('DOMContentLoaded', () => {
         (name === 'submit' && (value === 'pdf' || value === 'excel')) ||  // PDF export
         btn.disabled ||                                                   // disabled
         btn.offsetParent === null ||                                      // hidden
-        btn.closest('.dashboard-card') ||                                 // stat cards or summary boxes
+        btn.closest('.dashboard-card') ||
+        btn.classList.contains('skip-loader') ||                            // stat cards or summary boxes
         (!btn.closest('form') &&                                          // not inside a form...
           id !== 'refresh' &&                                             // ...and not refresh
           id !== 'timeout-all-users')                                     // ...and not timeout

@@ -153,7 +153,7 @@
       </div>
       <div class="flex flex-col sm:flex-row justify-end mt-6 gap-2">
         <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Update Book</button>
-        <button data-modal-target="copy-book-modal" data-modal-toggle="copy-book-modal" type="button" class="text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-gray-600 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800">Create New Copy</button>
+        <button data-modal-target="copy-book-modal" data-modal-toggle="copy-book-modal" type="button" class="skip-loader text-white bg-gray-700 hover:bg-gray-800 focus:ring-4 focus:ring-gray-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-gray-600 dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-gray-800">Create New Copy</button>
       </div>
     </form>
   </div>
@@ -189,26 +189,57 @@
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
               @enderror
             </div>
+            <div>
+              <label for="copy_edition" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Edition:</label>
+              <input type="text" id="copy_edition" name="edition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., 1st Edition" value="{{ $book->edition }}">
+            </div>
+            <div>
+              <label for="copy_book_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Book Type:</label>
+              <select id="copy_book_type" name="book_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
+                @foreach($book_types as $value)
+                <option value="{{ $value }}" {{ $value == $book->book_type ? 'selected' : '' }}>{{ $value }}</option>
+                @endforeach
+              </select>
+            </div>
+            <div>
+              <label for="copy_remarks" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Remarks:</label>
+              <select id="copy_remarks" name="remarks" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
+                @foreach($remarks as $value)
+                <option value="{{ $value }}" {{ $value == $book->remarks ? 'selected' : '' }}>{{ $value }}</option>
+                @endforeach
+              </select>
+            </div>
+            <div>
+              <label for="copy_availability" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Availability:</label>
+              <select id="copy_availability" name="availability" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
+                @foreach($availability as $value)
+                <option value="{{ $value }}" {{ $value == $book->availability_status ? 'selected' : '' }}>{{ $value }}</option>
+                @endforeach
+              </select>
+            </div>
+            <div>
+              <label for="copy_condition" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Condition:</label>
+              <select id="copy_condition" name="condition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
+                @foreach($condition as $value)
+                <option value="{{ $value }}" {{ $value == $book->condition_status ? 'selected' : '' }}>{{ $value }}</option>
+                @endforeach
+              </select>
+            </div>
             <input type="hidden" name="title" value="{{ $book->title }}">
             <input type="hidden" name="authors" value="{{ $book->author }}">
             <input type="hidden" name="description" value="{{ $book->description }}">
-            <input type="hidden" name="edition" value="{{ $book->edition }}">
             <input type="hidden" name="publication" value="{{ $book->place_of_publication }}">
             <input type="hidden" name="publisher" value="{{ $book->publisher }}">
             <input type="hidden" name="copyright" value="{{ $book->copyrights }}">
             <input type="hidden" name="digital_copy_url" value="{{ $book->digital_copy_url }}">
             <input type="hidden" name="category" value="{{ $book->category_id }}">
-            <input type="hidden" name="book_type" value="{{ $book->book_type }}">
-            <input type="hidden" name="remarks" value="{{ $book->remarks }}">
-            <input type="hidden" name="availability" value="{{ $book->availability_status }}">
-            <input type="hidden" name="condition" value="{{ $book->condition_status }}">
             <input type="hidden" name="call_number" value="{{ $book->call_number }}">
           </div>
         </div>
         <!-- Modal footer -->
         <div class="flex items-center justify-end p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
           <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
-          <button data-modal-hide="copy-book-modal" type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Cancel</button>
+          <button data-modal-hide="copy-book-modal" type="button" class="skip-loader py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Cancel</button>
         </div>
       </form>
     </div>
