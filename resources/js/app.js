@@ -37,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
       const name = btn.getAttribute('name');
       const value = btn.getAttribute('value');
       const id = btn.id;
+      const form = btn.closest('form');
 
       // 🧩 Skip these cases
       if (
@@ -45,8 +46,9 @@ document.addEventListener('DOMContentLoaded', () => {
         btn.disabled ||                                                   // disabled
         btn.offsetParent === null ||                                      // hidden
         btn.closest('.dashboard-card') ||
-        btn.classList.contains('skip-loader') ||                            // stat cards or summary boxes
-        (!btn.closest('form') &&                                          // not inside a form...
+        btn.classList.contains('skip-loader') ||                          // skip-loader class
+        (form && !form.checkValidity()) ||                                // form is invalid
+        (!form &&                                                         // not inside a form...
           id !== 'refresh' &&                                             // ...and not refresh
           id !== 'timeout-all-users')                                     // ...and not timeout
       ) {
