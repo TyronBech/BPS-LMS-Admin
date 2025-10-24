@@ -2,77 +2,82 @@
 @section('content')
 @use(Spatie\Permission\Models\Role)
 @php
-  $adminID = null;
+$adminID = null;
 @endphp
-<h1 class="font-semibold text-center text-4xl p-5">Maintenance</h1>
-<div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-  <div class="flex justify-between">
-    <h5 class="mb-1 text-2xl font-bold tracking-tight">Add Admin</h5>
-    <a href="{{ route('maintenance.admins') }}" class="inline-flex items-center px-3 py-1 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
-      Back
-      <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
-        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9" />
-      </svg>
-    </a>
-  </div>
-  <hr class="h-px my-3 bg-gray-200 border-0">
-  <form action="{{ route('maintenance.search-user') }}" class="max-w-2xl mx-auto" method="POST">
-    @csrf
-    <div class="mb-5">
-      <label for="user-info" class="block mb-2 text-sm font-medium">Search for the user</label>
-      <div class="flex items-center">
-        <input type="text" id="user-info" name="user-info" class="bg-gray-50 border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search...." required>
-        <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 ms-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Search</button>
-      </div>
-      @error('user-info')
-      <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
-        <span class="font-medium">{{ $message }}</span>
-      </div>
-      @enderror
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <h1 class="font-semibold text-center text-3xl md:text-4xl mb-8">Maintenance</h1>
+  <div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
+      <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Add Admin</h5>
+      <a href="{{ route('maintenance.admins') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800 mt-4 sm:mt-0">
+        <svg class="w-4 h-4 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5H1m0 0 4 4M1 5l4-4" />
+        </svg>
+        Back
+      </a>
     </div>
-  </form>
-  <form action="{{ route('maintenance.store-admin') }}" class="max-w-2xl mx-auto" method="POST">
-    @csrf
-    <table class="w-full text-sm text-left rtl:text-right">
-      <thead class="text-xs py-2 text-gray-700 uppercase bg-gray-300 text-center dark:bg-gray-500 dark:text-white">
-        <tr>
-          <th scope="col" class="p-2 text-center">RFID</th>
-          <th scope="col" class="p-2 text-center">Name</th>
-          <th scope="col" class="p-2 text-center">Email</th>
-          <th scope="col" class="p-2 text-center">Role</th>
-        </tr>
-      </thead>
-      <tbody>
-        @forelse($searched as $item)
-        @php
-          $adminID = $item->rfid;
-        @endphp
-        <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
-          <td>{{ $item->rfid }}</td>
-          <td>{{ $item->last_name }}, {{ $item->first_name }} {{ $item->middle_name }}</td>
-          <td>{{ $item->email }}</td>
-          <td>
-            <select name="role" id="role" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" required>
-              <option value="None" selected>Select Role</option>
-              @foreach($roles as $role)
-              @if($item->hasRole($role->name))
-              <option value="{{ $role->name }}" selected>{{ $role->name }}</option>
-              @else
-              <option value="{{ $role->name }}">{{ $role->name }}</option>
-              @endif
-              @endforeach
-            </select>
-          </td>
-        </tr>
-        @empty
-        <tr>
-          <td colspan="4" class="text-center py-1.5">No data found.</td>
-        </tr>
-        @endforelse
-      </tbody>
-    </table>
-    <input type="hidden" name="adminID" value="{{ $adminID }}">
-    <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 mt-5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Submit</button>
-  </form>
+    <hr class="h-px my-3 bg-gray-200 border-0 dark:bg-gray-700">
+
+    {{-- Search Form --}}
+    <form action="{{ route('maintenance.search-user') }}" class="max-w-2xl mx-auto" method="POST">
+      @csrf
+      <div class="mb-5">
+        <label for="user-info" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Search for a user to make an admin</label>
+        <div class="flex items-center">
+          <input type="text" id="user-info" name="user-info" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Enter Name, Email, or RFID" required>
+          <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 ms-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Search</button>
+        </div>
+        @error('user-info')
+        <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+        @enderror
+      </div>
+    </form>
+
+    {{-- Results and Assign Role Form --}}
+    @if(isset($searched))
+      @if(count($searched) > 0)
+        <hr class="h-px my-6 bg-gray-200 border-0 dark:bg-gray-700">
+        <form action="{{ route('maintenance.store-admin') }}" class="max-w-4xl mx-auto" method="POST">
+          @csrf
+          <h6 class="mb-4 text-xl font-semibold tracking-tight text-gray-900 dark:text-white">Search Results</h6>
+          <div class="space-y-4">
+            @foreach($searched as $item)
+            @php
+            $adminID = $item->rfid;
+            @endphp
+            <div class="p-4 border rounded-lg dark:border-gray-600">
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {{-- User Info --}}
+                <div class="md:col-span-2">
+                  <p class="text-lg font-semibold text-gray-900 dark:text-white">{{ $item->last_name }}, {{ $item->first_name }} {{ $item->middle_name }}</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ $item->email }}</p>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">RFID: {{ $item->rfid }}</p>
+                </div>
+                {{-- Role Selection --}}
+                <div>
+                  <label for="role" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Assign Role</label>
+                  <select name="role" id="role" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
+                    <option value="" disabled selected>Select a Role</option>
+                    @foreach($roles as $role)
+                    <option value="{{ $role->name }}" @if($item->hasRole($role->name)) selected @endif>{{ $role->name }}</option>
+                    @endforeach
+                  </select>
+                </div>
+              </div>
+            </div>
+            @endforeach
+          </div>
+          <input type="hidden" name="adminID" value="{{ $adminID }}">
+          <div class="flex justify-end mt-6">
+            <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Submit</button>
+          </div>
+        </form>
+      @else
+        <div class="text-center py-4 text-gray-500 dark:text-gray-400">
+          No users found.
+        </div>
+      @endif
+    @endif
+  </div>
 </div>
 @endsection

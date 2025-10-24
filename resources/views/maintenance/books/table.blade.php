@@ -1,27 +1,27 @@
 @use('App\Enum\PermissionsEnum')
-<div class="flex space-x-4 justify-between items-center mb-4 w-full">
-  <div class="justify-start flex items-center">
-    <div id="checked-books" class="hidden flex-row">
-      <h5 id="selectedHeader" class="text-sm font-bold tracking-tight border-2 rounded-lg px-5 py-2 me-2">Selected</h5>
+<div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 justify-between items-center mb-4 w-full">
+  <div class="w-full md:w-auto">
+    <div id="checked-books" class="hidden flex-wrap items-center gap-2">
+      <h5 id="selectedHeader" class="text-sm font-bold tracking-tight border-2 rounded-lg px-5 py-2">Selected</h5>
       @can(PermissionsEnum::DELETE_BOOKS, 'admin')
-      <button data-modal-target="bulk-delete-book-modal" data-modal-toggle="bulk-delete-book-modal" class="bulkDeleteBookBtn focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2" type="button" value="">
+      <button data-modal-target="bulk-delete-book-modal" data-modal-toggle="bulk-delete-book-modal" class="bulkDeleteBookBtn focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2" type="button" value="">
         Delete
       </button>
       @endcan
       <form action="{{ route('maintenance.export-barcode') }}" method="GET" class="flex skip-loader">
         @csrf
         <input type="hidden" name="ids" id="export_barcode_ids" value="" />
-        <button type="submit" title="Export Barcode" value="" class="exportBarcode text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+        <button type="submit" title="Export Barcode" value="" class="exportBarcode text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
           Generate Barcode
         </button>
       </form>
     </div>
   </div>
-  <form method="GET" class="m-2 justify-end">
-    <label for="perPage" class="mr-2 text-sm font-medium text-gray-700">Show</label>
+  <form method="GET" class="flex items-center justify-end w-full md:w-auto">
+    <label for="perPage" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Show</label>
     <input type="hidden" name="search" value="{{ request('search', '') }}">
     <input type="hidden" name="category" value="{{ request('category', '') }}">
-    <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2, dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+    <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
       <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
       <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
       <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
@@ -29,62 +29,65 @@
       <option value="250" {{ $perPage == 250 ? 'selected' : '' }}>250</option>
       <option value="500" {{ $perPage == 500 ? 'selected' : '' }}>500</option>
     </select>
-    <span class="ml-2 text-sm text-gray-600">entries per page</span>
+    <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">entries</span>
   </form>
 </div>
-<div class="mx-auto px-2 font-sans flex-col">
-  <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-    <table class="w-full text-sm text-left rtl:text-right whitespace-nowrap table-auto">
-      <thead class="text-xs py-2 text-gray-700 uppercase bg-gray-300 text-center dark:bg-gray-500 dark:text-white">
-        <tr>
-          <th scope="col">
-            <div class="flex items-center ml-4">
-              <input id="selectAll" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-              <label for="selectAll" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"></label>
-            </div>
-          </th>
-          <th scope="col" class="p-2 text-center">Accession</th>
-          <th scope="col" class="p-2 text-center">Call Number</th>
-          <th scope="col" class="p-2 text-center">Title</th>
-          <th scope="col" class="p-2 text-center">Remarks</th>
-          <th scope="col" class="p-2 text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
-        @forelse($books as $item)
-        <tr>
-          <td>
-            <div class="flex items-center ml-4">
-              <input id="bookCheck" type="checkbox" value="{{ $item->id }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-              <label for="bookCheck" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"></label>
-            </div>
-          </td>
-          <td class="max-w-40 h-14">{{ $item->accession }}</td>
-          <td class="max-w-40 h-14">{{ $item->call_number }}</td>
-          <td class="max-w-72 overflow-hidden text-ellipsis">{{ $item->title }}</td>
-          <td class="max-w-36">{{ $item->remarks }}</td>
-          <td class="pb-1 flex justify-center">
-            <a href="{{ route('maintenance.view-book', ['accession' => $item->accession]) }}" id="viewBtn" name="viewBtn" class="focus:outline-none text-white bg-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2 dark:focus:ring-yellow-900">View</a>
+<div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+  <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+      <tr>
+        <th scope="col" class="p-4">
+          <div class="flex items-center">
+            <input id="selectAll" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+            <label for="selectAll" class="sr-only">checkbox</label>
+          </div>
+        </th>
+        <th scope="col" class="px-6 py-3">Title</th>
+        <th scope="col" class="px-6 py-3 hidden md:table-cell">Accession</th>
+        <th scope="col" class="px-6 py-3 hidden lg:table-cell">Call Number</th>
+        <th scope="col" class="px-6 py-3 hidden xl:table-cell">Remarks</th>
+        <th scope="col" class="px-6 py-3">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @forelse($books as $item)
+      <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+        <td class="w-4 p-4">
+          <div class="flex items-center">
+            <input id="bookCheck" type="checkbox" value="{{ $item->id }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+            <label for="bookCheck" class="sr-only">checkbox</label>
+          </div>
+        </td>
+        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+          <div class="text-base font-semibold">{{ $item->title }}</div>
+          <div class="font-normal text-gray-500 md:hidden">Acc: {{ $item->accession }}</div>
+        </th>
+        <td class="px-6 py-4 hidden md:table-cell">{{ $item->accession }}</td>
+        <td class="px-6 py-4 hidden lg:table-cell">{{ $item->call_number }}</td>
+        <td class="px-6 py-4 hidden xl:table-cell">{{ $item->remarks }}</td>
+        <td class="px-6 py-4">
+          <div class="flex items-center space-x-2">
+            <a href="{{ route('maintenance.view-book', ['accession' => $item->accession]) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 focus:ring-4 focus:outline-none focus:ring-yellow-300 dark:bg-yellow-400 dark:hover:bg-yellow-500 dark:focus:ring-yellow-800">View</a>
             @can(PermissionsEnum::EDIT_BOOKS, 'admin')
-            <a href="{{ route('maintenance.edit-book', ['id' => $item->id]) }}" id="editBtn" name="editBtn" class="text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2">Edit</a>
+            <a href="{{ route('maintenance.edit-book', ['id' => $item->id]) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800">Edit</a>
             @endcan
             @can(PermissionsEnum::DELETE_BOOKS, 'admin')
-            <button data-modal-target="delete-book-modal" data-modal-toggle="delete-book-modal" class="deleteBookBtn focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2" type="button" value="{{ $item->id }}">
+            <button data-modal-target="delete-book-modal" data-modal-toggle="delete-book-modal" class="deleteBookBtn inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800" type="button" value="{{ $item->id }}">
               Delete
             </button>
             @endcan
-          </td>
-        </tr>
-        @empty
-        <tr>
-          <td colspan="11" class="text-center py-1.5">No data found.</td>
-        </tr>
-        @endforelse
-      </tbody>
-    </table>
-    <div class="m-4">
-      {{ $books->links() }}
-    </div>
+          </div>
+        </td>
+      </tr>
+      @empty
+      <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+        <td colspan="6" class="px-6 py-4 text-center">No books found.</td>
+      </tr>
+      @endforelse
+    </tbody>
+  </table>
+  <div class="m-4">
+    {{ $books->links() }}
   </div>
 </div>
 <div id="delete-book-modal" tabindex="-1" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">

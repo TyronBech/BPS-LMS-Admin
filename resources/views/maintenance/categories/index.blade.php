@@ -1,27 +1,27 @@
 @extends('layouts.admin-app')
 @section('content')
 @use('App\Enum\PermissionsEnum')
-<h1 class="font-semibold text-center text-4xl p-5">Maintenance</h1>
-<div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-  <div class="flex justify-between">
-    <h5 class="mb-1 text-2xl font-bold tracking-tight">Categories</h5>
-    <div>
-      @if(auth()->user()->can(PermissionsEnum::ADD_CATEGORIES))
-      <button data-modal-target="add-categories-modal" data-modal-toggle="add-categories-modal" class="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">Add new category</button>
-      @endif
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <h1 class="font-semibold text-center text-3xl md:text-4xl mb-8">Maintenance</h1>
+  <div class="w-full p-4 sm:p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
+      <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Categories</h5>
+      @can(PermissionsEnum::ADD_CATEGORIES)
+      <button data-modal-target="add-categories-modal" data-modal-toggle="add-categories-modal" class="w-full sm:w-auto mt-4 sm:mt-0 inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Add New Category</button>
+      @endcan
     </div>
+    <hr class="h-px my-3 bg-gray-200 border-0 dark:bg-gray-700">
+    @include('maintenance.categories.table')
   </div>
-  <hr class="h-px my-3 bg-gray-200 border-0">
-  @include('maintenance.categories.table')
 </div>
 <div id="add-categories-modal" data-modal-backdrop="static" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
-  <div class="relative p-4 w-full max-w-2xl max-h-full">
+  <div class="relative p-4 w-full max-w-lg max-h-full">
     <!-- Modal content -->
     <div class="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
       <!-- Modal header -->
-      <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600 border-gray-200">
+      <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
         <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-          Add new category
+          Add New Category
         </h3>
         <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="add-categories-modal">
           <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
@@ -31,54 +31,38 @@
         </button>
       </div>
       <!-- Modal body -->
-      <div class="p-4 md:p-5 space-y-4">
-        <form action="{{ route('maintenance.store-category') }}" method="POST">
-          @csrf
-          <h6 class="mb-1 text-xl font-semibold tracking-tight">Book Information</h6>
-          <div class="mb-5">
-            <label for="legend" class="block mb-2 text-sm font-medium">Legend:</label>
-            <input type="text" id="legend" name="legend" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="FIL">
+      <form action="{{ route('maintenance.store-category') }}" method="POST">
+        @csrf
+        <div class="p-4 md:p-5 space-y-4">
+          <h6 class="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">Category Information</h6>
+          <div>
+            <label for="legend" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Legend:</label>
+            <input type="text" id="legend" name="legend" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., FIL">
             @error('legend')
-            <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
-              <span class="font-medium">{{ $message }}</span>
-            </div>
+            <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
             @enderror
           </div>
-          <div class="mb-5">
-            <label for="name" class="block mb-2 text-sm font-medium">Name:</label>
-            <input type="text" id="name" name="name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Filipino" required>
+          <div>
+            <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name:</label>
+            <input type="text" id="name" name="name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., Filipino" required>
             @error('name')
-            <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
-              <span class="font-medium">{{ $message }}</span>
-            </div>
+            <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
             @enderror
           </div>
-          <div class="mb-5">
-            <label for="borrow_duration_days_add" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Duration of Borrow in Days:</label>
-            <div class="relative flex items-center max-w-[8rem]">
-              <button type="button" id="decrement-button" data-input-counter-decrement="borrow_duration_days_add" class="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-s-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none">
-                <svg class="w-3 h-3 text-gray-900 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 2">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 1h16" />
-                </svg>
-              </button>
-              <input type="text" id="borrow_duration_days_add" name="borrow_duration_days_add" data-input-counter data-input-counter-min="0" data-input-counter-max="999" data-input-counter aria-describedby="helper-text-explanation" class="bg-gray-50 border-x-0 border-gray-300 h-11 text-center text-gray-900 text-sm focus:ring-blue-500 focus:border-blue-500 block w-full py-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="5" required />
-              <button type="button" id="increment-button" data-input-counter-increment="borrow_duration_days_add" class="bg-gray-100 dark:bg-gray-700 dark:hover:bg-gray-600 dark:border-gray-600 hover:bg-gray-200 border border-gray-300 rounded-e-lg p-3 h-11 focus:ring-gray-100 dark:focus:ring-gray-700 focus:ring-2 focus:outline-none">
-                <svg class="w-3 h-3 text-gray-900 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
-                  <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 1v16M1 9h16" />
-                </svg>
-              </button>
-            </div>
+          <div>
+            <label for="borrow_duration_days_add" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Duration of Borrow (Days):</label>
+            <input type="number" id="borrow_duration_days_add" name="borrow_duration_days_add" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., 5" min="0" required>
             @error('borrow_duration_days_add')
-            <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
-              <span class="font-medium">{{ $message }}</span>
-            </div>
+            <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
             @enderror
           </div>
-          <button data-modal-hide="add-categories-modal" type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Add</button>
+        </div>
+        <!-- Modal footer -->
+        <div class="flex items-center justify-end p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+          <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Add</button>
           <button data-modal-hide="add-categories-modal" type="button" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Cancel</button>
-        </form>
-      </div>
-      <!-- Modal footer -->
+        </div>
+      </form>
     </div>
   </div>
 </div>

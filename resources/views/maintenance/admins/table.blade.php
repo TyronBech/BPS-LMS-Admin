@@ -3,42 +3,42 @@
 @php
 $adminID = null;
 @endphp
-<div class="mx-auto px-2 font-sans flex-col">
-  <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-    <table class="w-full text-sm text-left rtl:text-right">
-      <thead class="text-xs py-2 text-gray-700 uppercase bg-gray-300 text-center dark:bg-gray-500 dark:text-white">
-        <tr>
-          <th scope="col" class="p-2 text-center">First Name</th>
-          <th scope="col" class="p-2 text-center">Middle Name</th>
-          <th scope="col" class="p-2 text-center">Last Name</th>
-          <th scope="col" class="p-2 text-center">Email</th>
-          <th scope="col" class="p-2 text-center">Role</th>
-          <th scope="col" class="p-2 text-center">Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        @forelse($admins as $admin)
-        <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
-          <td>{{ $admin->first_name }}</td>
-          <td>{{ $admin->middle_name ?? '-' }}</td>
-          <td>{{ $admin->last_name }}</td>
-          <td>{{ $admin->email }}</td>
-          <td>{{ implode(', ', $admin->getRoleNames()->toArray()) }}</td>
-          <td class="pb-1 flex justify-center">
-            <a href="{{ route('maintenance.edit-admin', $admin->id) }}" id="editBtn" name="editBtn" class="text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2">Edit</a>
+<div class="relative overflow-x-auto shadow-md sm:rounded-lg">
+  <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+    <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+      <tr>
+        <th scope="col" class="px-6 py-3">Name</th>
+        <th scope="col" class="px-6 py-3 hidden md:table-cell">Role</th>
+        <th scope="col" class="px-6 py-3">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      @forelse($admins as $admin)
+      <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+          <div class="text-base font-semibold">{{ $admin->last_name }}, {{ $admin->first_name }} {{ $admin->middle_name ? substr($admin->middle_name, 0, 1) . '.' : '' }}</div>
+          <div class="font-normal text-gray-500">{{ $admin->email }}</div>
+          <div class="font-normal text-gray-500 md:hidden mt-1">Role: {{ implode(', ', $admin->getRoleNames()->toArray()) }}</div>
+        </th>
+        <td class="px-6 py-4 hidden md:table-cell">
+          {{ implode(', ', $admin->getRoleNames()->toArray()) }}
+        </td>
+        <td class="px-6 py-4">
+          <div class="flex items-center space-x-2">
+            <a href="{{ route('maintenance.edit-admin', $admin->id) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800">Edit</a>
             @if(auth()->user()->hasRole(RolesEnum::SUPER_ADMIN) && auth()->user()->id != $admin->id)
-            <button class="deleteAdminBtn focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2 my-2" type="button" data-modal-target="delete-admin-modal" data-modal-toggle="delete-admin-modal" value="{{ $admin->id }}">Delete</button>
+            <button type="button" data-modal-target="delete-admin-modal" data-modal-toggle="delete-admin-modal" value="{{ $admin->id }}" class="deleteAdminBtn inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800">Delete</button>
             @endif
-          </td>
-        </tr>
-        @empty
-        <tr>
-          <td colspan="6" class="text-center py-1.5">No data found.</td>
-        </tr>
-        @endforelse
-      </tbody>
-    </table>
-  </div>
+          </div>
+        </td>
+      </tr>
+      @empty
+      <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+        <td colspan="3" class="px-6 py-4 text-center">No admins found.</td>
+      </tr>
+      @endforelse
+    </tbody>
+  </table>
 </div>
 <div id="delete-admin-modal" tabindex="-1" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
   <div class="relative p-4 w-full max-w-md max-h-full">
@@ -68,12 +68,17 @@ $adminID = null;
   </div>
 </div>
 <script>
-  const deleteAdminBtn = document.querySelectorAll('.deleteAdminBtn');
-  const deleteAdminID = document.getElementById('delete_admin_id');
-  deleteAdminBtn.forEach(btn => {
-    btn.addEventListener('click', function(event) {
-      const adminId = event.target.value;
-      deleteAdminID.value = adminId;
-    });
+  document.addEventListener('DOMContentLoaded', function() {
+    const deleteAdminBtns = document.querySelectorAll('.deleteAdminBtn');
+    const deleteAdminIDInput = document.getElementById('delete_admin_id');
+
+    if (deleteAdminBtns.length > 0 && deleteAdminIDInput) {
+      deleteAdminBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          const adminId = this.value;
+          deleteAdminIDInput.value = adminId;
+        });
+      });
+    }
   });
 </script>
