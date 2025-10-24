@@ -5,8 +5,8 @@ $visitorID = null;
 $increment = 0;
 @endphp
 <div class="container mx-auto px-2 font-sans flex-col">
-  <div class="flex space-x-4 justify-between items-center mb-4 w-full">
-    <div class="justify-start flex items-center">
+  <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-between items-center mb-4 w-full">
+    <div class="justify-start flex items-center w-full sm:w-auto">
       <div id="checked-visitors" class="hidden flex-row">
         <h5 id="selectedVisitorHeader" class="text-sm font-bold tracking-tight border-2 rounded-lg px-5 py-2 me-2">Selected</h5>
         @can(PermissionsEnum::DELETE_USERS, 'admin')
@@ -16,10 +16,10 @@ $increment = 0;
         @endcan
       </div>
     </div>
-    <form method="GET" class="justify-end m-2">
+    <form method="GET" class="justify-end m-2 w-full sm:w-auto">
       <input type="hidden" name="search" value="{{ request('search', '') }}">
       <label for="perPage" class="mr-2 text-sm font-medium text-gray-700">Show</label>
-      <select name="perVisitorPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2, dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+      <select name="perVisitorPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
         <option value="10" {{ $perVisitorPage == 10 ? 'selected' : '' }}>10</option>
         <option value="25" {{ $perVisitorPage == 25 ? 'selected' : '' }}>25</option>
         <option value="50" {{ $perVisitorPage == 50 ? 'selected' : '' }}>50</option>
@@ -28,55 +28,52 @@ $increment = 0;
     </form>
   </div>
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-    <table class="w-full text-sm text-left rtl:text-right whitespace-nowrap table-auto">
-      <thead class="text-xs py-2 text-gray-700 uppercase bg-gray-300 text-center dark:bg-gray-500 dark:text-white">
+    <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+      <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
         <tr>
-          <th scope="col" class="p-2 text-center max-w-3">
-            <div class="flex items-center ml-4">
-              <input id="selectAllVisitors" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-              <label for="selectAllVisitors" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"></label>
+          <th scope="col" class="p-4">
+            <div class="flex items-center">
+              <input id="selectAllVisitors" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+              <label for="selectAllVisitors" class="sr-only">checkbox</label>
             </div>
           </th>
-          <th scope="col" class="p-2 text-center min-w-44">Name</th>
-          <th scope="col" class="p-2 text-center min-w-24">Gender</th>
-          <th scope="col" class="p-2 text-center min-w-24">Email</th>
-          <th scope="col" class="p-2 text-center min-w-11">Organization</th>
-          <th scope="col" class="p-2 text-center min-w-11">Purpose</th>
-          <th scope="col" class="p-2 text-center">Actions</th>
+          <th scope="col" class="px-6 py-3">Name</th>
+          <th scope="col" class="px-6 py-3 hidden md:table-cell">Email</th>
+          <th scope="col" class="px-6 py-3 hidden lg:table-cell">Organization</th>
+          <th scope="col" class="px-6 py-3">Actions</th>
         </tr>
       </thead>
       <tbody>
-        @foreach($visitors as $item)
-        <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
-          @php
-          $increment++;
-          @endphp
-          <td class="py-4 pl-2">
-            <div class="flex items-center ml-4">
-              <input id="visitorCheck" type="checkbox" value="{{ $item->id }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-              <label for="visitorCheck" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"></label>
+        @forelse($visitors as $item)
+        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+          <td class="w-4 p-4">
+            <div class="flex items-center">
+              <input id="visitorCheck" type="checkbox" value="{{ $item->id }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+              <label for="visitorCheck" class="sr-only">checkbox</label>
             </div>
           </td>
-          <td class="py-4">{{ $item->first_name }} {{ $item->middle_name ?? '' }} {{ $item->last_name }} {{ $item->suffix ?? '' }}</td>
-          <td class="py-4">{{ $item->gender }}</td>
-          <td class="py-4">{{ $item->email }}</td>
-          <td class="py-4">{{ $item->visitors->school_org }}</td>
-          <td class="py-4">{{ $item->visitors->purpose }}</td>
-          <td class="py-4 flex justify-center">            
-            @can(PermissionsEnum::EDIT_USERS, 'admin')
-            <a href="{{ route('maintenance.edit-visitor', $item->id) }}" id="editBtn" name="editBtn" class="text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2">Edit</a>
-            @endcan
-            @can(PermissionsEnum::DELETE_USERS, 'admin')
-            <button class="deleteVisitorBtn focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2" type="button" data-modal-target="delete-visitor-modal" data-modal-toggle="delete-visitor-modal" value="{{ $item->id }}">Delete</button>
-            @endcan
+          <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+            <div class="text-base font-semibold">{{ $item->first_name }} {{ $item->middle_name ?? '' }} {{ $item->last_name }} {{ $item->suffix ?? '' }}</div>
+            <div class="font-normal text-gray-500 md:hidden">{{ $item->email }}</div>
+          </th>
+          <td class="px-6 py-4 hidden md:table-cell">{{ $item->email }}</td>
+          <td class="px-6 py-4 hidden lg:table-cell">{{ $item->visitors->school_org }}</td>
+          <td class="px-6 py-4">
+            <div class="flex items-center space-x-2">
+              @can(PermissionsEnum::EDIT_USERS, 'admin')
+              <a href="{{ route('maintenance.edit-visitor', $item->id) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 focus:ring-4 focus:outline-none focus:ring-yellow-300 dark:bg-yellow-400 dark:hover:bg-yellow-500 dark:focus:ring-yellow-800">Edit</a>
+              @endcan
+              @can(PermissionsEnum::DELETE_USERS, 'admin')
+              <button class="deleteVisitorBtn inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800" type="button" data-modal-target="delete-visitor-modal" data-modal-toggle="delete-visitor-modal" value="{{ $item->id }}">Delete</button>
+              @endcan
+            </div>
           </td>
         </tr>
-        @endforeach
-        @if($increment == 0)
+        @empty
         <tr>
-          <td colspan="10" class="text-center py-1.5">No data found.</td>
+          <td colspan="5" class="text-center py-4">No data found.</td>
         </tr>
-        @endif
+        @endforelse
       </tbody>
     </table>
     <div class="m-4">
@@ -139,67 +136,62 @@ $increment = 0;
   </div>
 </div>
 <script>
-  const deleteVisitorBtn = document.querySelectorAll('.deleteVisitorBtn');
-  const deleteVisitorID = document.getElementById('delete_visitor_id');
-  deleteVisitorBtn.forEach(btn => {
-    btn.addEventListener('click', function(event) {
-      const visitorId = event.target.value;
-      deleteVisitorID.value = visitorId;
+  document.addEventListener('DOMContentLoaded', function() {
+    const deleteVisitorBtn = document.querySelectorAll('.deleteVisitorBtn');
+    const deleteVisitorID = document.getElementById('delete_visitor_id');
+    deleteVisitorBtn.forEach(btn => {
+      btn.addEventListener('click', function(event) {
+        const visitorId = event.currentTarget.value;
+        deleteVisitorID.value = visitorId;
+      });
     });
-  });
-  let checkedVisitors = 0;
-  const visitorCheck = document.querySelectorAll('#visitorCheck');
-  const checkedVisitorsContainer = document.getElementById('checked-visitors');
-  const bulkDeleteVisitorIds = document.getElementById('bulk-delete_visitor_ids');
-  const bulkDeleteVisitorBtn = document.getElementById('bulkDeleteVisitorBtn');
-  const selectedVisitorHeader = document.getElementById('selectedVisitorHeader');
-  const selectAllVisitorsCheckbox = document.getElementById('selectAllVisitors');
-  bulkDeleteVisitorIds.value = '';
-  bulkDeleteVisitorBtn.value = '';
-  const selectedVisitorIds = new Set();
-  visitorCheck.forEach(checkbox => {
-    checkbox.addEventListener('change', () => {
-      const visitorId = event.target.value;
-      if (checkbox.checked) {
-        selectedVisitorIds.add(visitorId);
-        checkedVisitors++;
-      } else {
-        selectedVisitorIds.delete(visitorId);
-        checkedVisitors--;
-        selectAllVisitorsCheckbox.checked = false;
-      }
+
+    const visitorCheckboxes = document.querySelectorAll('#visitorCheck');
+    const checkedVisitorsContainer = document.getElementById('checked-visitors');
+    const bulkDeleteVisitorIds = document.getElementById('bulk-delete_visitor_ids');
+    const selectedVisitorHeader = document.getElementById('selectedVisitorHeader');
+    const selectAllVisitorsCheckbox = document.getElementById('selectAllVisitors');
+    const selectedVisitorIds = new Set();
+
+    function updateBulkActions() {
+      let checkedVisitors = selectedVisitorIds.size;
       bulkDeleteVisitorIds.value = Array.from(selectedVisitorIds).join(',');
-      console.log(bulkDeleteVisitorIds.value);
-      bulkDeleteVisitorBtn.value = Array.from(selectedVisitorIds).join(',');
-      console.log(bulkDeleteVisitorBtn.value);
+
       if (checkedVisitors > 0) {
         checkedVisitorsContainer.classList.replace('hidden', 'flex');
         selectedVisitorHeader.textContent = `Selected (${checkedVisitors})`;
       } else {
         checkedVisitorsContainer.classList.replace('flex', 'hidden');
       }
+
+      if (visitorCheckboxes.length > 0) {
+        selectAllVisitorsCheckbox.checked = checkedVisitors === visitorCheckboxes.length;
+      }
+    }
+
+    visitorCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', (event) => {
+        const visitorId = event.target.value;
+        if (event.target.checked) {
+          selectedVisitorIds.add(visitorId);
+        } else {
+          selectedVisitorIds.delete(visitorId);
+        }
+        updateBulkActions();
+      });
     });
-  });
-  selectAllVisitorsCheckbox.addEventListener('change', () => {
-    checkedVisitors = 0;
-    visitorCheck.forEach(checkbox => {
-      checkbox.checked = event.target.checked;
-      const visitorId = checkbox.value;
-      if (selectAllVisitorsCheckbox.checked) {
-        selectedVisitorIds.add(visitorId);
-        checkedVisitors++;
-      } else {
-        selectedVisitorIds.delete(visitorId);
-        checkedVisitors = 0;
-      }
-      bulkDeleteVisitorIds.value = Array.from(selectedVisitorIds).join(',');
-      bulkDeleteVisitorBtn.value = Array.from(selectedVisitorIds).join(',');
-      if (checkedVisitors > 0) {
-        checkedVisitorsContainer.classList.replace('hidden', 'flex');
-        selectedVisitorHeader.textContent = `Selected (${checkedVisitors})`;
-      } else {
-        checkedVisitorsContainer.classList.replace('flex', 'hidden');
-      }
+
+    selectAllVisitorsCheckbox.addEventListener('change', (event) => {
+      visitorCheckboxes.forEach(checkbox => {
+        checkbox.checked = event.target.checked;
+        const visitorId = checkbox.value;
+        if (event.target.checked) {
+          selectedVisitorIds.add(visitorId);
+        } else {
+          selectedVisitorIds.delete(visitorId);
+        }
+      });
+      updateBulkActions();
     });
   });
 </script>

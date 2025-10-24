@@ -5,8 +5,8 @@ $studentID = null;
 $increment = 0;
 @endphp
 <div class="container mx-auto px-2 font-sans flex-col">
-  <div class="flex space-x-4 justify-between items-center mb-4 w-full">
-    <div class="justify-start flex items-center">
+  <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 justify-between items-center mb-4 w-full">
+    <div class="justify-start flex items-center w-full sm:w-auto">
       <div id="checked-students" class="hidden flex-row">
         <h5 id="selectedStudentHeader" class="text-sm font-bold tracking-tight border-2 rounded-lg px-5 py-2 me-2">Selected</h5>
         @can(PermissionsEnum::DELETE_USERS, 'admin')
@@ -16,10 +16,10 @@ $increment = 0;
         @endcan
       </div>
     </div>
-    <form method="GET" class="justify-end m-2">
+    <form method="GET" class="justify-end m-2 w-full sm:w-auto">
       <input type="hidden" name="search" value="{{ request('search', '') }}">
       <label for="perPage" class="mr-2 text-sm font-medium text-gray-700">Show</label>
-      <select name="perStudentPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2, dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+      <select name="perStudentPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
         <option value="10" {{ $perStudentPage == 10 ? 'selected' : '' }}>10</option>
         <option value="25" {{ $perStudentPage == 25 ? 'selected' : '' }}>25</option>
         <option value="50" {{ $perStudentPage == 50 ? 'selected' : '' }}>50</option>
@@ -28,56 +28,55 @@ $increment = 0;
     </form>
   </div>
   <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
-    <table class="w-full text-sm text-left rtl:text-right whitespace-nowrap table-auto">
-      <thead class="text-xs py-2 text-gray-700 uppercase bg-gray-300 text-center dark:bg-gray-500 dark:text-white">
+    <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+      <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
         <tr>
-          <th scope="col" class="p-2 text-center max-w-3">
-            <div class="flex items-center ml-4">
-              <input id="selectAllStudents" type="checkbox" value="" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-              <label for="selectAllStudents" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"></label>
+          <th scope="col" class="p-4">
+            <div class="flex items-center">
+              <input id="selectAllStudents" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+              <label for="selectAllStudents" class="sr-only">checkbox</label>
             </div>
           </th>
-          <th scope="col" class="p-2 text-center min-w-32">RFID</th>
-          <th scope="col" class="p-2 text-center min-w-44">Name</th>
-          <th scope="col" class="p-2 text-center min-w-24">Grade</th>
-          <th scope="col" class="p-2 text-center min-w-11">Section</th>
-          <th scope="col" class="p-2 text-center">Actions</th>
+          <th scope="col" class="px-6 py-3">Name</th>
+          <th scope="col" class="px-6 py-3 hidden md:table-cell">RFID</th>
+          <th scope="col" class="px-6 py-3 hidden lg:table-cell">Grade & Section</th>
+          <th scope="col" class="px-6 py-3">Actions</th>
         </tr>
       </thead>
       <tbody>
-        @foreach($students as $item)
-        <tr class="bg-white border-b text-center dark:bg-gray-800 dark:border-gray-600">
-          @php
-          $increment++;
-          @endphp
-          <td class="py-4 pl-2">
-            <div class="flex items-center ml-4">
-              <input id="studentCheck" type="checkbox" value="{{ $item->id }}" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded-sm focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-              <label for="studentCheck" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300"></label>
+        @forelse($students as $item)
+        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+          <td class="w-4 p-4">
+            <div class="flex items-center">
+              <input id="studentCheck" value="{{ $item->id }}" type="checkbox" class="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 dark:focus:ring-blue-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+              <label for="studentCheck" class="sr-only">checkbox</label>
             </div>
           </td>
-          <td class="py-4">{{ $item->rfid }}</td>
-          <td class="py-4">{{ $item->first_name }} {{ $item->middle_name ?? '' }} {{ $item->last_name }} {{ $item->suffix ?? '' }}</td>
-          <td class="py-4">{{ $item->students->level }}</td>
-          <td class="py-4">{{ $item->students->section }}</td>
-          <td class="py-4 flex justify-center">
-            <a href="{{ route('maintenance.view-student', ['id_number' => $item->students->id_number]) }}" id="viewBtn" name="viewBtn" class="focus:outline-none text-white bg-yellow-400 hover:bg-yellow-500 focus:ring-4 focus:ring-yellow-300 font-medium rounded-lg text-sm px-5 py-2 me-2 dark:focus:ring-yellow-900">View</a>
-            @can(PermissionsEnum::EDIT_USERS, 'admin')
-            <a href="{{ route('maintenance.edit-student', $item->id) }}" id="editBtn" name="editBtn" class="text-white bg-blue-500 hover:bg-blue-700 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 me-2">Edit</a>
-            @endcan
-            @if(!$item->hasRole(RolesEnum::SUPER_ADMIN))
-            @can(PermissionsEnum::DELETE_USERS, 'admin')
-            <button class="deleteStudentBtn focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2 me-2" type="button" data-modal-target="delete-student-modal" data-modal-toggle="delete-student-modal" value="{{ $item->id }}">Delete</button>
-            @endcan
-            @endif
+          <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+            <div class="text-base font-semibold">{{ $item->first_name }} {{ $item->middle_name ?? '' }} {{ $item->last_name }} {{ $item->suffix ?? '' }}</div>
+            <div class="font-normal text-gray-500 md:hidden">{{ $item->rfid }}</div>
+          </th>
+          <td class="px-6 py-4 hidden md:table-cell">{{ $item->rfid }}</td>
+          <td class="px-6 py-4 hidden lg:table-cell">{{ $item->students->level }} - {{ $item->students->section }}</td>
+          <td class="px-6 py-4">
+            <div class="flex items-center space-x-2">
+              <a href="{{ route('maintenance.view-student', ['id_number' => $item->students->id_number]) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800">View</a>
+              @can(PermissionsEnum::EDIT_USERS, 'admin')
+              <a href="{{ route('maintenance.edit-student', $item->id) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 focus:ring-4 focus:outline-none focus:ring-yellow-300 dark:bg-yellow-400 dark:hover:bg-yellow-500 dark:focus:ring-yellow-800">Edit</a>
+              @endcan
+              @if(!$item->hasRole(RolesEnum::SUPER_ADMIN))
+              @can(PermissionsEnum::DELETE_USERS, 'admin')
+              <button class="deleteStudentBtn inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800" type="button" data-modal-target="delete-student-modal" data-modal-toggle="delete-student-modal" value="{{ $item->id }}">Delete</button>
+              @endcan
+              @endif
+            </div>
           </td>
         </tr>
-        @endforeach
-        @if($increment == 0)
+        @empty
         <tr>
-          <td colspan="10" class="text-center py-1.5">No data found.</td>
+          <td colspan="5" class="text-center py-4">No data found.</td>
         </tr>
-        @endif
+        @endforelse
       </tbody>
     </table>
     <div class="m-4">
@@ -140,67 +139,62 @@ $increment = 0;
   </div>
 </div>
 <script>
-  const deleteStudentBtn = document.querySelectorAll('.deleteStudentBtn');
-  const deleteStudentID = document.getElementById('delete_student_id');
-  deleteStudentBtn.forEach(btn => {
-    btn.addEventListener('click', function(event) {
-      const studentId = event.target.value;
-      deleteStudentID.value = studentId;
+  document.addEventListener('DOMContentLoaded', function() {
+    const deleteStudentBtn = document.querySelectorAll('.deleteStudentBtn');
+    const deleteStudentID = document.getElementById('delete_student_id');
+    deleteStudentBtn.forEach(btn => {
+      btn.addEventListener('click', function(event) {
+        const studentId = event.currentTarget.value;
+        deleteStudentID.value = studentId;
+      });
     });
-  });
-  let checkedStudents = 0;
-  const studentCheck = document.querySelectorAll('#studentCheck');
-  const checkedStudentsContainer = document.getElementById('checked-students');
-  const bulkDeleteStudentIds = document.getElementById('bulk-delete_student_ids');
-  const bulkDeleteStudentBtn = document.getElementById('bulkDeleteStudentBtn');
-  const selectedStudentHeader = document.getElementById('selectedStudentHeader');
-  const selectAllStudentsCheckbox = document.getElementById('selectAllStudents');
-  bulkDeleteStudentIds.value = '';
-  bulkDeleteStudentBtn.value = '';
-  const selectedStudentIds = new Set();
-  studentCheck.forEach(checkbox => {
-    checkbox.addEventListener('change', () => {
-      const studentId = event.target.value;
-      if (checkbox.checked) {
-        selectedStudentIds.add(studentId);
-        checkedStudents++;
-      } else {
-        selectedStudentIds.delete(studentId);
-        checkedStudents--;
-        selectAllStudentsCheckbox.checked = false;
-      }
+
+    const studentCheckboxes = document.querySelectorAll('#studentCheck');
+    const checkedStudentsContainer = document.getElementById('checked-students');
+    const bulkDeleteStudentIds = document.getElementById('bulk-delete_student_ids');
+    const selectedStudentHeader = document.getElementById('selectedStudentHeader');
+    const selectAllStudentsCheckbox = document.getElementById('selectAllStudents');
+    const selectedStudentIds = new Set();
+
+    function updateBulkActions() {
+      let checkedStudents = selectedStudentIds.size;
       bulkDeleteStudentIds.value = Array.from(selectedStudentIds).join(',');
-      console.log(bulkDeleteStudentIds.value);
-      bulkDeleteStudentBtn.value = Array.from(selectedStudentIds).join(',');
-      console.log(bulkDeleteStudentBtn.value);
+
       if (checkedStudents > 0) {
         checkedStudentsContainer.classList.replace('hidden', 'flex');
         selectedStudentHeader.textContent = `Selected (${checkedStudents})`;
       } else {
         checkedStudentsContainer.classList.replace('flex', 'hidden');
       }
+
+      if (studentCheckboxes.length > 0) {
+        selectAllStudentsCheckbox.checked = checkedStudents === studentCheckboxes.length;
+      }
+    }
+
+    studentCheckboxes.forEach(checkbox => {
+      checkbox.addEventListener('change', (event) => {
+        const studentId = event.target.value;
+        if (event.target.checked) {
+          selectedStudentIds.add(studentId);
+        } else {
+          selectedStudentIds.delete(studentId);
+        }
+        updateBulkActions();
+      });
     });
-  });
-  selectAllStudentsCheckbox.addEventListener('change', () => {
-    checkedStudents = 0;
-    studentCheck.forEach(checkbox => {
-      checkbox.checked = event.target.checked;
-      const studentId = checkbox.value;
-      if (selectAllStudentsCheckbox.checked) {
-        selectedStudentIds.add(studentId);
-        checkedStudents++;
-      } else {
-        selectedStudentIds.delete(studentId);
-        checkedStudents = 0;
-      }
-      bulkDeleteStudentIds.value = Array.from(selectedStudentIds).join(',');
-      bulkDeleteStudentBtn.value = Array.from(selectedStudentIds).join(',');
-      if (checkedStudents > 0) {
-        checkedStudentsContainer.classList.replace('hidden', 'flex');
-        selectedStudentHeader.textContent = `Selected (${checkedStudents})`;
-      } else {
-        checkedStudentsContainer.classList.replace('flex', 'hidden');
-      }
+
+    selectAllStudentsCheckbox.addEventListener('change', (event) => {
+      studentCheckboxes.forEach(checkbox => {
+        checkbox.checked = event.target.checked;
+        const studentId = checkbox.value;
+        if (event.target.checked) {
+          selectedStudentIds.add(studentId);
+        } else {
+          selectedStudentIds.delete(studentId);
+        }
+      });
+      updateBulkActions();
     });
   });
 </script>

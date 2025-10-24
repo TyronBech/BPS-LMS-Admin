@@ -555,6 +555,7 @@ class UsersMaintenanceController extends Controller
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
             'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'email'         => 'required|string|email',
+            'school_org'   => 'required|string|max:100',
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
@@ -577,6 +578,9 @@ class UsersMaintenanceController extends Controller
                 'gender'        => $request->input('gender'),
                 'email'         => $request->input('email'),
                 'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
+            ]);
+            $visitor->visitors()->update([
+                'school_org'   => $request->input('school_org'),
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();

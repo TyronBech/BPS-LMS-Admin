@@ -1,28 +1,56 @@
 @extends('layouts.admin-app')
 @section('content')
-<h1 class="font-semibold text-center text-4xl p-5">Maintenance</h1>
-<h5 class="mb-1 text-xl font-bold tracking-tight">Student Information</h5>
-<div class="flex flex-col items-center max-w-sm p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-  @if($student->profile_image && $mimeType)
-    <img class="rounded-full w-48" src="data:{{ $mimeType }};base64, {{ $student->profile_image }}" alt="Student Image">
-  @else
-    <img class="hidden rounded-full w-48 dark:block" src="{{ asset('img/User-dark.png') }}" alt="Student Image">
-    <img class="rounded-full w-48 dark:hidden" src="{{ asset('img/User-light.png') }}" alt="Student Image">
-  @endif
-  <h5 class="text-2xl text-center font-bold tracking-tight text-gray-900 dark:text-white">{{ $student->first_name }} {{ $student->middle_name ?? '' }} {{ $student->last_name }} {{ $student->suffix ?? '' }}</h5>
-  <p class="mb-3 font-normal text-sm text-gray-700 dark:text-gray-400">{{ $student->students->id_number }}</p>
-  <ul>
-    <li><span class="font-semibold">RFID:</span> {{ $student->rfid }}</li>
-    <li><span class="font-semibold">Grade Level:</span> {{ $student->students->level }}</li>
-    <li><span class="font-semibold">Section:</span> {{ $student->students->section }}</li>
-    <li><span class="font-semibold">Gender:</span> {{ $student->gender }}</li>
-    <li><span class="font-semibold">Email:</span> {{ $student->email }}</li>
-  </ul>
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <h1 class="font-semibold text-center text-3xl md:text-4xl mb-8">Student Information</h1>
+
+  <div class="max-w-md mx-auto bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 p-6">
+    <div class="flex flex-col items-center">
+
+      {{-- Profile Image --}}
+      @if($student->profile_image && $mimeType)
+      <img class="rounded-full w-32 h-32 md:w-40 md:h-40 object-cover mb-4 shadow-md" src="data:{{ $mimeType }};base64, {{ $student->profile_image }}" alt="Student Image">
+      @else
+      <img class="hidden rounded-full w-32 h-32 md:w-40 md:h-40 object-cover mb-4 shadow-md dark:block" src="{{ asset('img/User-dark.png') }}" alt="Student Image">
+      <img class="rounded-full w-32 h-32 md:w-40 md:h-40 object-cover mb-4 shadow-md dark:hidden" src="{{ asset('img/User-light.png') }}" alt="Student Image">
+      @endif
+
+      {{-- Name and ID --}}
+      <h5 class="text-2xl md:text-3xl font-bold text-center tracking-tight text-gray-900 dark:text-white">{{ $student->first_name }} {{ $student->middle_name ?? '' }} {{ $student->last_name }} {{ $student->suffix ?? '' }}</h5>
+      <p class="mb-6 font-normal text-gray-700 dark:text-gray-400">{{ $student->students->id_number }}</p>
+
+      {{-- Details List --}}
+      <div class="w-full text-left space-y-3 text-sm md:text-base">
+        <div class="flex justify-between border-b border-gray-200 dark:border-gray-700 py-2">
+          <span class="font-semibold text-gray-800 dark:text-gray-300">RFID:</span>
+          <span class="text-gray-600 dark:text-gray-400">{{ $student->rfid }}</span>
+        </div>
+        <div class="flex justify-between border-b border-gray-200 dark:border-gray-700 py-2">
+          <span class="font-semibold text-gray-800 dark:text-gray-300">Grade Level:</span>
+          <span class="text-gray-600 dark:text-gray-400">{{ $student->students->level }}</span>
+        </div>
+        <div class="flex justify-between border-b border-gray-200 dark:border-gray-700 py-2">
+          <span class="font-semibold text-gray-800 dark:text-gray-300">Section:</span>
+          <span class="text-gray-600 dark:text-gray-400">{{ $student->students->section }}</span>
+        </div>
+        <div class="flex justify-between border-b border-gray-200 dark:border-gray-700 py-2">
+          <span class="font-semibold text-gray-800 dark:text-gray-300">Gender:</span>
+          <span class="text-gray-600 dark:text-gray-400">{{ $student->gender }}</span>
+        </div>
+        <div class="flex justify-between py-2">
+          <span class="font-semibold text-gray-800 dark:text-gray-300">Email:</span>
+          <span class="text-gray-600 dark:text-gray-400 truncate">{{ $student->email }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex justify-center mt-6">
+    <a href="{{ route('maintenance.show-users') }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+      <svg class="w-4 h-4 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5H1m0 0 4 4M1 5l4-4" />
+      </svg>
+      Back to Users
+    </a>
+  </div>
 </div>
-<a href="{{ route('maintenance.users') }}" class="inline-flex items-center px-3 py-3 mt-3 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">
-  Back
-  <svg class="rtl:rotate-180 w-3.5 h-3.5 ms-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
-    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M1 5h12m0 0L9 1m4 4L9 9" />
-  </svg>
-</a>
 @endsection
