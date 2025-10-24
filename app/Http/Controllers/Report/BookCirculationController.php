@@ -143,7 +143,7 @@ class BookCirculationController extends Controller
         $title          = strtolower($request->input('title', ''));
         $availability   = $request->input('availability', 'All');
         $perPage        = $request->input('perPage', 10);
-        $query          = Book::with('category')->select('accession', 'call_number', 'title', 'barcode', 'availability_status', 'condition_status', 'category_id');
+        $query          = Book::with('category')->whereHas('category')->select('accession', 'call_number', 'title', 'barcode', 'availability_status', 'condition_status', 'category_id');
         if (strlen($barcode) > 0) {
             $query->where('barcode', 'like', '%' . $barcode . '%');
         }

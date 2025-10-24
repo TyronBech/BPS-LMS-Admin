@@ -392,7 +392,7 @@ class UserLogsController extends Controller
         $userType       = $request->input('user_type', 'all');
         $perPage        = $request->input('perPage', 10);
 
-        $query = Log::with('user')->where("computer_use", "No")->whereNotNull('time_in');
+        $query = Log::with('user')->whereHas('user')->where("computer_use", "No")->whereNotNull('time_in');
 
         if (!empty($fromInputDate) && !empty($toInputDate)) {
             $start = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');

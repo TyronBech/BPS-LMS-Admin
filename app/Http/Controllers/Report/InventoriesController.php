@@ -135,7 +135,7 @@ class InventoriesController extends Controller
         $perPage        = $request->input('perPage', 10);
         $start          = null;
         $end            = null;
-        $query          = Inventory::with('book')->where('checked_at', '!=', null);
+        $query          = Inventory::with('book')->whereHas('book')->where('checked_at', '!=', null);
         if(strlen($fromInputDate) > 0) $start = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
         if(strlen($toInputDate) > 0) $end = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
         if(strlen($fromInputDate) > 0 || strlen($toInputDate) > 0){

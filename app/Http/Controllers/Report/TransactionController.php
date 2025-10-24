@@ -200,7 +200,9 @@ class TransactionController extends Controller
         $type           = $request->input('type', 'All');
         $perPage        = $request->input('perPage', 10);
 
-        $query = Transaction::with('book', 'user');
+        $query = Transaction::with('book', 'user')
+            ->whereHas('book')
+            ->whereHas('user');
         if (!empty($fromInputDate) && !empty($toInputDate)) {
             $start = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
             $end = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');

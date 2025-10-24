@@ -154,6 +154,9 @@ class PenaltiesController extends Controller
         // Eager load penalties and their rule
         $query = Transaction::with(['user', 'book', 'penalties.penaltyRule'])
             ->whereHas('penalties')
+            ->whereHas('user')
+            ->whereHas('book')
+            ->whereHas('penalties.penaltyRule')
             ->where('penalty_total', '>', 0)
             ->orderBy('updated_at', 'desc');
 
