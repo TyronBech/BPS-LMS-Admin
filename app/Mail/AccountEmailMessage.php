@@ -3,7 +3,6 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
@@ -13,13 +12,42 @@ class AccountEmailMessage extends Mailable
 {
     use Queueable, SerializesModels;
 
+    private array $msg;
+
     /**
      * Create a new message instance.
      */
-    public function __construct(private $user, private $password)
+    public function __construct(private $user, private string $password, array $msg = [])
     {
         $this->user = $user;
         $this->password = $password;
+
+        // Build a clean display name (handles optional middle name)
+        $first  = trim((string)($user->first_name ?? ''));
+        $middle = trim((string)($user->middle_name ?? ''));
+        $last   = trim((string)($user->last_name ?? ''));
+        $displayName = trim($first . ' ' . ($middle ? $middle . ' ' : '') . $last);
+
+        $this->msg = array_replace([
+            // UI/brand text now message-driven
+            'brand_name'     => 'BPS Library Management System',
+            'brand_logo_alt' => 'BPS Logo',
+
+            // Formal copy with emojis
+            'subject'        => '📚 Your BPS Library Account Details',
+            'title'          => 'BPS Library Account 📩',
+            'greeting'       => "Dear {$displayName},",
+            'intro'          => 'We are pleased to inform you that your BPS Library Management System account has been successfully created.',
+            'instruction'    => 'To begin, please sign in using the credentials provided below.',
+            'details_title'  => 'Account credentials 🔐',
+            'email_label'    => 'Email',
+            'password_label' => 'Temporary password',
+            'reminder'       => 'For your security, please change your password after your first login. 🛡️',
+            'thanks'         => 'Thank you for being part of the BPS learning community.',
+            'cta_label'      => 'Access your account 🔓',
+            'cta_url'        => config('app.frontend_login_url', 'https://e-library.bps.edu.ph/web/login'),
+            'footer'         => 'If you did not request or expect this message, please disregard this email or contact support. ℹ️',
+        ], $msg);
     }
 
     /**
@@ -28,7 +56,7 @@ class AccountEmailMessage extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'BPS Library Account',
+            subject: $this->msg['subject'],
         );
     }
 
@@ -40,9 +68,10 @@ class AccountEmailMessage extends Mailable
         return new Content(
             view: 'mail.accountNotif',
             with: [
-                'user' => $this->user,
+                'user'     => $this->user,
                 'password' => $this->password,
-            ]
+                'msg'      => $this->msg,
+            ],
         );
     }
 
