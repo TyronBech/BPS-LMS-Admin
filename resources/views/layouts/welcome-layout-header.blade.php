@@ -1,12 +1,12 @@
 <header class="sticky top-0 z-50">
   <nav class="bg-bpsBlue border-gray-200 dark:bg-bpsBlue">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
-      <a href="{{ route('main-welcome') }}" class="flex items-center space-x-3 rtl:space-x-reverse">
-        <img class="rounded-full w-16 h-16 md:w-24 md:h-24" src="{{ asset('img/BPSLogo.png') }}" alt="School Logo">
-        <div class="flex flex-col justify-center">
-          <h1 class="text-md sm:text-lg md:text-xl lg:text-2xl text-white font-semibold dark:text-white">Bicutan Parochial School, Inc.</h1>
+      <a href="{{ route('main-welcome') }}" class="flex items-center space-x-3 rtl:space-x-reverse min-w-0">
+        <img class="rounded-full w-12 h-12 md:w-24 md:h-24 flex-shrink-0" src="{{ asset('img/BPSLogo.png') }}" alt="School Logo">
+        <div class="flex flex-col justify-center min-w-0">
+          <h1 class="text-md sm:text-sm md:text-xl lg:text-2xl text-white font-semibold dark:text-white truncate">Bicutan Parochial School, Inc.</h1>
           <hr class="h-px my-1 bg-gray-200 border-0 dark:bg-white">
-          <h1 class="text-sm sm:text-base md:text-lg lg:text-xl text-white font-semibold dark:text-white">Library Management System</h1>
+          <h1 class="text-sm sm:text-xs md:text-lg lg:text-xl text-white font-semibold dark:text-white truncate">Library Management System</h1>
         </div>
       </a>
       <button data-collapse-toggle="navbar-dropdown" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-100 rounded-lg lg:hidden hover:bg-gray-100/20 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-dropdown" aria-expanded="false">
