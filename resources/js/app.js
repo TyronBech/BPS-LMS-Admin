@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'decrement-button',     // number input decrement
     'increment-button',     // number input increment
     'createCopy',           // create book copy button
-    'exportBarcode',     // export barcode button
+    'exportBarcodeBtn',     // export barcode button
   ];
 
   // --- 1️⃣ Handle button clicks ---
