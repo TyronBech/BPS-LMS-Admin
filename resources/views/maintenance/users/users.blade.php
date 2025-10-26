@@ -9,6 +9,7 @@
       <div class="flex flex-col sm:flex-row sm:items-center gap-4">
         <form action="{{ route('maintenance.show-users') }}" method="GET" class="flex items-center w-full sm:w-auto">
           @csrf
+          <input type="hidden" name="tab" id="users-tab-input" value="{{ request('tab', 'students') }}" />
           <label for="search-users" class="sr-only">Search</label>
           <div class="relative w-full">
             <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
@@ -33,22 +34,37 @@
         @endcan
       </div>
     </div>
+
     <hr class="h-px my-4 bg-gray-200 border-0 dark:bg-gray-700">
-    <div class="space-y-8">
-      <div>
-        <h5 class="text-lg font-bold tracking-tight text-gray-900 dark:text-white mb-2" id="studentHeader">Students</h5>
+
+    <!-- Toggle buttons -->
+    <div class="mb-4" role="tablist" aria-label="Choose table">
+      <div class="inline-flex rounded-md shadow-sm border border-gray-200 dark:border-gray-700" role="group">
+        <button type="button" id="toggle-students" data-table="students" class="js-user-toggle px-4 py-2 text-sm font-medium rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-blue-700 text-white border-r border-gray-200 dark:border-gray-700" aria-selected="true" role="tab">
+          Students
+        </button>
+        <button type="button" id="toggle-employees" data-table="employees" class="js-user-toggle px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 border-r border-gray-200 dark:border-gray-700" aria-selected="false" role="tab">
+          Faculties & Staffs
+        </button>
+        <button type="button" id="toggle-visitors" data-table="visitors" class="js-user-toggle px-4 py-2 text-sm font-medium rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600" aria-selected="false" role="tab">
+          Visitors
+        </button>
+      </div>
+    </div>
+
+    <!-- Toggle content -->
+    <div class="space-y-0">
+      <div data-content="students" id="students-section">
         <div class="overflow-x-auto">
           @include('maintenance.users.students-table')
         </div>
       </div>
-      <div>
-        <h5 class="text-lg font-bold tracking-tight text-gray-900 dark:text-white mb-2" id="employeeHeader">Faculties & Staffs</h5>
+      <div data-content="employees" id="employees-section" class="hidden">
         <div class="overflow-x-auto">
           @include('maintenance.users.employees-table')
         </div>
       </div>
-      <div>
-        <h5 class="text-lg font-bold tracking-tight text-gray-900 dark:text-white mb-2" id="visitorHeader">Visitors</h5>
+      <div data-content="visitors" id="visitors-section" class="hidden">
         <div class="overflow-x-auto">
           @include('maintenance.users.visitors-table')
         </div>
@@ -56,4 +72,52 @@
     </div>
   </div>
 </div>
+
+<script>
+  // Simple toggle without external deps
+  document.addEventListener('DOMContentLoaded', () => {
+    const buttons = document.querySelectorAll('.js-user-toggle');
+    const sections = document.querySelectorAll('[data-content]');
+    const hiddenTabInput = document.getElementById('users-tab-input');
+    const activeBtnClasses = ['bg-blue-700', 'text-white'];
+    const inactiveBtnClasses = ['bg-white', 'text-gray-700', 'hover:bg-gray-50', 'dark:bg-gray-700', 'dark:text-gray-200', 'dark:hover:bg-gray-600'];
+
+    function setActive(tab) {
+      // Show/hide sections
+      sections.forEach(sec => {
+        sec.classList.toggle('hidden', sec.dataset.content !== tab);
+      });
+
+      // Style buttons and aria
+      buttons.forEach(btn => {
+        const isActive = btn.dataset.table === tab;
+        btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+        activeBtnClasses.forEach(c => btn.classList.toggle(c, isActive));
+        inactiveBtnClasses.forEach(c => btn.classList.toggle(c, !isActive));
+        // Adjust borders for active/inactive visual consistency
+        if (!btn.classList.contains('rounded-l-md') && !btn.classList.contains('rounded-r-md')) {
+          // middle button keeps border
+        }
+      });
+
+      // Update URL ?tab=... without reloading, preserve other params (e.g., search)
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tab);
+      window.history.replaceState({}, '', url);
+
+      // Keep the search form in sync
+      if (hiddenTabInput) hiddenTabInput.value = tab;
+    }
+
+    // Initial tab from URL or default to students
+    const params = new URLSearchParams(window.location.search);
+    const initial = params.get('tab') || 'students';
+    setActive(initial);
+
+    // Wire up clicks
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => setActive(btn.dataset.table));
+    });
+  });
+</script>
 @endsection

@@ -17,6 +17,7 @@ $increment = 0;
     </div>
     <form method="GET" class="justify-end m-2 w-full sm:w-auto">
       <input type="hidden" name="search" value="{{ request('search', '') }}">
+      <input type="hidden" name="tab" value="employees">
       <label for="perPage" class="mr-2 text-sm font-medium text-gray-700">Show</label>
       <select name="perEmployeePage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
         <option value="10" {{ $perEmployeePage == 10 ? 'selected' : '' }}>10</option>
@@ -79,7 +80,7 @@ $increment = 0;
       </tbody>
     </table>
     <div class="m-4">
-      {{ $employees->withQueryString()->fragment('employeeHeader')->links() }}
+      {{ $employees->appends(['tab' => 'employees'])->withQueryString()->fragment('employeeHeader')->links() }}
     </div>
   </div>
 </div>
