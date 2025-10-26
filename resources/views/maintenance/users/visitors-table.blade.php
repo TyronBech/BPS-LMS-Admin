@@ -78,7 +78,7 @@ $increment = 0;
       </tbody>
     </table>
     <div class="m-4">
-      {{ $visitors->appends(['tab' => 'visitors'])->withQueryString()->fragment('visitorHeader')->links() }}
+      {{ $visitors->withQueryString()->appends(['tab' => 'visitors'])->fragment('visitorHeader')->links() }}
     </div>
   </div>
 </div>

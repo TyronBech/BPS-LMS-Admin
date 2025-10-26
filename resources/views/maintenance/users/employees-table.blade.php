@@ -80,7 +80,7 @@ $increment = 0;
       </tbody>
     </table>
     <div class="m-4">
-      {{ $employees->appends(['tab' => 'employees'])->withQueryString()->fragment('employeeHeader')->links() }}
+      {{ $employees->withQueryString()->appends(['tab' => 'employees'])->fragment('employeeHeader')->links() }}
     </div>
   </div>
 </div>

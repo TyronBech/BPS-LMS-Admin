@@ -30,22 +30,34 @@ class UsersMaintenanceController extends Controller
         $perEmployeePage    = $request->input('perEmployeePage', 10);
         $perVisitorPage     = $request->input('perVisitorPage', 10);
         $search             = $request->input('search-users', '');
+
         $students = User::whereHas('students')
             ->with('students')
             ->orderBy('created_at', 'desc')
-            ->paginate($perStudentPage)
-            ->appends(['perPage' => $perStudentPage]);
+            ->paginate($perStudentPage, ['*'], 'students_page')
+            ->appends([
+                'perStudentPage' => $perStudentPage,
+                'search-users'   => $search,
+            ]);
+
         $employees = User::whereHas('employees')
             ->with('employees')
             ->orderBy('created_at', 'desc')
-            ->paginate($perEmployeePage)
-            ->appends(['perPage' => $perEmployeePage]);
+            ->paginate($perEmployeePage, ['*'], 'employees_page')
+            ->appends([
+                'perEmployeePage' => $perEmployeePage,
+                'search-users'    => $search,
+            ]);
+
         $visitors = User::whereHas('visitors')
             ->with('visitors')
             ->orderBy('created_at', 'desc')
-            ->paginate($perVisitorPage)
-            ->appends(['perPage' => $perVisitorPage]);
-        //dd($users->toArray());
+            ->paginate($perVisitorPage, ['*'], 'visitors_page')
+            ->appends([
+                'perVisitorPage' => $perVisitorPage,
+                'search-users'   => $search,
+            ]);
+
         return view('maintenance.users.users', compact('students', 'employees', 'visitors', 'perStudentPage', 'perEmployeePage', 'perVisitorPage', 'search'));
     }
     /**
@@ -168,13 +180,11 @@ class UsersMaintenanceController extends Controller
 
         // Students query
         $students = User::whereHas('students')
-            ->where(function ($q) use ($searchFilter) {
-                $searchFilter($q);
-            })
+            ->where(function ($q) use ($searchFilter) { $searchFilter($q); })
             ->orWhereHas('students', function ($q) use ($search) {
                 $q->where('id_number', 'like', "%{$search}%")
-                    ->orWhere('level', 'like', "%{$search}%")
-                    ->orWhere('section', 'like', "%{$search}%");
+                  ->orWhere('level', 'like', "%{$search}%")
+                  ->orWhere('section', 'like', "%{$search}%");
             })
             ->orderBy('id', 'asc')
             ->paginate($perStudentPage, ['*'], 'students_page')
@@ -185,9 +195,7 @@ class UsersMaintenanceController extends Controller
 
         // Employees query
         $employees = User::whereHas('employees')
-            ->where(function ($q) use ($searchFilter) {
-                $searchFilter($q);
-            })
+            ->where(function ($q) use ($searchFilter) { $searchFilter($q); })
             ->orWhereHas('employees', function ($q) use ($search) {
                 $q->where('employee_id', 'like', "%{$search}%");
             })
@@ -197,21 +205,19 @@ class UsersMaintenanceController extends Controller
                 'perEmployeePage' => $perEmployeePage,
                 'search-users'    => $search
             ]);
-        
+
         // Visitors query
         $visitors = User::whereHas('visitors')
-            ->where(function ($q) use ($searchFilter) {
-                $searchFilter($q);
-            })
+            ->where(function ($q) use ($searchFilter) { $searchFilter($q); })
             ->orWhereHas('visitors', function ($q) use ($search) {
                 $q->where('school_org', 'like', "%{$search}%")
-                    ->orwhere('purpose', 'like', "%{$search}%");
+                  ->orWhere('purpose', 'like', "%{$search}%");
             })
             ->orderBy('id', 'asc')
-            ->paginate($perEmployeePage, ['*'], 'visitors_page')
+            ->paginate($perVisitorPage, ['*'], 'visitors_page')
             ->appends([
-                'perEmployeePage' => $perEmployeePage,
-                'search-users'    => $search
+                'perVisitorPage' => $perVisitorPage,
+                'search-users'   => $search
             ]);
 
         return view('maintenance.users.users', compact('students', 'employees', 'visitors', 'perStudentPage', 'perEmployeePage', 'perVisitorPage', 'search'));

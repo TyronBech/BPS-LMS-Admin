@@ -94,15 +94,12 @@
         btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
         activeBtnClasses.forEach(c => btn.classList.toggle(c, isActive));
         inactiveBtnClasses.forEach(c => btn.classList.toggle(c, !isActive));
-        // Adjust borders for active/inactive visual consistency
-        if (!btn.classList.contains('rounded-l-md') && !btn.classList.contains('rounded-r-md')) {
-          // middle button keeps border
-        }
       });
 
-      // Update URL ?tab=... without reloading, preserve other params (e.g., search)
+      // Update URL: set tab, remove all pagination params so only the active table controls its page
       const url = new URL(window.location.href);
       url.searchParams.set('tab', tab);
+      ['page', 'students_page', 'employees_page', 'visitors_page'].forEach(p => url.searchParams.delete(p));
       window.history.replaceState({}, '', url);
 
       // Keep the search form in sync
