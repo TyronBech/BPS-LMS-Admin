@@ -33,7 +33,7 @@ jobs:
       - name: Prepare files for deploy
         run: |
           # create a production .env if you want to upload one (not recommended)
-          # cp .env.example .env
+          cp .env.example .env
           php artisan key:generate --force || true
 
       - name: Deploy to FTP (Hostinger)
