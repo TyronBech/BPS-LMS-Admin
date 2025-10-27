@@ -1,4 +1,4 @@
-name: BPS LMS Admin Test Deployment
+name: BPS LMS Admin Site Test Deployment
 
 on:
   push:
