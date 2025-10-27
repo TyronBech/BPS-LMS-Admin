@@ -1,0 +1,47 @@
+name: Laravel CI/CD — FTP Deploy
+
+on:
+  push:
+    branches:
+      - host-testing   # change to your deployment branch
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3.12'
+          extensions: mbstring, bcmath, pcntl, xml
+          coverage: none
+
+      - name: Install Composer
+        run: composer install --no-progress --no-suggest --prefer-dist --no-interaction --optimize-autoloader
+
+      - name: Build assets (optional)
+        run: |
+          if [ -f package.json ]; then
+            npm install
+            npm run production || npm run build || true
+          fi
+
+      - name: Prepare files for deploy
+        run: |
+          # create a production .env if you want to upload one (not recommended)
+          # cp .env.example .env
+          php artisan key:generate --force || true
+
+      - name: Deploy to FTP (Hostinger)
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.0
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./            # folder to upload, change to ./public if you only want public
+          server-dir: ${{ secrets.FTP_REMOTE_DIR }}
+          # optionally set: protocol: 'ftps' and port
