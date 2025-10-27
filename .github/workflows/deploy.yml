@@ -1,47 +1,40 @@
-name: Laravel CI/CD — FTP Deploy
+name: BPS LMS Admin Test Deployment
 
 on:
   push:
-    branches:
-      - host-testing   # change to your deployment branch
+    branches: [ "host-testing" ]
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v4
 
-      - name: Set up PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3.12'
-          extensions: mbstring, bcmath, pcntl, xml
-          coverage: none
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.2'
 
-      - name: Install Composer
-        run: composer install --no-dev --optimize-autoloader --no-scripts
+    - name: Install Composer dependencies
+      run: composer install --no-dev --optimize-autoloader --no-scripts
 
-      - name: Build assets (optional)
-        run: |
-          if [ -f package.json ]; then
-            npm install
-            npm run production || npm run build || true
-          fi
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
 
-      - name: Prepare files for deploy
-        run: |
-          # create a production .env if you want to upload one (not recommended)
-          cp .env.example .env
-          php artisan key:generate --force || true
+    - name: Install NPM dependencies and build assets
+      run: |
+        npm install
+        npm run build
 
-      - name: Deploy to FTP (Hostinger)
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.0
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./            # folder to upload, change to ./public if you only want public
-          server-dir: ${{ secrets.FTP_REMOTE_DIR }}
-          # optionally set: protocol: 'ftps' and port
+    - name: Deploy via FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.0
+      with:
+        server: ${{ secrets.FTP_HOST }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./
+        server-dir: /public_html/
