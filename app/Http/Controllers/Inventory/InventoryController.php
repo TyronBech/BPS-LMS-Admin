@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers\Inventory;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Book;
@@ -10,49 +11,105 @@ use Illuminate\Support\Facades\DB;
 
 class InventoryController extends Controller
 {
-    public function index(){
-        return view('inventory.inventory');
+    public function index()
+    {
+        $conditions = $this->extract_enums('bk_books', 'condition_status');
+        $remarks = $this->extract_enums('bk_books', 'remarks');
+        $inventory = Inventory::with('book')
+            ->where('checked_at', null)
+            ->orderBy('created_at', 'desc')
+            ->get();
+        return view('inventory.inventory', compact('inventory', 'conditions', 'remarks'));
     }
     public function search(Request $request)
     {
         $data       = null;
-        $conditions = $this->extract_enums('books', 'condition_status');
         $validator  = Validator::make($request->all(), [
             'barcode' => 'required',
         ]);
         if ($validator->fails()) {
-            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+            return redirect()->back()->with('toast-warning', 'Please enter a barcode');
         }
-        try{
-            $barcode = $request->input('barcode');
-            $data = Book::where('barcode', $barcode)->first();
-        } catch (\Illuminate\Database\QueryException $e){
-            return redirect()->route('inventory.inventory')->with('toast-error', $e->getMessage());
-        }
-        return response()->json(['data' => $data, 'conditions' => $conditions]);
-    }
-    public function update(Request $request)
-    {
-        $condition = $request->input('condition');
         DB::beginTransaction();
-        try{
-            foreach($condition as $key => $value){
-                $book = Book::where('accession', $key)->first();
-                Inventory::create([
-                    'book_id'             => $book->id,
-                    'checked_at'          => now(),
-                ]);
-                $book->update([
-                    'remarks'           => "On Shelf",
-                    'condition_status'  => $value,
-                ]);
+        try {
+            $barcode = $request->input('barcode');
+            $data = Book::where('accession', $barcode)->first();
+            if (!$data) {
+                DB::rollBack();
+                return redirect()->back()->with('toast-warning', 'Book not found!');
             }
-        } catch(\Illuminate\Database\QueryException $e){
+            $isInInventory = Inventory::where('book_id', $data->id)->where('checked_at', null)->first();
+            if ($isInInventory) {
+                DB::rollBack();
+                return redirect()->back()->with('toast-warning', 'Book already in inventory!');
+            }
+            Inventory::create([
+                'book_id'             => $data->id,
+                'checked_at'          => null,
+            ]);
+        } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         DB::commit();
-        return redirect()->route('inventory.inventory')->with('toast-success', 'Inventory updated successfully!');
+        return redirect()->route('inventory.dashboard')->with('toast-success', 'Book added to inventory successfully!');
+    }
+    public function update(Request $request)
+    {
+        $condition = $request->input('condition');
+        $remarks = $request->input('remarks');
+        if (!$condition) {
+            return redirect()->back()->with('toast-warning', 'Please enter a book');
+        }
+        DB::beginTransaction();
+        try {
+            foreach ($condition as $key => $value) {
+                $book = Book::where('accession', $key)->first();
+                if (!$book) {
+                    DB::rollBack();
+                    return redirect()->back()->with('toast-warning', 'Book not found!');
+                }
+                $inventory = Inventory::where('book_id', $book->id)->where('checked_at', null)->first();
+                if (!$inventory) {
+                    return redirect()->back()->with('toast-warning', 'No inventory found for this book!');
+                }
+                $inventory->update([
+                    'checked_at' => now(),
+                ]);
+                $book->update([
+                    'remarks'           => $remarks[$key],
+                    'condition_status'  => $value,
+                ]);
+            }
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
+            return redirect()->back()->with('toast-error', 'Something went wrong!');
+        }
+        DB::commit();
+        return redirect()->route('inventory.dashboard')->with('toast-success', 'Inventory updated successfully!');
+    }
+    public function destroy(Request $request)
+    {
+        $accession = $request->input('accession');
+        if (!$accession) {
+            return redirect()->back()->with('toast-warning', 'Please select an inventory to delete');
+        }
+        DB::beginTransaction();
+        try {
+            $inventory = Inventory::with('book')->whereHas('book', function ($query) use ($accession) {
+                $query->where('accession', $accession);
+            })->where('checked_at', null)->first();
+            if (!$inventory) {
+                DB::rollBack();
+                return redirect()->back()->with('toast-warning', 'No inventory found for this book!');
+            }
+            $inventory->delete();
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
+            return redirect()->back()->with('toast-error', 'Something went wrong!');
+        }
+        DB::commit();
+        return redirect()->route('inventory.dashboard')->with('toast-success', 'Inventory deleted successfully!');
     }
     private function extract_enums($table, $columnName)
     {

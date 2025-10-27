@@ -1,45 +1,54 @@
-<div class="container flex flex-col overflow-x-auto border-collapse border-2 border-slate-900 mt-2 mb-4 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600">
-  <h2 class="text-center mb-4 mt-4 font-semibold text-2xl">Book Circulation Table</h2>
-  <table class="table-fixed m-4 bg-white dark:bg-gray-800">
-    <thead id="today-header" class="bg-blue-400 font-bold text-slate-200">
-      <th>Accession</th>
-      <th>Call Number</th>
-      <th>Barcode</th>
-      <th>Title</th>
-      <th>Availability</th>
-      <th>Condition</th>
-    </thead>
-    <tbody id="students-activity" class="text-center">
-      @forelse($data as $item)
-        <tr>
-          <td class="pb-1">{{ $item->accession }}</td>
-          <td class="pb-1">{{ $item->call_number }}</td>
-          <td class="pb-1">{{ $item->barcode }}</td>
-          <td class="pb-1">{{ $item->title }}</td>
-          @if($item->availability_status == 'Available')
-            <td class="pb-1 text-green-500 dark:text-green-400">{{ $item->availability_status }}</td>
-          @elseif($item->availability_status == 'Borrowed')
-            <td class="pb-1 text-red-500 dark:text-red-400">{{ $item->availability_status }}</td>
-          @elseif($item->availability_status == 'Reserved')
-            <td class="pb-1 text-yellow-500 dark:text-yellow-400">{{ $item->availability_status }}</td>
-          @elseif($item->availability_status == 'In Use')
-            <td class="pb-1 text-blue-500 dark:text-blue-400">{{ $item->availability_status }}</td>
-          @endif
-          @if($item->condition_status == 'New')
-            <td class="pb-1 text-blue-500 dark:text-blue-400">{{ $item->condition_status }}</td>
-          @elseif($item->condition_status == 'Good')
-            <td class="pb-1 text-green-500 dark:text-green-400">{{ $item->condition_status }}</td>
-          @elseif($item->condition_status == 'Fair')
-            <td class="pb-1 text-yellow-500 dark:text-yellow-400">{{ $item->condition_status }}</td>
-          @elseif($item->condition_status == 'Poor')
-            <td class="pb-1 text-red-500 dark:text-red-400">{{ $item->condition_status }}</td>
-          @endif
-        </tr>
-      @empty
-        <tr>
-          <td colspan="6">No data found.</td>
-        </tr>
-      @endforelse
-    </tbody>
-  </table>
+<div id="tabular" class="container mx-auto mt-2 mb-4">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+    <div class="p-4">
+      <h2 class="text-center mb-4 font-semibold text-2xl dark:text-white">Accession List Table</h2>
+      <form method="GET" class="flex items-center">
+        <label for="perPage" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Show</label>
+        <input type="hidden" name="barcode" value="{{ request('barcode') }}">
+        <input type="hidden" name="title" value="{{ request('title') }}">
+        <input type="hidden" name="availability" value="{{ request('availability') }}">
+        <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+          <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+          <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+          <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+        </select>
+        <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">entries per page</span>
+      </form>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <tr>
+            <th scope="col" class="px-6 py-3">Accession</th>
+            <th scope="col" class="px-6 py-3">Call Number</th>
+            <th scope="col" class="px-6 py-3">Title</th>
+            <th scope="col" class="px-6 py-3">Category</th>
+            <th scope="col" class="px-6 py-3">Availability</th>
+            <th scope="col" class="px-6 py-3">Condition</th>
+          </tr>
+        </thead>
+        <tbody>
+          @forelse($data as $item)
+          <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+            <td class="px-6 py-4">{{ $item->accession }}</td>
+            <td class="px-6 py-4">{{ $item->call_number }}</td>
+            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+              {{ $item->title }}
+            </th>
+            <td class="px-6 py-4">{{ $item->category->name }}</td>
+            <td class="px-6 py-4">{{ $item->availability_status }}</td>
+            <td class="px-6 py-4">{{ $item->condition_status }}</td>
+          </tr>
+          @empty
+          <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+            <td colspan="6" class="px-6 py-4 text-center">No data found.</td>
+          </tr>
+          @endforelse
+        </tbody>
+      </table>
+    </div>
+    <div class="p-4">
+      {{ $data->withQueryString()->fragment('tabular')->links() }}
+    </div>
+  </div>
 </div>

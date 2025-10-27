@@ -11,12 +11,14 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Book extends Model
 {
     use HasFactory, SoftDeletes;
+    protected $table = 'bk_books';
     protected $primaryKey = 'id';
     protected $fillable = [
         'accession',
         'call_number',
         'title',
         'author',
+        'description',
         'edition',
         'place_of_publication',
         'publisher',
@@ -26,9 +28,14 @@ class Book extends Model
         'cover_image',
         'digital_copy_url',
         'barcode',
+        'book_type',
         'availability_status',
         'condition_status',
     ];
+    public static function getTableName()
+    {
+        return (new self())->getTable();
+    }
     public function category() : BelongsTo
     {
         return $this->belongsTo(Category::class, 'category_id', 'id');

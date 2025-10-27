@@ -10,3 +10,65 @@
   font-style: normal;
   font-variation-settings: "wdth" 100;
 }
+
+/* overlay (default = light mode) */
+.loader-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(15, 23, 42, 0.08); /* light overlay */
+  backdrop-filter: blur(2px);
+  z-index: 9999;
+}
+
+.loader-overlay.hidden { display: none; }
+
+/* default dot color (light mode) */
+:root { --loader-dot-default: #20246c; }
+
+/* loader — uses CSS variable for color */
+.loader {
+  width: 60px;
+  aspect-ratio: 1;
+  --dot-color: var(--loader-dot-default);
+  --_c: no-repeat radial-gradient(farthest-side, var(--dot-color) 92%, #0000);
+  background:
+    var(--_c) top,
+    var(--_c) left,
+    var(--_c) right,
+    var(--_c) bottom;
+  background-size: 12px 12px;
+  animation: l7 1s infinite;
+  /* smooth-ish transitions when color changes */
+  transition: background 200ms ease, --dot-color 200ms ease;
+}
+
+/* Flowbite / manual dark class (cover both html and body) */
+html.dark .loader,
+body.dark .loader {
+  --dot-color: #ffffff;
+}
+html.dark .loader-overlay,
+body.dark .loader-overlay {
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+/* Browser/OS dark mode detection */
+@media (prefers-color-scheme: dark) {
+  .loader {
+    --dot-color: #ffffff;
+  }
+  .loader-overlay {
+    background-color: rgba(0, 0, 0, 0.5);
+  }
+}
+
+/* optional: make sure light preference forces the blue color */
+@media (prefers-color-scheme: light) {
+  .loader { --dot-color: #20246c; }
+  .loader-overlay { background-color: rgba(15, 23, 42, 0.08); }
+}
+
+@keyframes l7 { to { transform: rotate(.5turn); } }

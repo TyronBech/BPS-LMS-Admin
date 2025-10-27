@@ -4,11 +4,13 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Category extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes;
+    protected $table = 'bk_categories';
     protected $fillable = [
         'legend',
         'name',
@@ -16,6 +18,7 @@ class Category extends Model
         'discarded',
         'newly_acquired',
         'present_inventory',
+        'borrow_duration_days',
 
     ];
 

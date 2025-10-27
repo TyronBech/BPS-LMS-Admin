@@ -3,133 +3,269 @@
 namespace App\Http\Controllers\Report;
 
 use App\Http\Controllers\Controller;
+use App\Models\Book;
 use Illuminate\Http\Request;
 use App\Models\Transaction;
 use DateTime;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
-use Barryvdh\DomPDF\Facade\Pdf;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
-use Symfony\Component\HttpFoundation\StreamedResponse;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class TransactionController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $fromInputDate  = "";
-        $toInputDate    = "";
-        $inputName      = "";
-        $inputLastName  = "";
-        $data           = Transaction::with('books', 'users')
-            ->orderBy(DB::raw('DATE(date_borrowed)'), 'desc')
-            ->orderBy(DB::raw('TIME(date_borrowed)'), 'desc')
-            ->get();
-        return view('report.transactions.transactions', compact('data', 'inputName', 'inputLastName', 'fromInputDate', 'toInputDate'));
-    }
-    public function test()
-    {
-        $data           = Transaction::with('books', 'users')
-            ->orderBy(DB::raw('DATE(date_borrowed)'), 'desc')
-            ->orderBy(DB::raw('TIME(date_borrowed)'), 'desc')
-            ->get();
-        return view('pdf.transaction-pdf-report-format', compact('data'));
+        $fromInputDate  = $request->input('start', '');
+        $toInputDate    = $request->input('end', '');
+        $search         = $request->input('search', '');
+        $perPage        = $request->input('perPage', 10);
+        $type           = $request->input('type', 'All');
+        $availability   = $this->extract_enums((new Transaction())->getTable(), 'transaction_type');
+        $data           = $this->generateData($request, false);
+        return view('report.transactions.transactions', compact('data', 'search', 'fromInputDate', 'toInputDate', 'type', 'perPage', 'availability'));
     }
     public function search(Request $request)
     {
-        $inputName      = $request->input('name');
-        $fromInputDate  = $request->input('start');
-        $toInputDate    = $request->input('end');
+        $search         = $request->input('search', '');
+        $fromInputDate  = $request->input('start', '');
+        $toInputDate    = $request->input('end', '');
+        $type           = $request->input('type', 'All');
+        $availability   = $this->extract_enums((new Transaction())->getTable(), 'transaction_type');
+        $perPage        = $request->input('perPage', 10);
         $validator = Validator::make($request->all(), [
-            'start'         => 'sometimes',
-            'end'           => 'sometimes',
-            'last-name'     => 'sometimes',
-            'first-name'    => 'sometimes',
+            'start'         => 'nullable|date',
+            'end'           => 'nullable|date',
+            'type'          => 'nullable|in:' . implode(',', $this->extract_enums((new Transaction())->getTable(), 'transaction_type')),
+            'perPage'       => 'nullable|numeric|in:10,25,50'
         ]);
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
         if ($request->input('submit') == 'pdf') {
-            $data = $this->generateData($request);
-            $this->generatePDF($data);
+            $data = $this->generateData($request, true);
+            $this->generatePDF($data, $type);
             return redirect()->route('report.transaction')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {
-            // $data = $this->generateData($request);
-            // $this->exportExcel($data);
+            $data = $this->generateData($request, true);
+            $this->exportExcel($data, $type);
             return redirect()->route('report.transaction')->with('toast-success', 'Successfully exported to Excel');
         }
-        $data = $this->generateData($request);
-        return view('report.transactions.transactions', compact('data', 'inputName', 'fromInputDate', 'toInputDate'));
+        $data = $this->generateData($request, false);
+        return view('report.transactions.transactions', compact('data', 'search', 'fromInputDate', 'toInputDate', 'type', 'perPage', 'availability'));
     }
-    private function generatePDF($data)
+    private function generatePDF($data, $type)
     {
-        $chunk      = $data->chunk(25);
-        $arrayPdf   = array('data' => $chunk);
-        $pdf        = Pdf::loadView('pdf.transaction-pdf-report-format', $arrayPdf);
-        $pdf->download('transactions-report_' . date('Y-m-d') . '.pdf');
+        $items = [
+            'title'         => 'Book Circulation Report',
+            'school'        => "Bicutan Parochial School, Inc.",
+            'type'          => $type,
+            'logo'          => base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
+            'address'       => "Manuel L. Quezon St., Lower Bicutan, Taguig City",
+            'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
+            'date'          => date('F j, Y'),
+            'data'          => $data,
+            'totalCount'    => $data->count(),
+        ];
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isPhpEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml(view('pdf.transaction-pdf-report', $items));
+        $dompdf->setPaper('legal', 'landscape');
+        $dompdf->render();
+        $dompdf->stream('transaction-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
+        exit;
     }
-    private function exportExcel($data)
+    private function exportExcel($data, $type)
     {
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
+        $spreadsheet    = new Spreadsheet();
+        $logo           = new Drawing();
+        $sheet          = $spreadsheet->getActiveSheet();
+        $cells1          = null;
+        $cells2          = null;
 
-        // Set column headers
-        $sheet->setCellValue('A1', 'Log ID');
-        $sheet->setCellValue('B1', 'RFID');
-        $sheet->setCellValue('C1', 'Name');
-        $sheet->setCellValue('D1', 'Date');
-        $sheet->setCellValue('E1', 'Time');
-        $sheet->setCellValue('F1', 'Compute Use');
-        $sheet->setCellValue('G1', 'Action');
+        $logo->setName('BPS Logo');
+        $logo->setDescription('BPS Logo');
+        $logo->setPath(public_path('img/BPSLogoFull.png'));
+        $logo->setHeight(80);
+        $logo->setCoordinates('B1');
+        $logo->setOffsetX(300);
+        $logo->setOffsetY(5);
+        $logo->setWorksheet($sheet);
 
-        // Fill data rows
-        $row = 2;
+        $sheet->setTitle('Book Circulation Report');
+        $sheet->setCellValue('A7', 'Report Generated By: ' . Auth::user()->first_name . ' ' . Auth::user()->last_name);
+        $sheet->setCellValue('A8', 'Report Generated On: ' . date('F j, Y'));
+        $sheet->setCellValue('A10', 'Accession');
+        $sheet->setCellValue('B10', 'Title');
+        $sheet->setCellValue('C10', 'Name');
+        $sheet->getColumnDimension('A')->setWidth(20);
+        $sheet->getColumnDimension('B')->setWidth(60);
+        $sheet->getColumnDimension('C')->setWidth(30);
+        $sheet->getColumnDimension('D')->setWidth(20);
+        $sheet->getColumnDimension('E')->setWidth(20);
+        $sheet->getColumnDimension('F')->setWidth(20);
+        $sheet->getColumnDimension('G')->setWidth(20);
+        if ($type && $type == 'All') {
+            $cells1 = 'A7:J8';
+            $cells2 = 'A10:J10';
+            $sheet->getColumnDimension('H')->setWidth(20);
+            $sheet->getColumnDimension('I')->setWidth(20);
+            $sheet->getColumnDimension('J')->setWidth(20);
+            $sheet->mergeCells('A7:J7');
+            $sheet->mergeCells('A8:J8');
+            $sheet->setCellValue('D10', 'Reserved');
+            $sheet->setCellValue('E10', 'Pickup Deadline');
+            $sheet->setCellValue('F10', 'Borrowed');
+            $sheet->setCellValue('G10', 'Due');
+            $sheet->setCellValue('H10', 'Returned');
+            $sheet->setCellValue('I10', 'Transaction Type');
+            $sheet->setCellValue('J10', 'Status');
+        } else if ($type && $type == 'Borrowed') {
+            $cells1 = 'A7:H8';
+            $cells2 = 'A10:H10';
+            $sheet->getColumnDimension('H')->setWidth(20);
+            $sheet->mergeCells('A7:H7');
+            $sheet->mergeCells('A8:H8');
+            $sheet->setCellValue('D10', 'Borrowed');
+            $sheet->setCellValue('E10', 'Due');
+            $sheet->setCellValue('F10', 'Returned');
+            $sheet->setCellValue('G10', 'Transaction Type');
+            $sheet->setCellValue('H10', 'Status');
+        } else if ($type && $type == 'Reserved') {
+            $cells1 = 'A7:G8';
+            $cells2 = 'A10:G10';
+            $sheet->mergeCells('A7:G7');
+            $sheet->mergeCells('A8:G8');
+            $sheet->setCellValue('D10', 'Reserved');
+            $sheet->setCellValue('E10', 'Pickup Deadline');
+            $sheet->setCellValue('F10', 'Transaction Type');
+            $sheet->setCellValue('G10', 'Status');
+        }
+        $sheet->getStyle($cells1)->getFont()->setBold(true);
+        $sheet->getStyle($cells1)->getFont()->setSize(10);
+        $sheet->getStyle($cells1)->getAlignment()->setHorizontal('left');
+        $sheet->getStyle($cells1)->getAlignment()->setVertical('left');
+        $sheet->getStyle($cells1)->getAlignment()->setWrapText(true);
+        $sheet->getStyle($cells2)->getFont()->setSize(12);
+        $sheet->getStyle($cells2)->getFont()->setBold(true);
+        $row = 11;
         foreach ($data as $item) {
-            $sheet->setCellValue('A' . $row, $item->id);
-            $sheet->setCellValue('B' . $row, $item->users->rfid);
-            $sheet->setCellValue('C' . $row, $item->users->last_name . ', ' . $item->users->first_name . ' ' . $item->users->middle_name);
-            $sheet->setCellValue('D' . $row, Carbon::parse($item->timestamp)->format('Y-m-d'));
-            $sheet->setCellValue('E' . $row, Carbon::parse($item->timestamp)->format('H:i:s'));
-            $sheet->setCellValue('F' . $row, $item->computer_use);
-            $sheet->setCellValue('G' . $row, $item->action);
+            if (!$item->book || !$item->user) {
+                continue; // Skip if book or user relationship is not loaded
+            }
+            $sheet->setCellValue('A' . $row, $item->book->accession);
+            $sheet->setCellValue('B' . $row, $item->book->title);
+            $sheet->setCellValue('C' . $row, $item->user->first_name . ' ' . $item->user->last_name);
+            if ($type && $type == 'All') {
+                $sheet->setCellValue('D' . $row, $item->reserved_date ? $item->reserved_date : 'Not Reserved');
+                $sheet->setCellValue('E' . $row, $item->pickup_deadline ? $item->pickup_deadline : 'Not Set');
+                $sheet->setCellValue('F' . $row, $item->date_borrowed ? $item->date_borrowed : 'Not Borrowed');
+                $sheet->setCellValue('G' . $row, $item->due_date ? $item->due_date : 'Not Set');
+                $sheet->setCellValue('H' . $row, $item->return_date ? $item->return_date : 'Not Returned');
+                $sheet->setCellValue('I' . $row, $item->transaction_type);
+                $sheet->setCellValue('J' . $row, $item->status);
+            } else if ($type && $type == 'Borrowed') {
+                $sheet->setCellValue('D' . $row, $item->date_borrowed ? $item->date_borrowed : 'Not Borrowed');
+                $sheet->setCellValue('E' . $row, $item->due_date ? $item->due_date : 'Not Set');
+                $sheet->setCellValue('F' . $row, $item->return_date ? $item->return_date : 'Not Returned');
+                $sheet->setCellValue('G' . $row, $item->transaction_type);
+                $sheet->setCellValue('H' . $row, $item->status);
+            } else if ($type && $type == 'Reserved') {
+                $sheet->setCellValue('D' . $row, $item->reserved_date ? $item->reserved_date : 'Not Reserved');
+                $sheet->setCellValue('E' . $row, $item->pickup_deadline ? $item->pickup_deadline : 'Not Set');
+                $sheet->setCellValue('F' . $row, $item->transaction_type);
+                $sheet->setCellValue('G' . $row, $item->status);
+            }
             $row++;
         }
-
-        // Generate and return as a downloadable file
-        return new StreamedResponse(function () use ($spreadsheet) {
-            $writer = new WriterXlsx($spreadsheet);
-            $writer->save('php://output');
-        }, 200, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="student-report_' . date('Y-m-d') . '.xlsx"',
-        ]);
+        $writer     = new WriterXlsx($spreadsheet);
+        $fileName = 'transaction-report ' . date('Y-m-d') . '.xlsx';
+        header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        header("Content-Disposition: attachment;filename=\"$fileName\"");
+        $writer->save("php://output");
+        exit;
     }
-    private function generateData(Request $request)
+    private function generateData(Request $request, bool $isExport = false)
     {
-        $fromInputDate  = $request->input('start');
-        $toInputDate    = $request->input('end');
-        $inputName      = strtolower($request->input('name'));
+        $fromInputDate  = $request->input('start', '');
+        $toInputDate    = $request->input('end', '');
+        $search         = strtolower($request->input('search', ''));
+        $type           = $request->input('type', 'All');
+        $perPage        = $request->input('perPage', 10);
 
-        $query = Transaction::with('books', 'users');
-        if (strlen($fromInputDate) > 0) {
-            $fromInputDate = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
-            $toInputDate = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
-            $query->whereBetween(DB::raw('DATE(date_borrowed)'), [$fromInputDate, $toInputDate]);
+        $query = Transaction::with('book', 'user')
+            ->whereHas('book')
+            ->whereHas('user');
+        if (!empty($fromInputDate) && !empty($toInputDate)) {
+            $start = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
+            $end = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
+            $query->whereBetween(DB::raw('DATE(date_borrowed)'), [$start, $end]);
         }
 
-        if (strlen($inputName) > 0) {
-            $query->whereHas('users', function ($q) use ($inputName) {
-                $q->where('first_name', 'like', '%' . $inputName . '%');
-                $q->orWhere('middle_name', 'like', '%' . $inputName . '%');
-                $q->orWhere('last_name', 'like', '%' . $inputName . '%');
-            })->orWhereHas('books', function ($q) use ($inputName) {
-                $q->where('title', 'like', '%' . $inputName . '%')
-                    ->orWhere('accession', 'like', '%' . $inputName . '%');
-            })->orWhere('transaction_type', 'like', '%' . $inputName . '%');
+        if (strlen($search) > 0) {
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where('first_name', 'like', '%' . $search . '%');
+                $q->orWhere('middle_name', 'like', '%' . $search . '%');
+                $q->orWhere('last_name', 'like', '%' . $search . '%');
+                $q->orWhere(DB::raw('lower(concat(first_name, " ", middle_name, " ", last_name))'), 'like', '%' . $search . '%');
+                $q->orWhere(DB::raw('lower(concat(middle_name, " ", last_name, ", ", first_name))'), 'like', '%' . $search . '%');
+                $q->orWhere(DB::raw('lower(concat(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $search . '%');
+                $q->orWhere(DB::raw('lower(concat(last_name, ", ", first_name))'), 'like', '%' . $search . '%');
+                $q->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $search . '%');
+            })->orWhereHas('book', function ($q) use ($search) {
+                $q->where('title', 'like', '%' . $search . '%')
+                    ->orWhere('accession', 'like', '%' . $search . '%');
+            })->orWhere('transaction_type', 'like', '%' . $search . '%');
         }
-        $data = $query->orderBy(DB::raw('DATE(date_borrowed)'), 'asc')
-            ->get();
+
+        if ($type && $type !== 'All') {
+            $query->orWhere('transaction_type', $type);
+        }
+        if ($isExport) {
+            $data = $query->orderBy(DB::raw('DATE(date_borrowed)'), 'desc')->get();
+            $minDate = $data->min(fn($item) => \Carbon\Carbon::parse($item->created_at));
+            $maxDate = $data->max(fn($item) => \Carbon\Carbon::parse($item->created_at));
+            if ($minDate && $maxDate) {
+                $data->reporting_period = $minDate->format('F j, Y') . ' to ' . $maxDate->format('F j, Y');
+            } else {
+                $data->reporting_period = 'N/A';
+            }
+        } else {
+            $data = $query->orderBy(DB::raw('DATE(date_borrowed)'), 'desc')
+                ->paginate($request->input('perPage', 10))
+                ->appends([
+                    'perPage' => $perPage,
+                    'start' => $fromInputDate,
+                    'end' => $toInputDate,
+                    'search' => $search,
+                    'type' => $type,
+                ]);
+        }
         return $data;
+    }
+    private function extract_enums($table, $columnName)
+    {
+        $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";
+        $column = DB::select($query);
+        if (empty($column)) {
+            return ['N/A'];
+        }
+        $type = $column[0]->Type;
+        // Extract enum values
+        preg_match('/enum\((.*)\)$/', $type, $matches);
+        $enumValues = [];
+
+        if (isset($matches[1])) {
+            $enumValues = str_getcsv($matches[1], ',', "'");
+        }
+        $enumValues = array_merge(['All'], $enumValues);
+        return $enumValues;
     }
 }

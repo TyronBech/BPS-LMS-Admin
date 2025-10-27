@@ -1,21 +1,67 @@
-<form action="{{ route('inventory.update') }}" method="POST" class="container flex flex-col overflow-x-auto border-collapse border-2 border-slate-900 mt-12 mb-4 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600">
-  @csrf
-  @method('PATCH')
-  <h2 class="text-center mb-4 mt-4 font-semibold text-2xl">Books Inventory</h2>
-  <table id="inventory-record" class="table-fixed m-4 bg-white dark:bg-gray-800">
-    <thead id="today-header" class="bg-blue-400 font-bold text-slate-200">
-      <th>Accession</th>
-      <th>Call Number</th>
-      <th>Barcode</th>
-      <th>Title</th>
-      <th>Author</th>
-      <th>Condition</th>
-    </thead>
-    <tbody class="text-center">
-      <tr>
-        <td colspan="8" class="text-center py-1.5" id="no-data">No data found.</td>
-      </tr>
-    </tbody>
-  </table>
-  <button type="submit" class="text-white max-w-36 self-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 me-2 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Save</button>
-</form>
+<div class="container mx-auto mt-12 mb-4">
+  <form action="{{ route('inventory.update') }}" method="POST" class="flex flex-col rounded-lg bg-white dark:bg-gray-800 shadow-sm">
+    @csrf
+    @method('PATCH')
+    <h2 class="text-center mb-4 mt-4 font-semibold text-2xl dark:text-white">Books Inventory</h2>
+    <div class="overflow-x-auto">
+      <table id="inventory-record" class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 hidden md:table-header-group">
+          <tr class="text-center">
+            <th scope="col" class="px-6 py-3">Accession</th>
+            <th scope="col" class="px-6 py-3">Call Number</th>
+            <th scope="col" class="px-6 py-3">Title</th>
+            <th scope="col" class="px-6 py-3">Author</th>
+            <th scope="col" class="px-6 py-3">Remarks</th>
+            <th scope="col" class="px-6 py-3">Condition</th>
+            <th scope="col" class="px-6 py-3">Action</th>
+          </tr>
+        </thead>
+        <tbody class="text-center">
+          @forelse($inventory as $item)
+          <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 block md:table-row mb-4 md:mb-0">
+            <td class="px-6 py-4 block md:table-cell text-right md:text-center"><span class="float-left font-bold md:hidden">Accession</span>{{ $item->book->accession }}</td>
+            <td class="px-6 py-4 block md:table-cell text-right md:text-center"><span class="float-left font-bold md:hidden">Call Number</span>{{ $item->book->call_number }}</td>
+            <td class="px-6 py-4 block md:table-cell text-right md:text-center"><span class="float-left font-bold md:hidden">Title</span>{{ $item->book->title }}</td>
+            <td class="px-6 py-4 block md:table-cell text-right md:text-center"><span class="float-left font-bold md:hidden">Author</span>{{ $item->book->author }}</td>
+            <td class="px-6 py-4 block md:table-cell text-right md:text-center">
+              <span class="float-left font-bold md:hidden">Remarks</span>
+              <select name="remarks[{{ $item->book->accession }}]" id="remarks" class="w-1/2 md:w-full p-2 border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                @foreach($remarks as $remark)
+                @if($remark == $item->book->remarks)
+                <option value="{{ $remark }}" selected>{{ $remark }}</option>
+                @else
+                <option value="{{ $remark }}">{{ $remark }}</option>
+                @endif
+                @endforeach
+              </select>
+            </td>
+            <td class="px-6 py-4 block md:table-cell text-right md:text-center">
+              <span class="float-left font-bold md:hidden">Condition</span>
+              <select name="condition[{{ $item->book->accession }}]" id="condition" class="w-1/2 md:w-full p-2 border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
+                @foreach($conditions as $condition)
+                @if($condition == $item->book->condition_status)
+                <option value="{{ $condition }}" selected>{{ $condition }}</option>
+                @else
+                <option value="{{ $condition }}">{{ $condition }}</option>
+                @endif
+                @endforeach
+              </select>
+            </td>
+            <td class="px-6 py-4 block md:table-cell text-right md:text-center">
+              <span class="float-left font-bold md:hidden">Action</span>
+              <button type="button" data-modal-target="popup-modal" data-modal-toggle="popup-modal" value="{{ $item->book->accession }}" class="deleteBtn focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">Delete</button>
+            </td>
+          </tr>
+          @empty
+          <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+            <td colspan="8" class="text-center py-4" id="no-data">No data found.</td>
+          </tr>
+          @endforelse
+        </tbody>
+      </table>
+    </div>
+    @if(count($inventory) > 0)
+    <button type="submit" class="text-white max-w-36 self-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 my-4 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Save</button>
+    @endif
+  </form>
+</div>

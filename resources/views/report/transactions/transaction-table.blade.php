@@ -1,37 +1,63 @@
-<div class="container flex flex-col border-collapse border-2 overflow-x-auto border-slate-900 mt-2 mb-4 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600">
-  <h2 class="text-center mb-4 mt-4 font-semibold text-2xl">Transaction Table</h2>
-  <table class="table-fixed m-4 bg-white dark:bg-gray-800">
-    <thead id="today-header" class="bg-blue-400 font-bold text-slate-200">
-      <th>Accession</th>
-      <th>Title</th>
-      <th>Name</th>
-      <th>Borrowed</th>
-      <th>Due</th>
-      <th>Returned</th>
-      <th>Status</th>
-    </thead>
-    <tbody id="students-activity" class="text-center">
-      @forelse($data as $item)
-      @if($item->users && $item->books)
-        <tr>
-          <td class="pb-1">{{ $item->books->accession }}</td>
-          <td class="pb-1">{{ $item->books->title }}</td>
-          <td class="pb-1">{{ $item->users->last_name }}, {{ $item->users->first_name }} {{ $item->users->middle_name }}</td>
-          <td class="pb-1">{{ $item->date_borrowed }}</td>
-          <td class="pb-1">{{ $item->due_date }}</td>
-          <td class="pb-1">{{ $item->return_date ? $item->return_date : '-' }}</td>
-          @if($item->transaction_type == 'Borrow')
-            <td class="text-red-600 pb-1 dark:text-red-400">{{ $item->transaction_type }}</td>
-          @elseif($item->transaction_type == 'Return')
-            <td class="text-green-600 pb-1 dark:text-green-400">{{ $item->transaction_type }}</td> 
-          @endif
-        </tr>
-      @endif
-      @empty
-        <tr>
-          <td colspan="8">No data found.</td>
-        </tr>
-      @endforelse
-    </tbody>
-  </table>
+<div id="tabular" class="container mx-auto mt-2 mb-4">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+    <div class="p-4">
+      <h2 class="text-center mb-4 font-semibold text-2xl dark:text-white">Transaction Table</h2>
+      <form method="GET" class="flex items-center">
+        <label for="perPage" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Show</label>
+        <input type="hidden" name="start" value="{{ request('start') }}">
+        <input type="hidden" name="end" value="{{ request('end') }}">
+        <input type="hidden" name="search" value="{{ request('search') }}">
+        <input type="hidden" name="type" value="{{ request('type') }}">
+        <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+          <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+          <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+          <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+        </select>
+        <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">entries per page</span>
+      </form>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+        <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+          <tr>
+            <th scope="col" class="px-6 py-3">Accession</th>
+            <th scope="col" class="px-6 py-3">Title</th>
+            <th scope="col" class="px-6 py-3 whitespace-nowrap">Name</th>
+            <th scope="col" class="px-6 py-3 whitespace-nowrap">Reserved Date</th>
+            <th scope="col" class="px-6 py-3 whitespace-nowrap">Pickup Deadline</th>
+            <th scope="col" class="px-6 py-3 whitespace-nowrap">Borrowed</th>
+            <th scope="col" class="px-6 py-3 whitespace-nowrap">Due</th>
+            <th scope="col" class="px-6 py-3 whitespace-nowrap">Returned</th>
+            <th scope="col" class="px-6 py-3">Transaction Type</th>
+            <th scope="col" class="px-6 py-3">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @forelse($data as $item)
+          <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+            <td class="px-6 py-4">{{ $item->book->accession }}</td>
+            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+              {{ $item->book->title }}
+            </th>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->reserved_date ?? '-' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->pickup_deadline ?? '-' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->date_borrowed ?? '-' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->due_date ?? '-' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->return_date ?? '-' }}</td>
+            <td class="px-6 py-4">{{ $item->transaction_type }}</td>
+            <td class="px-6 py-4">{{ $item->status }}</td>
+          </tr>
+          @empty
+          <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+            <td colspan="10" class="px-6 py-4 text-center">No data found.</td>
+          </tr>
+          @endforelse
+        </tbody>
+      </table>
+    </div>
+    <div class="p-4">
+      {{ $data->withQueryString()->fragment('tabular')->links() }}
+    </div>
+  </div>
 </div>

@@ -3,6 +3,8 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use phpDocumentor\Reflection\Types\Nullable;
+use App\Models\User;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Log>
@@ -17,10 +19,11 @@ class LogFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id'       => $this->faker->randomElement([1, 2, 4]),
+            'user_id'       => $this->faker->randomElement(User::pluck('id')->toArray()),
             'computer_use'  => $this->faker->randomElement(['Yes', 'No']),
-            'timestamp'     => $this->faker->dateTimeThisYear(),
-            'action'        => $this->faker->randomElement(['Time in', 'Time out']),
+            'time_in'       => $this->faker->dateTimeBetween('-7 months', 'now'),
+            'time_out'      => $this->faker->optional()->dateTimeBetween('now', '+1 month'),
+            'remarks'       => null,
         ];
     }
 }

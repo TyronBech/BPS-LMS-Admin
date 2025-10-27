@@ -1,36 +1,52 @@
-<div class="container flex flex-col border-collapse border-2 overflow-x-auto border-slate-900 mt-2 mb-4 rounded-lg bg-white dark:bg-gray-800 dark:border-gray-600">
-  <h2 class="text-center mb-4 mt-4 font-semibold text-2xl">Report Table for Materials</h2>
-  <table class="table-fixed m-4 bg-white dark:bg-gray-800">
-    <thead id="today-header" class="bg-blue-400 text-center font-bold text-slate-200">
-      <th>Legend</th>
-      <th>Description</th>
-      <th>Previous Inventory</th>
-      <th>Newly Acquired</th>
-      <th>Discarded</th>
-      <th>Present Inventory</th>
-    </thead>
-    <tbody id="students-activity">
-      @forelse($data as $item)
-        <tr class="text-center">
-          <td class="pb-1">{{ $item->legend }}</td>
-          <td class="pb-1 text-center border-r border-slate-900 dark:border-gray-600">{{ $item->name }}</td>
-          <td class="pb-1 text-center">{{ $item->previous_inventory }}</td>
-          <td class="pb-1 text-center">{{ $item->newly_acquired }}</td>
-          <td class="pb-1 text-center">{{ $item->discarded }}</td>
-          <td class="pb-1 text-center">{{ $item->present_inventory }}</td>
+@use('App\Enum\PermissionsEnum')
+<div class="bg-white dark:bg-gray-800 rounded-lg shadow mt-2 mb-4">
+  <div class="p-4">
+    <h2 class="text-center mb-4 font-semibold text-2xl dark:text-white">Report Table for Materials</h2>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+      <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+        <tr>
+          <th scope="col" class="px-6 py-3">Legend</th>
+          <th scope="col" class="px-6 py-3">Description</th>
+          <th scope="col" class="px-6 py-3">Previous Inventory</th>
+          <th scope="col" class="px-6 py-3">Newly Acquired</th>
+          <th scope="col" class="px-6 py-3">Discarded</th>
+          <th scope="col" class="px-6 py-3">Present Inventory</th>
+        </tr>
+      </thead>
+      <tbody>
+        @forelse($data as $item)
+        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+          <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ $item->legend }}</th>
+          <td class="px-6 py-4">{{ $item->name }}</td>
+          <td class="px-6 py-4">{{ $item->previous_inventory }}</td>
+          <td class="px-6 py-4">{{ $item->newly_acquired }}</td>
+          <td class="px-6 py-4">{{ $item->discarded }}</td>
+          <td class="px-6 py-4">{{ $item->present_inventory }}</td>
         </tr>
         @empty
-        <tr>
-          <td colspan="8" class="text-center">No data found.</td>
+        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
+          <td colspan="6" class="px-6 py-4 text-center">No data found.</td>
         </tr>
         @endforelse
-        <tr class="border-t border-slate-900 dark:border-gray-600">
-          <td class="pb-1 text-right border-r pr-3 border-slate-900 dark:border-gray-600" colspan="2">Total:</td>
-          <td class="pb-1 text-center">{{ $data->sum('previous_inventory') }}</td>
-          <td class="pb-1 text-center">{{ $data->sum('newly_acquired') }}</td>
-          <td class="pb-1 text-center">{{ $data->sum('discarded') }}</td>
-          <td class="pb-1 text-center">{{ $data->sum('present_inventory') }}</td>
+        <tr class="bg-gray-50 font-bold dark:bg-gray-700 dark:text-gray-300">
+          <td class="px-6 py-4 text-right" colspan="2">Total:</td>
+          <td class="px-6 py-4">{{ $data->sum('previous_inventory') }}</td>
+          <td class="px-6 py-4">{{ $data->sum('newly_acquired') }}</td>
+          <td class="px-6 py-4">{{ $data->sum('discarded') }}</td>
+          <td class="px-6 py-4">{{ $data->sum('present_inventory') }}</td>
         </tr>
-    </tbody>
-  </table>
+      </tbody>
+    </table>
+  </div>
 </div>
+<form action="{{ route('report.summary-export') }}" method="POST">
+  @csrf
+  @if(auth()->user()->can(PermissionsEnum::CREATE_REPORTS))
+  <div class="flex flex-col sm:flex-row justify-end gap-2 mt-4">
+    <button type="submit" name="submit" value="pdf" class="w-full sm:w-auto bg-red-500 hover:bg-red-700 active:bg-red-900 text-white font-bold py-2 px-4 rounded">Export PDF</button>
+    <button type="submit" name="submit" value="excel" class="w-full sm:w-auto bg-green-500 hover:bg-green-700 active:bg-green-900 text-white font-bold py-2 px-4 rounded">Export Excel</button>
+  </div>
+  @endif
+</form>

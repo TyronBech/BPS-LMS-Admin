@@ -46,15 +46,15 @@ class UserFactory extends Factory
     {
         return [
             'rfid' => $this->faker->unique()->ean13(),
-            'group_id' => 1,
+            'privilege_id' => 1,
             'first_name' => $this->faker->firstName(),
             'middle_name' => $this->faker->lastName(),
             'last_name' => $this->faker->lastName(),
             'suffix' => $this->faker->suffix(),
+            'gender' => $this->faker->randomElement(['Male', 'Female']),
             'profile_image' => 'default.jpg',
             'email' => $this->faker->unique()->safeEmail(),
             'password' => Hash::make('secret'),
-            'penalty_total' => 0,
             'created_at' => now(),
             'updated_at' => now(),
         ];

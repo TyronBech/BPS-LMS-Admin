@@ -17,12 +17,18 @@ class TransactionFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => $this->faker->randomElement([1, 2, 4]),
-            'book_id' => $this->faker->numberBetween(1, 50),
-            'transaction_type' => $this->faker->randomElement(['Borrow', 'Return']),
+            'user_id' => $this->faker->randomElement([6, 23, 28, 49, 86]),
+            'book_id' => $this->faker->numberBetween(3, 20),
             'date_borrowed' => $this->faker->dateTimeThisYear(),
             'due_date' => $this->faker->dateTimeThisYear(),
             'return_date' => $this->faker->dateTimeThisYear(),
+            'reserved_date' => $this->faker->dateTimeThisYear(),
+            'transaction_type' => $this->faker->randomElement(['Borrowed', 'Returned', 'Reserved']),
+            'status' => $this->faker->randomElement(['Pending', 'Completed', 'Overdue', 'Cancelled', 'Lost', 'Missing']),
+            'book_condition' => $this->faker->randomElement(['New', 'Good', 'Fair', 'Poor']),
+            'penalty_total' => 0,
+            'penalty_status' => $this->faker->randomElement(['Paid', 'Unpaid', 'Waived']),
+            'remarks' => "Sample remarks for transaction",
             'created_at' => now(),
             'updated_at' => now(),
 

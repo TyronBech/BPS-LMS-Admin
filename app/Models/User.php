@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -12,11 +12,11 @@ use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable, HasRoles, SoftDeletes;
-
+    protected $table = 'usr_users';
     protected $guarded = 'admin';
     /**
      * The attributes that are mass assignable.
@@ -25,11 +25,12 @@ class User extends Authenticatable
      */
     protected $fillable = [
         'rfid',
-        'group_id',
+        'privilege_id',
         'first_name',
         'middle_name',
         'last_name',
         'suffix',
+        'gender',
         'profile_image',
         'email',
         'password',
@@ -57,6 +58,10 @@ class User extends Authenticatable
             'password' => 'hashed',
         ];
     }
+    public static function getTableName()
+    {
+        return (new self())->getTable();
+    }
     public function students() : HasOne
     {
         return $this->hasOne(StudentDetail::class, 'user_id', 'id');
@@ -69,9 +74,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(VisitorDetail::class, 'user_id', 'id');
     }
-    public function groups() : BelongsTo
+    public function privileges() : BelongsTo
     {
-        return $this->belongsTo(UserGroup::class, 'group_id', 'id');
+        return $this->belongsTo(UserGroup::class, 'privilege_id', 'id');
     }
     public function logs() : HasMany
     {
@@ -79,6 +84,17 @@ class User extends Authenticatable
     }
     public function transactions() : HasMany
     {
-        return $this->hasMany(Transaction::class, 'book_id', 'id');
+        return $this->hasMany(Transaction::class, 'user_id', 'id');
+    }
+    protected static function booted()
+    {
+        static::deleting(function ($user) {
+            if (!$user->isForceDeleting()) {
+                $user->logs()->delete();
+            }
+        });
+        static::restoring(function ($user) {
+            $user->logs()->withTrashed()->restore();
+        });
     }
 }

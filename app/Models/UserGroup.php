@@ -4,20 +4,21 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class UserGroup extends Model
 {
+    use SoftDeletes;
+    protected $table = 'privileges';
     protected $fillable = [
-        'group_name',
+        'user_type',
         'category',
         'max_book_allowed',
-        'borrow_duration_days',
+        'duration_type',
         'renewal_limit',
-        'is_unlimited',
-        'can_have_role',
     ];
     public function users() : HasMany
     {
-        return $this->hasMany(User::class, 'group_id', 'id');
+        return $this->hasMany(User::class, 'privilege_id', 'id');
     }
 }

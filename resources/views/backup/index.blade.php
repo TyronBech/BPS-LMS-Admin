@@ -1,0 +1,41 @@
+@use('App\Enum\PermissionsEnum')
+@extends('layouts.admin-app')
+@section('content')
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+  <h1 class="font-semibold text-center text-3xl md:text-4xl mb-8">Maintenance</h1>
+  <div class="max-w-4xl mx-auto bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center p-6">
+
+      {{-- Image Column --}}
+      <div class="md:col-span-1 flex justify-center">
+        <img class="object-cover w-40 h-40 rounded-lg" src="{{ asset('img/database.png') }}" alt="Database Image">
+      </div>
+
+      {{-- Content Column --}}
+      <div class="md:col-span-2 flex flex-col justify-center text-center md:text-left">
+        <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Database Backups</h5>
+        <p class="mb-4 font-normal text-gray-700 dark:text-gray-400">Create and manage backups of your database to ensure your data is safe and can be restored when needed.</p>
+
+        @can(PermissionsEnum::CREATE_BACKUPS)
+        <div class="flex flex-col items-center md:items-start space-y-3">
+          <form action="{{ route('backup.create') }}" method="POST">
+            @csrf
+            <button type="submit" class="inline-flex items-center gap-2 focus:outline-none text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+              <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24">
+                <path fill-rule="evenodd" d="M4 4a2 2 0 1 0 0 4h16a2 2 0 1 0 0-4H4Zm0 6h16v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8Zm10.707 5.707a1 1 0 0 0-1.414-1.414l-.293.293V12a1 1 0 1 0-2 0v2.586l-.293-.293a1 1 0 0 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l2-2Z" clip-rule="evenodd" />
+              </svg>
+              Create Backup
+            </button>
+          </form>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Note: A new backup is created automatically every 24 hours. Backups are deleted after 7 days.</p>
+        </div>
+        @endcan
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-8">
+    @include('backup.table')
+  </div>
+</div>
+@endsection

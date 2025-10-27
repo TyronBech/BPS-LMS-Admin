@@ -7,51 +7,162 @@ use Illuminate\Http\Request;
 use App\Models\Book;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 
 class BookCirculationController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $barcode        = "";
-        $title          = "";
-        $availability   = $this->extract_enums('books', 'availability_status');
-        $data           = Book::select('accession', 'call_number', 'title', 'barcode', 'availability_status', 'condition_status')->get();
-        return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability'));
+        $barcode        = $request->input('barcode', '');
+        $title          = $request->input('title', '');
+        $perPage        = $request->input('perPage', 10);
+        $books          = new Book();
+        $availability   = $this->extract_enums($books->getTable(), 'availability_status');
+        $data           = $this->generateData($request, false);
+        return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability', 'perPage'));
     }
     public function search(Request $request)
     {
-        $barcode        = $request->input('barcode');
-        $title          = $request->input('title');
-        $availability   = $request->input('availability');
+        $barcode        = $request->input('barcode', '');
+        $title          = $request->input('title', '');
+        $availability   = $request->input('availability', 'All');
+        $perPage        = $request->input('perPage', 10);
+        $books          = new Book();
         $validator = Validator::make($request->all(), [
-            'availability'  => 'sometimes',
-            'title'         => 'sometimes',
-            'barcode'       => 'sometimes',
+            'availability'  => 'nullable|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
+            'title'         => 'nullable',
+            'barcode'       => 'nullable',
+            'perPage'       => 'nullable|numeric|in:10,25,50',
         ]);
         if($validator->fails()){
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
-        $data = $this->generateData($request);
-        $availability = $this->extract_enums('books', 'availability_status');
+        if($request->input('submit') == 'pdf'){
+            $data = $this->generateData($request, true);
+            $this->generatePDF($data);
+            return redirect()->route('report.book-circulation')->with('toast-success', 'Successfully exported to PDF');
+        } else if($request->input('submit') == 'excel'){
+            $data = $this->generateData($request, true);
+            $this->exportExcel($data);
+            return redirect()->route('report.book-circulation')->with('toast-success', 'Successfully exported to Excel');
+        }
+        $data = $this->generateData($request, false);
+        $availability = $this->extract_enums($books->getTable(), 'availability_status');
         if(!count($data)) return redirect()->route('report.book-circulation')->with('toast-error', 'No data found.');
-        return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability'));
+        return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability', 'perPage'));
     }
-    private function generateData(Request $request)
+    private function generatePDF($data)
     {
-        $barcode        = $request->input('barcode');
-        $title          = strtolower($request->input('title'));
-        $availability   = $request->input('availability');
-        $query          = Book::select('accession', 'call_number', 'title', 'barcode', 'availability_status', 'condition_status');
+        ini_set('memory_limit', '2048M');
+        ini_set('max_execution_time', 300);
+        $items = [
+            'title'         => 'Book Records',
+            'school'        => "Bicutan Parochial School, Inc.",
+            'address'       => "Manuel L. Quezon St., Lower Bicutan, Taguig City",
+            'logo'          => base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
+            'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
+            'date'          => date('F j, Y'),
+            'data'          => $data,
+            'totalCount'    => $data->count(),
+        ];
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isPhpEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml(view('pdf.book-pdf-report', $items));
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+        $dompdf->stream('book-records ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
+        exit;
+    }
+    private function exportExcel($data)
+    {
+        $spreadsheet    = new Spreadsheet();
+        $logo           = new Drawing();
+        $sheet          = $spreadsheet->getActiveSheet();
+        
+        $logo->setName('BPS Logo');
+        $logo->setDescription('BPS Logo');
+        $logo->setPath(public_path('img/BPSLogoFull.png'));
+        $logo->setHeight(80);
+        $logo->setCoordinates('C1');
+        $logo->setOffsetX(10);
+        $logo->setOffsetY(5);
+        $logo->setWorksheet($sheet);
+
+        $sheet->setTitle('Book Circulation Report');
+        $sheet->getColumnDimension('A')->setWidth(20);
+        $sheet->getColumnDimension('B')->setWidth(20);
+        $sheet->getColumnDimension('C')->setWidth(60);
+        $sheet->getColumnDimension('D')->setWidth(20);
+        $sheet->getColumnDimension('E')->setWidth(20);
+        $sheet->getColumnDimension('F')->setWidth(20);
+        $sheet->mergeCells('A7:F7');
+        $sheet->mergeCells('A8:F8');
+        $sheet->setCellValue('A7', 'Report Generated By: ' . Auth::user()->first_name . ' ' . Auth::user()->last_name);
+        $sheet->setCellValue('A8', 'Report Generated On: ' . date('F j, Y'));
+        $sheet->getStyle('A7:F8')->getFont()->setBold(true);
+        $sheet->getStyle('A7:F8')->getFont()->setSize(10);
+        $sheet->getStyle('A7:F8')->getAlignment()->setHorizontal('left');
+        $sheet->getStyle('A7:F8')->getAlignment()->setVertical('left');
+        $sheet->getStyle('A7:F8')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A10:F10')->getFont()->setSize(12);
+        $sheet->getStyle('A10:F10')->getFont()->setBold(true);
+        $sheet->setCellValue('A10', 'Accession');
+        $sheet->setCellValue('B10', 'Call Number');
+        $sheet->setCellValue('C10', 'Title');
+        $sheet->setCellValue('D10', 'Category');
+        $sheet->setCellValue('E10', 'Availability');
+        $sheet->setCellValue('F10', 'Condition');
+        $row = 11;
+        foreach ($data as $item) {
+            $sheet->setCellValue('A' . $row, $item->accession);
+            $sheet->setCellValue('B' . $row, $item->call_number ?? 'N/A');
+            $sheet->setCellValue('C' . $row, $item->title);
+            $sheet->setCellValue('D' . $row, $item->category->name);
+            $sheet->setCellValue('E' . $row, $item->availability_status);
+            $sheet->setCellValue('F' . $row, $item->condition_status);
+            $row++;
+        }
+        $writer     = new WriterXlsx($spreadsheet);
+        $fileName = 'book-report ' . date('Y-m-d') . '.xlsx';
+        header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        header("Content-Disposition: attachment;filename=\"$fileName\"");
+        $writer->save("php://output");
+        exit;
+    }
+    private function generateData(Request $request, bool $isExport = false)
+    {
+        $barcode        = $request->input('barcode', '');
+        $title          = strtolower($request->input('title', ''));
+        $availability   = $request->input('availability', 'All');
+        $perPage        = $request->input('perPage', 10);
+        $query          = Book::with('category')->whereHas('category')->select('accession', 'call_number', 'title', 'barcode', 'availability_status', 'condition_status', 'category_id');
         if (strlen($barcode) > 0) {
             $query->where('barcode', 'like', '%' . $barcode . '%');
         }
         if (strlen($title) > 0) {
             $query->where(DB::raw('lower(title)'), 'like', '%' . $title . '%');
         }
-        if (strlen($availability) > 0 && $availability != 'Choose availability status') {
+        if (strlen($availability) > 0 && $availability != 'All') {
             $query->where('availability_status', $availability);
         }
-        $data = $query->get();
+        if ($isExport) {
+            $data = $query->orderBy(DB::raw('DATE(created_at)'), 'desc')->get();
+        } else {
+            $data = $query->paginate($perPage)->appends([
+                'barcode'       => $barcode,
+                'title'         => $title,
+                'availability'  => $availability,
+                'perPage'       => $perPage,
+            ]);
+        }
         return $data;
     }
     private function extract_enums($table, $columnName){
@@ -68,6 +179,7 @@ class BookCirculationController extends Controller
         if (isset($matches[1])) {
             $enumValues = str_getcsv($matches[1], ',', "'");
         }
+        $enumValues = array_merge(['All'], $enumValues);
         return $enumValues;
     }
 }
