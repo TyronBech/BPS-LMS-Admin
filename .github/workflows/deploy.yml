@@ -37,4 +37,4 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./
-        server-dir: /home/u815439804/domains/wheat-starling-882954.hostingersite.com/public_html/
+        server-dir: ${{ secrets.FTP_DIR }}
