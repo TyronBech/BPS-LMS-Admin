@@ -16,23 +16,9 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.3'
-        extensions: mbstring, intl, pdo, pdo_mysql, fileinfo
-        coverage: none
-
-    - name: Copy example env
-      run: cp .env.example .env
 
     - name: Install Composer dependencies
-      run: composer install --no-dev --optimize-autoloader --no-interaction --no-scripts
-
-    - name: Generate Laravel key
-      run: php artisan key:generate --force
-
-    - name: Cache Laravel settings without DB usage
-      run: |
-        php artisan config:cache || true
-        php artisan route:cache || true
-        php artisan view:cache || true
+      run: composer install --no-dev --optimize-autoloader --no-scripts
 
     - name: Setup Node
       uses: actions/setup-node@v4
@@ -56,9 +42,9 @@ jobs:
         port: 21
         exclude: |
           **/.git*
+          **/node_modules/**
+          **/vendor/**
           **/tests/**
           **/storage/app/**
           **/storage/framework/**
           **/storage/logs/**
-          **/node_modules/**
-          **/vendor/bin/**
