@@ -16,9 +16,10 @@ jobs:
       uses: shivammathur/setup-php@v2
       with:
         php-version: '8.3'
+        extensions: mbstring, bcmath, intl, pdo, mysqli
 
     - name: Install Composer dependencies
-      run: composer install --no-dev --optimize-autoloader --no-scripts
+      run: composer install --no-dev --optimize-autoloader
 
     - name: Setup Node
       uses: actions/setup-node@v4
@@ -29,6 +30,13 @@ jobs:
       run: |
         npm install
         npm run build
+
+    - name: Laravel optimize
+      run: |
+        php artisan key:generate --force
+        php artisan config:cache
+        php artisan route:cache
+        php artisan view:cache
 
     - name: Deploy via FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.0
@@ -42,9 +50,10 @@ jobs:
         port: 21
         exclude: |
           **/.git*
+          .github/**
           **/node_modules/**
-          **/vendor/**
           **/tests/**
           **/storage/app/**
           **/storage/framework/**
           **/storage/logs/**
+          **/.env
