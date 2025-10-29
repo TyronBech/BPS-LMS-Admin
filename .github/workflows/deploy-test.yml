@@ -49,7 +49,7 @@ jobs:
           host: ${{ secrets.SFTP_HOST_TEST }}
           username: ${{ secrets.SFTP_USERNAME_TEST }}
           key: ${{ secrets.SFTP_PRIVATE_KEY_TEST }}
-          port: 22
+          port: ${{ secrets.SFTP_PORT_TEST }}
           source: "./"
           target: ${{ secrets.SFTP_DIR_TEST }}
           rm: true

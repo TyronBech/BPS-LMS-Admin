@@ -49,7 +49,7 @@ jobs:
           host: ${{ secrets.SFTP_HOST_PROD }}
           username: ${{ secrets.SFTP_USERNAME_PROD }}
           key: ${{ secrets.SFTP_PRIVATE_KEY_PROD }}
-          port: 22
+          port: ${{ secrets.SFTP_PORT_PROD }}
           source: "./"
           target: ${{ secrets.SFTP_DIR_PROD }}
           rm: true
