@@ -44,7 +44,7 @@ jobs:
           php artisan view:clear || true
 
       - name: Deploy via SFTP (SSH key)
-        uses: appleboy/scp-action@v0.1.7
+        uses: appleboy/scp-action@master
         with:
           host: ${{ secrets.SFTP_HOST_TEST }}
           username: ${{ secrets.SFTP_USERNAME_TEST }}
@@ -52,6 +52,4 @@ jobs:
           port: ${{ secrets.SFTP_PORT_TEST }}
           source: "./"
           target: ${{ secrets.SFTP_DIR_TEST }}
-          rm: true
           overwrite: true
-
