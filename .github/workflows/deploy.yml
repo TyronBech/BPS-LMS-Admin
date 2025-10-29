@@ -53,11 +53,11 @@ jobs:
         port: 21
         local-dir: ./
         server-dir: ${{ secrets.FTP_DIR }}
-        concurrency: 1
-        retry-count: 3
         exclude: |
           **/.git*
+          **/.env
           **/node_modules/**
+          **/vendor/**
           **/tests/**
           **/storage/app/**
           **/storage/logs/**
