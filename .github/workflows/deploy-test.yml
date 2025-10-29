@@ -1,0 +1,63 @@
+name: BPS LMS Admin Test Deployment
+
+on:
+  push:
+    branches: [ "host-testing" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup PHP
+      uses: shivammathur/setup-php@v2
+      with:
+        php-version: '8.3'
+        extensions: mbstring, pdo, sqlite, pdo_sqlite, intl, bcmath
+
+    - name: Prepare Laravel storage and cache
+      run: |
+        mkdir -p storage/framework/{sessions,views,cache}
+        mkdir -p bootstrap/cache
+        chmod -R 777 storage bootstrap/cache
+
+    - name: Install Composer dependencies
+      run: composer install --no-dev --optimize-autoloader --no-scripts
+
+    - name: Setup Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: Install NPM dependencies and build assets
+      run: |
+        npm install
+        npm run build
+
+    - name: Prepare Laravel for Testing
+      run: |
+        php artisan config:clear || true
+        php artisan route:clear || true
+        php artisan view:clear || true
+
+    - name: Deploy via FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.0
+      with:
+        server: ${{ secrets.FTP_HOST }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        protocol: ftps
+        port: 21
+        local-dir: ./
+        server-dir: ${{ secrets.FTP_DIR }}
+        exclude: |
+          **/.git*
+          **/.env
+          **/node_modules/**
+          **/vendor/**
+          **/tests/**
+          **/storage/app/**
+          **/storage/logs/**
