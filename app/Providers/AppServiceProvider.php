@@ -10,6 +10,11 @@ use Illuminate\Support\Facades\DB;
 
 class AppServiceProvider extends ServiceProvider
 {
+    protected $listen = [
+        \Spatie\Backup\Events\BackupWasSuccessful::class => [
+            \App\Listeners\SendBackupSucceededNotification::class,
+        ],
+    ];
     /**
      * Register any application services.
      */

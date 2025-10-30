@@ -222,4 +222,3 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
 Route::fallback(function () {
     return view('layouts.fallback');
 });
-//require __DIR__.'/auth.php';
