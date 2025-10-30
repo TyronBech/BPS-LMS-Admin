@@ -52,7 +52,7 @@ class BackupPasswordMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'mail.accountNotif',
+            view: 'mail.backupPassword',
             with: [
                 'username' => $this->username,
                 'password' => $this->password,

@@ -61,7 +61,7 @@ return [
         ],
         'backups' => [
             'driver' => 'local',
-            'root' => storage_path('app/backups/BPS Library Management System'),
+            'root' => storage_path('app/backups'), // not including the app name
             'throw' => false,
         ],
 

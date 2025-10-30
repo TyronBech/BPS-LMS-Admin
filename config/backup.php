@@ -36,37 +36,14 @@ return [
             ],
         ],
 
-        'database_dump_compressor' => null,
-        'database_dump_file_timestamp_format' => null,
-        'database_dump_filename_base' => 'database',
-        'database_dump_file_extension' => '',
-
         'destination' => [
-            'compression_method' => ZipArchive::CM_DEFAULT,
-            'compression_level' => 9,
             'filename_prefix' => '',
-            'disks' => [
-                'backups',
-            ],
+            'disks' => ['backups'],
         ],
-
-        'temporary_directory' => storage_path('app/backup-temp'),
-        'password' => env('BACKUP_ARCHIVE_PASSWORD'),
-        'encryption' => 'default',
-        'tries' => 1,
-        'retry_delay' => 0,
     ],
 
     'notifications' => [
-        'notifications' => [
-            \Spatie\Backup\Notifications\Notifications\BackupHasFailedNotification::class => [],
-            \Spatie\Backup\Notifications\Notifications\UnhealthyBackupWasFoundNotification::class => [],
-            \Spatie\Backup\Notifications\Notifications\CleanupHasFailedNotification::class => [],
-            \Spatie\Backup\Notifications\Notifications\BackupWasSuccessfulNotification::class => [],
-            \Spatie\Backup\Notifications\Notifications\HealthyBackupWasFoundNotification::class => [],
-            \Spatie\Backup\Notifications\Notifications\CleanupWasSuccessfulNotification::class => [],
-        ],
-
+        'notifications' => [],
         'notifiable' => \Spatie\Backup\Notifications\Notifiable::class,
 
         'mail' => [
@@ -94,7 +71,7 @@ return [
     'monitor_backups' => [
         [
             'name' => env('APP_NAME', 'laravel-backup'),
-            'disks' => ['local'],
+            'disks' => ['backups'], // monitor the same disk
             'health_checks' => [
                 \Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays::class => 1,
                 \Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumStorageInMegabytes::class => 5000,

@@ -15,6 +15,7 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification; // added
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 use ZipArchive;
 
@@ -35,7 +36,6 @@ class BackupController extends Controller
 
         // Get all zip files from the storage
         $files = glob(storage_path('app/backups/BPS Library Management System/*.zip'));
-
         // Convert them into a collection with metadata
         $allBackups = new Collection($files);
 
@@ -109,11 +109,18 @@ class BackupController extends Controller
      */
     public function download(Request $request)
     {
+        Log::debug('[Backup] download() called', [
+            'route' => 'backup.download',
+            'request_ip' => $request->ip(),
+            'input' => ['filename' => $request->input('filename'), '_token_present' => $request->has('_token')],
+        ]);
+
         $validator = Validator::make($request->all(), [
             '_token' => 'required',
             'filename' => 'required|regex:/^[a-zA-Z0-9._-]+$/',
         ]);
         if ($validator->fails()) {
+            Log::debug('[Backup] download() validation failed', ['errors' => $validator->errors()->toArray()]);
             return back()->with('toast-error', 'Invalid request!');
         }
 
@@ -123,80 +130,146 @@ class BackupController extends Controller
         try {
             // 1. DEFINE PATHS
             $sourceZipPath = storage_path('app/backups/BPS Library Management System/' . $request->filename);
+            Log::debug('[Backup] Resolved paths', [
+                'sourceZipPath' => $sourceZipPath,
+                'exists' => file_exists($sourceZipPath),
+                'size_bytes' => file_exists($sourceZipPath) ? filesize($sourceZipPath) : null,
+            ]);
+
             if (!file_exists($sourceZipPath)) {
+                Log::debug('[Backup] Source zip not found');
                 return back()->with('toast-error', 'Backup file not found!');
             }
 
             // Create a temp directory for our new secured zip
             $tempDir = storage_path('app/temp_backups');
-            if (!file_exists($tempDir)) mkdir($tempDir, 0775, true);
+            if (!file_exists($tempDir)) {
+                @mkdir($tempDir, 0775, true);
+                Log::debug('[Backup] Created temp dir', ['tempDir' => $tempDir, 'exists' => file_exists($tempDir)]);
+            }
 
             $newSecuredFilename = 'secured_' . Str::random(10) . '_' . $request->filename;
             $newSecuredPath = $tempDir . '/' . $newSecuredFilename;
+            Log::debug('[Backup] New secured zip target', ['newSecuredPath' => $newSecuredPath]);
 
             // 2. GENERATE UNIQUE PASSWORD
-            $password = Str::random(32);
-            $admin = Auth::guard('admin')->user(); // Get the logged-in admin
+            $password = Str::random(12);
+            $admin = Auth::guard('admin')->user();
+            Log::debug('[Backup] Authenticated admin check', [
+                'has_admin' => (bool) $admin,
+                'admin_id' => $admin?->id,
+                'admin_email' => $admin?->email,
+            ]);
             if (!$admin) {
                 throw new Exception("Could not find authenticated user to email.");
             }
 
             // 3. RE-ZIP WITH PASSWORD
             $tempExtractDir = storage_path('app/temp_backups/tmp_extract_' . Str::random(10));
-            if (!file_exists($tempExtractDir)) mkdir($tempExtractDir, 0775, true);
+            if (!file_exists($tempExtractDir)) {
+                @mkdir($tempExtractDir, 0775, true);
+                Log::debug('[Backup] Created temp extract dir', [
+                    'tempExtractDir' => $tempExtractDir,
+                    'exists' => file_exists($tempExtractDir)
+                ]);
+            }
 
             $newZip = new ZipArchive();
-            if ($newZip->open($newSecuredPath, ZipArchive::CREATE) !== TRUE) {
+            $openNewZip = $newZip->open($newSecuredPath, ZipArchive::CREATE);
+            Log::debug('[Backup] Opening new zip', ['result' => $openNewZip === TRUE ? 'OK' : $openNewZip]);
+            if ($openNewZip !== TRUE) {
                 throw new Exception("Could not create new zip file.");
             }
 
             $oldZip = new ZipArchive();
-            if ($oldZip->open($sourceZipPath) === TRUE) {
+            $openOldZip = $oldZip->open($sourceZipPath);
+            Log::debug('[Backup] Opening source zip', ['result' => $openOldZip === TRUE ? 'OK' : $openOldZip]);
+
+            if ($openOldZip === TRUE) {
                 $oldZip->extractTo($tempExtractDir);
                 $oldZip->close();
+                Log::debug('[Backup] Extracted source zip', [
+                    'extractDir' => $tempExtractDir,
+                ]);
 
                 $iterator = new \RecursiveIteratorIterator(
                     new \RecursiveDirectoryIterator($tempExtractDir, \RecursiveDirectoryIterator::SKIP_DOTS),
                     \RecursiveIteratorIterator::LEAVES_ONLY
                 );
 
+                $added = 0;
                 foreach ($iterator as $file) {
                     if (!$file->isDir()) {
                         $filePath = $file->getRealPath();
                         $relativePath = substr($filePath, strlen($tempExtractDir) + 1);
-                        $newZip->addFile($filePath, $relativePath);
-                        $newZip->setEncryptionName($relativePath, ZipArchive::EM_AES_256, $password);
+                        $okAdd = $newZip->addFile($filePath, $relativePath);
+                        $okEnc = $okAdd ? $newZip->setEncryptionName($relativePath, ZipArchive::EM_AES_256, $password) : false;
+                        $added++;
+                        if ($added <= 5) {
+                            Log::debug('[Backup] Added file to secured zip', [
+                                'relative' => $relativePath,
+                                'add_ok' => (bool) $okAdd,
+                                'enc_ok' => (bool) $okEnc,
+                            ]);
+                        }
                     }
                 }
+                Log::debug('[Backup] Finished adding files', ['added_count' => $added]);
             } else {
                 $newZip->close(); // Close it before throwing
                 throw new Exception("Could not open source zip file.");
             }
 
             $newZip->close();
+            Log::debug('[Backup] Closed secured zip', [
+                'newSecuredPath' => $newSecuredPath,
+                'exists' => file_exists($newSecuredPath),
+                'size_bytes' => file_exists($newSecuredPath) ? filesize($newSecuredPath) : null,
+            ]);
+
             $this->deleteDirectory($tempExtractDir); // Clean up extraction dir
+            Log::debug('[Backup] Cleaned up temp extraction dir', ['dir' => $tempExtractDir, 'exists' => is_dir($tempExtractDir)]);
 
             // 4. EMAIL THE PASSWORD
             try {
-                // You must have App\Mail\BackupPasswordMail created
+                $mailer = config('mail.default');
+                Log::debug('[Backup] Sending password email', [
+                    'to' => $admin->email,
+                    'mailer' => $mailer,
+                ]);
                 Mail::to($admin->email)->send(new BackupPasswordMail($admin->first_name . ' ' . $admin->last_name, $password));
+                Log::debug('[Backup] Password email sent');
             } catch (\Exception $e) {
-                if (file_exists($newSecuredPath)) unlink($newSecuredPath);
+                if (file_exists($newSecuredPath)) {
+                    @unlink($newSecuredPath);
+                    Log::debug('[Backup] Deleted secured zip after mail failure', ['path' => $newSecuredPath]);
+                }
                 Log::error('Mail send failed: ' . $e->getMessage());
                 return back()->with('toast-error', 'Could not send password email. Backup aborted.');
             }
 
             // 5. STREAM THE NEW FILE AND DELETE IT
-            // The user will download the file with the ORIGINAL filename
-            return response()->download($newSecuredPath, $request->filename)
-                             ->deleteFileAfterSend(true);
+            Log::debug('[Backup] Streaming secured zip to client', [
+                'download_name' => $request->filename,
+                'path' => $newSecuredPath,
+            ]);
+            return response()->download($newSecuredPath, $request->filename)->deleteFileAfterSend(true);
 
         } catch (\Exception $e) {
-            Log::error('Backup download/encryption failed: ' . $e->getMessage());
+            Log::error('Backup download/encryption failed: ' . $e->getMessage(), [
+                'exception' => get_class($e),
+                'code' => $e->getCode(),
+            ]);
             
             // Cleanup any temp files if they exist
-            if ($newSecuredPath && file_exists($newSecuredPath)) unlink($newSecuredPath);
-            if ($tempExtractDir && is_dir($tempExtractDir)) $this->deleteDirectory($tempExtractDir);
+            if ($newSecuredPath && file_exists($newSecuredPath)) {
+                @unlink($newSecuredPath);
+                Log::debug('[Backup] Deleted secured zip after failure', ['path' => $newSecuredPath]);
+            }
+            if ($tempExtractDir && is_dir($tempExtractDir)) {
+                $this->deleteDirectory($tempExtractDir);
+                Log::debug('[Backup] Deleted temp extract dir after failure', ['dir' => $tempExtractDir]);
+            }
 
             return back()->with('toast-error', 'Backup download failed: ' . $e->getMessage());
         }
