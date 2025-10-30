@@ -51,14 +51,12 @@ Route::middleware('guest', RedirectIfAuthenticated::class, PreventBackHistory::c
     Route::get('/', function () {
         return view('main-welcome');
     })->name('main-welcome');
-    Route::get('login',     [AdminLoginController::class, 'index'])     ->name('login');
-    Route::post('login',    [AdminLoginController::class, 'store'])     ->name('login');
-    Route::get('register',  [RegisterAdminController::class, 'create']) ->name('register');
-    Route::post('register', [RegisterAdminController::class, 'store']);
-    Route::get('forgot-password', [PasswordResetLinkController::class, 'create'])->name('password.request');
-    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])->name('password.email');
-    Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])->name('password.reset');
-    Route::post('reset-password', [NewPasswordController::class, 'store'])->name('password.store');
+    Route::get('login',                     [AdminLoginController::class, 'index'])         ->name('login');
+    Route::post('login',                    [AdminLoginController::class, 'store'])         ->name('login');
+    Route::get('forgot-password',           [PasswordResetLinkController::class, 'create']) ->name('password.request');
+    Route::post('forgot-password',          [PasswordResetLinkController::class, 'store'])  ->name('password.email');
+    Route::get('reset-password/{token}',    [NewPasswordController::class, 'create'])       ->name('password.reset');
+    Route::post('reset-password',           [NewPasswordController::class, 'store'])        ->name('password.store');
 });
 Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->group(function () {
     Route::get('dashboard', function(){
@@ -67,10 +65,10 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     Route::get('test', function() {
         return view('dashboard.dashboard');
     })->name('test');
-    Route::get('function-test', [FetchDataController::class, 'mostBorrowedStudents'])->name('function-test');
-    Route::post('timeout-all-users', [FetchDataController::class, 'timeoutAllUsers'])->name('timeout-all-users');
-    Route::get('profile',   [ProfileController::class, 'index']) ->name('profile');
-    Route::patch('profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::get('function-test',         [FetchDataController::class, 'mostBorrowedStudents'])   ->name('function-test');
+    Route::post('timeout-all-users',    [FetchDataController::class, 'timeoutAllUsers'])        ->name('timeout-all-users');
+    Route::get('profile',               [ProfileController::class, 'index'])                    ->name('profile');
+    Route::patch('profile',             [ProfileController::class, 'update'])                   ->name('profile.update');
     Route::prefix('analytics')->group(function () {
         Route::get('current-users',             [FetchDataController::class, 'fetchCurrentTimeInUsers'])    ->name('fetch-current-count');
         Route::get('monthly-users',             [FetchDataController::class, 'fetchMonthlyUsers'])          ->name('fetch-monthly-count');
@@ -104,7 +102,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::get('penalties',         [PenaltiesController::class, 'index'])          ->name('report.penalties');
         Route::post('penalties',        [PenaltiesController::class, 'search'])         ->name('report.penalties-search');
         Route::get('audit-trail',       [AuditTrailController::class, 'index'])         ->name('report.audit-trail');
-        Route::post('audit-trail',       [AuditTrailController::class, 'search'])       ->name('report.audit-trail-search');
+        Route::post('audit-trail',      [AuditTrailController::class, 'search'])        ->name('report.audit-trail-search');
     });
     Route::prefix('import')->middleware(ImportAuthentication::class)->group(function () {
         Route::get('students',                      [StudentImportController::class, 'index'])                  ->name('import.import-students');
@@ -172,10 +170,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::post('add-privilege',        [PrivilegeMaintenanceController::class, 'store'])               ->name('maintenance.store-privilege');
             Route::put('edit-privilege',        [PrivilegeMaintenanceController::class, 'update'])              ->name('maintenance.update-privilege');
             Route::delete('delete-privilege',   [PrivilegeMaintenanceController::class, 'destroy'])             ->name('maintenance.delete-privilege');
-            // Route::get('add-privilege',         [PrivilegeMaintenanceController::class, 'create'])              ->name('maintenance.create-privilege');
-            // Route::post('search-privilege',     [PrivilegeMaintenanceController::class, 'search_privilege'])    ->name('maintenance.search-privilege');
-            // Route::get('edit-privilege',        [PrivilegeMaintenanceController::class, 'edit'])                ->name('maintenance.edit-privilege');
-            // Route::get('show-privileges',       [PrivilegeMaintenanceController::class, 'show'])                ->name('maintenance.show-privileges');
+            Route::get('show-privileges',       [PrivilegeMaintenanceController::class, 'show'])                ->name('maintenance.show-privileges');
         });
         Route::prefix('penalty-rules')->middleware(PenaltyRuleMiddleware::class)->group(function () {
             Route::get('penalty-rules',             [PenaltyRuleController::class, 'index'])    ->name('maintenance.penalty-rules');
@@ -213,7 +208,6 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     Route::prefix('backup')->middleware(BackupAuthentication::class)->group(function () {
         Route::get('backup',    [BackupController::class, 'index'])     ->name('backup.index');
         Route::post('create',   [BackupController::class, 'create'])    ->name('backup.create');
-        //Route::post('restore',  [BackupController::class, 'restore'])   ->name('backup.restore');
         Route::post('download', [BackupController::class, 'download'])  ->name('backup.download');
         Route::delete('delete', [BackupController::class, 'destroy'])   ->name('backup.destroy');
     });
