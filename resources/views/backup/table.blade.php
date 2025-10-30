@@ -2,6 +2,23 @@
   <h2 class="text-lg md:text-xl font-bold tracking-tight text-gray-900 dark:text-white p-4 bg-white dark:bg-gray-800">
     List of Database Backups
   </h2>
+
+  <!-- Per-page selector -->
+  <div class="px-4 py-2 bg-white dark:bg-gray-800 flex items-center justify-end">
+    <form method="GET" action="{{ url()->current() }}" class="flex items-center space-x-2">
+      @foreach(request()->except('perPage', 'page') as $name => $value)
+        <input type="hidden" name="{{ $name }}" value="{{ $value }}">
+      @endforeach
+      <input type="hidden" name="page" value="1">
+      <label for="perPage" class="text-sm text-gray-700 dark:text-gray-300">Per page</label>
+      <select id="perPage" name="perPage" class="border rounded-md px-2 py-1 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200" onchange="this.form.submit()">
+        <option value="10" {{ (int)request('perPage', 10) === 10 ? 'selected' : '' }}>10</option>
+        <option value="25" {{ (int)request('perPage') === 25 ? 'selected' : '' }}>25</option>
+        <option value="50" {{ (int)request('perPage') === 50 ? 'selected' : '' }}>50</option>
+      </select>
+    </form>
+  </div>
+
   <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
       <tr>
@@ -67,6 +84,22 @@
       @endforelse
     </tbody>
   </table>
+
+  <!-- Pagination footer -->
+  <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 px-4 py-3 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700">
+    <div class="text-sm text-gray-700 dark:text-gray-300">
+      Showing
+      <span class="font-medium">{{ $backups->firstItem() ?? 0 }}</span>
+      to
+      <span class="font-medium">{{ $backups->lastItem() ?? 0 }}</span>
+      of
+      <span class="font-medium">{{ $backups->total() }}</span>
+      backups
+    </div>
+    <div>
+      {{ $backups->onEachSide(1)->links() }}
+    </div>
+  </div>
 </div>
 
 <script>
