@@ -27,7 +27,7 @@
               Create Backup
             </button>
           </form>
-          <p class="text-xs text-gray-500 dark:text-gray-400">Note: A new backup is created automatically every 24 hours. Backups are deleted after 7 days.</p>
+          <p class="text-xs text-gray-500 dark:text-gray-400">Note: A new backup is created automatically 3 times every 24 hours. Backups are deleted after 7 days.</p>
         </div>
         @endcan
       </div>

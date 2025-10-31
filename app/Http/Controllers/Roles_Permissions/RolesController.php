@@ -90,6 +90,7 @@ class RolesController extends Controller
             $permissions = Permission::with('roles')
                 ->where('guard_name', 'admin')
                 ->where('name', '!=', 'Modify Admins')
+                ->where('name', '!=', 'Create Backups')
                 ->orderBy('name', 'asc')
                 ->get();
         } catch (\Illuminate\Database\QueryException $e) {
