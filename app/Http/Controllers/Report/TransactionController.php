@@ -49,11 +49,11 @@ class TransactionController extends Controller
         if ($request->input('submit') == 'pdf') {
             $data = $this->generateData($request, true);
             $this->generatePDF($data, $type);
-            return redirect()->route('report.transaction')->with('toast-success', 'Successfully exported to PDF');
+            return redirect()->route('report.circulation')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {
             $data = $this->generateData($request, true);
             $this->exportExcel($data, $type);
-            return redirect()->route('report.transaction')->with('toast-success', 'Successfully exported to Excel');
+            return redirect()->route('report.circulation')->with('toast-success', 'Successfully exported to Excel');
         }
         $data = $this->generateData($request, false);
         return view('report.transactions.transactions', compact('data', 'search', 'fromInputDate', 'toInputDate', 'type', 'perPage', 'availability'));

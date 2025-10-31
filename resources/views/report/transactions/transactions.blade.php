@@ -1,9 +1,9 @@
 @extends('layouts.admin-app')
 @section('content')
 @use('App\Enum\PermissionsEnum')
-<h1 class="font-semibold text-center text-4xl p-5">Transaction History</h1>
+<h1 class="font-semibold text-center text-4xl p-5">Circulation History</h1>
 
-<form action="{{ route('report.transaction-search') }}" method="POST" class="mb-4">
+<form action="{{ route('report.circulation-search') }}" method="POST" class="mb-4">
   @csrf
   <div class="container mx-auto px-4">
     <div class="flex flex-col md:flex-row md:flex-wrap items-center justify-center gap-4">

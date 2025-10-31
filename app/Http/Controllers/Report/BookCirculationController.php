@@ -45,15 +45,15 @@ class BookCirculationController extends Controller
         if($request->input('submit') == 'pdf'){
             $data = $this->generateData($request, true);
             $this->generatePDF($data);
-            return redirect()->route('report.book-circulation')->with('toast-success', 'Successfully exported to PDF');
+            return redirect()->route('report.accession-list')->with('toast-success', 'Successfully exported to PDF');
         } else if($request->input('submit') == 'excel'){
             $data = $this->generateData($request, true);
             $this->exportExcel($data);
-            return redirect()->route('report.book-circulation')->with('toast-success', 'Successfully exported to Excel');
+            return redirect()->route('report.accession-list')->with('toast-success', 'Successfully exported to Excel');
         }
         $data = $this->generateData($request, false);
         $availability = $this->extract_enums($books->getTable(), 'availability_status');
-        if(!count($data)) return redirect()->route('report.book-circulation')->with('toast-error', 'No data found.');
+        if(!count($data)) return redirect()->route('report.accession-list')->with('toast-error', 'No data found.');
         return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability', 'perPage'));
     }
     private function generatePDF($data)

@@ -90,10 +90,10 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::post('computer-use',     [ComputerUseController::class, 'search'])       ->name('report.computer-use-search');
         Route::get('visitor-report',    [VisitorLogsController::class, 'index'])        ->name('report.visitor');
         Route::post('visitor-report',   [VisitorLogsController::class, 'retrieve'])     ->name('report.visitor-retrieve');
-        Route::get('transaction',       [TransactionController::class, 'index'])        ->name('report.transaction');
-        Route::post('transaction',      [TransactionController::class, 'search'])       ->name('report.transaction-search');
-        Route::get('book-circulation',  [BookCirculationController::class, 'index'])    ->name('report.book-circulation');
-        Route::post('book-circulation', [BookCirculationController::class, 'search'])   ->name('report.book-circulation-search');
+        Route::get('book-circulation',  [TransactionController::class, 'index'])        ->name('report.circulation');
+        Route::post('book-circulation', [TransactionController::class, 'search'])       ->name('report.circulation-search');
+        Route::get('accession-list',    [BookCirculationController::class, 'index'])    ->name('report.accession-list');
+        Route::post('accession-list',   [BookCirculationController::class, 'search'])   ->name('report.accession-list-search');
         Route::get('summary',           [CategoriesController::class, 'index'])         ->name('report.summary');
         Route::post('summary',          [CategoriesController::class, 'export'])        ->name('report.summary-export');
         Route::post('update-summary',   [CategoriesController::class, 'update'])        ->name('report.summary-update');

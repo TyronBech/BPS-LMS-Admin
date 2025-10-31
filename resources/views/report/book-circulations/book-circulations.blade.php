@@ -3,7 +3,7 @@
 @use('App\Enum\PermissionsEnum')
 <div class="container mx-auto px-4">
   <h1 class="font-semibold text-center text-4xl p-5">Book Accession List</h1>
-  <form action="{{ route('report.book-circulation-search') }}" method="POST">
+  <form action="{{ route('report.accession-list-search') }}" method="POST">
     @csrf
     <div class="flex flex-col md:flex-row md:flex-wrap md:items-end md:justify-center gap-4 mb-4">
 
