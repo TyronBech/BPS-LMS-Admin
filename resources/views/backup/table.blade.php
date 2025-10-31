@@ -132,5 +132,25 @@
         });
       }
     });
+
+    // Download toast script
+    const downloadToast = document.getElementById('download-toast');
+    if (downloadToast) {
+      const dismissButton = downloadToast.querySelector('[data-dismiss-target="#download-toast"]');
+
+      document.querySelectorAll('button[value="download"]').forEach(function(downloadBtn) {
+        downloadBtn.addEventListener('click', function() {
+          downloadToast.classList.remove('hidden');
+          downloadToast.classList.add('flex');
+        });
+      });
+
+      if (dismissButton) {
+        dismissButton.addEventListener('click', function() {
+          downloadToast.classList.add('hidden');
+          downloadToast.classList.remove('flex');
+        });
+      }
+    }
   });
 </script>
