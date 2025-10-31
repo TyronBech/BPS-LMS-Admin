@@ -21,6 +21,7 @@ class RolesController extends Controller
             ->whereHas('permissions', function ($query) {
                 $query->where('guard_name', 'admin')
                     ->where('name', '!=', 'Modify Admins')
+                    ->where('name', '!=', 'Create Backups')
                     ->orderBy('name', 'asc');
             })
             ->get();

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Enum\PermissionsEnum;
+use App\Enum\RolesEnum;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
@@ -20,7 +21,7 @@ class BackupAuthentication
     {
         if(!Auth::guard('admin')->check()) return redirect()->route('dashboard')->with('toast-error', 'You are not authenticated');
         $authAdmin = User::findOrFail(Auth::guard('admin')->user()->id);
-        if(!$authAdmin->hasPermissionTo(PermissionsEnum::CREATE_BACKUPS)) return redirect()->route('dashboard')->with('toast-error', 'You are unable to access this page');
+        if(!$authAdmin->hasRole(RolesEnum::SUPER_ADMIN) && !$authAdmin->hasPermissionTo(PermissionsEnum::CREATE_BACKUPS)) return redirect()->route('dashboard')->with('toast-error', 'You are unable to access this page');
         return $next($request);
     }
 }
