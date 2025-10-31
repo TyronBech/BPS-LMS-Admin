@@ -62,9 +62,9 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     Route::get('dashboard', function(){
         return view('dashboard.dashboard');
     })->name('dashboard');
-    Route::get('test', function() {
-        return view('dashboard.dashboard');
-    })->name('test');
+    // Route::get('test', function() {
+    //     return view('dashboard.dashboard');
+    // })->name('test');
     Route::get('function-test',         [FetchDataController::class, 'mostBorrowedStudents'])   ->name('function-test');
     Route::post('timeout-all-users',    [FetchDataController::class, 'timeoutAllUsers'])        ->name('timeout-all-users');
     Route::get('profile',               [ProfileController::class, 'index'])                    ->name('profile');
