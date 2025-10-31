@@ -8,10 +8,12 @@ use App\Models\Book;
 use App\Models\Category;
 use Dompdf\Dompdf;
 use Exception;
+use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Milon\Barcode\DNS1D;
 
 class BookMaintenanceController extends Controller
@@ -198,7 +200,7 @@ class BookMaintenanceController extends Controller
         // Check if the search if multiple accession
         $is_multiple_accessions = preg_match('/,/', $search);
         $trimmed_accessions = [];
-        if($is_multiple_accessions){
+        if ($is_multiple_accessions) {
             $accessions = explode(',', $search);
             $trimmed_accessions = array_map('trim', $accessions);
         }
@@ -564,70 +566,83 @@ class BookMaintenanceController extends Controller
         return redirect()->route('maintenance.books')->with('toast-success', 'Books deleted successfully');
     }
     /**
-     * Retrieves the book image from Google Books API.
+     * Fetches a book's thumbnail image from the Google Books API.
      *
-     * @param string|null $title The book title.
-     * @param string|null $author The book author.
-     * @param string|null $isbn The book ISBN.
+     * This function includes a workaround for "cURL error 60: SSL certificate problem"
+     * by bundling a CA certificate file (cacert.pem) with the application.
      *
-     * @return string|null The book image URL or null if no image is found.
-     *
-     * @throws \Exception
+     * @param string|null $title
+     * @param string|null $author
+     * @param string|null $isbn
+     * @return string|null The URL of the book's thumbnail, or null on failure.
      */
     private function getBookImage($title = null, $author = null, $isbn = null)
     {
-        $apiKey = env('GOOGLE_BOOKS_API_KEY');
-        $url = null;
-
-        if ($title || $author || $isbn) {
-            $queryParts = [];
-
-            if ($title) {
-                $queryParts[] = "intitle:" . urlencode($title);
-            }
-            if ($author) {
-                $queryParts[] = "inauthor:" . urlencode($author);
-            }
-            if ($isbn) {
-                $queryParts[] = "isbn:" . urlencode($isbn);
-            }
-
-            $queryURL = implode("+", $queryParts);
-            $url = "https://www.googleapis.com/books/v1/volumes?q={$queryURL}&key={$apiKey}&maxResults=1";
-        }
-
-        if (!$url) {
+        // 1. Validate inputs
+        if (empty($title) && empty($author) && empty($isbn)) {
+            Log::warning('getBookImage was called with all null parameters.');
             return null;
         }
 
-        // Path to local CA bundle
+        $apiKey = env('GOOGLE_BOOKS_API_KEY');
+        if (empty($apiKey)) {
+            Log::error('GOOGLE_BOOKS_API_KEY is not set in .env file.');
+            return null;
+        }
+
+        // 2. Build the API query
+        $queryParts = [];
+        if ($title)   $queryParts[] = "intitle:" . urlencode($title);
+        if ($author) $queryParts[] = "inauthor:" . urlencode($author);
+        if ($isbn)   $queryParts[] = "isbn:" . urlencode($isbn);
+
+        $queryURL = implode("+", $queryParts);
+        $url = "https://www.googleapis.com/books/v1/volumes?q={$queryURL}&key={$apiKey}&maxResults=1";
+
+        // 3. --- SSL Certificate Fix ---
+        // Define the path to your local CA bundle.
+        // This file (cacert.pem) must be in `storage/certs/`
         $caPath = storage_path('certs/cacert.pem');
 
+        $httpOptions = [];
+
+        if (file_exists($caPath)) {
+            // If the file exists, tell the HTTP client to use it for verification.
+            $httpOptions['verify'] = $caPath;
+        } else {
+            // If the file is missing, log a critical error.
+            // The request will likely fail on misconfigured servers.
+            Log::error('CA certificate file not found. Place cacert.pem at: ' . $caPath);
+            // We still let the request try, in case the server is configured correctly.
+        }
+        // --- End of Fix ---
+
         try {
-            // Try secure request with CA verification
-            $options = [];
-            if (file_exists($caPath)) {
-                $options['verify'] = $caPath;
+            // 4. Make the API request
+            $response = Http::withOptions($httpOptions)
+                ->retry(3, 100) // Automatically retry 3 times on failure
+                ->timeout(10)   // Set a 10-second timeout
+                ->get($url);
+
+            if (!$response->successful()) {
+                Log::warning("Google Books API request failed (Status: {$response->status()}) for query: {$queryURL}");
+                return null;
             }
 
-            $response = Http::withOptions($options)->get($url);
+            // 5. Safely get the image URL
+            // `data_get` avoids "undefined array key" errors if no items are found.
+            $thumbnail = data_get($response->json(), 'items.0.volumeInfo.imageLinks.thumbnail');
 
-            if ($response->successful()) {
-                $data = $response->json();
-
-                if (!empty($data['items'][0]['volumeInfo']['imageLinks']['thumbnail'])) {
-                    return str_replace(
-                        'http://',
-                        'https://',
-                        $data['items'][0]['volumeInfo']['imageLinks']['thumbnail']
-                    );
-                }
-            }
+            return $thumbnail;
+        } catch (ConnectionException $e) {
+            // This will specifically catch the "cURL error 60" if the workaround fails
+            Log::error("Google Books API connection exception: " . $e->getMessage());
+            return null;
         } catch (\Exception $e) {
+            // Catch any other general exceptions
+            Log::error("Google Books API general exception: " . $e->getMessage());
             return null;
         }
-
-        return null;
     }
 
     /**
