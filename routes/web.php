@@ -178,12 +178,12 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::put('edit-penalty-rule',         [PenaltyRuleController::class, 'update'])   ->name('maintenance.update-penalty-rule');
             Route::delete('delete-penalty-rule',    [PenaltyRuleController::class, 'destroy'])  ->name('maintenance.delete-penalty-rule');
         });
-        Route::prefix('transactions')->middleware(SuperAdminAuthentication::class)->group(function () {
-            Route::get('transactions',          [TransactionMaintenanceController::class, 'index'])     ->name('maintenance.transactions');
-            Route::get('show-transactions',     [TransactionMaintenanceController::class, 'show'])      ->name('maintenance.show-transactions');
-            Route::get('retrieve-transaction',  [TransactionMaintenanceController::class, 'retrieve'])  ->name('maintenance.retrieve-transaction');
-            Route::put('edit-transaction',      [TransactionMaintenanceController::class, 'update'])    ->name('maintenance.update-transaction');
-            Route::delete('delete-transaction', [TransactionMaintenanceController::class, 'destroy'])   ->name('maintenance.delete-transaction');
+        Route::prefix('circulations')->middleware(SuperAdminAuthentication::class)->group(function () {
+            Route::get('circulations',          [TransactionMaintenanceController::class, 'index'])     ->name('maintenance.circulations');
+            Route::get('show-circulations',     [TransactionMaintenanceController::class, 'show'])      ->name('maintenance.show-circulations');
+            Route::get('retrieve-circulation',  [TransactionMaintenanceController::class, 'retrieve'])  ->name('maintenance.retrieve-circulation');
+            Route::put('edit-circulation',      [TransactionMaintenanceController::class, 'update'])    ->name('maintenance.update-circulation');
+            Route::delete('delete-circulation', [TransactionMaintenanceController::class, 'destroy'])   ->name('maintenance.delete-circulation');
         });
         Route::prefix('admin-management')->middleware(SuperAdminAuthentication::class)->group(function () {
             Route::get('admins',            [AdminMaintenanceController::class, 'index'])           ->name('maintenance.admins');

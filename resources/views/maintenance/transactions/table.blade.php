@@ -35,7 +35,7 @@
         <td class="px-6 py-4 hidden xl:table-cell">{{ $item->return_date ? \Carbon\Carbon::parse($item->return_date)->format('Y-m-d') : 'Not Returned' }}</td>
         <td class="px-6 py-4">
           <div class="flex items-center space-x-2">
-            <form action="{{ route('maintenance.show-transactions') }}" method="GET" class="inline-block">
+            <form action="{{ route('maintenance.show-circulations') }}" method="GET" class="inline-block">
               @csrf
               <button type="submit" name="viewBtn" value="{{ $item->id }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 focus:ring-4 focus:outline-none focus:ring-yellow-300 dark:bg-yellow-400 dark:hover:bg-yellow-500 dark:focus:ring-yellow-800">View</button>
             </form>
@@ -65,7 +65,7 @@
       <!-- Modal header -->
       <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
         <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
-          Edit Transaction
+          Edit Circulation
         </h3>
         <button type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="edit-transaction-modal">
           <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
@@ -75,7 +75,7 @@
         </button>
       </div>
       <!-- Modal body -->
-      <form class="p-4 md:p-5" action="{{ route('maintenance.update-transaction') }}" method="POST">
+      <form class="p-4 md:p-5" action="{{ route('maintenance.update-circulation') }}" method="POST">
         @csrf
         @method('PUT')
         <div class="grid gap-6 mb-6 md:grid-cols-2">
@@ -108,7 +108,7 @@
             @enderror
           </div>
           <div>
-            <label for="transaction_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Transaction Type:</label>
+            <label for="transaction_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Circulation Type:</label>
             <select id="transaction_type" name="transaction_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
               <option selected disabled>Choose a type</option>
               @foreach($transactionTypes as $item)
@@ -173,7 +173,7 @@
       button.addEventListener('click', function(e) {
         e.preventDefault();
         $.ajax({
-          url: "{{ route('maintenance.retrieve-transaction') }}",
+          url: "{{ route('maintenance.retrieve-circulation') }}",
           type: "GET",
           data: {
             viewBtn: this.value
