@@ -13,13 +13,19 @@ class PrivilegeMaintenanceController extends Controller
     /**
      * Display a listing of the resource.
      *
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $privileges = UserGroup::all();
+        $perPage = $request->input('perPage', 10);
+        $privileges = UserGroup::orderBy('created_at', 'desc')
+            ->paginate($perPage)
+            ->appends([
+                'perPage' => $perPage,
+            ]);
         $durations = $this->extract_enums((new UserGroup)->getTable(), 'duration_type');
-        return view('maintenance.privileges.index', compact('privileges', 'durations'));
+        return view('maintenance.privileges.index', compact('privileges', 'durations', 'perPage'));
     }
     /**
      * Create a new privilege.

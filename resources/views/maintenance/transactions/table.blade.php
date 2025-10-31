@@ -1,4 +1,13 @@
 @use('App\Enum\PermissionsEnum')
+<form method="GET" class="flex items-center m-2">
+  <label for="perPage" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Show</label>
+  <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+    <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+    <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+    <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+  </select>
+  <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">entries per page</span>
+</form>
 <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
   <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -44,6 +53,9 @@
       @endforelse
     </tbody>
   </table>
+  <div class="p-4">
+    {{ $transactions->withQueryString()->links() }}
+  </div>
 </div>
 <!-- Edit modal -->
 <div id="edit-transaction-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">

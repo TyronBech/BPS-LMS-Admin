@@ -11,15 +11,20 @@ use Illuminate\Support\Facades\DB;
 
 class InventoryController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        $perPage    = $request->input('perPage', 10);
+        $barcode    = $request->input('barcode');
         $conditions = $this->extract_enums('bk_books', 'condition_status');
-        $remarks = $this->extract_enums('bk_books', 'remarks');
-        $inventory = Inventory::with('book')
+        $remarks    = $this->extract_enums('bk_books', 'remarks');
+        $inventory  = Inventory::with('book')
             ->where('checked_at', null)
             ->orderBy('created_at', 'desc')
-            ->get();
-        return view('inventory.inventory', compact('inventory', 'conditions', 'remarks'));
+            ->paginate($perPage)
+                ->appends([
+                    'perPage' => $perPage,
+                ]);
+        return view('inventory.inventory', compact('inventory', 'conditions', 'remarks', 'perPage', 'barcode'));
     }
     public function search(Request $request)
     {

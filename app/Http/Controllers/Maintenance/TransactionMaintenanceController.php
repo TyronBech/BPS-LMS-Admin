@@ -12,26 +12,32 @@ use App\Models\Transaction;
 use App\Models\Book;
 use DateTime;
 use Exception;
+use Svg\Tag\Rect;
 
 class TransactionMaintenanceController extends Controller
 {
     /**
      * Show the list of transactions in the database.
      *
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
+        $perPage = $request->input('perPage', 10);
         $transactions = Transaction::with('user', 'book')
             ->orderBy('created_at', 'desc')
-            ->get();
+            ->paginate($perPage)
+            ->appends([
+                'perPage' => $perPage,
+            ]);
         $transaction            = new Transaction();
         $books                  = new Book();
         $transactionTypes       = $this->extract_enums($transaction->getTable(), 'transaction_type');
         $transactionStatuses    = $this->extract_enums($transaction->getTable(), 'status');
         $conditions             = $this->extract_enums($books->getTable(), 'condition_status');
         $penaltyStatuses        = $this->extract_enums($transaction->getTable(), 'penalty_status');
-        return view('maintenance.transactions.index', compact('transactions', 'transactionTypes', 'transactionStatuses', 'conditions', 'penaltyStatuses'));
+        return view('maintenance.transactions.index', compact('transactions', 'transactionTypes', 'transactionStatuses', 'conditions', 'penaltyStatuses', 'perPage'));
     }
     /**
      * Show a single transaction from the database based on the given id.

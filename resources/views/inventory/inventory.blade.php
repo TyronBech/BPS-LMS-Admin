@@ -33,7 +33,7 @@
         <form action="{{ route('inventory.delete') }}" id="delete-form" method="POST">
           @csrf
           @method('DELETE')
-          <input type="hidden" name="accession" id="accession" value="">
+          <input type="hidden" name="accession" id="accession" value="{{ old('barcode') }}">
           <button data-modal-hide="popup-modal" type="submit" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
             Yes, I'm sure
           </button>

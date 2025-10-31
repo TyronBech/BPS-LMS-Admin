@@ -1,4 +1,13 @@
 @use('App\Enum\PermissionsEnum')
+<form method="GET" class="flex items-center m-2">
+  <label for="perPage" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Show</label>
+  <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+    <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+    <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+    <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+  </select>
+  <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">entries per page</span>
+</form>
 <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
   <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -93,6 +102,9 @@
         </div>
       </form>
     </div>
+  </div>
+  <div class="p-4">
+    {{ $rules->withQueryString()->links() }}
   </div>
 </div>
 <!-- Delete modal -->

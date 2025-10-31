@@ -13,12 +13,18 @@ class PenaltyRuleController extends Controller
     /**
      * Displays a list of all penalty rules in the system.
      * 
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
-        $rules = PenaltyRule::all();
-        return view('maintenance.penalties.index', compact('rules'));
+        $perPage = $request->input('perPage', 10);
+        $rules = PenaltyRule::orderBy('created_at', 'desc')
+            ->paginate($perPage)
+            ->appends([
+                'perPage' => $perPage,
+            ]);
+        return view('maintenance.penalties.index', compact('rules', 'perPage'));
     }
     /**
      * Creates a new penalty rule in the system.
