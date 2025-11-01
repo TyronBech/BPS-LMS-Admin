@@ -180,7 +180,9 @@ class PenaltiesController extends Controller
         }
 
         if ($isExport) {
-            $transactions = $query->orderBy(DB::raw('DATE(created_at)'), 'desc')->get();
+            $transactions = $query->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
 
             $transactions = $transactions->map(function ($transaction) {
                 $violations = $transaction->penalties
@@ -203,7 +205,8 @@ class PenaltiesController extends Controller
 
             return $transactions;
         } else {
-            $paginated = $query->orderBy(DB::raw('DATE(created_at)'), 'asc')
+            $paginated = $query->orderBy('created_at', 'asc')
+                ->orderBy('id', 'asc')
                 ->paginate($perPage)
                 ->appends([
                     'start' => $fromInputDate,

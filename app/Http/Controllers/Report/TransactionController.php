@@ -229,7 +229,9 @@ class TransactionController extends Controller
             $query->orWhere('transaction_type', $type);
         }
         if ($isExport) {
-            $data = $query->orderBy(DB::raw('DATE(date_borrowed)'), 'desc')->get();
+            $data = $query->orderBy('date_borrowed', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
             $minDate = $data->min(fn($item) => \Carbon\Carbon::parse($item->created_at));
             $maxDate = $data->max(fn($item) => \Carbon\Carbon::parse($item->created_at));
             if ($minDate && $maxDate) {
@@ -238,7 +240,7 @@ class TransactionController extends Controller
                 $data->reporting_period = 'N/A';
             }
         } else {
-            $data = $query->orderBy(DB::raw('DATE(date_borrowed)'), 'desc')
+            $data = $query->orderBy('date_borrowed', 'desc')
                 ->paginate($request->input('perPage', 10))
                 ->appends([
                     'perPage' => $perPage,

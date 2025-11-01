@@ -207,11 +207,9 @@ class ComputerUseController extends Controller
                     ->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $search . '%');
             });
         }
-
         if ($isExport) {
-            $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), 'desc')
-                ->orderBy(DB::raw('TIME(' . $tableName->getTable() . '.time_in)'), 'desc')
-                ->get();
+            $data = $query->orderBy($tableName->getTable() . '.time_in', 'desc')
+            ->orderBy($tableName->getTable() . '.id', 'desc')->get();
             $minDate = $data->min(fn($item) => \Carbon\Carbon::parse($item->time_in));
             $maxDate = $data->max(fn($item) => \Carbon\Carbon::parse($item->time_in));
             if ($minDate && $maxDate) {
@@ -220,9 +218,9 @@ class ComputerUseController extends Controller
                 $data->reporting_period = 'N/A';
             }
         } else {
-            $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), 'desc')
-                ->orderBy(DB::raw('TIME(' . $tableName->getTable() . '.time_in)'), 'desc')
-                ->paginate($perPage)
+            $data = $query->orderBy(DB::raw($tableName->getTable() . '.time_in'), 'desc')
+            ->orderBy(DB::raw($tableName->getTable() . '.id'), 'desc')
+            ->paginate($perPage)
                 ->appends([
                     'perPage' => $perPage,
                     'search' => $search,

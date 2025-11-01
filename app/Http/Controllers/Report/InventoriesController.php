@@ -142,7 +142,9 @@ class InventoriesController extends Controller
             $query = $query->whereBetween(DB::raw('DATE(' . $tableName->getTable() . '.checked_at)'), [$start, $end]);
         }
         if($isExport){
-            $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.checked_at)'), 'desc')->get();
+            $data = $query->orderBy($tableName->getTable() . '.checked_at', 'desc')
+            ->orderBy($tableName->getTable() . '.id', 'desc')
+            ->get();
             $minDate = $data->min(fn($item) => \Carbon\Carbon::parse($item->checked_at));
             $maxDate = $data->max(fn($item) => \Carbon\Carbon::parse($item->checked_at));
             if ($minDate && $maxDate) {
@@ -152,10 +154,12 @@ class InventoriesController extends Controller
             }
             return $data;
         }
-        return $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.checked_at)'), 'desc')->paginate($perPage)->appends([
-            'start' => $fromInputDate,
-            'end' => $toInputDate,
-            'perPage' => $perPage,
-        ]);
+        return $query->orderBy($tableName->getTable() . '.checked_at', 'desc')
+            ->orderBy($tableName->getTable() . '.id', 'desc')
+            ->paginate($perPage)->appends([
+                'start' => $fromInputDate,
+                'end' => $toInputDate,
+                'perPage' => $perPage,
+            ]);
     }
 }

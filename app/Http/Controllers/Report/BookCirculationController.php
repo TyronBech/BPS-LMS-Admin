@@ -143,7 +143,7 @@ class BookCirculationController extends Controller
         $title          = strtolower($request->input('title', ''));
         $availability   = $request->input('availability', 'All');
         $perPage        = $request->input('perPage', 10);
-        $query          = Book::with('category')->whereHas('category')->select('accession', 'call_number', 'title', 'barcode', 'availability_status', 'condition_status', 'category_id');
+        $query          = Book::with('category')->whereHas('category')->select('id', 'created_at', 'accession', 'call_number', 'title', 'barcode', 'availability_status', 'condition_status', 'category_id');
         if (strlen($barcode) > 0) {
             $query->where('barcode', 'like', '%' . $barcode . '%');
         }
@@ -153,8 +153,11 @@ class BookCirculationController extends Controller
         if (strlen($availability) > 0 && $availability != 'All') {
             $query->where('availability_status', $availability);
         }
+
+        $query->orderBy('created_at', 'desc')->orderBy('id', 'desc');
+
         if ($isExport) {
-            $data = $query->orderBy(DB::raw('DATE(created_at)'), 'desc')->get();
+            $data = $query->get();
         } else {
             $data = $query->paginate($perPage)->appends([
                 'barcode'       => $barcode,

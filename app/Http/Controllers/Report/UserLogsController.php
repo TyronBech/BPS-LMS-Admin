@@ -437,8 +437,8 @@ class UserLogsController extends Controller
                 $data->reporting_period = 'N/A';
             }
         } else {
-            $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), 'desc')
-                ->orderBy(DB::raw('TIME(' . $tableName->getTable() . '.time_in)'), 'desc')
+            $data = $query->orderBy($tableName->getTable() . '.time_in', 'desc')
+                ->orderBy($tableName->getTable() . '.id', 'desc')
                 ->paginate($perPage)
                 ->appends([
                     'perPage' => $perPage,
