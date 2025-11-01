@@ -14,6 +14,7 @@ use App\Models\VisitorDetail;
 use DateTime;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class AuditTrailController extends Controller
@@ -46,15 +47,6 @@ class AuditTrailController extends Controller
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
-        // if ($request->input('submit') == 'pdf') {
-        //     $data = $this->generateData($request, $tableName, true);
-        //     $this->generatePDF($data);
-        //     return redirect()->route('report.audit-trail.users')->with('toast-success', 'Successfully exported to PDF');
-        // } else if ($request->input('submit') == 'excel') {
-        //     $data = $this->generateData($request, $tableName, true);
-        //     $this->exportExcel($data);
-        //     return redirect()->route('report.audit-trail.users')->with('toast-success', 'Successfully exported to Excel');
-        // }
         $data = $this->generateData($request, $tableName, false);
         return view('report.audits.index', compact('data', 'types', 'fromInputDate', 'toInputDate', 'tableType', 'perPage'));
     }
@@ -137,7 +129,8 @@ class AuditTrailController extends Controller
                 ]);
             }
         }
-        $data->orderBy($tableName->getTable() . '.created_at', 'desc');
+        $data->orderBy($tableName->getTable() . '.created_at', 'desc')
+            ->orderBy($tableName->getTable() . '.id', 'desc');
         if ($isExport) {
             $data = $data->get();
         } else {

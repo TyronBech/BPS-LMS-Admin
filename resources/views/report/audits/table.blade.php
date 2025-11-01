@@ -44,8 +44,14 @@
           @forelse($data as $item)
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
             <!-- Record -->
-            @if($item->source_table == User::getTableName() || $item->source_table == EmployeeDetail::getTableName() || $item->source_table == StudentDetail::getTableName() || VisitorDetail::getTableName())
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->user->last_name ?? 'user data' }}, {{ $item->user->first_name ?? '' }} {{ $item->user->middle_name ?? '' }}</td>
+            @if(in_array($item->source_table, [User::getTableName(), EmployeeDetail::getTableName(), StudentDetail::getTableName(), VisitorDetail::getTableName()]))
+            @if($item->user)
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->user->last_name ?? '' }}, {{ $item->user->first_name ?? '' }} {{ $item->user->middle_name ?? '' }}</td>
+            @elseif($item->visitor)
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->visitor->last_name ?? '' }}, {{ $item->visitor->first_name ?? '' }} {{ $item->visitor->middle_name ?? '' }}</td>
+            @else
+            <td class="px-6 py-4 whitespace-nowrap">user data</td>
+            @endif
             @elseif($item->source_table == Book::getTableName())
             <td class="px-6 py-4 whitespace-nowrap">{{ $item->book->title ?? 'book data' }}</td>
             @elseif($item->source_table == Transaction::getTableName())
@@ -55,8 +61,14 @@
             @else
             <td class="px-6 py-4 whitespace-nowrap">Session Record</td>
             @endif
-            @if($item->source_table == User::getTableName() || $item->source_table == EmployeeDetail::getTableName() || $item->source_table == StudentDetail::getTableName() || $item->source_table == VisitorDetail::getTableName())
+            @if($item->source_table == User::getTableName())
             <td class="px-6 py-4 whitespace-nowrap">User</td>
+            @elseif($item->source_table == EmployeeDetail::getTableName())
+            <td class="px-6 py-4 whitespace-nowrap">Employee</td>
+            @elseif($item->source_table == StudentDetail::getTableName())
+            <td class="px-6 py-4 whitespace-nowrap">Student</td>
+            @elseif($item->source_table == VisitorDetail::getTableName())
+            <td class="px-6 py-4 whitespace-nowrap">Visitor</td>
             @elseif($item->source_table == Book::getTableName())
             <td class="px-6 py-4 whitespace-nowrap">Book</td>
             @elseif($item->source_table == Transaction::getTableName())
