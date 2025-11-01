@@ -284,7 +284,7 @@ class UsersMaintenanceController extends Controller
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage())->withInput();
         }
         $this->account_notification(User::where('email', $request->input('email'))->first(), $password);
-        return redirect()->back()->with('toast-success', 'User added successfully');
+        return redirect()->route('maintenance.users')->with('toast-success', 'User added successfully');
     }
     /**
      * Store a newly created employee in storage.
@@ -349,7 +349,7 @@ class UsersMaintenanceController extends Controller
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage())->withInput();
         }
         $this->account_notification(User::where('email', $request->input('email'))->first(), $password);
-        return redirect()->back()->with('toast-success', 'User added successfully');
+        return redirect()->route('maintenance.users')->with('toast-success', 'User added successfully');
     }
     /**
      * Edit student
@@ -473,7 +473,7 @@ class UsersMaintenanceController extends Controller
             return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
         }
         DB::commit();
-        return redirect()->back()->with('toast-success', 'User updated successfully');
+        return redirect()->route('maintenance.users')->with('toast-success', 'User updated successfully');
     }
     /**
      * Update an employee user.
@@ -538,7 +538,7 @@ class UsersMaintenanceController extends Controller
             return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
         }
         DB::commit();
-        return redirect()->back()->with('toast-success', 'User updated successfully');
+        return redirect()->route('maintenance.users')->with('toast-success', 'User updated successfully');
     }
     /**
      * Update a visitor user.
@@ -593,7 +593,7 @@ class UsersMaintenanceController extends Controller
             return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
         }
         DB::commit();
-        return redirect()->back()->with('toast-success', 'User updated successfully');
+        return redirect()->route('maintenance.users')->with('toast-success', 'User updated successfully');
     }
     /**
      * Delete a user.
@@ -633,7 +633,7 @@ class UsersMaintenanceController extends Controller
             return redirect()->back()->with('delete-error', 'An unexpected error occurred while deleting the user.');
         }
         DB::commit();
-        return redirect()->back()->with('toast-success', 'User deleted successfully');
+        return redirect()->route('maintenance.users')->with('toast-success', 'User deleted successfully');
     }
     /**
      * Bulk delete students.

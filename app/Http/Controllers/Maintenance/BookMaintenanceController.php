@@ -138,7 +138,7 @@ class BookMaintenanceController extends Controller
             }
         }
         DB::commit();
-        return redirect()->back()->with('toast-success', 'Book added successfully');
+        return redirect()->route('maintenance.books')->with('toast-success', 'Book added successfully');
     }
     /**
      * Edit a book
@@ -348,7 +348,7 @@ class BookMaintenanceController extends Controller
             return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
         }
         DB::commit();
-        return redirect()->back()->with('toast-success', 'Book updated successfully');
+        return redirect()->route('maintenance.books')->with('toast-success', 'Book updated successfully');
     }
     /**
      * Copy a book
@@ -424,7 +424,7 @@ class BookMaintenanceController extends Controller
             return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
         }
         DB::commit();
-        return redirect()->back()->with('toast-success', 'Book copy created successfully');
+        return redirect()->route('maintenance.books')->with('toast-success', 'Book copy created successfully');
     }
     /**
      * Export barcodes for selected books
