@@ -96,7 +96,7 @@ class BookCirculationController extends Controller
         $logo->setOffsetY(5);
         $logo->setWorksheet($sheet);
 
-        $sheet->setTitle('Book Circulation Report');
+        $sheet->setTitle('Accession List Report');
         $sheet->getColumnDimension('A')->setWidth(20);
         $sheet->getColumnDimension('B')->setWidth(20);
         $sheet->getColumnDimension('C')->setWidth(60);
