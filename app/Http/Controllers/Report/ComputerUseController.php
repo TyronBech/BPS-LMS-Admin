@@ -187,7 +187,8 @@ class ComputerUseController extends Controller
         $search      = strtolower($request->input('search'));
         $perPage        = $request->input('perPage', 10);
 
-        $query = Log::with(['user.students'])->whereHas('user.students');
+        $query = $tableName::with(['user.students'])->whereHas('user.students')
+                        ->where('computer_use', 'Yes');
 
         if (!empty($fromInputDate) && !empty($toInputDate)) {
             $start = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');

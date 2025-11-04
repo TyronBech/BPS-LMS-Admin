@@ -37,10 +37,9 @@ class AdminMaintenanceController extends Controller
      */
     public function create()
     {
-        $searched = array();
         $roles = Role::where('guard_name', 'admin')
             ->get();
-        return view('maintenance.admins.create', compact('searched', 'roles'));
+        return view('maintenance.admins.create', compact('roles'));
     }
     /**
      * Search for a user in the system.
@@ -55,7 +54,7 @@ class AdminMaintenanceController extends Controller
     public function search_user(Request $request)
     {
         $search = strtolower($request->input('user-info'));
-        $searched = User::select('first_name', 'middle_name', 'last_name', 'email', 'rfid')
+        $searched = User::select('id', 'first_name', 'middle_name', 'last_name', 'email', 'rfid')
             ->where(function ($query) use ($search) {
                 $query->where('first_name', 'like', '%' . $search . '%')
                     ->orWhere('middle_name', 'like', '%' . $search . '%')
@@ -64,9 +63,8 @@ class AdminMaintenanceController extends Controller
                     ->orWhere('rfid', 'like', '%' . $search . '%');
             })
             ->doesntHave('roles')
-            ->get();
-        $roles = Role::where('guard_name', 'admin')
-            ->get();
+            ->first();
+        $roles = Role::where('guard_name', 'admin')->get();
         return view('maintenance.admins.create', compact('searched', 'roles'));
     }
     /**

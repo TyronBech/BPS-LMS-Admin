@@ -231,6 +231,10 @@ class UsersMaintenanceController extends Controller
     public function store_student(Request $request)
     {
         ini_set('memory_limit', '4096M');
+        if($request->input('email')) {
+            User::where('email', $request->input('email'))->exists();
+            return redirect()->back()->with('toast-warning', 'The email has already been registered.')->withInput();
+        }
         $users = new User();
         $validator = Validator::make($request->all(), [
             'rfid'          => 'required|string|min:10|regex:/^[0-9]+$/u',
@@ -298,6 +302,10 @@ class UsersMaintenanceController extends Controller
     public function store_employee(Request $request)
     {
         ini_set('memory_limit', '4096M');
+        if($request->input('email')) {
+            User::where('email', $request->input('email'))->exists();
+            return redirect()->back()->with('toast-warning', 'The email has already been registered.')->withInput();
+        }
         $users = new User();
         $validator = Validator::make($request->all(), [
             'rfid'          => 'required|string|min:10|regex:/^[0-9]+$/u',
