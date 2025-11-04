@@ -63,7 +63,7 @@ $increment = 0;
             <div class="flex items-center space-x-2">
               <a href="{{ route('maintenance.view-student', ['id_number' => $item->students->id_number]) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800">View</a>
               @can(PermissionsEnum::EDIT_USERS, 'admin')
-              <a href="{{ route('maintenance.edit-student', $item->id) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 focus:ring-4 focus:outline-none focus:ring-yellow-300 dark:bg-yellow-400 dark:hover:bg-yellow-500 dark:focus:ring-yellow-800">Edit</a>
+              <a href="{{ route('maintenance.edit-student', ['id' => $item->id, 'return_to' => request()->fullUrl()]) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 focus:ring-4 focus:outline-none focus:ring-yellow-300 dark:bg-yellow-400 dark:hover:bg-yellow-500 dark:focus:ring-yellow-800">Edit</a>
               @endcan
               @if(!$item->hasRole(RolesEnum::SUPER_ADMIN))
               @can(PermissionsEnum::DELETE_USERS, 'admin')

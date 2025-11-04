@@ -129,7 +129,7 @@ class UsersMaintenanceController extends Controller
      */
     public function create_student()
     {
-        return view('maintenance.users.create-student',);
+        return view('maintenance.users.create-student');
     }
     /**
      * Display the form for creating a new employee.
@@ -370,7 +370,7 @@ class UsersMaintenanceController extends Controller
     {
         $user = null;
         try {
-            $id = array_keys($request->all())[0];
+            $id = $request->input('id');
             $user = User::with('students')->where('id', $id)->first();
         } catch (\Illuminate\Database\QueryException $e) {
             return redirect()->back()->with('toast-error', 'Something went wrong!');
@@ -481,7 +481,7 @@ class UsersMaintenanceController extends Controller
             return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
         }
         DB::commit();
-        return redirect()->route('maintenance.users')->with('toast-success', 'User updated successfully');
+        return redirect()->back()->with('toast-success', 'User updated successfully');
     }
     /**
      * Update an employee user.

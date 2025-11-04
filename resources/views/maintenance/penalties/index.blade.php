@@ -37,7 +37,7 @@
           <h6 class="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">Rule Information</h6>
           <div>
             <label for="type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Type:</label>
-            <input type="text" id="type" name="type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., Late Return" required>
+            <input type="text" id="type" name="type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., Late Return" value="{{ old('type') }}" required>
             @error('type')
             <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
             @enderror
@@ -51,7 +51,7 @@
           </div>
           <div>
             <label for="rate" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Rate:</label>
-            <input type="number" id="rate" name="rate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="10" min="0" max="1000" required />
+            <input type="number" id="rate" name="rate" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="10" min="0" max="1000" value="{{ old('rate') }}" required />
             @error('rate')
             <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
             @enderror

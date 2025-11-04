@@ -37,21 +37,21 @@
           <h6 class="text-xl font-semibold tracking-tight text-gray-900 dark:text-white">Category Information</h6>
           <div>
             <label for="legend" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Legend:</label>
-            <input type="text" id="legend" name="legend" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., FIL">
+            <input type="text" id="legend" name="legend" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., FIL" value="{{ old('legend') }}" required>
             @error('legend')
             <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
             @enderror
           </div>
           <div>
             <label for="name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name:</label>
-            <input type="text" id="name" name="name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., Filipino" required>
+            <input type="text" id="name" name="name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., Filipino" value="{{ old('name') }}" required>
             @error('name')
             <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
             @enderror
           </div>
           <div>
             <label for="borrow_duration_days_add" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Duration of Borrow (Days):</label>
-            <input type="number" id="borrow_duration_days_add" name="borrow_duration_days_add" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., 5" min="0" required>
+            <input type="number" id="borrow_duration_days_add" name="borrow_duration_days_add" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., 5" min="0" max="1000" value="{{ old('borrow_duration_days_add') }}" required>
             @error('borrow_duration_days_add')
             <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
             @enderror

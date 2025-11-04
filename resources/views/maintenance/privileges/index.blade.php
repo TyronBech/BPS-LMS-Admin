@@ -39,9 +39,9 @@
               <label for="user_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">User Type:</label>
               <select id="user_type" name="user_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
                 <option selected disabled>Choose a type</option>
-                <option value="employee">Employee</option>
-                <option value="student">Student</option>
-                <option value="visitor">Visitor</option>
+                <option value="employee" {{ old('user_type') == 'employee' ? 'selected' : '' }}>Employee</option>
+                <option value="student" {{ old('user_type') == 'student' ? 'selected' : '' }}>Student</option>
+                <option value="visitor" {{ old('user_type') == 'visitor' ? 'selected' : '' }}>Visitor</option>
               </select>
               @error('user_type')
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
@@ -49,7 +49,7 @@
             </div>
             <div>
               <label for="category" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Category:</label>
-              <input type="text" id="category" name="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., Teacher" required>
+              <input type="text" id="category" name="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., Teacher" value="{{ old('category') }}" required>
               @error('category')
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
               @enderror
@@ -59,7 +59,7 @@
               <select id="duration_type" name="duration_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
                 <option selected disabled>Choose an option</option>
                 @foreach ($durations as $duration)
-                <option value="{{ $duration }}">{{ $duration }}</option>
+                <option value="{{ $duration }}" {{ old('duration_type') == $duration ? 'selected' : '' }}>{{ $duration }}</option>
                 @endforeach
               </select>
               @error('duration_type')
@@ -68,14 +68,14 @@
             </div>
             <div>
               <label for="max_book_allowed_add" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Max Books Allowed:</label>
-              <input type="number" id="max_book_allowed_add" name="max_book_allowed_add" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., 5" value="5" min="0" required>
+              <input type="number" id="max_book_allowed_add" name="max_book_allowed_add" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., 5" value="{{ old('max_book_allowed_add') }}" value="5" min="0" required>
               @error('max_book_allowed_add')
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
               @enderror
             </div>
             <div>
               <label for="renewal_limit_add" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Renewal Limit:</label>
-              <input type="number" id="renewal_limit_add" name="renewal_limit_add" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., 5" value="5" min="0" required>
+              <input type="number" id="renewal_limit_add" name="renewal_limit_add" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., 5" value="{{ old('renewal_limit_add') }}" value="5" min="0" required>
               @error('renewal_limit_add')
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
               @enderror
