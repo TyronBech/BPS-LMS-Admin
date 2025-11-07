@@ -15,6 +15,7 @@ use Illuminate\Support\Str;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\AccountEmailMessage;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class UsersMaintenanceController extends Controller
 {
@@ -71,6 +72,7 @@ class UsersMaintenanceController extends Controller
     public function view_student(Request $request)
     {
         $mimeType = null;
+        Log::info($request->all());
         $studentID = $request->input('id_number');
         $student = User::whereHas('students', function ($query) use ($studentID) {
             $query->where('id_number', $studentID);
@@ -388,7 +390,7 @@ class UsersMaintenanceController extends Controller
     {
         $user = null;
         try {
-            $id = array_keys($request->all())[0];
+            $id = $request->input('id');
             $user = User::with('employees', 'privileges')->where('id', $id)->first();
             $privileges = UserGroup::where(DB::raw('lower(user_type)'), '!=', 'visitor')
                 ->where(DB::raw('lower(user_type)'), '!=', 'student')
@@ -409,7 +411,7 @@ class UsersMaintenanceController extends Controller
     {
         $user = null;
         try {
-            $id = array_keys($request->all())[0];
+            $id = $request->input('id');
             $user = User::with('visitors')->where('id', $id)->first();
         } catch (\Illuminate\Database\QueryException $e) {
             return redirect()->back()->with('toast-error', 'Something went wrong!');

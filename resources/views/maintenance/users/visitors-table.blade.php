@@ -62,7 +62,7 @@ $increment = 0;
           <td class="px-6 py-4">
             <div class="flex items-center space-x-2">
               @can(PermissionsEnum::EDIT_USERS, 'admin')
-              <a href="{{ route('maintenance.edit-visitor', $item->id) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 focus:ring-4 focus:outline-none focus:ring-yellow-300 dark:bg-yellow-400 dark:hover:bg-yellow-500 dark:focus:ring-yellow-800">Edit</a>
+              <a href="{{ route('maintenance.edit-visitor', ['id' => $item->id, 'return_to' => request()->fullUrl()]) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 focus:ring-4 focus:outline-none focus:ring-yellow-300 dark:bg-yellow-400 dark:hover:bg-yellow-500 dark:focus:ring-yellow-800">Edit</a>
               @endcan
               @can(PermissionsEnum::DELETE_USERS, 'admin')
               <button class="deleteVisitorBtn inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800" type="button" data-modal-target="delete-visitor-modal" data-modal-toggle="delete-visitor-modal" value="{{ $item->id }}">Delete</button>
