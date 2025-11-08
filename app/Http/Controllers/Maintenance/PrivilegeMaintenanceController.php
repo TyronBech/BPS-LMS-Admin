@@ -38,8 +38,6 @@ class PrivilegeMaintenanceController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'user_type'                 => 'required|string|max:50',
-            'category'                  => 'required|string|max:50',
             'max_book_allowed_add'      => 'required|integer|min:0|max:999',
             'renewal_limit_add'         => 'required|integer|min:0|max:999',
             'duration_type'             => 'required|string|max:50|in:'.implode(',', $this->extract_enums((new UserGroup)->getTable(), 'duration_type')),
@@ -50,8 +48,6 @@ class PrivilegeMaintenanceController extends Controller
         DB::beginTransaction();
         try {
             UserGroup::create([
-                'user_type'             => $request->input('user_type'),
-                'category'              => $request->input('category'),
                 'max_book_allowed'      => $request->input('max_book_allowed_add'),
                 'renewal_limit'         => $request->input('renewal_limit_add'),
                 'duration_type'         => $request->input('duration_type'),
@@ -77,8 +73,6 @@ class PrivilegeMaintenanceController extends Controller
     public function update(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'user_type'                     => 'required|string|max:50',
-            'category'                      => 'required|string|max:50',
             'max_book_allowed_update'       => 'required|integer|min:0|max:999',
             'renewal_limit_update'          => 'required|integer|min:0|max:999',
             'duration_type'                 => 'required|string|max:50|in:'.implode(',', $this->extract_enums((new UserGroup)->getTable(), 'duration_type')),
@@ -90,8 +84,6 @@ class PrivilegeMaintenanceController extends Controller
         try {
             $privilege = UserGroup::findOrFail($request->input('edit_privilege_id'));
             $privilege->update([
-                'user_type'             => $request->input('user_type'),
-                'category'              => $request->input('category'),
                 'max_book_allowed'      => $request->input('max_book_allowed_update'),
                 'renewal_limit'         => $request->input('renewal_limit_update'),
                 'duration_type'         => $request->input('duration_type'),

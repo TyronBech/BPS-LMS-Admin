@@ -74,25 +74,6 @@
         <input type="hidden" name="edit_privilege_id" id="edit_privilege_id" value="" />
         <div class="p-4 md:p-5">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label for="edit_user_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">User Type:</label>
-              <select id="edit_user_type" name="user_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
-                <option disabled>Choose a type</option>
-                <option value="employee">Employee</option>
-                <option value="student">Student</option>
-                <option value="visitor">Visitor</option>
-              </select>
-              @error('user_type')
-              <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
-              @enderror
-            </div>
-            <div>
-              <label for="edit_category" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Category:</label>
-              <input type="text" id="edit_category" name="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., Teacher" required>
-              @error('category')
-              <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
-              @enderror
-            </div>
             <div class="md:col-span-2">
               <label for="edit_duration_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Duration Type:</label>
               <select id="edit_duration_type" name="duration_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
