@@ -34,6 +34,18 @@ class BookImportController extends Controller
                 return redirect()->route('import.import-books')->with('toast-error', "Excel file is empty.");
             }
             for($i = 19; $i < count($rows); $i++){
+                if($rows[$i][1] == null &&
+                    $rows[$i][2] == null &&
+                    $rows[$i][3] == null &&
+                    $rows[$i][4] == null &&
+                    $rows[$i][5] == null &&
+                    $rows[$i][6] == null &&
+                    $rows[$i][7] == null &&
+                    $rows[$i][8] == null &&
+                    $rows[$i][9] == null &&
+                    $rows[$i][10] == null &&
+                    $rows[$i][11] == null &&
+                    $rows[$i][12] == null) continue;
                 $data[] = array(
                     'accession'             => $rows[$i][1],
                     'call_number'           => $rows[$i][2],
@@ -64,6 +76,7 @@ class BookImportController extends Controller
         DB::beginTransaction();
         foreach ($data as $item) {
             $item['book_type'] = strtolower($item['book_type']);
+            $item['category'] = strtolower($item['category']);
             $validator = Validator::make($item, [
                 'accession'             => 'required|string|max:50',
                 'call_number'           => 'nullable|string|max:50',
@@ -75,7 +88,7 @@ class BookImportController extends Controller
                 'place_of_publication'  => 'nullable|string|max:100',
                 'publisher'             => 'nullable|string|max:100',
                 'copyrights'            => 'nullable|string|max:255',
-                'category'              => 'required|string|in:' . implode(',', Category::pluck('name')->toArray()),
+                'category'              => 'required|string|in:' . implode(',', Category::pluck(DB::raw('lower(name)'))->toArray()),
                 'digital_copy_url'      => 'nullable|url',
             ]);
             if($validator->fails()){
