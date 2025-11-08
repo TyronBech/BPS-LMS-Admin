@@ -3,6 +3,16 @@
 @php
 $adminID = null;
 @endphp
+<form method="GET" class="justify-end m-2 w-full sm:w-auto">
+  <input type="hidden" name="search" value="{{ request('search', '') }}">
+  <label for="perPage" class="mr-2 text-sm font-medium text-gray-500">Show</label>
+  <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+    <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+    <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+    <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+  </select>
+  <span class="ml-2 text-sm text-gray-600">entries per page</span>
+</form>
 <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
   <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -39,6 +49,9 @@ $adminID = null;
       @endforelse
     </tbody>
   </table>
+  <div class="p-4">
+    {{ $admins->links('pagination::tailwind') }}
+  </div>
 </div>
 <div id="delete-admin-modal" tabindex="-1" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
   <div class="relative p-4 w-full max-w-md max-h-full">

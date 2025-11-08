@@ -20,15 +20,18 @@ class AdminMaintenanceController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
+        $search = $request->input('search', '');
+        $perPage = $request->input('perPage', 10);
         $admins = User::join('model_has_roles', 'usr_users.id', '=', 'model_has_roles.model_id')
             ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
             ->where('model_has_roles.model_type', 'App\Models\User')
             ->where('roles.guard_name', 'admin')
             ->select('usr_users.*', 'roles.name as role')
-            ->get();
-        return view('maintenance.admins.admins', compact('admins'));
+            ->paginate($perPage)
+            ->appends(['search' => $search, 'perPage' => $perPage]);
+        return view('maintenance.admins.admins', compact('admins', 'search', 'perPage'));
     }
     /**
      * Returns a view for creating a new admin user.
@@ -90,7 +93,8 @@ class AdminMaintenanceController extends Controller
      */
     public function search_admin(Request $request)
     {
-        $search = strtolower($request->input('admin-info'));
+        $search = strtolower($request->input('search'));
+        $perPage = $request->input('perPage', 10);
         $admins = User::join('model_has_roles', 'usr_users.id', '=', 'model_has_roles.model_id')
             ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
             ->where('model_has_roles.model_type', 'App\Models\User')
@@ -109,8 +113,9 @@ class AdminMaintenanceController extends Controller
             })
             ->orWhere('roles.name', 'like', '%' . $search . '%')
             ->select('usr_users.*', 'roles.name as role')
-            ->get();
-        return view('maintenance.admins.admins', compact('admins'));
+            ->paginate($perPage)
+            ->appends(['search' => $search, 'perPage' => $perPage]);
+        return view('maintenance.admins.admins', compact('admins', 'search', 'perPage'));
     }
     /**
      * Stores a new admin user in the system.
@@ -190,12 +195,21 @@ class AdminMaintenanceController extends Controller
      */
     public function update(Request $request)
     {
+        $user = new User();
         $request->validate([
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
-            'middle-name'   => 'sometimes|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+            'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
-            'email'         => 'required|email',
+            'email'         => 'required|email|unique:' . $user->getTable() . ',email,' . $request->input('id'),
             'role'          => 'required|exists:' . Role::class . ',id',
+        ], [
+            'first-name.required'    => 'First name is required',
+            'last-name.required'     => 'Last name is required',
+            'email.required'         => 'Email is required',
+            'email.email'            => 'Email must be a valid email address',
+            'email.unique'           => 'Email has already been taken',
+            'role.required'          => 'Role is required',
+            'role.exists'            => 'Selected role is invalid and students cannot be assigned as Super Admin',
         ]);
         DB::beginTransaction();
         try {

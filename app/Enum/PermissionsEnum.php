@@ -25,20 +25,20 @@ enum PermissionsEnum : string
     case VIEW_USER_REPORTS                  = 'View User Reports';
     case VIEW_SUMMARY_REPORTS               = 'View Summary Reports';
     case VIEW_INVENTORY_REPORTS             = 'View Inventory Reports';
-    case VIEW_TRANSACTION_REPORTS           = 'View Transaction Reports';
-    case VIEW_BOOK_CIRCULATION_REPORTS      = 'View Book Circulation Reports';
+    case VIEW_TRANSACTION_REPORTS           = 'View Book Circulation Reports';
+    case VIEW_BOOK_CIRCULATION_REPORTS      = 'View Accession List Reports';
     case VIEW_PENALTY_REPORTS               = 'View Penalty Reports';
     case VIEW_AUDIT_REPORTS                 = 'View Audit Reports';
     case ADD_PENALTY_RULES                  = 'Add Penalty Rule';
     case EDIT_PENALTY_RULES                 = 'Edit Penalty Rule';
     case DELETE_PENALTY_RULES               = 'Delete Penalty Rule';
-    case EDIT_TRANSACTIONS                  = 'Edit Transactions';
+    case EDIT_TRANSACTIONS                  = 'Edit Book Circulations';
     case VIEW_USERS_MAINTENANCE             = 'View Users Maintenance';
     case VIEW_BOOKS_MAINTENANCE             = 'View Books Maintenance';
     case VIEW_BOOK_CATEGORIES_MAINTENANCE   = 'View Book Categories Maintenance';
     case VIEW_PRIVILEGES_MAINTENANCE        = 'View Privileges Maintenance';
     case VIEW_PENALTY_RULES_MAINTENANCE     = 'View Penalty Rules Maintenance';
-    case VIEW_TRANSACTIONS_MAINTENANCE      = 'View Transactions Maintenance';
+    case VIEW_TRANSACTIONS_MAINTENANCE      = 'View Book Circulations Maintenance';
     case VIEW_DASHBOARD                     = 'View Dashboard';
     case CREATE_BACKUPS                     = 'Create Backups';
 
