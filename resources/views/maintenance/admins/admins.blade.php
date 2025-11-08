@@ -24,7 +24,7 @@
             <span class="sr-only">Search</span>
           </button>
         </form>
-        <form action="{{ route('maintenance.create-admin') }}" method="GET" class="w-full sm:w-auto">
+        <form action="{{ route('maintenance.create-admin', ['return_to' => request()->fullUrl()]) }}" method="GET" class="w-full sm:w-auto">
           <button type="submit" class="w-full text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Add New Admin</button>
         </form>
       </div>

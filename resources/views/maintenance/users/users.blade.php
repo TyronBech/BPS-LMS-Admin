@@ -28,8 +28,8 @@
         </form>
         @can(PermissionsEnum::ADD_USERS, 'admin')
         <div class="flex items-stretch sm:items-center gap-2 flex-col sm:flex-row">
-          <a href="{{ route('maintenance.create-employee', ['return_to' => request('return_to', route('maintenance.users'))]) }}" class="inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">Add new employee</a>
-          <a href="{{ route('maintenance.create-student', ['return_to' => request('return_to', route('maintenance.users'))]) }}" class="inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">Add new student</a>
+          <a href="{{ route('maintenance.create-employee', ['return_to' => request()->fullUrl()]) }}" class="inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">Add new employee</a>
+          <a href="{{ route('maintenance.create-student', ['return_to' => request()->fullUrl()]) }}" class="inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">Add new student</a>
         </div>
         @endcan
       </div>
