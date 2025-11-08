@@ -86,7 +86,7 @@ class BackupController extends Controller
 
         try {
             Log::info("Starting database backup...");
-            Artisan::queue('backup:run --only-db');
+            Artisan::call('backup:run --only-db');
             $output = Artisan::output();
             Log::debug("Backup output: " . $output);
             if (str_contains($output, 'Backup failed')) {
