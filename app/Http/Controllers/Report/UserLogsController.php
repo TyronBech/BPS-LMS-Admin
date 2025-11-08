@@ -90,8 +90,8 @@ class UserLogsController extends Controller
     }
     public function graph(Request $request)
     {
-        $query = Log::query();
-        $query->whereNotNull('time_in')
+        $baseQuery = Log::query();
+        $baseQuery->whereNotNull('time_in')
             ->where('computer_use', 'No');
 
         if ($request->start_date && !$request->end_date) {
@@ -102,19 +102,18 @@ class UserLogsController extends Controller
         $labels = collect();
         $counts = collect();
 
-        // --- Date filtering & chart title ---
+        // If custom date range provided, parse it and limit base query
         if ($request->start_date && $request->end_date) {
-            $start = Carbon::createFromFormat('m/d/Y', $request->start_date);
-            $end   = Carbon::createFromFormat('m/d/Y', $request->end_date);
+            $start = Carbon::createFromFormat('m/d/Y', $request->start_date)->startOfDay();
+            $end   = Carbon::createFromFormat('m/d/Y', $request->end_date)->endOfDay();
 
-            $query->whereBetween(DB::raw('DATE(time_in)'), [
+            $query = (clone $baseQuery)->whereBetween(DB::raw('DATE(time_in)'), [
                 $start->format('Y-m-d'),
                 $end->format('Y-m-d')
             ]);
 
             $chartTitle = "User Logs from {$start->format('M d, Y')} to {$end->format('M d, Y')}";
 
-            // --- Custom aggregation ---
             $data = $query->selectRaw('DATE(time_in) as day, COUNT(*) as count')
                 ->groupBy('day')
                 ->orderBy('day')
@@ -122,27 +121,39 @@ class UserLogsController extends Controller
 
             $labels = $data->pluck('day')->map(fn($d) => Carbon::parse($d)->format('M d'));
             $counts = $data->pluck('count');
-        } elseif ($request->type === 'daily') {
-            $today = Carbon::today();
-            $query->whereDate('time_in', $today);
+            return response()->json([
+                'labels'      => $labels,
+                'counts'      => $counts,
+                'chart_title' => $chartTitle
+            ]);
+        }
 
-            $chartTitle = "User Logs for " . $today->format('M d, Y');
+        $type = strtolower($request->type ?? 'daily');
+
+        if ($type === 'hourly') {
+            // Hourly: 8am .. 5pm (8 - 17)
+            $today = Carbon::today();
+            $query = (clone $baseQuery)->whereDate('time_in', $today);
+            $chartTitle = "User Logs for " . $today->format('M d, Y') . " (Hourly)";
 
             $data = $query->selectRaw('HOUR(time_in) as hour, COUNT(*) as count')
-                ->whereRaw('HOUR(time_in) BETWEEN 7 AND 17')
+                ->whereBetween(DB::raw('HOUR(time_in)'), [8, 17])
                 ->groupBy('hour')
                 ->orderBy('hour')
-                ->get();
+                ->get()
+                ->keyBy('hour');
 
-            $labels = collect(range(7, 17))->map(fn($h) => Carbon::createFromTime($h)->format('h A'));
-            $counts = collect(range(7, 17))->map(fn($h) => optional($data->firstWhere('hour', $h))->count ?? 0);
-        } elseif ($request->type === 'weekly') {
-            $monday = Carbon::now()->startOfWeek();
+            $hours = range(8, 17);
+            $labels = collect($hours)->map(fn($h) => strtolower(Carbon::createFromTime($h)->format('ga'))); // e.g. 8am
+            $counts = collect($hours)->map(fn($h) => $data->get($h)->count ?? 0);
+        } elseif ($type === 'daily') {
+            // Daily: Monday .. Friday (school days)
+            $monday = Carbon::now()->startOfWeek(Carbon::MONDAY);
             $friday = $monday->copy()->addDays(4);
 
-            $query->whereBetween('time_in', [$monday, $friday->endOfDay()]);
+            $query = (clone $baseQuery)->whereBetween('time_in', [$monday->startOfDay(), $friday->endOfDay()]);
 
-            $chartTitle = "User Logs from {$monday->format('M d, Y')} to {$friday->format('M d, Y')}";
+            $chartTitle = "User Logs for week of {$monday->format('M d, Y')}";
 
             $data = $query->selectRaw('DATE(time_in) as day, COUNT(*) as count')
                 ->groupBy('day')
@@ -150,33 +161,85 @@ class UserLogsController extends Controller
                 ->get()
                 ->keyBy('day');
 
-            $labels = collect(range(0, 4))->map(fn($i) => $monday->copy()->addDays($i)->format('D'));
-            $counts = collect(range(0, 4))->map(fn($i) => $data->get($monday->copy()->addDays($i)->toDateString())->count ?? 0);
-        } elseif ($request->type === 'monthly') {
+            $labels = collect(range(0, 4))->map(fn($i) => $monday->copy()->addDays($i)->format('l')); // Monday, Tuesday...
+            $counts = collect(range(0, 4))->map(function($i) use ($data, $monday) {
+                $d = $monday->copy()->addDays($i)->toDateString();
+                return $data->get($d)->count ?? 0;
+            });
+        } elseif ($type === 'weekly') {
+            // Weekly: split current month into week buckets (week 1, week 2, ...)
             $now = Carbon::now();
             $start = $now->copy()->startOfMonth();
             $end = $now->copy()->endOfMonth();
 
-            $query->whereBetween('time_in', [$start, $end]);
+            $query = (clone $baseQuery)->whereBetween('time_in', [$start->startOfDay(), $end->endOfDay()]);
 
-            $chartTitle = "User Logs for the month of " . $now->format('F');
+            $chartTitle = "User Logs by week for " . $now->format('F Y');
 
-            $data = $query->selectRaw('DATE(time_in) as day, COUNT(*) as count')
+            // Pre-aggregate counts by day for the month
+            $dayCounts = $query->selectRaw('DATE(time_in) as day, COUNT(*) as count')
                 ->groupBy('day')
                 ->orderBy('day')
                 ->get()
                 ->keyBy('day');
 
-            for ($date = $start->copy(); $date->lte($end); $date->addDay()) {
-                $labels->push($date->format('M d'));
-                $counts->push($data->get($date->toDateString())->count ?? 0);
+            $current = $start->copy();
+            $weekIndex = 1;
+            while ($current->lte($end)) {
+                // Skip weekends (move to next Monday if current is Sat/Sun)
+                if ($current->isSaturday() || $current->isSunday()) {
+                    $current->next(Carbon::MONDAY);
+                    if ($current->gt($end)) break;
+                }
+
+                // Determine week end = upcoming Friday (or month end)
+                $dayOfWeekIso = $current->dayOfWeekIso; // 1..7
+                $daysToFriday = 5 - $dayOfWeekIso; // Friday is 5
+                if ($daysToFriday < 0) $daysToFriday = 0;
+                $weekEnd = $current->copy()->addDays($daysToFriday);
+                if ($weekEnd->gt($end)) $weekEnd = $end->copy();
+
+                // Sum counts for Mon-Fri in this range
+                $sum = 0;
+                for ($d = $current->copy(); $d->lte($weekEnd); $d->addDay()) {
+                    if ($d->isSaturday() || $d->isSunday()) continue;
+                    $sum += $dayCounts->get($d->toDateString())->count ?? 0;
+                }
+
+                $label = 'Week ' . $weekIndex . ' (' . $current->format('M j') . ' - ' . $weekEnd->format('M j') . ')';
+                $labels->push($label);
+                $counts->push($sum);
+
+                // Advance to next Monday after this week's Friday
+                $current = $weekEnd->copy()->next(Carbon::MONDAY);
+                $weekIndex++;
             }
-        } elseif ($request->type === 'yearly') {
+        } elseif ($type === 'monthly') {
+            // Monthly: Jan..Dec for current year
+            $now = Carbon::now();
+            $start = $now->copy()->startOfYear();
+            $end = $now->copy()->endOfYear();
+
+            $query = (clone $baseQuery)->whereBetween('time_in', [$start->startOfDay(), $end->endOfDay()]);
+
+            $chartTitle = "User Logs for " . $now->format('Y');
+
+            $data = $query->selectRaw('MONTH(time_in) as month, COUNT(*) as count')
+                ->groupBy('month')
+                ->orderBy('month')
+                ->get()
+                ->keyBy('month');
+
+            $months = range(1, 12);
+            $labels = collect($months)->map(fn($m) => Carbon::createFromFormat('!m', $m)->format('F'));
+            $counts = collect($months)->map(fn($m) => $data->get($m)->count ?? 0);
+        } elseif ($type === 'yearly') {
+            // Yearly: last 10 years (same as original behavior)
             $now = Carbon::now();
             $startYear = $now->year - 9;
             $endYear   = $now->year;
 
-            $query->whereBetween('time_in', [
+            $query = (clone $baseQuery)->whereBetween('time_in', [
                 Carbon::create($startYear, 1, 1)->startOfDay(),
                 Carbon::create($endYear, 12, 31)->endOfDay()
             ]);
@@ -192,25 +255,30 @@ class UserLogsController extends Controller
 
             $chartTitle = "User Logs for the past 10 years ({$startYear} - {$endYear})";
         } else {
-            // Default fallback → Daily
-            $today = Carbon::today();
-            $query->whereDate('time_in', $today);
+            // Default -> use daily (Mon-Fri)
+            $monday = Carbon::now()->startOfWeek(Carbon::MONDAY);
+            $friday = $monday->copy()->addDays(4);
 
-            $chartTitle = "User Logs for " . $today->format('M d, Y');
+            $query = (clone $baseQuery)->whereBetween('time_in', [$monday->startOfDay(), $friday->endOfDay()]);
 
-            $data = $query->selectRaw('HOUR(time_in) as hour, COUNT(*) as count')
-                ->whereRaw('HOUR(time_in) BETWEEN 7 AND 17')
-                ->groupBy('hour')
-                ->orderBy('hour')
-                ->get();
+            $chartTitle = "User Logs for week of {$monday->format('M d, Y')}";
 
-            $labels = collect(range(7, 17))->map(fn($h) => Carbon::createFromTime($h)->format('h A'));
-            $counts = collect(range(7, 17))->map(fn($h) => optional($data->firstWhere('hour', $h))->count ?? 0);
+            $data = $query->selectRaw('DATE(time_in) as day, COUNT(*) as count')
+                ->groupBy('day')
+                ->orderBy('day')
+                ->get()
+                ->keyBy('day');
+
+            $labels = collect(range(0, 4))->map(fn($i) => $monday->copy()->addDays($i)->format('l'));
+            $counts = collect(range(0, 4))->map(function($i) use ($data, $monday) {
+                $d = $monday->copy()->addDays($i)->toDateString();
+                return $data->get($d)->count ?? 0;
+            });
         }
 
         return response()->json([
-            'labels'      => $labels,
-            'counts'      => $counts,
+            'labels'      => $labels->values(),
+            'counts'      => $counts->values(),
             'chart_title' => $chartTitle
         ]);
     }
