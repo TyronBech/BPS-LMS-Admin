@@ -42,7 +42,7 @@
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <p class="font-semibold text-gray-900 dark:text-white">Call Number:</p>
-          <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">{{ $book->call_number }}</p>
+          <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">{{ $book->call_number ?? '-' }}</p>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <p class="font-semibold text-gray-900 dark:text-white">Edition:</p>
@@ -66,7 +66,11 @@
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <p class="font-semibold text-gray-900 dark:text-white">Digital Copy:</p>
-          <p class="sm:col-span-2 text-gray-700 dark:text-gray-300 break-all">{{ $book->digital_copy_url ?? '-' }}</p>
+          @if(empty($book->digital_copy_url))
+          <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">-</p>
+          @else
+          <a href="{{ $book->digital_copy_url }}" target="_blank" class="sm:col-span-2 text-blue-600 dark:text-blue-400 hover:underline">{{ $book->title }}</a>
+          @endif
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <p class="font-semibold text-gray-900 dark:text-white">Remarks:</p>
