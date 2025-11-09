@@ -97,21 +97,44 @@ document.addEventListener('DOMContentLoaded', () => {
   // --- 5️⃣ Intercept AJAX (fetch + XHR) ---
   const originalFetch = window.fetch;
   window.fetch = async (...args) => {
+    const url = args[0] instanceof Request ? args[0].url : String(args[0]);
+
+    // Skip loader for dashboard analytics fetches
+    const isDashboardAnalytics = url.includes('/analytics/most-visited-students') || url.includes('/analytics/most-borrowed-students');
+
     try {
-      showLoader();
+      if (!isDashboardAnalytics) {
+        showLoader();
+      }
       const response = await originalFetch(...args);
-      hideLoader();
+      if (!isDashboardAnalytics) {
+        hideLoader();
+      }
       return response;
     } catch (error) {
-      hideLoader();
+      if (!isDashboardAnalytics) {
+        hideLoader();
+      }
       throw error;
     }
   };
 
   const originalXHR = window.XMLHttpRequest.prototype.open;
   window.XMLHttpRequest.prototype.open = function (...args) {
-    this.addEventListener('loadend', hideLoader);
-    showLoader();
+    const url = String(args[1] || ''); // Get the URL from the 'open' arguments
+
+    // Define URLs to skip the loader for
+    const urlsToSkip = [
+      '/report/user-graph'
+    ];
+
+    const shouldSkipLoader = urlsToSkip.some(skipUrl => url.includes(skipUrl));
+
+    if (!shouldSkipLoader) {
+      showLoader();
+      this.addEventListener('loadend', hideLoader, { once: true });
+    }
+
     return originalXHR.apply(this, args);
   };
 });

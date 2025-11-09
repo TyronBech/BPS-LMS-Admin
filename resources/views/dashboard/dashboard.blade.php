@@ -51,6 +51,25 @@
     <h5 class="mb-6 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
       Top 6 Most Visited Students per Grade Level
     </h5>
+    <div id="date-range-picker" date-rangepicker class="flex items-center mb-5">
+      <div class="relative">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+          <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
+          </svg>
+        </div>
+        <input id="datepicker-range-start-top-students" name="start_top_students" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Select date start">
+      </div>
+      <span class="mx-4 text-gray-500">to</span>
+      <div class="relative">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+          <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
+          </svg>
+        </div>
+        <input id="datepicker-range-end-top-students" name="end_top_students" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Select date end">
+      </div>
+    </div>
     <div id="top-students-container" class="grid grid-cols-1 lg:grid-cols-3 gap-4">
       <p class="text-center text-gray-500">Loading...</p>
     </div>
@@ -59,6 +78,25 @@
     <h5 class="mb-6 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
       Top 3 Students with the Most Borrowed Books per Grade Level
     </h5>
+    <div id="date-range-picker-borrowed" date-rangepicker class="flex items-center mb-5">
+      <div class="relative">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+          <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
+          </svg>
+        </div>
+        <input id="datepicker-range-start-top-borrowed" name="start_top_borrowed" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Select date start">
+      </div>
+      <span class="mx-4 text-gray-500">to</span>
+      <div class="relative">
+        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+          <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
+          </svg>
+        </div>
+        <input id="datepicker-range-end-top-borrowed" name="end_top_borrowed" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Select date end">
+      </div>
+    </div>
     <div id="top-borrowed-container" class="grid grid-cols-1 lg:grid-cols-3 gap-4">
       <p class="text-center text-gray-500">Loading...</p>
     </div>
@@ -114,7 +152,8 @@
   // Fetch the monthly count of logs
   async function fetchMonthlyCount() {
     try {
-      const response = await fetch("{{ route('fetch-monthly-count') }}");
+      let url = "{{ route('fetch-monthly-count') }}";
+      const response = await fetch(url);
       const data = await response.json();
       const labels = data.map(item => item.month);
       const counts = data.map(item => item.count);
@@ -177,9 +216,11 @@
       console.error('Error fetching registered users:', error);
     }
   }
-  async function topVisitedStudents() {
+  async function topVisitedStudents(start, end) {
     try {
-      const response = await fetch("{{ route('fetch-most-visited-students') }}");
+      let url = "{{ route('fetch-most-visited-students') }}";
+      url = buildUrl(url, start, end);
+      const response = await fetch(url);
       const data = await response.json();
 
       const container = document.getElementById('top-students-container');
@@ -254,9 +295,11 @@
         `<p class="text-center text-red-500">Error loading data.</p>`;
     }
   }
-  async function topBorrowedStudents() {
+  async function topBorrowedStudents(start, end) {
     try {
-      const response = await fetch("{{ route('fetch-most-borrowed-students') }}");
+      let url = "{{ route('fetch-most-borrowed-students') }}";
+      url = buildUrl(url, start, end);
+      const response = await fetch(url);
       const data = await response.json();
 
       const container = document.getElementById('top-borrowed-container');
@@ -662,7 +705,7 @@
       }
     });
   }
-  
+
   // Generate random colors for the chart
   function generateRandomColors(count) {
     const colors = [];
@@ -674,6 +717,14 @@
     }
     return colors;
   }
+
+  // helper to build query string
+  function buildUrl(url, start, end) {
+    if (!start || !end) return url;
+    const sep = url.includes('?') ? '&' : '?';
+    return `${url}${sep}start=${encodeURIComponent(start)}&end=${encodeURIComponent(end)}`;
+  }
+
   const refreshButton = document.getElementById('refresh');
   // Add event listener to the refresh button
   refreshButton.addEventListener('click', () => {
@@ -683,24 +734,65 @@
     fetchTransactionHistory();
     fetchYearlyAquiredBooks();
     fetchRegisteredUsers();
-    fetchTopBorrowedStudents();
+    topVisitedStudents();
+    topBorrowedStudents();
     fetchTopBorrowedBooks();
     fetchTopBorrowedCategories();
     sessionStorage.setItem('toast-success', 'Data refreshed successfully.');
     location.reload();
   });
 
+  // listen for changes on the top-students date pickers
+  const topStudentsStartDatepicker = document.getElementById('datepicker-range-start-top-students');
+  const topStudentsEndDatepicker = document.getElementById('datepicker-range-end-top-students');
+
+  const handleTopStudentsDateChange = () => {
+    const start = topStudentsStartDatepicker.value;
+    const end = topStudentsEndDatepicker.value;
+    if (start && end) {
+      topVisitedStudents(start, end);
+    }
+  };
+
+  if (topStudentsStartDatepicker) {
+    topStudentsStartDatepicker.addEventListener('changeDate', handleTopStudentsDateChange);
+  }
+  if (topStudentsEndDatepicker) {
+    topStudentsEndDatepicker.addEventListener('changeDate', handleTopStudentsDateChange);
+  }
+
+
+  // listen for changes on the top-borrowed date pickers
+  const topBorrowedStartDatepicker = document.getElementById('datepicker-range-start-top-borrowed');
+  const topBorrowedEndDatepicker = document.getElementById('datepicker-range-end-top-borrowed');
+
+  const handleTopBorrowedDateChange = () => {
+    const start = topBorrowedStartDatepicker.value;
+    const end = topBorrowedEndDatepicker.value;
+    if (start && end) {
+      topBorrowedStudents(start, end);
+    }
+  };
+
+  if (topBorrowedStartDatepicker) {
+    topBorrowedStartDatepicker.addEventListener('changeDate', handleTopBorrowedDateChange);
+  }
+  if (topBorrowedEndDatepicker) {
+    topBorrowedEndDatepicker.addEventListener('changeDate', handleTopBorrowedDateChange);
+  }
+
+
+  // Update page load fetches to pass no range (initial)
   document.addEventListener('DOMContentLoaded', fetchActiveCount);
   document.addEventListener('DOMContentLoaded', fetchMonthlyCount);
   document.addEventListener('DOMContentLoaded', fetchBookCount);
   document.addEventListener('DOMContentLoaded', fetchTransactionHistory);
   document.addEventListener('DOMContentLoaded', fetchYearlyAquiredBooks);
   document.addEventListener('DOMContentLoaded', fetchRegisteredUsers);
-  document.addEventListener('DOMContentLoaded', topVisitedStudents);
-  document.addEventListener('DOMContentLoaded', topBorrowedStudents);
+  document.addEventListener('DOMContentLoaded', () => topVisitedStudents());
+  document.addEventListener('DOMContentLoaded', () => topBorrowedStudents());
   document.addEventListener('DOMContentLoaded', fetchTopBorrowedBooks);
   document.addEventListener('DOMContentLoaded', fetchTopBorrowedCategories);
-
 </script>
 @else
 

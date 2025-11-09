@@ -43,7 +43,7 @@ class FetchDataController extends Controller
             'message' => 'All users have been timed out successfully.'
         ]);
     }
-    public function fetchMonthlyUsers()
+    public function fetchMonthlyUsers(Request $request)
     {
         $monthlyRecord = Log::select(
             DB::raw("DATE_FORMAT(time_in, '%Y %M') as month"),
@@ -54,6 +54,7 @@ class FetchDataController extends Controller
             ->orderBy(DB::raw("MIN(time_in)")) // optional: to order correctly from oldest to newest
             ->limit(12)
             ->get();
+
         return response()->json($monthlyRecord);
     }
     public function totalBooks()
@@ -61,23 +62,23 @@ class FetchDataController extends Controller
         $totalBooks = Book::count();
         return response()->json(['total_books' => $totalBooks]);
     }
-    public function fetchTransactionHistory()
+    public function fetchTransactionHistory(Request $request)
     {
-        // 1) Define the last 12 months range (from oldest to newest)
         $now = Carbon::now();
-        $start = $now->copy()->subMonths(11)->startOfMonth();
+        $startDT = $now->copy()->subMonths(11)->startOfMonth();
+        $endDT = $now->copy()->endOfMonth();
 
-        // Build a list of months for the last 12 months
+        // Build months list between startDT and endDT (inclusive)
         $months = collect();
-        for ($i = 0; $i < 12; $i++) {
-            $dt = $start->copy()->addMonths($i);
+        $cursor = $startDT->copy()->startOfMonth();
+        while ($cursor->lte($endDT)) {
             $months->push([
-                'key'   => $dt->format('Y-m'),   // e.g. "2025-08" used for lookup
-                'label' => $dt->format('Y F'),   // e.g. "2025 August" for chart
+                'key' => $cursor->format('Y-m'),
+                'label' => $cursor->format('Y F'),
             ]);
+            $cursor->addMonth();
         }
 
-        // 2) Aggregate all transaction types in a single query
         $records = Transaction::select(
             DB::raw("DATE_FORMAT(created_at, '%Y-%m') as ym"),
             DB::raw("DATE_FORMAT(created_at, '%Y %M') as month_label"),
@@ -86,13 +87,12 @@ class FetchDataController extends Controller
             DB::raw("SUM(CASE WHEN transaction_type = 'Returned' THEN 1 ELSE 0 END) as returned"),
             DB::raw("SUM(CASE WHEN transaction_type = 'Reserved' THEN 1 ELSE 0 END) as reserved")
         )
-            ->whereBetween('created_at', [$start, $now->copy()->endOfMonth()])
+            ->whereBetween('created_at', [$startDT, $endDT])
             ->groupBy('ym', 'month_label')
             ->orderBy('ym')
             ->get()
             ->keyBy('ym');
 
-        // 3) Build aligned arrays for each dataset
         $labels = [];
         $total = [];
         $borrowed = [];
@@ -101,7 +101,6 @@ class FetchDataController extends Controller
 
         foreach ($months as $m) {
             $labels[] = $m['label'];
-
             if (isset($records[$m['key']])) {
                 $r = $records[$m['key']];
                 $total[]    = (int) $r->total;
@@ -113,7 +112,7 @@ class FetchDataController extends Controller
             }
         }
 
-        // 4) Remove preceding months that have all zeros
+        // Trim leading all-zero months
         $firstNonZeroIndex = null;
         foreach ($total as $i => $value) {
             if ($value > 0 || $borrowed[$i] > 0 || $returned[$i] > 0 || $reserved[$i] > 0) {
@@ -121,7 +120,6 @@ class FetchDataController extends Controller
                 break;
             }
         }
-
         if (!is_null($firstNonZeroIndex)) {
             $labels   = array_slice($labels, $firstNonZeroIndex);
             $total    = array_slice($total, $firstNonZeroIndex);
@@ -130,7 +128,6 @@ class FetchDataController extends Controller
             $reserved = array_slice($reserved, $firstNonZeroIndex);
         }
 
-        // 5) Return structured JSON for Chart.js
         return response()->json([
             'labels'      => $labels,
             'total'       => $total,
@@ -168,21 +165,40 @@ class FetchDataController extends Controller
             'visitors' => $visitors
         ]);
     }
-    public function mostVisitedStudents()
+    public function mostVisitedStudents(Request $request)
     {
         try {
             $levels = range(7, 12);
             $results = collect();
+
+            $start = $request->query('start');
+            $end = $request->query('end');
+            $hasRange = false;
+            $startDT = null;
+            $endDT = null;
+            if ($start && $end) {
+                try {
+                    $startDT = Carbon::parse($start)->startOfDay();
+                    $endDT = Carbon::parse($end)->endOfDay();
+                    $hasRange = true;
+                } catch (\Throwable $e) {
+                    $hasRange = false;
+                }
+            }
 
             foreach ($levels as $level) {
                 $topStudents = User::whereHas('students', function ($q) use ($level) {
                     $q->where('level', $level);
                 })
                     ->with('students')
-                    ->withCount(['logs as logs_count' => function ($query) {
-                        $query->whereNotNull('time_in')
-                            ->whereYear('time_in', Carbon::now()->year)
-                            ->select(DB::raw('COUNT(DISTINCT DATE(time_in))'));
+                    ->withCount(['logs as logs_count' => function ($query) use ($hasRange, $startDT, $endDT) {
+                        $query->whereNotNull('time_in');
+                        if ($hasRange) {
+                            $query->whereBetween('time_in', [$startDT, $endDT]);
+                        } else {
+                            $query->whereYear('time_in', Carbon::now()->year);
+                        }
+                        $query->select(DB::raw('COUNT(DISTINCT DATE(time_in))'));
                     }])
                     ->orderByDesc('logs_count')
                     ->take(6)
@@ -201,19 +217,38 @@ class FetchDataController extends Controller
             ], 500);
         }
     }
-    public function mostBorrowedStudents()
+    public function mostBorrowedStudents(Request $request)
     {
         try {
             $levels = range(7, 12);
             $results = collect();
+
+            $start = $request->query('start');
+            $end = $request->query('end');
+            $hasRange = false;
+            $startDT = null;
+            $endDT = null;
+            if ($start && $end) {
+                try {
+                    $startDT = Carbon::parse($start)->startOfDay();
+                    $endDT = Carbon::parse($end)->endOfDay();
+                    $hasRange = true;
+                } catch (\Throwable $e) {
+                    $hasRange = false;
+                }
+            }
 
             foreach ($levels as $level) {
                 $topStudents = User::whereHas('students', function ($q) use ($level) {
                     $q->where('level', $level);
                 })
                     ->with('students')
-                    ->withCount(['transactions as borrow_count' => function ($query) {
-                        $query->whereYear('created_at', Carbon::now()->year);
+                    ->withCount(['transactions as borrow_count' => function ($query) use ($hasRange, $startDT, $endDT) {
+                        if ($hasRange) {
+                            $query->whereBetween('created_at', [$startDT, $endDT]);
+                        } else {
+                            $query->whereYear('created_at', Carbon::now()->year);
+                        }
                     }])
                     ->orderByDesc('borrow_count')
                     ->take(3)
@@ -233,7 +268,7 @@ class FetchDataController extends Controller
             ], 500);
         }
     }
-    public function topBooksBorrowed()
+    public function topBooksBorrowed(Request $request)
     {
         try {
             $topBooks = Book::with(['transactions' => function ($query) {
@@ -262,7 +297,7 @@ class FetchDataController extends Controller
             ], 500);
         }
     }
-    public function topCategoriesBorrowed()
+    public function topCategoriesBorrowed(Request $request)
     {
         try {
             $topCategories = Book::with(['transactions' => function ($query) {
