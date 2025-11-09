@@ -243,7 +243,7 @@ class ComputerUseController extends Controller
         }
 
         if (strlen($search) > 0) {
-            $query->with(['user.students'])->whereHas('user', function ($q) use ($search) {
+            $query->with(['user.students', 'user.employees'])->whereHas('user', function ($q) use ($search) {
                 $q->where(DB::raw('lower(first_name)'), 'like', '%' . $search . '%')
                     ->orWhere(DB::raw('lower(last_name)'), 'like', '%' . $search . '%')
                     ->orWhere(DB::raw('lower(middle_name)'), 'like', '%' . $search . '%')
