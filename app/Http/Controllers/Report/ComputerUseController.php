@@ -228,12 +228,34 @@ class ComputerUseController extends Controller
         $perPage        = $request->input('perPage', 10);
         $userType       = $request->input('user_type', 'students');
 
-        $query = $tableName::where('computer_use', 'Yes');
+        $query = $tableName::with(['user.students', 'user.employees'])
+            ->where('computer_use', 'Yes');
+
+        $searchFilter = function ($q) use ($search) {
+            if (strlen($search) > 0) {
+                $q->where(function ($query) use ($search) {
+                    $query->where(DB::raw('lower(first_name)'), 'like', '%' . $search . '%')
+                        ->orWhere(DB::raw('lower(last_name)'), 'like', '%' . $search . '%')
+                        ->orWhere(DB::raw('lower(middle_name)'), 'like', '%' . $search . '%')
+                        ->orWhere(DB::raw('lower(concat(first_name, " ", middle_name, " ", last_name))'), 'like', '%' . $search . '%')
+                        ->orWhere(DB::raw('lower(concat(middle_name, " ", last_name, ", ", first_name))'), 'like', '%' . $search . '%')
+                        ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $search . '%')
+                        ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name))'), 'like', '%' . $search . '%')
+                        ->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $search . '%');
+                });
+            }
+        };
 
         if ($userType === 'students') {
-            $query->whereHas('user.students');
+            $query->whereHas('user', function ($q) use ($searchFilter) {
+                $q->has('students');
+                $searchFilter($q);
+            });
         } elseif ($userType === 'employees') {
-            $query->whereHas('user.employees');
+            $query->whereHas('user', function ($q) use ($searchFilter) {
+                $q->has('employees');
+                $searchFilter($q);
+            });
         }
 
         if (!empty($fromInputDate) && !empty($toInputDate)) {
@@ -242,18 +264,6 @@ class ComputerUseController extends Controller
             $query->whereBetween(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), [$start, $end]);
         }
 
-        if (strlen($search) > 0) {
-            $query->with(['user.students', 'user.employees'])->whereHas('user', function ($q) use ($search) {
-                $q->where(DB::raw('lower(first_name)'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(last_name)'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(middle_name)'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(first_name, " ", middle_name, " ", last_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(middle_name, " ", last_name, ", ", first_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $search . '%');
-            });
-        }
         if ($isExport) {
             $data = $query->orderBy($tableName->getTable() . '.time_in', 'desc')
             ->orderBy($tableName->getTable() . '.id', 'desc')->get();
