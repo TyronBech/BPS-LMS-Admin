@@ -6,7 +6,7 @@
   <p class="mt-1 text-sm/relaxed text-slate-500 text-center">Please ensure that the data is in the correct format.</p>
   @if(!$showTable)
   <div class="border-2 border-slate-700 rounded-lg flex flex-col text-center items-center mb-4 mt-4 p-4 sm:p-6 max-w-lg mx-auto">
-    <form action="{{ route('import.import-books') }}" method="POST" enctype="multipart/form-data" class="w-full">
+    <form action="{{ route('import.upload-books') }}" method="POST" enctype="multipart/form-data" class="w-full">
       @csrf
       <label class="block mt-4 text-sm font-medium text-gray-600" for="file_input">Upload a file in Excel format</label>
       <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 mt-2" id="file_input" name="file" type="file">
@@ -14,15 +14,12 @@
     </form>
   </div>
   @else
-  <form action="{{ route('import.store-books') }}" method="POST" class="w-full mt-6">
-    @csrf
-    <div class="overflow-x-auto">
-      @include('import.books.table')
-    </div>
-    <div class="flex justify-center">
-      <button type="submit" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-2 focus:ring-green-300 font-medium rounded-lg text-md px-4 py-2 me-2 mb-2 mt-4">Insert to Database</button>
-    </div>
-  </form>
+  <div class="overflow-x-auto mt-6">
+    @include('import.books.table')
+  </div>
+  <div class="flex justify-center">
+    <button type="submit" form="import-form" formaction="{{ route('import.store-books') }}" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-2 focus:ring-green-300 font-medium rounded-lg text-md px-4 py-2 me-2 mb-2 mt-4">Insert to Database</button>
+  </div>
   @endif
   @if(!$showTable)
   <div class="flex justify-center mt-4">

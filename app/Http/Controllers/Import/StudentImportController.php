@@ -16,19 +16,40 @@ use App\Models\StudentDetail;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class StudentImportController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        if (!$request->has('page') && !$request->has('perPage')) {
+            $request->session()->forget('new_student_data');
+            $request->session()->forget('existing_student_data');
+        }
         $showTable = false;
         return view("import.students.students", compact('showTable'));
     }
     public function store(Request $request)
     {
-        $newStudents            = $request->input('new_students');
-        $existingStudents       = $request->input('existing_students');
-        $students               = array_merge($newStudents ?? array(), $existingStudents ?? array());
+        $newStudentsFromSession = $request->session()->get('new_student_data', []);
+        $existingStudentsFromSession = $request->session()->get('existing_student_data', []);
+
+        // Merge last submitted data
+        $submittedNew = $request->input('new_students', []);
+        foreach ($submittedNew as $index => $student) {
+            if (isset($newStudentsFromSession[$index])) {
+                $newStudentsFromSession[$index] = array_merge($newStudentsFromSession[$index], $student);
+            }
+        }
+
+        $submittedExisting = $request->input('existing_students', []);
+        foreach ($submittedExisting as $index => $student) {
+            if (isset($existingStudentsFromSession[$index])) {
+                $existingStudentsFromSession[$index] = array_merge($existingStudentsFromSession[$index], $student);
+            }
+        }
+
+        $students               = array_merge($newStudentsFromSession ?? array(), $existingStudentsFromSession ?? array());
         $errors                 = null;
         $staged_users           = array();
         $newStudentsCount       = 0;
@@ -144,64 +165,112 @@ class StudentImportController extends Controller
             if (!$student) continue;
             $this->account_notification($student, $user['password']);
         }
+        $request->session()->forget('new_student_data');
+        $request->session()->forget('existing_student_data');
         return redirect()->route('import.import-students')->with('toast-success', 'Students imported successfully: ' . $newStudentsCount . ' new students added & ' . $existingStudentsCount . ' existing students updated.');
     }
     public function upload(Request $request)
     {
         try {
-            if ($request->file('file') == null) return redirect()->route('import.import-students')->with('toast-warning', "Please select a file.");
-            $showTable      = true;
-            $file           = $request->file('file');
-            $reader         = new ReaderXlsx();
-            $spreadsheet    = $reader->load($file);
-            $sheet          = $spreadsheet->getActiveSheet();
-            $rows           = $sheet->toArray();
-            $newData        = array();
-            $existingData   = array();
-            $new            = false;
-            $existing       = false;
-            if ($rows[0][0] == null) {
-                return redirect()->route('import.import-students')->with('toast-error', "Excel file is empty.");
-            }
-            for ($i = 19; $i < count($rows); $i++) {
-                if (
-                    $rows[$i][1] == null &&
-                    $rows[$i][2] == null &&
-                    $rows[$i][3] == null &&
-                    $rows[$i][4] == null &&
-                    $rows[$i][5] == null &&
-                    $rows[$i][6] == null &&
-                    $rows[$i][7] == null
-                ) continue;
-                $fullName = $this->extractNameParts($rows[$i][2] ?? '');
-                if (empty($fullName['first_name']) || empty($fullName['last_name'])) {
-                    return redirect()->route('import.import-students')->with('toast-error', "Invalid format in row " . ($i + 1) . ". Please ensure that the 'Full Name' field are correctly filled.");
+            $newSessionData = $request->session()->get('new_student_data', []);
+            $existingSessionData = $request->session()->get('existing_student_data', []);
+
+            if ($request->isMethod('post') && !$request->hasFile('file')) {
+                // POST request for pagination, merge edits
+                $submittedNew = $request->input('new_students', []);
+                foreach ($submittedNew as $index => $student) {
+                    if (isset($newSessionData[$index])) {
+                        $newSessionData[$index] = array_merge($newSessionData[$index], $student);
+                    }
                 }
-                $temp = array(
-                    'rfid'          => $rows[$i][1],
-                    'first_name'    => $fullName['first_name'],
-                    'middle_name'   => $fullName['middle_name'],
-                    'last_name'     => $fullName['last_name'],
-                    'suffix'        => $fullName['suffix'],
-                    'gender'        => $rows[$i][3],
-                    'email'         => $rows[$i][4],
-                    'id_number'     => $rows[$i][5],
-                    'grade_level'   => $rows[$i][6],
-                    'section'       => $rows[$i][7],
-                );
-                if (StudentDetail::where('id_number', $rows[$i][8])->exists()) {
-                    $existingData[] = $temp;
-                    $existing = true;
-                } else {
-                    $newData[] = $temp;
-                    $new = true;
+                $request->session()->put('new_student_data', $newSessionData);
+
+                $submittedExisting = $request->input('existing_students', []);
+                foreach ($submittedExisting as $index => $student) {
+                    if (isset($existingSessionData[$index])) {
+                        $existingSessionData[$index] = array_merge($existingSessionData[$index], $student);
+                    }
                 }
+                $request->session()->put('existing_student_data', $existingSessionData);
+
+                $newData = $newSessionData;
+                $existingData = $existingSessionData;
+
+            } else if ($request->hasFile('file')) {
+                // Initial file upload
+                $file = $request->file('file');
+                $reader = new ReaderXlsx();
+                $spreadsheet = $reader->load($file);
+                $sheet = $spreadsheet->getActiveSheet();
+                $rows = $sheet->toArray();
+                $newData = [];
+                $existingData = [];
+
+                if ($rows[0][0] == null) {
+                    return redirect()->route('import.import-students')->with('toast-error', "Excel file is empty.");
+                }
+
+                for ($i = 19; $i < count($rows); $i++) {
+                    if (empty(array_filter(array_slice($rows[$i], 1, 7)))) continue;
+
+                    $fullName = $this->extractNameParts($rows[$i][2] ?? '');
+                    if (empty($fullName['first_name']) || empty($fullName['last_name'])) {
+                        return redirect()->route('import.import-students')->with('toast-error', "Invalid format in row " . ($i + 1) . ". Please ensure that the 'Full Name' field are correctly filled.");
+                    }
+                    $temp = [
+                        'rfid' => $rows[$i][1],
+                        'first_name' => $fullName['first_name'],
+                        'middle_name' => $fullName['middle_name'],
+                        'last_name' => $fullName['last_name'],
+                        'suffix' => $fullName['suffix'],
+                        'gender' => $rows[$i][3],
+                        'email' => $rows[$i][4],
+                        'id_number' => $rows[$i][5],
+                        'grade_level' => $rows[$i][6],
+                        'section' => $rows[$i][7],
+                    ];
+                    if (StudentDetail::where('id_number', $temp['id_number'])->exists()) {
+                        $existingData[] = $temp;
+                    } else {
+                        $newData[] = $temp;
+                    }
+                }
+                $request->session()->put('new_student_data', $newData);
+                $request->session()->put('existing_student_data', $existingData);
+            } else {
+                // GET request for pagination
+                $newData = $newSessionData;
+                $existingData = $existingSessionData;
             }
+
+            $showTable = true;
+            $new = !empty($newData);
+            $existing = !empty($existingData);
+            $perPage = $request->input('perPage', 10);
+
+            // Paginate New Data
+            $newCurrentPage = LengthAwarePaginator::resolveCurrentPage('new');
+            $newCurrentItems = array_slice($newData, ($newCurrentPage - 1) * $perPage, $perPage);
+            $newPaginatedData = new LengthAwarePaginator($newCurrentItems, count($newData), $perPage, $newCurrentPage, [
+                'path' => $request->url(),
+                'query' => $request->query(),
+                'pageName' => 'new',
+            ]);
+
+            // Paginate Existing Data
+            $existingCurrentPage = LengthAwarePaginator::resolveCurrentPage('existing');
+            $existingCurrentItems = array_slice($existingData, ($existingCurrentPage - 1) * $perPage, $perPage);
+            $existingPaginatedData = new LengthAwarePaginator($existingCurrentItems, count($existingData), $perPage, $existingCurrentPage, [
+                'path' => $request->url(),
+                'query' => $request->query(),
+                'pageName' => 'existing',
+            ]);
+
         } catch (\Exception $e) {
-            $errors = "An error occurred while loading the students";
-            return redirect()->route('import.import-students')->with('toast-error', $e->getMessage());
+            $errors = "An error occurred while loading the students: " . $e->getMessage();
+            return redirect()->route('import.import-students')->with('toast-error', $errors);
         }
-        return view('import.students.students', compact('showTable', 'newData', 'existingData', 'new', 'existing'));
+        return view('import.students.students', compact('showTable', 'newPaginatedData', 'existingPaginatedData', 'new', 'existing', 'perPage'));
     }
     public function downloadTemplate()
     {

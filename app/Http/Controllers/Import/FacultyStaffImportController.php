@@ -17,19 +17,40 @@ use App\Models\UserGroup;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class FacultyStaffImportController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
+        if (!$request->has('page') && !$request->has('perPage')) {
+            $request->session()->forget('new_employee_data');
+            $request->session()->forget('existing_employee_data');
+        }
         $showTable = false;
         return view('import.employees.index', compact('showTable'));
     }
     public function store(Request $request)
     {
-        $newEmployees           = $request->input('new_employees');
-        $existingEmployees      = $request->input('existing_employees');
-        $dataArray              = array_merge($newEmployees ?? array(), $existingEmployees ?? array());
+        $newEmployeesFromSession = $request->session()->get('new_employee_data', []);
+        $existingEmployeesFromSession = $request->session()->get('existing_employee_data', []);
+
+        // Merge last submitted data
+        $submittedNew = $request->input('new_employees', []);
+        foreach ($submittedNew as $index => $employee) {
+            if (isset($newEmployeesFromSession[$index])) {
+                $newEmployeesFromSession[$index] = array_merge($newEmployeesFromSession[$index], $employee);
+            }
+        }
+
+        $submittedExisting = $request->input('existing_employees', []);
+        foreach ($submittedExisting as $index => $employee) {
+            if (isset($existingEmployeesFromSession[$index])) {
+                $existingEmployeesFromSession[$index] = array_merge($existingEmployeesFromSession[$index], $employee);
+            }
+        }
+
+        $dataArray              = array_merge($newEmployeesFromSession ?? array(), $existingEmployeesFromSession ?? array());
         $errors                 = null;
         $staged_users           = array();
         $newFacultiesCount      = 0;
@@ -141,65 +162,113 @@ class FacultyStaffImportController extends Controller
             if ($employee == null) continue;
             $this->account_notification($employee, $user['password']);
         }
+        $request->session()->forget('new_employee_data');
+        $request->session()->forget('existing_employee_data');
         return redirect()->route('import.import-faculties-staffs')->with('toast-success', 'Faculties & Staffs imported successfully: ' . $newFacultiesCount . ' added & ' . $existingFacultiesCount . ' updated');
     }
     public function upload(Request $request)
     {
         try {
-            if ($request->file('file') == null) return redirect()->route('import.import-faculties-staffs')->with('toast-warning', "Please select a file.");
-            $showTable      = true;
-            $file           = $request->file('file');
-            $reader         = new ReaderXlsx();
-            $spreadsheet    = $reader->load($file);
-            $sheet          = $spreadsheet->getActiveSheet();
-            $rows           = $sheet->toArray();
-            $newData        = array();
-            $existingData   = array();
-            $new            = false;
-            $existing       = false;
-            if ($rows[0][0] == null) {
-                return redirect()->route('import.import-faculties-staffs')->with('toast-error', "Excel file is empty.");
-            } else if (count($rows[0]) > 11 || count($rows[0]) < 11) {
-                return redirect()->route('import.import-faculties-staffs')->with('toast-error', "An error occurred while saving faculties & staffs: Wrong number of columns.");
-            }
-            for ($i = 19; $i < count($rows); $i++) {
-                if (
-                    $rows[$i][1] == null &&
-                    $rows[$i][2] == null &&
-                    $rows[$i][3] == null &&
-                    $rows[$i][4] == null &&
-                    $rows[$i][5] == null &&
-                    $rows[$i][6] == null &&
-                    $rows[$i][7] == null
-                ) continue;
-                $fullName = $this->extractNameParts($rows[$i][2] ?? '');
-                if (empty($fullName['first_name']) || empty($fullName['last_name'])) {
-                    return redirect()->route('import.import-faculties-staffs')->with('toast-error', "Invalid format in row " . ($i + 1) . ". Please ensure that the 'Full Name' field are correctly filled.");
+            $newSessionData = $request->session()->get('new_employee_data', []);
+            $existingSessionData = $request->session()->get('existing_employee_data', []);
+
+            if ($request->isMethod('post') && !$request->hasFile('file')) {
+                // POST request for pagination, merge edits
+                $submittedNew = $request->input('new_employees', []);
+                foreach ($submittedNew as $index => $employee) {
+                    if (isset($newSessionData[$index])) {
+                        $newSessionData[$index] = array_merge($newSessionData[$index], $employee);
+                    }
                 }
-                $temp = array(
-                    'rfid'          => $rows[$i][1],
-                    'first_name'    => $fullName['first_name'],
-                    'middle_name'   => $fullName['middle_name'],
-                    'last_name'     => $fullName['last_name'],
-                    'suffix'        => $fullName['suffix'],
-                    'gender'        => $rows[$i][4],
-                    'email'         => $rows[$i][5],
-                    'employee_id'   => $rows[$i][6],
-                    'employee_role' => $rows[$i][7],
-                );
-                if (EmployeeDetail::where('employee_id', $temp['employee_id'])->exists()) {
-                    $existingData[] = $temp;
-                    $existing = true;
-                } else {
-                    $newData[] = $temp;
-                    $new = true;
+                $request->session()->put('new_employee_data', $newSessionData);
+
+                $submittedExisting = $request->input('existing_employees', []);
+                foreach ($submittedExisting as $index => $employee) {
+                    if (isset($existingSessionData[$index])) {
+                        $existingSessionData[$index] = array_merge($existingSessionData[$index], $employee);
+                    }
                 }
+                $request->session()->put('existing_employee_data', $existingSessionData);
+
+                $newData = $newSessionData;
+                $existingData = $existingSessionData;
+
+            } else if ($request->hasFile('file')) {
+                // Initial file upload
+                $file = $request->file('file');
+                $reader = new ReaderXlsx();
+                $spreadsheet = $reader->load($file);
+                $sheet = $spreadsheet->getActiveSheet();
+                $rows = $sheet->toArray();
+                $newData = [];
+                $existingData = [];
+
+                if ($rows[0][0] == null) {
+                    return redirect()->route('import.import-faculties-staffs')->with('toast-error', "Excel file is empty.");
+                } else if (count($rows[0]) > 11 || count($rows[0]) < 11) {
+                    return redirect()->route('import.import-faculties-staffs')->with('toast-error', "An error occurred while saving faculties & staffs: Wrong number of columns.");
+                }
+
+                for ($i = 19; $i < count($rows); $i++) {
+                    if (empty(array_filter(array_slice($rows[$i], 1, 7)))) continue;
+
+                    $fullName = $this->extractNameParts($rows[$i][2] ?? '');
+                    if (empty($fullName['first_name']) || empty($fullName['last_name'])) {
+                        return redirect()->route('import.import-faculties-staffs')->with('toast-error', "Invalid format in row " . ($i + 1) . ". Please ensure that the 'Full Name' field are correctly filled.");
+                    }
+                    $temp = [
+                        'rfid' => $rows[$i][1],
+                        'first_name' => $fullName['first_name'],
+                        'middle_name' => $fullName['middle_name'],
+                        'last_name' => $fullName['last_name'],
+                        'suffix' => $fullName['suffix'],
+                        'gender' => $rows[$i][4],
+                        'email' => $rows[$i][5],
+                        'employee_id' => $rows[$i][6],
+                        'employee_role' => $rows[$i][7],
+                    ];
+                    if (EmployeeDetail::where('employee_id', $temp['employee_id'])->exists()) {
+                        $existingData[] = $temp;
+                    } else {
+                        $newData[] = $temp;
+                    }
+                }
+                $request->session()->put('new_employee_data', $newData);
+                $request->session()->put('existing_employee_data', $existingData);
+            } else {
+                // GET request for pagination
+                $newData = $newSessionData;
+                $existingData = $existingSessionData;
             }
+
+            $showTable = true;
+            $new = !empty($newData);
+            $existing = !empty($existingData);
+            $perPage = $request->input('perPage', 10);
+
+            // Paginate New Data
+            $newCurrentPage = LengthAwarePaginator::resolveCurrentPage('new');
+            $newCurrentItems = array_slice($newData, ($newCurrentPage - 1) * $perPage, $perPage);
+            $newPaginatedData = new LengthAwarePaginator($newCurrentItems, count($newData), $perPage, $newCurrentPage, [
+                'path' => $request->url(),
+                'query' => $request->query(),
+                'pageName' => 'new',
+            ]);
+
+            // Paginate Existing Data
+            $existingCurrentPage = LengthAwarePaginator::resolveCurrentPage('existing');
+            $existingCurrentItems = array_slice($existingData, ($existingCurrentPage - 1) * $perPage, $perPage);
+            $existingPaginatedData = new LengthAwarePaginator($existingCurrentItems, count($existingData), $perPage, $existingCurrentPage, [
+                'path' => $request->url(),
+                'query' => $request->query(),
+                'pageName' => 'existing',
+            ]);
+
         } catch (\Exception $e) {
-            $errors = "An error occurred while loading the students";
+            $errors = "An error occurred while loading the employees: " . $e->getMessage();
             return redirect()->route('import.import-faculties-staffs')->with('toast-error', $errors);
         }
-        return view('import.employees.index', compact('showTable', 'newData', 'existingData', 'new', 'existing'));
+        return view('import.employees.index', compact('showTable', 'newPaginatedData', 'existingPaginatedData', 'new', 'existing', 'perPage'));
     }
     public function downloadTemplate()
     {

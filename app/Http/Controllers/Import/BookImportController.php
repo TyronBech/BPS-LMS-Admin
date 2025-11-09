@@ -12,64 +12,108 @@ use Milon\Barcode\DNS1D;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class BookImportController extends Controller
 {
-    public function index(){
+    public function index(Request $request){
+        if (!$request->has('page') && !$request->has('perPage')) {
+            $request->session()->forget('book_import_data');
+        }
         $showTable = false;
         return view('import.books.books', compact('showTable'));
     }
     public function upload(Request $request)
     {
+        
         try{
-            if($request->file('file') == null) return redirect()->route('import.import-books')->with('toast-warning', "Please select a file.");
-            $showTable      = true;
-            $file           = $request->file('file');
-            $reader         = new ReaderXlsx();
-            $spreadsheet    = $reader->load($file);
-            $sheet          = $spreadsheet->getActiveSheet();
-            $rows           = $sheet->toArray();
-            $data           = array();
-            if($rows[0][0] == null){
-                return redirect()->route('import.import-books')->with('toast-error', "Excel file is empty.");
+            $sessionData = $request->session()->get('book_import_data', []);
+
+            if ($request->isMethod('post') && !$request->hasFile('file')) {
+                // Merge submitted edits into the session data
+                $submittedBooks = $request->input('books', []);
+                foreach ($submittedBooks as $index => $book) {
+                    if (isset($sessionData[$index])) {
+                        $sessionData[$index] = array_merge($sessionData[$index], $book);
+                    }
+                }
+                $request->session()->put('book_import_data', $sessionData);
+                $data = $sessionData;
+            } else if ($request->has('page') || $request->has('perPage')) {
+                // Navigating via GET, just use session data
+                $data = $sessionData;
+            } else {
+                // Initial file upload
+                if($request->file('file') == null) return redirect()->route('import.import-books')->with('toast-warning', "Please select a file.");
+                $file           = $request->file('file');
+                $reader         = new ReaderXlsx();
+                $spreadsheet    = $reader->load($file);
+                $sheet          = $spreadsheet->getActiveSheet();
+                $rows           = $sheet->toArray();
+                $data           = array();
+                if($rows[0][0] == null){
+                    return redirect()->route('import.import-books')->with('toast-error', "Excel file is empty.");
+                }
+                for($i = 19; $i < count($rows); $i++){
+                    if($rows[$i][1] == null &&
+                        $rows[$i][2] == null &&
+                        $rows[$i][3] == null &&
+                        $rows[$i][4] == null &&
+                        $rows[$i][5] == null &&
+                        $rows[$i][6] == null &&
+                        $rows[$i][7] == null &&
+                        $rows[$i][8] == null &&
+                        $rows[$i][9] == null &&
+                        $rows[$i][10] == null &&
+                        $rows[$i][11] == null &&
+                        $rows[$i][12] == null) continue;
+                    $data[] = array(
+                        'accession'             => $rows[$i][1],
+                        'call_number'           => $rows[$i][2],
+                        'title'                 => $rows[$i][3],
+                        'authors'               => $rows[$i][4],
+                        'book_type'             => $rows[$i][5],
+                        'description'           => $rows[$i][6],
+                        'edition'               => $rows[$i][7],
+                        'place_of_publication'  => $rows[$i][8],
+                        'publisher'             => $rows[$i][9],
+                        'copyrights'            => $rows[$i][10],
+                        'category'              => $rows[$i][11],
+                        'digital_copy_url'      => $rows[$i][12],
+                    );
+                }
+                $request->session()->put('book_import_data', $data);
             }
-            for($i = 19; $i < count($rows); $i++){
-                if($rows[$i][1] == null &&
-                    $rows[$i][2] == null &&
-                    $rows[$i][3] == null &&
-                    $rows[$i][4] == null &&
-                    $rows[$i][5] == null &&
-                    $rows[$i][6] == null &&
-                    $rows[$i][7] == null &&
-                    $rows[$i][8] == null &&
-                    $rows[$i][9] == null &&
-                    $rows[$i][10] == null &&
-                    $rows[$i][11] == null &&
-                    $rows[$i][12] == null) continue;
-                $data[] = array(
-                    'accession'             => $rows[$i][1],
-                    'call_number'           => $rows[$i][2],
-                    'title'                 => $rows[$i][3],
-                    'authors'               => $rows[$i][4],
-                    'book_type'             => $rows[$i][5],
-                    'description'           => $rows[$i][6],
-                    'edition'               => $rows[$i][7],
-                    'place_of_publication'  => $rows[$i][8],
-                    'publisher'             => $rows[$i][9],
-                    'copyrights'            => $rows[$i][10],
-                    'category'              => $rows[$i][11],
-                    'digital_copy_url'      => $rows[$i][12],
-                );
-            }
+
+            $showTable = true;
+            // Paginate the data array
+            $perPage = $request->input('perPage', 10);
+            $currentPage = LengthAwarePaginator::resolveCurrentPage();
+            $currentItems = array_slice($data, ($currentPage - 1) * $perPage, $perPage);
+            $paginatedData = new LengthAwarePaginator($currentItems, count($data), $perPage, $currentPage, [
+                'path' => $request->url(),
+                'query' => $request->query(),
+            ]);
+
         } catch(\Exception $e){
-            $errors = "An error occurred while loading the books";
+            $errors = "An error occurred while loading the books: " . $e->getMessage();
             return redirect()->route('import.import-books')->with('toast-error', $errors);
         }
-        return view('import.books.books', compact('showTable', 'data'));
+        return view('import.books.books', ['showTable' => $showTable, 'data' => $paginatedData, 'perPage' => $perPage]);
     }
     public function store(Request $request)
     {
-        $data       = $request->input('books');
+        $submittedBooks = $request->input('books', []);
+        $allBooks = $request->session()->get('book_import_data', []);
+
+        // Update the session data with the submitted (potentially edited) data
+        foreach ($submittedBooks as $index => $book) {
+            if (isset($allBooks[$index])) {
+                $allBooks[$index] = $book;
+            }
+        }
+        
+        $data       = $allBooks;
         $errors     = "";
         $newBooksCount = 0;
         $books = new Book();
@@ -139,6 +183,7 @@ class BookImportController extends Controller
             }
         }
         DB::commit();
+        $request->session()->forget('book_import_data');
         return redirect()->route('import.import-books')->with('toast-success', 'Books imported successfully: ' . $newBooksCount . ' new books added.');
     }
     public function downloadTemplate()
