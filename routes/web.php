@@ -118,10 +118,10 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::get('books/download-template',                       [BookImportController::class, 'downloadTemplate'])          ->name('import.download-book-template');
     });
     Route::prefix('inventory')->middleware(InventoryAuthentication::class)->group(function () {
-        Route::get('dashboard', [InventoryController::class, 'index'])  ->name('inventory.dashboard');
-        Route::post('search',   [InventoryController::class, 'search']) ->name('inventory.search');
-        Route::patch('update',  [InventoryController::class, 'update']) ->name('inventory.update');
-        Route::delete('delete', [InventoryController::class, 'destroy'])->name('inventory.delete');
+        Route::match(['get', 'post'], 'dashboard',  [InventoryController::class, 'index'])  ->name('inventory.dashboard');
+        Route::post('search',                       [InventoryController::class, 'search']) ->name('inventory.search');
+        Route::patch('update',                      [InventoryController::class, 'update']) ->name('inventory.update');
+        Route::delete('delete',                     [InventoryController::class, 'destroy'])->name('inventory.delete');
     });
     Route::prefix('maintenance')->middleware(MaintenanceAuthentication::class)->group(function () {
         Route::prefix('books')->middleware(BookAuthentication::class)->group(function () {

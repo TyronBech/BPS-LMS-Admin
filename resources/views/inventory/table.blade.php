@@ -1,19 +1,17 @@
 <div class="container mx-auto mt-12 mb-4">
   <div class="flex flex-col rounded-lg bg-white dark:bg-gray-800 shadow-sm">
     <h2 class="text-center mb-4 mt-4 font-semibold text-2xl dark:text-white">Books Inventory</h2>
-    <form method="GET" class="flex items-center m-2">
-      <label for="perPage" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Show</label>
-      <input type="hidden" name="search" value="{{ request('barcode') }}">
-      <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
-        <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
-        <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
-        <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
-      </select>
-      <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">entries per page</span>
-    </form>
-    <form action="{{ route('inventory.update') }}" method="POST" class="flex flex-col">
+    <form id="inventory-form" action="{{ route('inventory.dashboard') }}" method="POST" class="flex flex-col">
       @csrf
-      @method('PATCH')
+      <div class="flex items-center m-2">
+        <label for="perPage" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Show</label>
+        <select name="perPage" id="perPage" onchange="submitInventoryForm()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+          <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
+          <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
+          <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>
+        </select>
+        <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">entries per page</span>
+      </div>
       <div class="overflow-x-auto">
         <table id="inventory-record" class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
           <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 hidden md:table-header-group">
@@ -33,16 +31,12 @@
               <td class="px-6 py-4 block md:table-cell text-right md:text-center"><span class="float-left font-bold md:hidden">Accession</span>{{ $item->book->accession }}</td>
               <td class="px-6 py-4 block md:table-cell text-right md:text-center"><span class="float-left font-bold md:hidden">Call Number</span>{{ $item->book->call_number }}</td>
               <td class="px-6 py-4 block md:table-cell text-right md:text-center"><span class="float-left font-bold md:hidden">Title</span>{{ $item->book->title }}</td>
-              <td class="px-6 py-4 block md:table-cell text-right md:text-center"><span class="float-left font-bold md:hidden">Author</span>{{ $item->book->author }}</td>
+              <td class="px-6 py-4 block md:table-cell text-right md:text-center"><span class="float-left font-bold md:hidden">Author</span>{{ optional($item->book)->author ?? 'N/A' }}</td>
               <td class="px-6 py-4 block md:table-cell text-right md:text-center">
                 <span class="float-left font-bold md:hidden">Remarks</span>
                 <select name="remarks[{{ $item->book->accession }}]" id="remarks" class="w-1/2 md:w-full p-2 border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
                   @foreach($remarks as $remark)
-                  @if($remark == $item->book->remarks)
-                  <option value="{{ $remark }}" selected>{{ $remark }}</option>
-                  @else
-                  <option value="{{ $remark }}">{{ $remark }}</option>
-                  @endif
+                  <option value="{{ $remark }}" @if($remark == $item->book->remarks) selected @endif>{{ $remark }}</option>
                   @endforeach
                 </select>
               </td>
@@ -50,11 +44,7 @@
                 <span class="float-left font-bold md:hidden">Condition</span>
                 <select name="condition[{{ $item->book->accession }}]" id="condition" class="w-1/2 md:w-full p-2 border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
                   @foreach($conditions as $condition)
-                  @if($condition == $item->book->condition_status)
-                  <option value="{{ $condition }}" selected>{{ $condition }}</option>
-                  @else
-                  <option value="{{ $condition }}">{{ $condition }}</option>
-                  @endif
+                  <option value="{{ $condition }}" @if($condition == $item->book->condition_status) selected @endif>{{ $condition }}</option>
                   @endforeach
                 </select>
               </td>
@@ -70,13 +60,35 @@
             @endforelse
           </tbody>
         </table>
-        <div class="p-4">
+        <div id="pagination-links" class="p-4">
           {{ $inventory->withQueryString()->links() }}
         </div>
       </div>
       @if(count($inventory) > 0)
-      <button type="submit" class="text-white max-w-36 self-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 my-4 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Save</button>
+      <button type="submit" formaction="{{ route('inventory.update') }}" formmethod="POST" class="text-white max-w-36 self-center bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 my-4 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Save</button>
       @endif
     </form>
   </div>
 </div>
+<script>
+    function submitInventoryForm(url) {
+        const form = document.getElementById('inventory-form');
+        if (url) {
+            form.action = url;
+        }
+        form.submit();
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        const paginationContainer = document.getElementById('pagination-links');
+        if (paginationContainer) {
+            paginationContainer.addEventListener('click', function(e) {
+                const target = e.target.closest('a');
+                if (target) {
+                    e.preventDefault();
+                    submitInventoryForm(target.href);
+                }
+            });
+        }
+    });
+</script>

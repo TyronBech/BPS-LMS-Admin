@@ -13,6 +13,10 @@ class InventoryController extends Controller
 {
     public function index(Request $request)
     {
+        if ($request->isMethod('post')) {
+            $this->savePageData($request);
+        }
+
         $perPage    = $request->input('perPage', 10);
         $barcode    = $request->input('barcode');
         $conditions = $this->extract_enums('bk_books', 'condition_status');
@@ -61,36 +65,7 @@ class InventoryController extends Controller
     }
     public function update(Request $request)
     {
-        $condition = $request->input('condition');
-        $remarks = $request->input('remarks');
-        if (!$condition) {
-            return redirect()->back()->with('toast-warning', 'Please enter a book');
-        }
-        DB::beginTransaction();
-        try {
-            foreach ($condition as $key => $value) {
-                $book = Book::where('accession', $key)->first();
-                if (!$book) {
-                    DB::rollBack();
-                    return redirect()->back()->with('toast-warning', 'Book not found!');
-                }
-                $inventory = Inventory::where('book_id', $book->id)->where('checked_at', null)->first();
-                if (!$inventory) {
-                    return redirect()->back()->with('toast-warning', 'No inventory found for this book!');
-                }
-                $inventory->update([
-                    'checked_at' => now(),
-                ]);
-                $book->update([
-                    'remarks'           => $remarks[$key],
-                    'condition_status'  => $value,
-                ]);
-            }
-        } catch (\Illuminate\Database\QueryException $e) {
-            DB::rollBack();
-            return redirect()->back()->with('toast-error', 'Something went wrong!');
-        }
-        DB::commit();
+        $this->savePageData($request, true); // Final save, mark as checked
         return redirect()->route('inventory.dashboard')->with('toast-success', 'Inventory updated successfully!');
     }
     public function destroy(Request $request)
@@ -116,6 +91,41 @@ class InventoryController extends Controller
         DB::commit();
         return redirect()->route('inventory.dashboard')->with('toast-success', 'Inventory deleted successfully!');
     }
+
+    private function savePageData(Request $request, $finalize = false)
+    {
+        $conditions = $request->input('condition', []);
+        $remarks = $request->input('remarks', []);
+        $accessions = array_keys($conditions + $remarks);
+
+        if (empty($accessions)) {
+            return;
+        }
+
+        DB::beginTransaction();
+        try {
+            foreach ($accessions as $accession) {
+                $book = Book::where('accession', $accession)->first();
+                if (!$book) continue;
+
+                $book->update([
+                    'remarks'           => $remarks[$accession] ?? $book->remarks,
+                    'condition_status'  => $conditions[$accession] ?? $book->condition_status,
+                ]);
+
+                if ($finalize) {
+                    Inventory::where('book_id', $book->id)
+                        ->whereNull('checked_at')
+                        ->update(['checked_at' => now()]);
+                }
+            }
+        } catch (\Illuminate\Database\QueryException $e) {
+            DB::rollBack();
+            throw $e;
+        }
+        DB::commit();
+    }
+
     private function extract_enums($table, $columnName)
     {
         $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";
