@@ -3,7 +3,7 @@
 <h1 class="font-semibold text-center text-4xl p-5">Inventory</h1>
 <div class="flex justify-center">
   <div class="w-full max-w-sm md:max-w-xl lg:max-w-4xl flex flex-col items-center bg-white border border-gray-200 rounded-lg shadow-sm mb-12 md:flex-row dark:border-gray-700 dark:bg-gray-800">
-    <img class="object-cover w-full rounded-t-lg h-64 md:h-48 md:rounded-none md:rounded-s-lg" src="{{ asset('gif/book.gif') }}" id="book-img" alt="Book Image">
+    <img class="object-cover w-full rounded-t-lg h-64 md:h-48 md:rounded-none md:rounded-s-lg" src="{{ asset('gif/Book.gif') }}" id="book-img" alt="Book Image">
     <div class="flex flex-col justify-between p-4 leading-normal w-full">
       <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Book Inventory</h5>
       <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Scan the book or type it below.</p>
