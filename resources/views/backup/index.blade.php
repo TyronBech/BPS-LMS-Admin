@@ -8,7 +8,7 @@
 
       {{-- Image Column --}}
       <div class="md:col-span-1 flex justify-center">
-        <img class="object-cover w-40 h-40 rounded-lg" src="{{ asset('img/database.png') }}" alt="Database Image">
+        <img class="object-cover w-40 h-40 rounded-lg" src="{{ asset('gif/database.gif') }}" alt="Database Image">
       </div>
 
       {{-- Content Column --}}
