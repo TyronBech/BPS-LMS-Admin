@@ -20,8 +20,12 @@
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
             <th scope="col" class="px-6 py-3">Name</th>
+            @if($data->first() && $data->first()->user->students)
             <th scope="col" class="px-6 py-3">Level</th>
             <th scope="col" class="px-6 py-3">Section</th>
+            @elseif($data->first() && $data->first()->user->employees)
+            <th scope="col" class="px-6 py-3">Role</th>
+            @endif
             <th scope="col" class="px-6 py-3">Date</th>
             <th scope="col" class="px-6 py-3">Time</th>
           </tr>
@@ -32,8 +36,12 @@
             <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
               {{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}
             </th>
+            @if($item->user->students)
             <td class="px-6 py-4">{{ $item->user->students->level }}</td>
             <td class="px-6 py-4">{{ $item->user->students->section }}</td>
+            @elseif($item->user->employees)
+            <td class="px-6 py-4">{{ $item->user->employees->employee_role }}</td>
+            @endif
             <td class="px-6 py-4">{{ \Carbon\Carbon::parse($item->time_in)->format('Y-m-d') }}</td>
             <td class="px-6 py-4">{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
           </tr>
