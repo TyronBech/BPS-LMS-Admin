@@ -8,11 +8,12 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Client\ConnectionException;
 use App\Models\Transaction;
 use App\Models\Book;
 use DateTime;
 use Exception;
-use Svg\Tag\Rect;
 
 class TransactionMaintenanceController extends Controller
 {
@@ -171,57 +172,101 @@ class TransactionMaintenanceController extends Controller
     private function getBookImage($title = null, $author = null, $isbn = null)
     {
         $apiKey = env('GOOGLE_BOOKS_API_KEY');
-        $url = null;
-
-        if ($title || $author || $isbn) {
-            $queryParts = [];
-
-            if ($title) {
-                $queryParts[] = "intitle:" . urlencode($title);
-            }
-            if ($author) {
-                $queryParts[] = "inauthor:" . urlencode($author);
-            }
-            if ($isbn) {
-                $queryParts[] = "isbn:" . urlencode($isbn);
-            }
-
-            $queryURL = implode("+", $queryParts);
-            $url = "https://www.googleapis.com/books/v1/volumes?q={$queryURL}&key={$apiKey}&maxResults=1";
-        }
-
-        if (!$url) {
+        
+        // Check if API key exists
+        if (empty($apiKey)) {
+            Log::warning('Google Books API key is not set in .env file');
             return null;
         }
+
+        // Validate input - at least one parameter must be provided
+        if (empty($title) && empty($author) && empty($isbn)) {
+            return null;
+        }
+
+        // Build query parts
+        $queryParts = [];
+        
+        if (!empty($isbn)) {
+            // ISBN is the most accurate, prioritize it
+            $queryParts[] = "isbn:" . urlencode(trim($isbn));
+        }
+        
+        if (!empty($title)) {
+            $queryParts[] = "intitle:" . urlencode(trim($title));
+        }
+        
+        if (!empty($author)) {
+            $queryParts[] = "inauthor:" . urlencode(trim($author));
+        }
+
+        $queryURL = implode("+", $queryParts);
+        $url = "https://www.googleapis.com/books/v1/volumes?q={$queryURL}&key={$apiKey}&maxResults=1";
 
         // Path to local CA bundle
         $caPath = storage_path('certs/cacert.pem');
 
         try {
-            // Try secure request with CA verification
-            $options = [];
+            // Configure HTTP options
+            $options = [
+                'timeout' => 10, // 10 second timeout
+            ];
+            
             if (file_exists($caPath)) {
                 $options['verify'] = $caPath;
             }
 
             $response = Http::withOptions($options)->get($url);
 
-            if ($response->successful()) {
-                $data = $response->json();
-
-                if (!empty($data['items'][0]['volumeInfo']['imageLinks']['thumbnail'])) {
-                    return str_replace(
-                        'http://',
-                        'https://',
-                        $data['items'][0]['volumeInfo']['imageLinks']['thumbnail']
-                    );
-                }
+            // Check if request was successful
+            if (!$response->successful()) {
+                Log::warning('Google Books API request failed', [
+                    'status' => $response->status(),
+                    'url' => $url
+                ]);
+                return null;
             }
+
+            $data = $response->json();
+
+            // Check if we have results
+            if (empty($data['items']) || !is_array($data['items'])) {
+                Log::info('No books found in Google Books API', [
+                    'title' => $title,
+                    'author' => $author,
+                    'isbn' => $isbn
+                ]);
+                return null;
+            }
+
+            // Extract thumbnail URL
+            $thumbnail = $data['items'][0]['volumeInfo']['imageLinks']['thumbnail'] ?? null;
+            
+            if (empty($thumbnail)) {
+                Log::info('Book found but no thumbnail available', [
+                    'title' => $title,
+                    'author' => $author,
+                    'isbn' => $isbn
+                ]);
+                return null;
+            }
+
+            // Force HTTPS and return
+            return str_replace('http://', 'https://', $thumbnail);
+
+        } catch (ConnectionException $e) {
+            Log::error('Connection error while fetching book image', [
+                'message' => $e->getMessage(),
+                'url' => $url
+            ]);
+            return null;
         } catch (\Exception $e) {
+            Log::error('Error fetching book image from Google Books API', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return null;
         }
-
-        return null;
     }
     /**
      * Extracts the enum values from a given table and column name.

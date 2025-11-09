@@ -17,11 +17,15 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-6">
       {{-- Book Cover --}}
       <div class="lg:col-span-1 flex justify-center">
-        @if($cover)
-        <img class="object-cover w-full max-w-xs rounded-lg shadow-md" src="{{ str_starts_with($cover, 'data:') ? $cover : 'data:' . $mimeType . ';base64,' . $cover }}" alt="Book Image">
+        @if(!empty($book->cover_image))
+        <img class="object-contain w-full max-w-xs rounded-lg shadow-md" src="data:{{ $mimeType }};base64, {{ $book->cover_image }}" alt="Book Image">
+        @elseif(!empty($cover))
+        <img class="object-contain w-full max-w-xs rounded-lg shadow-md" src="{{ $cover }}" alt="Book Image">
         @else
-        <img class="object-cover w-full max-w-xs rounded-lg shadow-md dark:hidden" src="{{ asset('img/Book-light.png') }}" alt="Book Image">
-        <img class="hidden object-cover w-full max-w-xs rounded-lg shadow-md dark:block" src="{{ asset('img/Book-dark.png') }}" alt="Book Image">
+        <div class="w-full max-w-xs">
+          <img class="object-contain w-full h-full rounded-lg shadow-md dark:hidden" src="{{ asset('img/Book-light.png') }}" alt="Book Image">
+          <img class="hidden object-contain w-full h-full rounded-lg shadow-md dark:block" src="{{ asset('img/Book-dark.png') }}" alt="Book Image">
+        </div>
         @endif
       </div>
 
