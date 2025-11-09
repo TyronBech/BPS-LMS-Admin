@@ -5,6 +5,7 @@
       <form method="GET" class="flex items-center">
         <label for="perPage" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Show</label>
         <input type="hidden" name="search" value="{{ request('search') }}">
+        <input type="hidden" name="user_type" value="{{ request('user_type') }}">
         <input type="hidden" name="start" value="{{ request('start') }}">
         <input type="hidden" name="end" value="{{ request('end') }}">
         <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
@@ -20,10 +21,10 @@
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
             <th scope="col" class="px-6 py-3">Name</th>
-            @if($data->first() && $data->first()->user->students)
+            @if($userType == 'students')
             <th scope="col" class="px-6 py-3">Level</th>
             <th scope="col" class="px-6 py-3">Section</th>
-            @elseif($data->first() && $data->first()->user->employees)
+            @elseif($userType == 'employees')
             <th scope="col" class="px-6 py-3">Role</th>
             @endif
             <th scope="col" class="px-6 py-3">Date</th>
@@ -36,10 +37,10 @@
             <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
               {{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}
             </th>
-            @if($item->user->students)
+            @if($userType == 'students')
             <td class="px-6 py-4">{{ $item->user->students->level }}</td>
             <td class="px-6 py-4">{{ $item->user->students->section }}</td>
-            @elseif($item->user->employees)
+            @elseif($userType == 'employees')
             <td class="px-6 py-4">{{ $item->user->employees->employee_role }}</td>
             @endif
             <td class="px-6 py-4">{{ \Carbon\Carbon::parse($item->time_in)->format('Y-m-d') }}</td>
