@@ -41,5 +41,6 @@ enum PermissionsEnum : string
     case VIEW_TRANSACTIONS_MAINTENANCE      = 'View Book Circulations Maintenance';
     case VIEW_DASHBOARD                     = 'View Dashboard';
     case CREATE_BACKUPS                     = 'Create Backups';
+    case RESERVATION_APPROVALS              = 'Reservation Approvals';
 
 }

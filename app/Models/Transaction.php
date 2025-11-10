@@ -19,6 +19,7 @@ class Transaction extends Model
         'return_date',
         'reserved_date',
         'pickup_deadline',
+        'requested_due_date',
         'transaction_type',
         'status',
         'book_condition',

@@ -25,10 +25,7 @@ class ReportAuthentication
             && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_SUMMARY_REPORTS)
             && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_TRANSACTION_REPORTS)
             && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_BOOK_CIRCULATION_REPORTS)
-            && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_PENALTY_REPORTS)
-            && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_USER_AUDIT_REPORTS)
-            && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_BOOK_AUDIT_REPORTS)
-            && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_TRANSACTION_AUDIT_REPORTS)) return redirect()->route('dashboard')->with('toast-error', 'You are unable to access this page');
+            && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_PENALTY_REPORTS)) return redirect()->route('dashboard')->with('toast-error', 'You are unable to access this page');
         return $next($request);
     }
 }

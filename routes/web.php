@@ -29,6 +29,7 @@ use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Backup\BackupController;
 use App\Http\Controllers\Maintenance\PenaltyRuleController;
+use App\Http\Controllers\Maintenance\ReservationExtensionController;
 use App\Http\Controllers\Maintenance\TransactionMaintenanceController;
 use App\Http\Middleware\BackupAuthentication;
 use App\Http\Middleware\BookAuthentication;
@@ -42,6 +43,7 @@ use App\Http\Middleware\ImportAuthentication;
 use App\Http\Middleware\MaintenanceAuthentication;
 use App\Http\Middleware\PenaltyRuleMiddleware;
 use App\Http\Middleware\PreventBackHistory;
+use App\Http\Middleware\ReservationAuthentication;
 
 Route::get('/', function () {
     return view('main-welcome');
@@ -61,9 +63,42 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     Route::get('dashboard', function(){
         return view('dashboard.dashboard');
     })->name('dashboard');
-    // Route::get('test', function() {
-    //     return view('dashboard.dashboard');
-    // })->name('test');
+    Route::get('test', function() {
+        // Mock data for testing the email template
+        $user = (object) [
+            'first_name' => 'Juan',
+            'last_name' => 'Dela Cruz',
+            'email' => 'juan.delacruz@student.bps.edu'
+        ];
+
+        $book = (object) [
+            'title' => 'Introduction to Programming',
+            'author' => 'John Smith',
+            'accession' => 'ACC-2024-001'
+        ];
+
+        // REJECTION MESSAGE
+        $message = 'Your book extension request for "Introduction to Programming" has been REJECTED by the librarian. Reason: Maximum renewal limit reached (3 extensions). Please return the book on or before the original due date. If you need further assistance, please visit the library.';
+        
+        // Change to 'extension_rejected' to test rejection email
+        $transactionType = 'extension_rejected'; // Changed from 'extended'
+        
+        $dueDate = now()->addDays(2); // Original due date (soon)
+        $conditionStatus = 'Good';
+        $penaltyTotal = '0.00';
+        $penaltyStatus = 'No Penalty';
+
+        return view('mail.reservationExtension', compact(
+            'user',
+            'book',
+            'message',
+            'transactionType',
+            'dueDate',
+            'conditionStatus',
+            'penaltyTotal',
+            'penaltyStatus'
+        ));
+    })->name('test');
     Route::get('function-test',         [FetchDataController::class, 'mostBorrowedStudents'])   ->name('function-test');
     Route::post('timeout-all-users',    [FetchDataController::class, 'timeoutAllUsers'])        ->name('timeout-all-users');
     Route::get('profile',               [ProfileController::class, 'index'])                    ->name('profile');
@@ -183,6 +218,12 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::get('retrieve-circulation',  [TransactionMaintenanceController::class, 'retrieve'])  ->name('maintenance.retrieve-circulation');
             Route::put('edit-circulation',      [TransactionMaintenanceController::class, 'update'])    ->name('maintenance.update-circulation');
             Route::delete('delete-circulation', [TransactionMaintenanceController::class, 'destroy'])   ->name('maintenance.delete-circulation');
+        });
+        Route::prefix('reservatons')->middleware(ReservationAuthentication::class)->group(function () {
+           Route::get('reservations',          [ReservationExtensionController::class, 'index'])     ->name('maintenance.reservations');
+           Route::post('approve-extension/{id}',   [ReservationExtensionController::class, 'approve'])   ->name('maintenance.approve-extension');
+           Route::post('reject-extension/{id}',    [ReservationExtensionController::class, 'reject'])    ->name('maintenance.reject-extension');
+           Route::get('search', [ReservationExtensionController::class, 'search'])    ->name('maintenance.search-extension');
         });
         Route::prefix('admin-management')->middleware(SuperAdminAuthentication::class)->group(function () {
             Route::get('admins',            [AdminMaintenanceController::class, 'index'])           ->name('maintenance.admins');

@@ -28,8 +28,8 @@ class RolePermissionSeeder extends Seeder
         // Permission::create(['name' => 'View User Reports',                   'guard_name' => 'admin']);
         // Permission::create(['name' => 'View Summary Reports',                'guard_name' => 'admin']);
         // Permission::create(['name' => 'View Inventory Reports',              'guard_name' => 'admin']);
-        // Permission::create(['name' => 'View Transaction Reports',            'guard_name' => 'admin']);
         // Permission::create(['name' => 'View Book Circulation Reports',       'guard_name' => 'admin']);
+        // Permission::create(['name' => 'View Accession List Reports',         'guard_name' => 'admin']);
         // Permission::create(['name' => 'View Penalty Reports',                'guard_name' => 'admin']);
         // Permission::create(['name' => 'Book Inventory',                      'guard_name' => 'admin']);
         // Permission::create(['name' => 'Import Users',                        'guard_name' => 'admin']);
@@ -44,27 +44,28 @@ class RolePermissionSeeder extends Seeder
         // Permission::create(['name' => 'Add Penalty Rule',                    'guard_name' => 'admin']);
         // Permission::create(['name' => 'Edit Penalty Rule',                   'guard_name' => 'admin']);
         // Permission::create(['name' => 'Delete Penalty Rule',                 'guard_name' => 'admin']);
-        // Permission::create(['name' => 'Edit Transactions',                   'guard_name' => 'admin']);
+        // Permission::create(['name' => 'Edit Book Circulations',              'guard_name' => 'admin']);
         // Permission::create(['name' => 'View User Audit Reports',             'guard_name' => 'admin']);
         // Permission::create(['name' => 'View Book Audit Reports',             'guard_name' => 'admin']);
-        // Permission::create(['name' => 'View Transaction Audit Reports',      'guard_name' => 'admin']);
+        // Permission::create(['name' => 'View Book Circulation Audit Reports', 'guard_name' => 'admin']);
         // Permission::create(['name' => 'View Users Maintenance',              'guard_name' => 'admin']);
         // Permission::create(['name' => 'View Books Maintenance',              'guard_name' => 'admin']);
         // Permission::create(['name' => 'View Book Categories Maintenance',    'guard_name' => 'admin']);
         // Permission::create(['name' => 'View Privileges Maintenance',         'guard_name' => 'admin']);
         // Permission::create(['name' => 'View Penalty Rules Maintenance',      'guard_name' => 'admin']);
-        // Permission::create(['name' => 'View Transactions Maintenance',       'guard_name' => 'admin']);
+        // Permission::create(['name' => 'View Book Circulations Maintenance',  'guard_name' => 'admin']);
         // Permission::create(['name' => 'View Dashboard',                      'guard_name' => 'admin']);
         // Permission::create(['name' => 'Create Backups',                      'guard_name' => 'admin']);
         // Permission::create(['name' => 'View Audit Reports',                  'guard_name' => 'admin']);
+        // Permission::create(['name' => 'Reservation Approvals',                      'guard_name' => 'admin']);
 
 
-        $permission = Permission::findByName('View User Audit Reports', 'admin');
-        $permission->delete();
-        $permission = Permission::findByName('View Book Audit Reports', 'admin');
-        $permission->delete();
-        $permission = Permission::findByName('View Transaction Audit Reports', 'admin');
-        $permission->delete();
+        // $permission = Permission::findByName('View User Audit Reports', 'admin');
+        // $permission->delete();
+        // $permission = Permission::findByName('View Book Audit Reports', 'admin');
+        // $permission->delete();
+        // $permission = Permission::findByName('View Transaction Audit Reports', 'admin');
+        // $permission->delete();
 
         
         // $role1 = Role::create(['name' => 'Super Admin',  'guard_name' => 'admin']);
