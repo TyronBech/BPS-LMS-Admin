@@ -31,6 +31,7 @@ use App\Http\Controllers\Backup\BackupController;
 use App\Http\Controllers\Maintenance\PenaltyRuleController;
 use App\Http\Controllers\Maintenance\ReservationExtensionController;
 use App\Http\Controllers\Maintenance\TransactionMaintenanceController;
+use App\Http\Middleware\AuditReportAuthentication;
 use App\Http\Middleware\BackupAuthentication;
 use App\Http\Middleware\BookAuthentication;
 use App\Http\Middleware\SuperAdminAuthentication;
@@ -135,8 +136,10 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
         Route::post('inventory-report', [InventoriesController::class, 'search'])       ->name('report.inventory-search');
         Route::get('penalties',         [PenaltiesController::class, 'index'])          ->name('report.penalties');
         Route::post('penalties',        [PenaltiesController::class, 'search'])         ->name('report.penalties-search');
-        Route::get('audit-trail',       [AuditTrailController::class, 'index'])         ->name('report.audit-trail');
-        Route::post('audit-trail',      [AuditTrailController::class, 'search'])        ->name('report.audit-trail-search');
+        Route::middleware(AuditReportAuthentication::class)->group(function () {
+            Route::get('audit-trail',   [AuditTrailController::class, 'index'])     ->name('report.audit-trail');
+            Route::post('audit-trail',  [AuditTrailController::class, 'search'])    ->name('report.audit-trail-search');
+        });
     });
     Route::prefix('import')->middleware(ImportAuthentication::class)->group(function () {
         Route::get('students',                                      [StudentImportController::class, 'index'])                  ->name('import.import-students');
@@ -220,10 +223,10 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::delete('delete-circulation', [TransactionMaintenanceController::class, 'destroy'])   ->name('maintenance.delete-circulation');
         });
         Route::prefix('reservatons')->middleware(ReservationAuthentication::class)->group(function () {
-           Route::get('reservations',          [ReservationExtensionController::class, 'index'])     ->name('maintenance.reservations');
-           Route::post('approve-extension/{id}',   [ReservationExtensionController::class, 'approve'])   ->name('maintenance.approve-extension');
-           Route::post('reject-extension/{id}',    [ReservationExtensionController::class, 'reject'])    ->name('maintenance.reject-extension');
-           Route::get('search', [ReservationExtensionController::class, 'search'])    ->name('maintenance.search-extension');
+           Route::get('reservations',               [ReservationExtensionController::class, 'index'])   ->name('maintenance.reservations');
+           Route::post('approve-extension/{id}',    [ReservationExtensionController::class, 'approve']) ->name('maintenance.approve-extension');
+           Route::post('reject-extension/{id}',     [ReservationExtensionController::class, 'reject'])  ->name('maintenance.reject-extension');
+           Route::get('search',                     [ReservationExtensionController::class, 'search'])  ->name('maintenance.search-extension');
         });
         Route::prefix('admin-management')->middleware(SuperAdminAuthentication::class)->group(function () {
             Route::get('admins',            [AdminMaintenanceController::class, 'index'])           ->name('maintenance.admins');

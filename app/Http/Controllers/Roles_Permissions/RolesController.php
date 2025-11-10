@@ -22,6 +22,7 @@ class RolesController extends Controller
                 $query->where('guard_name', 'admin')
                     ->where('name', '!=', 'Modify Admins')
                     ->where('name', '!=', 'Create Backups')
+                    ->where('name', '!=', 'View Audit Reports')
                     ->orderBy('name', 'asc');
             })
             ->get();
@@ -34,6 +35,8 @@ class RolesController extends Controller
         $permissions = Permission::select('name')
             ->where('guard_name', 'admin')
             ->where('name', '!=', 'Modify Admins')
+            ->where('name', '!=', 'Create Backups')
+            ->where('name', '!=', 'View Audit Reports')
             ->orderBy('name', 'asc')
             ->get();
         return view('roles_permissions.create', compact('permissions'));
@@ -91,6 +94,7 @@ class RolesController extends Controller
                 ->where('guard_name', 'admin')
                 ->where('name', '!=', 'Modify Admins')
                 ->where('name', '!=', 'Create Backups')
+                ->where('name', '!=', 'View Audit Reports')
                 ->orderBy('name', 'asc')
                 ->get();
         } catch (\Illuminate\Database\QueryException $e) {
