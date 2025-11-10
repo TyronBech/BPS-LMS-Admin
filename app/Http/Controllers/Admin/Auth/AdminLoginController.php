@@ -44,9 +44,9 @@ class AdminLoginController extends Controller
         $request->authenticate();
 
         $request->session()->regenerate();
+        $request->session()->put('login_source', 'Admin');
         DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
         // put value into session payload (recommended)
-        $request->session()->put('login_source', 'Admin');
 
         // ensure session row is written to DB immediately
         $request->session()->save();

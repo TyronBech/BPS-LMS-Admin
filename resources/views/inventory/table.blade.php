@@ -50,7 +50,7 @@
               </td>
               <td class="px-6 py-4 block md:table-cell text-right md:text-center">
                 <span class="float-left font-bold md:hidden">Action</span>
-                <button type="button" data-modal-target="popup-modal" data-modal-toggle="popup-modal" value="{{ $item->book->accession }}" class="deleteBtn focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">Delete</button>
+                <button type="button" data-modal-target="popup-modal" data-modal-toggle="popup-modal" value="{{ $item->book->accession }}" class="deleteBtn skip-loader focus:outline-none text-white bg-red-700 hover:bg-red-800 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-900">Delete</button>
               </td>
             </tr>
             @empty

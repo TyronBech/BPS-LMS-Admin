@@ -32,8 +32,8 @@
             <th scope="col" class="px-6 py-3 whitespace-nowrap">Record</th>
             <th scope="col" class="px-6 py-3 whitespace-nowrap">Source</th>
             <th scope="col" class="px-6 py-3 whitespace-nowrap">Field Changed</th>
-            <th scope="col" class="px-6 py-3 whitespace-nowrap">Old Value</th>
-            <th scope="col" class="px-6 py-3 whitespace-nowrap">New Value</th>
+            <th scope="col" class="px-6 py-3 whitespace-nowrap w-48">Old Value</th>
+            <th scope="col" class="px-6 py-3 whitespace-nowrap w-48">New Value</th>
             <th scope="col" class="px-6 py-3 whitespace-nowrap">Change By</th>
             <th scope="col" class="px-6 py-3 whitespace-nowrap">Change Type</th>
             <th scope="col" class="px-6 py-3 whitespace-nowrap">Date</th>
@@ -46,20 +46,42 @@
             <!-- Record -->
             @if(in_array($item->source_table, [User::getTableName(), EmployeeDetail::getTableName(), StudentDetail::getTableName(), VisitorDetail::getTableName()]))
             @if($item->user)
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->user->last_name ?? '' }}, {{ $item->user->first_name ?? '' }} {{ $item->user->middle_name ?? '' }}</td>
+            <td class="px-6 py-4 max-w-md">
+              <div class="break-words">
+                {{ $item->user->last_name ?? '' }}, {{ $item->user->first_name ?? '' }} {{ $item->user->middle_name ?? '' }}
+              </div>
+            </td>
             @elseif($item->visitor)
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->visitor->last_name ?? '' }}, {{ $item->visitor->first_name ?? '' }} {{ $item->visitor->middle_name ?? '' }}</td>
+            <td class="px-6 py-4 max-w-md">
+              <div class="break-words">
+                {{ $item->visitor->last_name ?? '' }}, {{ $item->visitor->first_name ?? '' }} {{ $item->visitor->middle_name ?? '' }}
+              </div>
+            </td>
             @else
-            <td class="px-6 py-4 whitespace-nowrap">user data</td>
+            <td class="px-6 py-4 max-w-md">
+              <div class="break-words">user data</div>
+            </td>
             @endif
             @elseif($item->source_table == Book::getTableName())
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->book->title ?? 'book data' }}</td>
+            <td class="px-6 py-4 max-w-md">
+              <div class="break-words">
+                {{ $item->book->title ?? 'book data' }}
+              </div>
+            </td>
             @elseif($item->source_table == Transaction::getTableName())
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->transaction->book->title ?? 'transaction data' }}</td>
+            <td class="px-6 py-4 max-w-md">
+              <div class="break-words">
+                {{ $item->transaction->book->title ?? 'transaction data' }}
+              </div>
+            </td>
             @elseif($item->source_table == VisitorDetail::getTableName())
-            <td class="px-6 py-4 whitespace-nowrap">Visitor Data</td>
+            <td class="px-6 py-4 max-w-md">
+              <div class="break-words">Visitor Data</div>
+            </td>
             @else
-            <td class="px-6 py-4 whitespace-nowrap">Session Record</td>
+            <td class="px-6 py-4 max-w-md">
+              <div class="break-words">Session Record</div>
+            </td>
             @endif
             @if($item->source_table == User::getTableName())
             <td class="px-6 py-4 whitespace-nowrap">User</td>
@@ -80,12 +102,20 @@
             @if($item->field_changed == 'password')
             <td class="px-6 py-4 whitespace-nowrap italic">hidden</td>
             @else
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->old_value ?? 'null' }}</td>
+            <td class="px-6 py-4 max-w-xs">
+              <div class="break-words">
+                {{ $item->old_value ?? 'null' }}
+              </div>
+            </td>
             @endif
             @if($item->field_changed == 'password')
             <td class="px-6 py-4 whitespace-nowrap italic">hidden</td>
             @else
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->new_value ?? 'null' }}</td>
+            <td class="px-6 py-4 max-w-xs">
+              <div class="break-words">
+                {{ $item->new_value ?? 'null' }}
+              </div>
+            </td>
             @endif
             <!-- Changed By -->
             @if($item->changedBy)

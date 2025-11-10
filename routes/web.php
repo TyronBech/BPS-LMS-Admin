@@ -120,7 +120,7 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     Route::prefix('inventory')->middleware(InventoryAuthentication::class)->group(function () {
         Route::match(['get', 'post'], 'dashboard',  [InventoryController::class, 'index'])  ->name('inventory.dashboard');
         Route::post('search',                       [InventoryController::class, 'search']) ->name('inventory.search');
-        Route::patch('update',                      [InventoryController::class, 'update']) ->name('inventory.update');
+        Route::post('update',                       [InventoryController::class, 'update']) ->name('inventory.update');
         Route::delete('delete',                     [InventoryController::class, 'destroy'])->name('inventory.delete');
     });
     Route::prefix('maintenance')->middleware(MaintenanceAuthentication::class)->group(function () {

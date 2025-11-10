@@ -201,7 +201,21 @@ class AdminMaintenanceController extends Controller
             'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'email'         => 'required|email|unique:' . $user->getTable() . ',email,' . $request->input('id'),
-            'role'          => 'required|exists:' . Role::class . ',id',
+            'role'          => [
+                'required',
+                function ($attribute, $value, $fail) {
+                    $role = Role::where('guard_name', 'admin')
+                        ->where(function($query) use ($value) {
+                            $query->where('id', $value)
+                                  ->orWhere('name', $value);
+                        })
+                        ->first();
+                    
+                    if (!$role) {
+                        $fail('Selected role is invalid.');
+                    }
+                }
+            ],
         ], [
             'first-name.required'    => 'First name is required',
             'last-name.required'     => 'Last name is required',
@@ -209,27 +223,38 @@ class AdminMaintenanceController extends Controller
             'email.email'            => 'Email must be a valid email address',
             'email.unique'           => 'Email has already been taken',
             'role.required'          => 'Role is required',
-            'role.exists'            => 'Selected role is invalid and students cannot be assigned as Super Admin',
         ]);
+        
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $authAdmin = User::findOrFail(Auth::guard('admin')->user()->id);
+            
             if ($authAdmin->hasAnyRole(RolesEnum::SUPER_ADMIN, RolesEnum::ADMIN)) {
-                $role = Role::findById($request->input('role'));
+                // Find role by name or ID
+                $role = Role::where('guard_name', 'admin')
+                    ->where(function($query) use ($request) {
+                        $query->where('id', $request->input('role'))
+                              ->orWhere('name', $request->input('role'));
+                    })
+                    ->first();
+                
                 $admin = User::with('privileges')->findOrFail($request->input('id'));
+                
                 if($admin->privileges->user_type == 'student' && $role->name == 'Super Admin'){
                     DB::rollBack();
                     return redirect()->back()->with('toast-warning', 'A student cannot be assigned as Super Admin');
                 }
+                
                 $admin->update([
                     'first_name'    => $request->input('first-name'),
                     'middle_name'   => $request->input('middle-name'),
                     'last_name'     => $request->input('last-name'),
                     'email'         => $request->input('email'),
                 ]);
-                $admin->syncRoles(Role::findById($request->input('role'), 'admin'));
-                $this->notification($admin, $request->input('role'));
+                
+                $admin->syncRoles($role);
+                $this->notification($admin, $role->name);
             } else {
                 return redirect()->back()->with('toast-error', 'You do not have permission to modify admin');
             }
@@ -237,6 +262,7 @@ class AdminMaintenanceController extends Controller
             DB::rollBack();
             return redirect()->back()->with('toast-error', $e->getMessage());
         }
+        
         DB::commit();
         return redirect()->route('maintenance.admins')->with('toast-success', 'Admin updated successfully');
     }
