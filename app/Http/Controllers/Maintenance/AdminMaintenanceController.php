@@ -167,7 +167,7 @@ class AdminMaintenanceController extends Controller
         $admin = null;
         $super_admin = null;
         try {
-            $id = array_keys($request->all())[0];
+            $id = $request->input('id');
             $admin = User::findOrFail($id);
             $authAdmin = User::findOrFail(Auth::guard('admin')->user()->id);
             if ($authAdmin->hasRole(RolesEnum::SUPER_ADMIN)) {

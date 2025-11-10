@@ -104,6 +104,28 @@ class UserLogsController extends Controller
 
         // If custom date range provided, parse it and limit base query
         if ($request->start_date && $request->end_date) {
+            if (Carbon::createFromFormat('m/d/Y', $request->end_date)->eq(Carbon::createFromFormat('m/d/Y', $request->start_date))) {
+                // Hourly: 8am .. 5pm (8 - 17)
+                $today = Carbon::createFromFormat('m/d/Y', $request->start_date);
+                $query = (clone $baseQuery)->whereDate('time_in', $today);
+                $chartTitle = "User Logs for " . $today->format('M d, Y') . " (Hourly)";
+
+                $data = $query->selectRaw('HOUR(time_in) as hour, COUNT(*) as count')
+                    ->whereBetween(DB::raw('HOUR(time_in)'), [8, 17])
+                    ->groupBy('hour')
+                    ->orderBy('hour')
+                    ->get()
+                    ->keyBy('hour');
+
+                $hours = range(8, 17);
+                $labels = collect($hours)->map(fn($h) => strtolower(Carbon::createFromTime($h)->format('ga'))); // e.g. 8am
+                $counts = collect($hours)->map(fn($h) => $data->get($h)->count ?? 0);
+                return response()->json([
+                    'labels'      => $labels,
+                    'counts'      => $counts,
+                    'chart_title' => $chartTitle
+                ]);
+            }
             $start = Carbon::createFromFormat('m/d/Y', $request->start_date)->startOfDay();
             $end   = Carbon::createFromFormat('m/d/Y', $request->end_date)->endOfDay();
 
@@ -162,7 +184,7 @@ class UserLogsController extends Controller
                 ->keyBy('day');
 
             $labels = collect(range(0, 4))->map(fn($i) => $monday->copy()->addDays($i)->format('l')); // Monday, Tuesday...
-            $counts = collect(range(0, 4))->map(function($i) use ($data, $monday) {
+            $counts = collect(range(0, 4))->map(function ($i) use ($data, $monday) {
                 $d = $monday->copy()->addDays($i)->toDateString();
                 return $data->get($d)->count ?? 0;
             });
@@ -270,7 +292,7 @@ class UserLogsController extends Controller
                 ->keyBy('day');
 
             $labels = collect(range(0, 4))->map(fn($i) => $monday->copy()->addDays($i)->format('l'));
-            $counts = collect(range(0, 4))->map(function($i) use ($data, $monday) {
+            $counts = collect(range(0, 4))->map(function ($i) use ($data, $monday) {
                 $d = $monday->copy()->addDays($i)->toDateString();
                 return $data->get($d)->count ?? 0;
             });
@@ -282,7 +304,7 @@ class UserLogsController extends Controller
             'chart_title' => $chartTitle
         ]);
     }
-    
+
 
     private function findPeakHour($times)
     {
@@ -480,7 +502,7 @@ class UserLogsController extends Controller
                     ->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $search . '%');
             });
         }
-        if($userType != 'all') {
+        if ($userType != 'all') {
             $query->whereHas('user', function ($q) use ($userType) {
                 $q->whereHas('privileges', function ($q2) use ($userType) {
                     if ($userType == 'student') {

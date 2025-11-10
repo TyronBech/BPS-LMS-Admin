@@ -35,7 +35,7 @@ $adminID = null;
         </td>
         <td class="px-6 py-4">
           <div class="flex items-center space-x-2">
-            <a href="{{ route('maintenance.edit-admin', [$admin->id, 'return_to' => request()->fullUrl()]) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800">Edit</a>
+            <a href="{{ route('maintenance.edit-admin', ['id' => $admin->id, 'return_to' => request()->fullUrl()]) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800">Edit</a>
             @if(auth()->user()->hasRole(RolesEnum::SUPER_ADMIN) && auth()->user()->id != $admin->id)
             <button type="button" data-modal-target="delete-admin-modal" data-modal-toggle="delete-admin-modal" value="{{ $admin->id }}" class="deleteAdminBtn inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800">Delete</button>
             @endif
