@@ -193,13 +193,13 @@ class ReservationExtensionController extends Controller
     {
         if ($user->email) {
             try {
-                $message = 'Your book extension request for "' . $book->title . '" has been rejected. Reason: ' . $rejectionReason . '. Please contact the library for more information.';
+                $emailMessage = 'Your book extension request for "' . $book->title . '" has been rejected. Reason: ' . $rejectionReason . '. Please contact the library for more information.';
 
                 Mail::to($user->email)->send(new ReservationMail(
                     $user,
                     $book,
-                    $message,
-                    'extension_rejected',
+                    $emailMessage,
+                    'rejected',
                     $book->due_date ?? now(),
                     '',
                     '',

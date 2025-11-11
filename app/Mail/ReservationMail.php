@@ -15,7 +15,7 @@ class ReservationMail extends Mailable
 
     private $user;
     private $book;
-    private $message;
+    private $emailMessage; // Renamed from $message
     private $transactionType;
     private $dueDate;
     private $conditionStatus;
@@ -25,11 +25,11 @@ class ReservationMail extends Mailable
     /**
      * Create a new message instance.
      */
-    public function __construct($user, $book, $message, $transactionType, $dueDate, $conditionStatus, $penaltyTotal, $penaltyStatus)
+    public function __construct($user, $book, $emailMessage, $transactionType, $dueDate, $conditionStatus, $penaltyTotal, $penaltyStatus)
     {
         $this->user = $user;
         $this->book = $book;
-        $this->message = $message;
+        $this->emailMessage = $emailMessage;
         $this->transactionType = $transactionType;
         $this->dueDate = $dueDate;
         $this->conditionStatus = $conditionStatus;
@@ -42,8 +42,12 @@ class ReservationMail extends Mailable
      */
     public function envelope(): Envelope
     {
+        $subject = $this->transactionType === 'extended'
+            ? 'Book Extension Request Approved'
+            : 'Book Extension Request Rejected';
+
         return new Envelope(
-            subject: 'Extension of Reservation Notification',
+            subject: $subject,
         );
     }
 
@@ -57,7 +61,7 @@ class ReservationMail extends Mailable
             with: [
                 'user'              => $this->user,
                 'book'              => $this->book,
-                'message'           => $this->message,
+                'emailMessage'      => $this->emailMessage, // Renamed from 'message'
                 'transactionType'   => $this->transactionType,
                 'dueDate'           => $this->dueDate,
                 'conditionStatus'   => $this->conditionStatus,

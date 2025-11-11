@@ -251,7 +251,7 @@
                 @endif
 
                 <p class="muted" style="margin:20px 0;">
-                  {{ $message }}
+                  {{ $emailMessage }}
                 </p>
 
                 <!-- Book Details Panel -->
