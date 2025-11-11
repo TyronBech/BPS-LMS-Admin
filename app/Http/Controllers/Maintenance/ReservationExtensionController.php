@@ -236,6 +236,6 @@ class ReservationExtensionController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
-        return view('librarian.pending-extensions', compact('pendingRequests'));
+        return view('maintenance.reservations.index', compact('pendingRequests'));
     }
 }

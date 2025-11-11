@@ -577,8 +577,8 @@ class BookMaintenanceController extends Controller
         $authorCode = 'UNK'; // Default to "Unknown"
         if (!empty($book->author)) {
             $nameParts = explode(' ', $book->author);
-            $lastName = end($nameParts);
-            $authorCode = strtoupper(substr($lastName, 0, 3));
+            $firstName = $nameParts[0];
+            $authorCode = strtoupper(substr($firstName, 0, 3));
         }
 
         // 3. Get Copyright Year

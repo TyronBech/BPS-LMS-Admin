@@ -175,12 +175,12 @@
 
           <!-- Submitted -->
           <td class="px-3 xl:px-4 py-4 text-center text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-            {{ $request->created_at->diffForHumans() }}
+            {{ $request->updated_at->diffForHumans() }}
           </td>
 
           <!-- Actions -->
           <td class="px-3 xl:px-4 py-4">
-            <div class="flex flex-col xl:flex-row gap-2">
+            <div class="flex flex-col xl:flex-row gap-2 justify-center">
               <button
                 type="button"
                 data-modal-target="approve-modal-{{ $request->id }}"
