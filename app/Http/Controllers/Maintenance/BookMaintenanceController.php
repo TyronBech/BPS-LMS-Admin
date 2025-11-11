@@ -26,11 +26,11 @@ class BookMaintenanceController extends Controller
      */
     public function index(Request $request)
     {
-        $perPage = $request->input('perPage', 10);
-        $search = $request->input('search', '');
-        $category = $request->input('category', '');
+        $perPage    = $request->input('perPage', 10);
+        $search     = $request->input('search', '');
+        $category   = $request->input('category', '');
         $categories = Category::select('id', 'name')->get();
-        $books = Book::with('category')
+        $books      = Book::with('category')
             ->orderBy('created_at', 'desc')
             ->paginate($perPage)
             ->appends([
