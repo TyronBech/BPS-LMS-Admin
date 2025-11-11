@@ -53,7 +53,7 @@ class ReservationMail extends Mailable
     public function content(): Content
     {
         return new Content(
-            view: 'view.name',
+            view: 'mail.reservationExtension',
             with: [
                 'user'              => $this->user,
                 'book'              => $this->book,
