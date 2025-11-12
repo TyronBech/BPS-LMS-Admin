@@ -14,6 +14,6 @@ class BookSeeder extends Seeder
     protected $model = Book::class;
     public function run(): void
     {
-        Book::factory()->count(50)->create();   
+        Book::factory()->count(10000)->create();   
     }
 }

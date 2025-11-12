@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\Category;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -15,11 +16,13 @@ class BookFactory extends Factory
      *
      * @return array<string, mixed>
      */
-    protected static $incrementingId = 1;
     public function definition(): array
     {
+        $category = Category::inRandomOrder()->first() ?? Category::factory()->create();
+        $accession = $category->legend . '-' . $this->faker->unique()->numberBetween(100000, 999999);
+
         return [
-            'accession' => 'ACC-' . str_pad(self::$incrementingId++, 6, '0', STR_PAD_LEFT),
+            'accession' => $accession,
             'call_number' => strtoupper(Str::random(3)) . ' ' . rand(100, 999) . '.' . rand(10, 99) . ' ' . Str::random(2),
             'title' => $this->faker->sentence(3),
             'author' => $this->faker->name(),
@@ -28,10 +31,10 @@ class BookFactory extends Factory
             'publisher' => $this->faker->company(),
             'copyrights' => $this->faker->year(),
             'remarks' => $this->faker->randomElement(['On Shelf', 'Lost', 'Missing']),
-            'category_id' => $this->faker->numberBetween(2, 6),
+            'category_id' => $category->id,
             'cover_image' => 'default.jpg',
-            'digital_copy_url' => $this->faker->url(),
-            'barcode' => $this->faker->ean13(),
+            'digital_copy_url' => $this->faker->optional()->url(),
+            'barcode' => $accession,
             'availability_status' => $this->faker->randomElement(['Available', 'Borrowed', 'In Use', 'Reserved']),
             'condition_status' => $this->faker->randomElement(['New', 'Good', 'Fair', 'Poor']),
             'created_at' => now(),

@@ -77,7 +77,7 @@
       <!-- Submitted Time -->
       <div class="mb-3">
         <p class="text-xs text-gray-500 dark:text-gray-400">
-          Submitted {{ $request->created_at->setTimezone('Asia/Manila')->diffForHumans() }}
+          Submitted {{ $request->updated_at->diffForHumans() }}
         </p>
       </div>
 
@@ -175,7 +175,7 @@
 
           <!-- Submitted -->
           <td class="px-3 xl:px-4 py-4 text-center text-xs text-gray-500 dark:text-gray-400 whitespace-nowrap">
-            {{ $request->created_at->setTimezone('Asia/Manila')->diffForHumans() }}
+            {{ $request->updated_at->diffForHumans() }}
           </td>
 
           <!-- Actions -->

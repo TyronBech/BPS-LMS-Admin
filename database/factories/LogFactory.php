@@ -3,7 +3,6 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
-use phpDocumentor\Reflection\Types\Nullable;
 use App\Models\User;
 
 /**
@@ -18,11 +17,15 @@ class LogFactory extends Factory
      */
     public function definition(): array
     {
+        $user = User::inRandomOrder()->first() ?? User::factory()->create();
+        $timeIn = $this->faker->dateTimeBetween('-7 months', 'now');
+        $timeOut = $this->faker->optional(0.7)->dateTimeInInterval($timeIn, '+8 hours');
+
         return [
-            'user_id'       => $this->faker->randomElement(User::pluck('id')->toArray()),
+            'user_id'       => $user->id,
             'computer_use'  => $this->faker->randomElement(['Yes', 'No']),
-            'time_in'       => $this->faker->dateTimeBetween('-7 months', 'now'),
-            'time_out'      => $this->faker->optional()->dateTimeBetween('now', '+1 month'),
+            'time_in'       => $timeIn,
+            'time_out'      => $timeOut,
             'remarks'       => null,
         ];
     }

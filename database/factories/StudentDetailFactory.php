@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Models\StudentDetail;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -10,6 +11,13 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 class StudentDetailFactory extends Factory
 {
     /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = StudentDetail::class;
+
+    /**
      * Define the model's default state.
      *
      * @return array<string, mixed>
@@ -17,12 +25,9 @@ class StudentDetailFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => $this->faker->unique()->numberBetween(1, 5),
-            'lrn' => $this->faker->unique()->ean8(),
-            'grade_level' => $this->faker->randomElement(['Grade 7', 'Grade 8', 'Grade 9', 'Grade 10', 'Grade 11', 'Grade 12']),
-            'section' => $this->faker->randomElement(['A', 'B', 'C', 'D', 'E']),
-            'created_at' => now(),
-            'updated_at' => now(),
+            'id_number' => $this->faker->unique()->numerify('####-#####-BPSU'),
+            'level' => $this->faker->randomElement(['1st Year', '2nd Year', '3rd Year', '4th Year']),
+            'section' => $this->faker->randomElement(['A', 'B', 'C', 'D']),
         ];
     }
 }

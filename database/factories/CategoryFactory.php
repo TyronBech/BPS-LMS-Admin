@@ -16,8 +16,29 @@ class CategoryFactory extends Factory
      */
     public function definition(): array
     {
+        $categories = [
+            ['legend' => 'CT', 'name' => 'Coffee Table'],
+            ['legend' => 'EBCLE', 'name' => 'Christian Living Education'],
+            ['legend' => 'FIC', 'name' => 'Fiction'],
+            ['legend' => 'GR', 'name' => 'General Reference'],
+            ['legend' => 'REF', 'name' => 'Reference'],
+            ['legend' => 'TRF', 'name' => "Teacher's Reference-Filipiniana"],
+            ['legend' => 'TREF', 'name' => "Teacher's Reference"],
+            ['legend' => 'REV', 'name' => 'Reviewers'],
+            ['legend' => 'COM', 'name' => 'Comics'],
+            ['legend' => 'JHS', 'name' => 'Junior High School'],
+            ['legend' => 'SHS', 'name' => 'Senior High School'],
+            ['legend' => 'RW', 'name' => 'Research Works'],
+            ['legend' => 'TG', 'name' => "Teacher's Guide"],
+            ['legend' => 'EBCOOK', 'name' => 'Cookery'],
+            ['legend' => 'TRY', 'name' => 'Testing'],
+        ];
+
+        $category = $this->faker->unique()->randomElement($categories);
+
         return [
-            'name' => $this->faker->unique()->randomElement(['Fiction', 'Non-Fiction']),
+            'legend' => $category['legend'],
+            'name' => $category['name'],
             'created_at' => now(),
             'updated_at' => now(),
         ];

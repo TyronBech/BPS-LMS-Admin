@@ -17,9 +17,11 @@ class InventoryFactory extends Factory
      */
     public function definition(): array
     {
+        $book = Book::inRandomOrder()->first() ?? Book::factory()->create();
+
         return [
-            'book_id' => Book::factory(),
-            'checked_at' => now(),
+            'book_id' => $book->id,
+            'checked_at' => $this->faker->dateTimeThisYear(),
         ];
     }
 }
