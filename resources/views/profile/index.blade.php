@@ -46,6 +46,11 @@
         <form action="{{ route('profile.update') }}" method="POST">
           @csrf
           @method('PATCH')
+          @if($user->privileges->user_type === 'student')
+          <input type="hidden" name="user_id" value="{{ $user->students->student_id }}">
+          @elseif($user->privileges->user_type === 'employee')
+          <input type="hidden" name="user_id" value="{{ $user->employees->employee_id }}">
+          @endif
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {{-- First Name --}}
             <div class="relative z-0 w-full group">
