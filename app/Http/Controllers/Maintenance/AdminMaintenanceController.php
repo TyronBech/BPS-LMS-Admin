@@ -57,11 +57,18 @@ class AdminMaintenanceController extends Controller
     public function search_user(Request $request)
     {
         $search = strtolower($request->input('user-info'));
-        $searched = User::select('id', 'first_name', 'middle_name', 'last_name', 'email', 'rfid')
+        $searched = User::join('privileges', 'usr_users.privilege_id', '=', 'privileges.id')
+            ->select('usr_users.id', 'first_name', 'middle_name', 'last_name', 'email', 'rfid')
+            ->where('privileges.user_type', '!=', 'visitor')
             ->where(function ($query) use ($search) {
                 $query->where('first_name', 'like', '%' . $search . '%')
                     ->orWhere('middle_name', 'like', '%' . $search . '%')
                     ->orWhere('last_name', 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('concat(first_name, " ", middle_name, " ", last_name)'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('concat(middle_name, " ", last_name, ", ", first_name)'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('concat(last_name, ", ", first_name, " ", middle_name)'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('lower(concat(usr_users.last_name, ", ", usr_users.first_name))'), 'like', '%' . $search . '%')
+                    ->orWhere(DB::raw('lower(concat(usr_users.first_name, " ", usr_users.last_name))'), 'like', '%' . $search . '%')
                     ->orWhere('email', 'like', '%' . $search . '%')
                     ->orWhere('rfid', 'like', '%' . $search . '%');
             })
@@ -93,12 +100,15 @@ class AdminMaintenanceController extends Controller
      */
     public function search_admin(Request $request)
     {
+        $users = new User();
         $search = strtolower($request->input('search'));
         $perPage = $request->input('perPage', 10);
-        $admins = User::join('model_has_roles', 'usr_users.id', '=', 'model_has_roles.model_id')
+        $admins = User::join('model_has_roles', $users->getTable() . '.id', '=', 'model_has_roles.model_id')
             ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
+            ->join('privileges', $users->getTable() . '.privilege_id', '=', 'privileges.id')
             ->where('model_has_roles.model_type', 'App\Models\User')
             ->where('roles.guard_name', 'admin')
+            ->where('privileges.user_type', '!=', 'visitor')
             ->where(function ($query) use ($search) {
                 $query->where('usr_users.first_name', 'like', '%' . $search . '%')
                     ->orWhere('usr_users.middle_name', 'like', '%' . $search . '%')
