@@ -18,10 +18,15 @@ class CategoryMaintenanceController extends Controller
      * 
      * @return \Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
-        $categories = Category::all();
-        return view('maintenance.categories.index', compact('categories'));
+        $perPage = $request->input('perPage', 10);
+        $categories = Category::orderBy('created_at', 'desc')
+            ->paginate($perPage)
+            ->appends([
+                'perPage' => $perPage,
+            ]);
+        return view('maintenance.categories.index', compact('categories', 'perPage'));
     }
     /**
      * Store a new category

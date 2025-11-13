@@ -14,6 +14,6 @@ class UserSeeder extends Seeder
     protected $model = User::class;
     public function run(): void
     {
-        User::factory()->count(50000)->create();
+        User::factory()->count(5)->create();
     }
 }
