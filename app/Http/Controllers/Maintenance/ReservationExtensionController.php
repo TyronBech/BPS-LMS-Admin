@@ -134,7 +134,7 @@ class ReservationExtensionController extends Controller
             ->count();
 
         $approved = Transaction::where('transaction_type', 'Borrowed')
-            ->where('status', 'Borrowed')
+            ->where('status', 'Renew')
             ->whereDate('updated_at', '>=', Carbon::now()->subDays(30))
             ->count();
 
@@ -144,7 +144,7 @@ class ReservationExtensionController extends Controller
             ->count();
 
         $total = Transaction::where('transaction_type', 'Borrowed')
-            ->where('status', 'Pending')
+            ->where('status', 'Borrowed')
             ->whereDate('created_at', '>=', Carbon::now()->subDays(30))
             ->count();
 

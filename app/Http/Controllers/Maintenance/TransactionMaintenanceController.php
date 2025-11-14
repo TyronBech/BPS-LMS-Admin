@@ -156,7 +156,7 @@ class TransactionMaintenanceController extends Controller
             return redirect()->back()->with('toast-error', $e->getMessage());
         }
         DB::commit();
-        return redirect()->route('maintenance.circulation')->with('toast-success', 'Transaction updated successfully');
+        return redirect()->route('maintenance.circulations')->with('toast-success', 'Transaction updated successfully');
     }
     /**
      * Retrieves the book image from Google Books API.
