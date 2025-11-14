@@ -219,14 +219,14 @@ class TransactionController extends Controller
                 $q->orWhere(DB::raw('lower(concat(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $search . '%');
                 $q->orWhere(DB::raw('lower(concat(last_name, ", ", first_name))'), 'like', '%' . $search . '%');
                 $q->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $search . '%');
-            })->orWhereHas('book', function ($q) use ($search) {
+            })->whereHas('book', function ($q) use ($search) {
                 $q->where('title', 'like', '%' . $search . '%')
                     ->orWhere('accession', 'like', '%' . $search . '%');
-            })->orWhere('transaction_type', 'like', '%' . $search . '%');
+            })->where('transaction_type', 'like', '%' . $search . '%');
         }
 
         if ($type && $type !== 'All') {
-            $query->orWhere('transaction_type', $type);
+            $query->where('transaction_type', $type);
         }
         if ($isExport) {
             $data = $query->orderBy('date_borrowed', 'desc')
