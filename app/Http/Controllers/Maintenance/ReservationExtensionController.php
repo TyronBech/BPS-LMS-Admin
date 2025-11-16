@@ -52,6 +52,14 @@ class ReservationExtensionController extends Controller
             'perPage'
         ));
     }
+    public function pendingExtensionCount()
+    {
+        $count = Transaction::where('transaction_type', 'Borrowed')
+            ->where('status', 'Pending')
+            ->count();
+
+        return response()->json(['pending_extension_count' => $count]);
+    }
 
     /**
      * Approve extension request

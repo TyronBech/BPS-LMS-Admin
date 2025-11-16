@@ -174,7 +174,7 @@
           auth()->user()->can(PermissionsEnum::CREATE_BACKUPS) ||
           auth()->user()->can(PermissionsEnum::MODIFY_ADMIN))
           <li>
-            <button id="dropdownNavbarLink" data-dropdown-toggle="navbarMaintenance" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:bg-blue-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-300 lg:p-0 lg:w-auto dark:text-white lg:dark:hover:text-blue-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent">Maintenance <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+            <button id="dropdownNavbarLink" data-dropdown-toggle="navbarMaintenance" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:bg-blue-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-300 lg:p-0 lg:w-auto dark:text-white lg:dark:hover:text-blue-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent"><div>Maintenance <span id="maintenance-notification-badge" class="hidden ms-2 bg-red-500 text-white text-xs font-semibold px-1.5 py-0.5 rounded-full"></span></div><svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
               </svg></button>
             <!-- Dropdown menu -->
@@ -244,12 +244,15 @@
                 @endcan
                 @can(PermissionsEnum::RESERVATION_APPROVALS)
                 <li>
-                  <a href="{{ route('maintenance.reservations') }}" class="flex pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
-                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                      <path fill-rule="evenodd" d="M12.512 8.72a2.46 2.46 0 0 1 3.479 0 2.461 2.461 0 0 1 0 3.479l-.004.005-1.094 1.08a.998.998 0 0 0-.194-.272l-3-3a1 1 0 0 0-.272-.193l1.085-1.1Zm-2.415 2.445L7.28 14.017a1 1 0 0 0-.289.702v2a1 1 0 0 0 1 1h2a1 1 0 0 0 .703-.288l2.851-2.816a.995.995 0 0 1-.26-.189l-3-3a.998.998 0 0 1-.19-.26Z" clip-rule="evenodd" />
-                      <path fill-rule="evenodd" d="M7 3a1 1 0 0 1 1 1v1h3V4a1 1 0 1 1 2 0v1h3V4a1 1 0 1 1 2 0v1h1a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h1V4a1 1 0 0 1 1-1Zm10.67 8H19v8H5v-8h3.855l.53-.537a1 1 0 0 1 .87-.285c.097.015.233.13.277.087.045-.043-.073-.18-.09-.276a1 1 0 0 1 .274-.873l1.09-1.104a3.46 3.46 0 0 1 4.892 0l.001.002A3.461 3.461 0 0 1 17.67 11Z" clip-rule="evenodd" />
-                    </svg>
-                    <span class="ms-2">Reservation Approvals</span>
+                  <a href="{{ route('maintenance.reservations') }}" class="flex justify-between items-center pl-2 py-2 hover:bg-gray-300 dark:text-white dark:hover:bg-gray-500">
+                    <div class="flex items-center">
+                      <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd" d="M12.512 8.72a2.46 2.46 0 0 1 3.479 0 2.461 2.461 0 0 1 0 3.479l-.004.005-1.094 1.08a.998.998 0 0 0-.194-.272l-3-3a1 1 0 0 0-.272-.193l1.085-1.1Zm-2.415 2.445L7.28 14.017a1 1 0 0 0-.289.702v2a1 1 0 0 0 1 1h2a1 1 0 0 0 .703-.288l2.851-2.816a.995.995 0 0 1-.26-.189l-3-3a.998.998 0 0 1-.19-.26Z" clip-rule="evenodd" />
+                        <path fill-rule="evenodd" d="M7 3a1 1 0 0 1 1 1v1h3V4a1 1 0 1 1 2 0v1h3V4a1 1 0 1 1 2 0v1h1a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h1V4a1 1 0 0 1 1-1Zm10.67 8H19v8H5v-8h3.855l.53-.537a1 1 0 0 1 .87-.285c.097.015.233.13.277.087.045-.043-.073-.18-.09-.276a1 1 0 0 1 .274-.873l1.09-1.104a3.46 3.46 0 0 1 4.892 0l.001.002A3.461 3.461 0 0 1 17.67 11Z" clip-rule="evenodd" />
+                      </svg>
+                      <span class="ms-2">Reservation Approvals</span>
+                    </div>
+                    <span id="reservation-notification-badge" class="hidden me-2 bg-red-500 text-white text-xs font-semibold px-1.5 py-0.5 rounded-full"></span>
                   </a>
                 </li>
                 @endcan
@@ -356,3 +359,41 @@
     </div>
   </nav>
 </header>
+
+@can(PermissionsEnum::RESERVATION_APPROVALS)
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    function fetchPendingExtensionCount() {
+      fetch('{{ route("maintenance.pending-extensions") }}')
+        .then(response => response.json())
+        .then(data => {
+          const count = data.pending_extension_count;
+          const maintenanceBadge = document.getElementById('maintenance-notification-badge');
+          const reservationBadge = document.getElementById('reservation-notification-badge');
+
+          if (count > 0) {
+            if (maintenanceBadge) {
+              maintenanceBadge.textContent = count;
+              maintenanceBadge.classList.remove('hidden');
+            }
+            if (reservationBadge) {
+              reservationBadge.textContent = count;
+              reservationBadge.classList.remove('hidden');
+            }
+          } else {
+            if (maintenanceBadge) {
+              maintenanceBadge.classList.add('hidden');
+            }
+            if (reservationBadge) {
+              reservationBadge.classList.add('hidden');
+            }
+          }
+        })
+        .catch(error => console.error('Error fetching pending extension count:', error));
+    }
+
+    fetchPendingExtensionCount();
+    setInterval(fetchPendingExtensionCount, 60000); // Refresh every 60 seconds
+  });
+</script>
+@endcan

@@ -189,10 +189,11 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
             Route::delete('delete-circulation', [TransactionMaintenanceController::class, 'destroy'])   ->name('maintenance.delete-circulation');
         });
         Route::prefix('reservations')->middleware(ReservationAuthentication::class)->group(function () {
-           Route::get('reservations',               [ReservationExtensionController::class, 'index'])   ->name('maintenance.reservations');
-           Route::post('approve-extension/{id}',    [ReservationExtensionController::class, 'approve']) ->name('maintenance.approve-extension');
-           Route::post('reject-extension/{id}',     [ReservationExtensionController::class, 'reject'])  ->name('maintenance.reject-extension');
-           Route::get('search',                     [ReservationExtensionController::class, 'search'])  ->name('maintenance.search-extension');
+           Route::get('reservations',               [ReservationExtensionController::class, 'index'])                   ->name('maintenance.reservations');
+           Route::get('show-reservations',          [ReservationExtensionController::class, 'pendingExtensionCount'])   ->name('maintenance.pending-extensions');
+           Route::post('approve-extension/{id}',    [ReservationExtensionController::class, 'approve'])                 ->name('maintenance.approve-extension');
+           Route::post('reject-extension/{id}',     [ReservationExtensionController::class, 'reject'])                  ->name('maintenance.reject-extension');
+           Route::get('search',                     [ReservationExtensionController::class, 'search'])                  ->name('maintenance.search-extension');
         });
         Route::prefix('admin-management')->middleware(SuperAdminAuthentication::class)->group(function () {
             Route::get('admins',            [AdminMaintenanceController::class, 'index'])           ->name('maintenance.admins');
