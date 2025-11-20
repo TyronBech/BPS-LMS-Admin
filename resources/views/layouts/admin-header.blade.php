@@ -17,7 +17,7 @@
         </svg>
       </button>
       <div class="hidden w-full lg:block lg:w-auto" id="navbar-dropdown">
-        <ul class="flex flex-col font-medium p-4 lg:p-0 mt-4 border border-gray-100 rounded-lg bg-bpsBlue lg:flex-row lg:items-center lg:space-x-8 rtl:space-x-reverse lg:mt-0 lg:border-0 lg:bg-bpsBlue dark:bg-gray-800 lg:dark:bg-bpsBlue dark:border-gray-700">
+        <ul class="flex flex-col font-medium p-3 lg:p-0 mt-4 border border-gray-100 rounded-lg bg-bpsBlue lg:flex-row lg:items-center lg:space-x-6 rtl:space-x-reverse lg:mt-0 lg:border-0 lg:bg-bpsBlue dark:bg-gray-800 lg:dark:bg-bpsBlue dark:border-gray-700">
           <li>
             <a href="{{ route('dashboard') }}" class="block py-2 px-3 text-white rounded hover:bg-blue-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-300 lg:p-0 dark:text-white lg:dark:hover:text-blue-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent" aria-current="page">Home</a>
           </li>
@@ -364,6 +364,7 @@
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     function fetchPendingExtensionCount() {
+      console.log('Fetching pending extension count...');
       fetch('{{ route("maintenance.pending-extensions") }}')
         .then(response => response.json())
         .then(data => {
@@ -393,7 +394,7 @@
     }
 
     fetchPendingExtensionCount();
-    setInterval(fetchPendingExtensionCount, 60000); // Refresh every 60 seconds
+    setInterval(fetchPendingExtensionCount, 10000);
   });
 </script>
 @endcan

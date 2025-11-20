@@ -99,20 +99,21 @@ document.addEventListener('DOMContentLoaded', () => {
   window.fetch = async (...args) => {
     const url = args[0] instanceof Request ? args[0].url : String(args[0]);
 
-    // Skip loader for dashboard analytics fetches
+    // Skip loader for dashboard analytics fetches and pending extensions
     const isDashboardAnalytics = url.includes('/analytics/most-visited-students') || url.includes('/analytics/most-borrowed-students');
+    const isPendingExtensions = url.includes('/maintenance/reservations/show-reservations') || url.includes('maintenance.pending-extensions');
 
     try {
-      if (!isDashboardAnalytics) {
+      if (!isDashboardAnalytics && !isPendingExtensions) {
         showLoader();
       }
       const response = await originalFetch(...args);
-      if (!isDashboardAnalytics) {
+      if (!isDashboardAnalytics && !isPendingExtensions) {
         hideLoader();
       }
       return response;
     } catch (error) {
-      if (!isDashboardAnalytics) {
+      if (!isDashboardAnalytics && !isPendingExtensions) {
         hideLoader();
       }
       throw error;
@@ -125,7 +126,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Define URLs to skip the loader for
     const urlsToSkip = [
-      '/report/user-graph'
+      '/report/user-graph',
+      '/maintenance/reservations/show-reservations',
+      'maintenance.pending-extensions'
     ];
 
     const shouldSkipLoader = urlsToSkip.some(skipUrl => url.includes(skipUrl));
