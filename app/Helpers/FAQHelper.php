@@ -29,7 +29,7 @@ class FAQHelper
     {
         return [
             'title' => "Inventory FAQs",
-            'gif' => asset('gif/Book.gif'),
+            'gif' => asset('gif/Inventory.gif'),
             'description' => "Frequently asked questions about inventory management.",
             'questions' => [
                 "How to add the book to the inventory?",

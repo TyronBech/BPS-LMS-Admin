@@ -51,7 +51,7 @@
         <!-- Dashboard FAQs Section -->
         <div class="mb-6">
           <div class="flex items-center gap-3 mb-4">
-            <img src="{{ asset('gif/Dashboard.gif') }}" alt="Dashboard" class="w-12 h-12 rounded-lg">
+            <img src="{{ asset('gif/Dashboard.gif') }}" alt="Dashboard" class="w-12 h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600">
             <div>
               <h4 class="text-lg font-bold text-gray-900 dark:text-white">Dashboard FAQs</h4>
               <p class="text-sm text-gray-600 dark:text-gray-400">Frequently asked questions about the dashboard functionalities.</p>
@@ -90,8 +90,11 @@
 
         <!-- Inventory FAQs Section -->
         <div class="mb-6">
+          @php
+            $inventoryFAQs = \App\Helpers\FAQHelper::getInventoryFAQs();
+          @endphp
           <div class="flex items-center gap-3 mb-4">
-            <img src="{{ asset('gif/Book.gif') }}" alt="Book" class="w-12 h-12 rounded-lg">
+            <img src="{{ $inventoryFAQs['gif'] }}" alt="Inventory" class="w-12 h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600">
             <div>
               <h4 class="text-lg font-bold text-gray-900 dark:text-white">Inventory FAQs</h4>
               <p class="text-sm text-gray-600 dark:text-gray-400">Frequently asked questions about inventory management.</p>
@@ -99,9 +102,6 @@
           </div>
           
           <div id="accordion-inventory" data-accordion="collapse">
-            @php
-              $inventoryFAQs = \App\Helpers\FAQHelper::getInventoryFAQs();
-            @endphp
             
             @foreach($inventoryFAQs['questions'] as $index => $question)
             <div class="mb-2">
@@ -130,8 +130,11 @@
 
         <!-- Report FAQs Section -->
         <div class="mb-6">
+          @php
+            $reportFAQs = \App\Helpers\FAQHelper::getReportFAQs();
+          @endphp
           <div class="flex items-center gap-3 mb-4">
-            <img src="{{ asset('gif/Report.gif') }}" alt="Report" class="w-12 h-12 rounded-lg">
+            <img src="{{ $reportFAQs['gif'] }}" alt="Report" class="w-12 h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600">
             <div>
               <h4 class="text-lg font-bold text-gray-900 dark:text-white">Report FAQs</h4>
               <p class="text-sm text-gray-600 dark:text-gray-400">Frequently asked questions about report generation and management.</p>
@@ -139,9 +142,6 @@
           </div>
           
           <div id="accordion-report" data-accordion="collapse">
-            @php
-              $reportFAQs = \App\Helpers\FAQHelper::getReportFAQs();
-            @endphp
             
             @foreach($reportFAQs['questions'] as $index => $question)
             <div class="mb-2">
@@ -171,7 +171,7 @@
         <!-- Import FAQs Section -->
         <div class="mb-6">
           <div class="flex items-center gap-3 mb-4">
-            <img src="{{ asset('gif/Import.gif') }}" alt="Import" class="w-12 h-12 rounded-lg">
+            <img src="{{ asset('gif/Import.gif') }}" alt="Import" class="w-12 h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600">
             <div>
               <h4 class="text-lg font-bold text-gray-900 dark:text-white">Import FAQs</h4>
               <p class="text-sm text-gray-600 dark:text-gray-400">Frequently asked questions about data import processes.</p>
@@ -211,7 +211,7 @@
         <!-- Maintenance FAQs Section -->
         <div class="mb-6">
           <div class="flex items-center gap-3 mb-4">
-            <img src="{{ asset('gif/Maintenance.gif') }}" alt="Maintenance" class="w-12 h-12 rounded-lg">
+            <img src="{{ asset('gif/Maintenance.gif') }}" alt="Maintenance" class="w-12 h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600">
             <div>
               <h4 class="text-lg font-bold text-gray-900 dark:text-white">Maintenance FAQs</h4>
               <p class="text-sm text-gray-600 dark:text-gray-400">Frequently asked questions about system maintenance and updates.</p>
