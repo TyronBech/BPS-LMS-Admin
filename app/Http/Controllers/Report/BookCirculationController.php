@@ -154,7 +154,7 @@ class BookCirculationController extends Controller
             $query->where('availability_status', $availability);
         }
 
-        $query->orderBy('created_at', 'desc')->orderBy('id', 'desc');
+        $query->orderBy('accession', 'asc')->orderBy('id', 'asc');
 
         if ($isExport) {
             $data = $query->get();

@@ -22,6 +22,7 @@
     </div>
     @include('layouts.toast')
     @yield('content')
+    @include('layouts.FAQs')
   </main>
   @include('layouts.footer')
   @yield('scripts')
