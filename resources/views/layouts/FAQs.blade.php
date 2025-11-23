@@ -1,3 +1,4 @@
+@use('App\Enum\PermissionsEnum')
 <button type="button" data-modal-target="FAQsModal" data-modal-toggle="FAQsModal"
   class="fixed bottom-4 right-4 md:bottom-6 md:right-6 lg:bottom-8 lg:right-8 
             bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 
@@ -45,7 +46,7 @@
           <span class="sr-only">Close modal</span>
         </button>
       </div>
-      
+
       <!-- Modal body -->
       <div class="p-4 md:p-6 max-h-[calc(100vh-200px)] overflow-y-auto">
         <!-- Dashboard FAQs Section -->
@@ -57,12 +58,12 @@
               <p class="text-sm text-gray-600 dark:text-gray-400">Frequently asked questions about the dashboard functionalities.</p>
             </div>
           </div>
-          
+
           <div id="accordion-dashboard" data-accordion="collapse">
             @php
-              $dashboardFAQs = \App\Helpers\FAQHelper::getDashboardFAQs();
+            $dashboardFAQs = \App\Helpers\FAQHelper::getDashboardFAQs();
             @endphp
-            
+
             @foreach($dashboardFAQs['questions'] as $index => $question)
             <div class="mb-2">
               <h2 id="accordion-dashboard-heading-{{ $index }}">
@@ -89,9 +90,10 @@
         </div>
 
         <!-- Inventory FAQs Section -->
+        @can(PermissionsEnum::BOOK_INVENTORY)
         <div class="mb-6">
           @php
-            $inventoryFAQs = \App\Helpers\FAQHelper::getInventoryFAQs();
+          $inventoryFAQs = \App\Helpers\FAQHelper::getInventoryFAQs();
           @endphp
           <div class="flex items-center gap-3 mb-4">
             <img src="{{ $inventoryFAQs['gif'] }}" alt="Inventory" class="w-12 h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600">
@@ -100,9 +102,9 @@
               <p class="text-sm text-gray-600 dark:text-gray-400">Frequently asked questions about inventory management.</p>
             </div>
           </div>
-          
+
           <div id="accordion-inventory" data-accordion="collapse">
-            
+
             @foreach($inventoryFAQs['questions'] as $index => $question)
             <div class="mb-2">
               <h2 id="accordion-inventory-heading-{{ $index }}">
@@ -127,11 +129,17 @@
             @endforeach
           </div>
         </div>
+        @endcan
 
         <!-- Report FAQs Section -->
+        @if(auth()->user()->can(PermissionsEnum::VIEW_USER_REPORTS)
+        || auth()->user()->can(PermissionsEnum::VIEW_SUMMARY_REPORTS)
+        || auth()->user()->can(PermissionsEnum::VIEW_INVENTORY_REPORTS)
+        || auth()->user()->can(PermissionsEnum::VIEW_TRANSACTION_REPORTS)
+        || auth()->user()->can(PermissionsEnum::VIEW_BOOK_CIRCULATION_REPORTS))
         <div class="mb-6">
           @php
-            $reportFAQs = \App\Helpers\FAQHelper::getReportFAQs();
+          $reportFAQs = \App\Helpers\FAQHelper::getReportFAQs();
           @endphp
           <div class="flex items-center gap-3 mb-4">
             <img src="{{ $reportFAQs['gif'] }}" alt="Report" class="w-12 h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600">
@@ -140,9 +148,9 @@
               <p class="text-sm text-gray-600 dark:text-gray-400">Frequently asked questions about report generation and management.</p>
             </div>
           </div>
-          
+
           <div id="accordion-report" data-accordion="collapse">
-            
+
             @foreach($reportFAQs['questions'] as $index => $question)
             <div class="mb-2">
               <h2 id="accordion-report-heading-{{ $index }}">
@@ -167,8 +175,10 @@
             @endforeach
           </div>
         </div>
+        @endif
 
         <!-- Import FAQs Section -->
+        @if(auth()->user()->can(PermissionsEnum::IMPORT_USERS) || auth()->user()->can(PermissionsEnum::IMPORT_BOOKS))
         <div class="mb-6">
           <div class="flex items-center gap-3 mb-4">
             <img src="{{ asset('gif/Import.gif') }}" alt="Import" class="w-12 h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600">
@@ -177,12 +187,12 @@
               <p class="text-sm text-gray-600 dark:text-gray-400">Frequently asked questions about data import processes.</p>
             </div>
           </div>
-          
+
           <div id="accordion-import" data-accordion="collapse">
             @php
-              $importFAQs = \App\Helpers\FAQHelper::getImportFAQs();
+            $importFAQs = \App\Helpers\FAQHelper::getImportFAQs();
             @endphp
-            
+
             @foreach($importFAQs['questions'] as $index => $question)
             <div class="mb-2">
               <h2 id="accordion-import-heading-{{ $index }}">
@@ -207,8 +217,18 @@
             @endforeach
           </div>
         </div>
+        @endif
 
         <!-- Maintenance FAQs Section -->
+        @if(auth()->user()->can(PermissionsEnum::VIEW_USERS_MAINTENANCE) ||
+        auth()->user()->can(PermissionsEnum::VIEW_BOOKS_MAINTENANCE) ||
+        auth()->user()->can(PermissionsEnum::VIEW_BOOK_CATEGORIES_MAINTENANCE) ||
+        auth()->user()->can(PermissionsEnum::VIEW_PRIVILEGES_MAINTENANCE) ||
+        auth()->user()->can(PermissionsEnum::VIEW_PENALTY_RULES_MAINTENANCE) ||
+        auth()->user()->can(PermissionsEnum::VIEW_TRANSACTIONS_MAINTENANCE) ||
+        auth()->user()->can(PermissionsEnum::RESERVATION_APPROVALS) ||
+        auth()->user()->can(PermissionsEnum::CREATE_BACKUPS) ||
+        auth()->user()->can(PermissionsEnum::MODIFY_ADMIN))
         <div class="mb-6">
           <div class="flex items-center gap-3 mb-4">
             <img src="{{ asset('gif/Maintenance.gif') }}" alt="Maintenance" class="w-12 h-12 rounded-lg border-2 border-gray-300 dark:border-gray-600">
@@ -217,12 +237,12 @@
               <p class="text-sm text-gray-600 dark:text-gray-400">Frequently asked questions about system maintenance and updates.</p>
             </div>
           </div>
-          
+
           <div id="accordion-maintenance" data-accordion="collapse">
             @php
-              $maintenanceFAQs = \App\Helpers\FAQHelper::getMaintenanceFAQs();
+            $maintenanceFAQs = \App\Helpers\FAQHelper::getMaintenanceFAQs();
             @endphp
-            
+
             @foreach($maintenanceFAQs['questions'] as $index => $question)
             <div class="mb-2">
               <h2 id="accordion-maintenance-heading-{{ $index }}">
@@ -247,6 +267,7 @@
             @endforeach
           </div>
         </div>
+        @endif
       </div>
 
       <!-- Modal footer -->
