@@ -1,5 +1,5 @@
-<div class="container mx-auto p-4">
-  <div class="flex flex-col md:flex-row md:flex-wrap items-center justify-center gap-4">
+<div class="container mx-auto">
+  <div class="flex flex-col lg:flex-row lg:items-end lg:justify-center gap-3 mb-4">
     {{-- Date Range Picker --}}
     <div id="date-range-picker-graph" date-rangepicker class="flex flex-col sm:flex-row items-center justify-center gap-2">
       <div class="relative w-full sm:w-auto">
@@ -36,7 +36,7 @@
     {{-- PDF Button --}}
     <div class="w-full md:w-auto">
       <button type="button" id="downloadPDF" class="bg-red-500 hover:bg-red-700 active:bg-red-900 text-white font-bold py-2 px-4 rounded w-full">
-        Export PDF
+        PDF
       </button>
     </div>
   </div>

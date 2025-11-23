@@ -1,13 +1,12 @@
 @extends('layouts.admin-app')
 @section('content')
 @use('App\Enum\PermissionsEnum')
-<h1 class="font-semibold text-center text-4xl p-5">Circulation History</h1>
+<div class="container mx-auto px-4">
+  <h1 class="font-semibold text-center text-4xl p-5">Circulation History</h1>
 
-<form action="{{ route('report.circulation-search') }}" method="POST" class="mb-4">
-  @csrf
-  <div class="container mx-auto px-4">
-    <div class="flex flex-col md:flex-row md:flex-wrap items-center justify-center gap-4">
-
+  <form action="{{ route('report.circulation-search') }}" method="POST">
+    @csrf
+    <div class="flex flex-col lg:flex-row lg:items-end lg:justify-center gap-3 mb-4">
       {{-- Date Range Picker --}}
       <div id="date-range-picker" date-rangepicker class="flex flex-col sm:flex-row items-center gap-2 w-full md:w-auto">
         <div class="relative w-full sm:w-56">
@@ -32,18 +31,16 @@
       </div>
 
       {{-- Search Input --}}
-      <div class="flex items-center w-full md:w-auto">
-        <label for="name" class="block text-sm font-medium mr-2">Search:</label>
-        <div class="w-full md:w-64">
-          <input type="text" name="search" id="search" placeholder="Name..." class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" value="<?php echo $search; ?>">
-        </div>
+      <div class="flex flex-col w-full lg:w-auto lg:flex-1 lg:max-w-[200px]">
+        <label for="search" class="block text-sm font-medium mb-1">Search</label>
+        <input type="text" name="search" id="search" placeholder="Name..." class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value="<?php echo $search; ?>">
       </div>
 
       {{-- Type Select --}}
-      <div class="w-full md:w-auto">
-        <label for="type" class="sr-only">Type</label>
-        <select id="type" name="type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full md:w-48 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
-          <option selected disabled>Select a Type</option>
+      <div class="flex flex-col w-full lg:w-auto lg:flex-1 lg:max-w-[180px]">
+        <label for="type" class="block text-sm font-medium mb-1">Type</label>
+        <select id="type" name="type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
+          <option value="" selected>All Types</option>
           @foreach($availability as $typeOption)
           <option value="{{ $typeOption }}" {{ request('type') == $typeOption ? 'selected' : '' }}>{{ $typeOption }}</option>
           @endforeach
@@ -51,19 +48,19 @@
       </div>
 
       {{-- Action Buttons --}}
-      <div class="flex flex-wrap items-center gap-2 w-full md:w-auto justify-center md:justify-start">
-        <button type="submit" id="submit" name="submit" value="find" class="bg-blue-500 hover:bg-blue-700 text-white text-sm font-bold py-2 px-4 rounded w-full sm:w-auto">Find</button>
-        @if(auth()->user()->can(PermissionsEnum::CREATE_REPORTS))
-        <button type="submit" id="submit" name="submit" value="pdf" class="bg-red-500 hover:bg-red-700 text-white text-sm font-bold py-2 px-4 rounded w-full sm:w-auto">Export PDF</button>
-        <button type="submit" id="submit" name="submit" value="excel" class="bg-green-500 hover:bg-green-700 text-white text-sm font-bold py-2 px-4 rounded w-full sm:w-auto">Export Excel</button>
-        @endif
+      <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
+        <button type="submit" name="submit" value="find" class="bg-blue-500 hover:bg-blue-700 active:bg-blue-900 text-white font-bold py-2 px-4 rounded whitespace-nowrap transition-colors">Find</button>
+        @can(PermissionsEnum::CREATE_REPORTS)
+        <button type="submit" name="submit" value="pdf" class="bg-red-500 hover:bg-red-700 active:bg-red-900 text-white font-bold py-2 px-4 rounded whitespace-nowrap transition-colors">PDF</button>
+        <button type="submit" name="submit" value="excel" class="bg-green-500 hover:bg-green-700 active:bg-green-900 text-white font-bold py-2 px-4 rounded whitespace-nowrap transition-colors">Excel</button>
+        @endcan
       </div>
 
     </div>
-  </div>
-</form>
+  </form>
 
-@include('report.transactions.transaction-table')
+  @include('report.transactions.transaction-table')
+</div>
 @endsection
 @section('scripts')
 @endsection
