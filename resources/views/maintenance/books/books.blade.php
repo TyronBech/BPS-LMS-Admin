@@ -71,13 +71,13 @@
     const searchInput = document.getElementById('search');
     const suggestionsContainer = document.getElementById('suggestions-container');
     const suggestionsList = document.getElementById('suggestions-list');
-    const books = <?php echo json_encode($books->map(function($book) {
-      return [
-        'title' => $book->title,
-        'author' => $book->author,
-        'isbn' => $book->isbn,
-      ];
-    })); ?>;
+    const books = <?php echo json_encode($books->map(function ($book) {
+                    return [
+                      'title' => $book->title,
+                      'author' => $book->author,
+                      'isbn' => $book->isbn,
+                    ];
+                  })); ?>;
 
     searchInput.addEventListener('input', function() {
       const query = this.value.toLowerCase();

@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Report;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Book;
+use App\Models\Category;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -21,16 +22,19 @@ class BookCirculationController extends Controller
         $barcode        = $request->input('barcode', '');
         $title          = $request->input('title', '');
         $perPage        = $request->input('perPage', 10);
+        $category       = $request->input('category', '');
+        $categories     = Category::all();
         $books          = new Book();
         $availability   = $this->extract_enums($books->getTable(), 'availability_status');
         $data           = $this->generateData($request, false);
-        return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability', 'perPage'));
+        return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability', 'perPage', 'categories', 'category'));
     }
     public function search(Request $request)
     {
         $barcode        = $request->input('barcode', '');
         $title          = $request->input('title', '');
         $availability   = $request->input('availability', 'All');
+        $category       = $request->input('category', 'All');
         $perPage        = $request->input('perPage', 10);
         $books          = new Book();
         $validator = Validator::make($request->all(), [
@@ -52,9 +56,10 @@ class BookCirculationController extends Controller
             return redirect()->route('report.accession-list')->with('toast-success', 'Successfully exported to Excel');
         }
         $data = $this->generateData($request, false);
+        $categories = Category::all();
         $availability = $this->extract_enums($books->getTable(), 'availability_status');
         if(!count($data)) return redirect()->route('report.accession-list')->with('toast-error', 'No data found.');
-        return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability', 'perPage'));
+        return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability', 'perPage', 'categories', 'category'));
     }
     private function generatePDF($data)
     {
@@ -139,9 +144,10 @@ class BookCirculationController extends Controller
     }
     private function generateData(Request $request, bool $isExport = false)
     {
-        $barcode        = $request->input('barcode', '');
+        $barcode        = strtolower($request->input('barcode', ''));
         $title          = strtolower($request->input('title', ''));
-        $availability   = $request->input('availability', 'All');
+        $category       = $request->input('category', 'All');
+        $availability   = strtolower($request->input('availability', 'All'));
         $perPage        = $request->input('perPage', 10);
         $query          = Book::with('category')->whereHas('category')->select('id', 'created_at', 'accession', 'call_number', 'title', 'barcode', 'availability_status', 'condition_status', 'category_id');
         if (strlen($barcode) > 0) {
@@ -150,10 +156,12 @@ class BookCirculationController extends Controller
         if (strlen($title) > 0) {
             $query->where(DB::raw('lower(title)'), 'like', '%' . $title . '%');
         }
-        if (strlen($availability) > 0 && $availability != 'All') {
-            $query->where('availability_status', $availability);
+        if (strlen($availability) > 0 && $availability != 'all') {
+            $query->where(DB::raw('lower(availability_status)'), $availability);
         }
-
+        if(strlen($category) > 0 && $category != 'All') {
+            $query->where('category_id', $category);
+        }
         $query->orderBy('accession', 'asc')->orderBy('id', 'asc');
 
         if ($isExport) {
@@ -163,6 +171,7 @@ class BookCirculationController extends Controller
                 'barcode'       => $barcode,
                 'title'         => $title,
                 'availability'  => $availability,
+                'category'      => $category,
                 'perPage'       => $perPage,
             ]);
         }
