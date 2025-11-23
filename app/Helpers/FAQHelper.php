@@ -4,6 +4,19 @@ namespace App\Helpers;
 
 class FAQHelper
 {
+
+    /**
+     * Retrieves an array containing FAQs about the dashboard section.
+     *
+     * The returned array contains the following keys:
+     * - title: The title of the FAQs section.
+     * - gif: The URL of the GIF associated with the FAQs section.
+     * - description: A brief description of the FAQs section.
+     * - questions: An array of questions asked about the FAQs section.
+     * - answers: An array of answers corresponding to the FAQs section.
+     *
+     * @return array The FAQs section array.
+     */
     public static function getDashboardFAQs()
     {
         return [
@@ -25,6 +38,18 @@ class FAQHelper
             ]
         ];
     }
+    /**
+     * Retrieves an array containing FAQs about the inventory management section.
+     *
+     * The returned array contains the following keys:
+     * - title: The title of the FAQs section.
+     * - gif: The URL of the GIF associated with the FAQs section.
+     * - description: A brief description of the FAQs section.
+     * - questions: An array of questions asked about the FAQs section.
+     * - answers: An array of answers to the FAQs section.
+     *
+     * @return array The FAQs section array.
+     */
     public static function getInventoryFAQs()
     {
         return [
@@ -44,6 +69,18 @@ class FAQHelper
         ];
     }
 
+    /**
+     * Retrieves an array containing FAQs about report generation and management.
+     *
+     * The returned array contains the following keys:
+     * - title: The title of the FAQs section.
+     * - gif: The URL of the GIF associated with the FAQs section.
+     * - description: A brief description of the FAQs section.
+     * - questions: An array of questions asked about the FAQs section.
+     * - answers: An array of answers to the FAQs section.
+     *
+     * @return array The FAQs section array.
+     */
     public static function getReportFAQs()
     {
         return [
@@ -54,7 +91,7 @@ class FAQHelper
                 "How to generate a report?",
                 "What types of reports are available?",
                 "Why some reports are not visible or accessible?",
-                "How can I filter reports",
+                "How can I filter reports?",
             ],
             'answers' => [
                 "To generate a report, you can click on the Export button, you can choose if the report is on PDF or Excel format.",
@@ -65,6 +102,18 @@ class FAQHelper
         ];
     }
 
+    /**
+     * Retrieves an array containing FAQs about data import processes.
+     *
+     * The returned array contains the following keys:
+     * - title: The title of the FAQs section.
+     * - gif: The URL of the GIF associated with the FAQs section.
+     * - description: A brief description of the FAQs section.
+     * - questions: An array of questions asked about the FAQs section.
+     * - answers: An array of answers to the FAQs section.
+     *
+     * @return array The FAQs section array.
+     */
     public static function getImportFAQs()
     {
         return [
@@ -75,14 +124,28 @@ class FAQHelper
                 "How to import data?",
                 "What file formats are supported for import?",
                 "What should I do if the import fails?",
+                "Can I edit the preview of Excel data before importing?",
             ],
             'answers' => [
                 "To import data, create an Excel file with the required fields, then use the import function in the system to upload the file. You can use the available Excel format template provided in the system.",
                 "Supported file formats for import typically include only Excel (.xlsx) files.",
                 "If the import fails, check the error messages provided by the system, ensure that your file format is correct, and verify that all required fields are included. You may also need to contact support for further assistance.",
+                "Yes, all cells in the preview are editable before importing. You can click on any cell to modify its content as needed."
             ]
         ];
     }
+    /**
+     * Retrieves an array containing FAQs about system maintenance and updates.
+     *
+     * The returned array contains the following keys:
+     * - title: The title of the FAQs section.
+     * - gif: The URL of the GIF associated with the FAQs section.
+     * - description: A brief description of the FAQs section.
+     * - questions: An array of questions asked about the FAQs section.
+     * - answers: An array of answers to the FAQs section.
+     *
+     * @return array The FAQs section array.
+     */
     public static function getMaintenanceFAQs()
     {
         return [
@@ -92,16 +155,20 @@ class FAQHelper
             'questions' => [
                 "What can I do in maintenance panel?",
                 "Why some maintenance are not visible or accessible?",
+                "How can I choose which books I want to generate barcode?",
                 "Can I perform all maintenance capabilities?",
                 "How are system updates communicated?",
                 "How can I generate backups?",
+                "Is backups automatically generated?",
             ],
             'answers' => [
                 "The maintenance panel allows you to perform system maintenance tasks such as CRUD operations (Create, Read, Update, Delete), managing backups, Modifying roles and permissions, and reservation management.",
                 "Some maintenance features may not be visible or accessible due to user permission settings or if the feature is restricted to certain user roles.",
+                "To generate barcodes to specific books, you can search for it by name, accession number (it can be mutiple accession numbers just separate it by comma), or filter it by category. After that, you can select the books you want to generate by checking the checkboxes.",
                 "Not all users can perform all maintenance capabilities. Access to certain maintenance functions may be restricted based on user roles and permissions.",
                 "System updates are usually communicated through email notifications.",
                 "You can generate backups through by creating a backup manually in the maintenance panel and downloading it to your local device using the generated password sent to your email.",
+                "Yes, backups are automatically generated daily but it will automatically deleted after 7 days.",
             ]
         ];
     }

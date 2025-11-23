@@ -9,6 +9,7 @@ use App\Models\Transaction;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
@@ -71,6 +72,7 @@ class ReservationExtensionController extends Controller
             ->findOrFail($id);
 
         try {
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $user = $transaction->user;
             $book = $transaction->book;
             $studentDetails = StudentDetail::where('user_id', $user->id)->first();

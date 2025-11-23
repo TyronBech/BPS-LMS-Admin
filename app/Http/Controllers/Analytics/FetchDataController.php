@@ -10,63 +10,180 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Book;
 use App\Models\Transaction;
 use App\Models\User;
-use Illuminate\Contracts\Session\Session;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log as LogFacade;
 
 class FetchDataController extends Controller
 {
+    /**
+     * Fetch the count of active users at the current time
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function fetchCurrentTimeInUsers()
     {
         $today = Carbon::today();
+
+        LogFacade::info('Analytics: Fetching current time in users', [
+            'user_id' => Auth::id(),
+            'user_name' => Auth::user()->full_name ?? 'N/A',
+            'date' => $today->toDateString(),
+            'timestamp' => now(),
+        ]);
 
         $activeCount = Log::where('time_in', '!=', null)
             ->where('time_out', null)
             ->whereDate('time_in', $today)
             ->count();
+
+        LogFacade::info('Analytics: Current time in users fetched successfully', [
+            'active_count' => $activeCount,
+            'date' => $today->toDateString(),
+            'user_id' => Auth::id(),
+            'timestamp' => now(),
+        ]);
+
         return response()->json(['active_count' => $activeCount]);
     }
+
+    /**
+     * Auto timeout all users.
+     *
+     * This function will timeout all users who are currently logged in.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function timeoutAllUsers()
     {
+        LogFacade::info('Analytics: Auto timeout all users initiated', [
+            'user_id' => Auth::id(),
+            'user_name' => Auth::user()->full_name,
+            'ip_address' => request()->ip(),
+            'timestamp' => now(),
+        ]);
+
         try {
             DB::statement("SET time_zone = '+08:00'");
+
+            LogFacade::debug('Analytics: Executing auto timeout stored procedure', [
+                'user_id' => Auth::id(),
+            ]);
+
             DB::statement('CALL AutoTimeoutUsers()');
-            LogFacade::info('Auto time out command executed.');
+
+            LogFacade::info('Analytics: Auto timeout executed successfully', [
+                'user_id' => Auth::id(),
+                'user_name' => Auth::user()->full_name,
+                'timestamp' => now(),
+            ]);
+
+            session()->flash('toast-success', 'All users have been timed out successfully.');
+
+            return response()->json([
+                'message' => 'All users have been timed out successfully.'
+            ]);
+
         } catch (\Exception $e) {
+            LogFacade::error('Analytics: Error executing auto timeout command', [
+                'user_id' => Auth::id(),
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'timestamp' => now(),
+            ]);
+
             session()->flash('toast-error', 'An error occurred while executing the auto time out command.');
-            LogFacade::error('Error executing auto time out command: ' . $e->getMessage());
+
             return response()->json([
                 'error' => 'An error occurred while processing the request.'
             ], 500);
         }
-        session()->flash('toast-success', 'All users have been timed out successfully.');
-        return response()->json([
-            'message' => 'All users have been timed out successfully.'
-        ]);
     }
+
+    /**
+     * Fetch the monthly count of users.
+     *
+     * This function fetches the count of users per month for the past 12 months.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function fetchMonthlyUsers(Request $request)
     {
+        LogFacade::info('Analytics: Fetching monthly users data', [
+            'user_id' => Auth::id(),
+            'user_name' => Auth::user()->full_name ?? 'N/A',
+            'timestamp' => now(),
+        ]);
+
         $monthlyRecord = Log::select(
             DB::raw("DATE_FORMAT(time_in, '%Y %M') as month"),
             DB::raw('COUNT(*) as count')
         )
             ->where('time_in', '!=', null)
             ->groupBy(DB::raw("DATE_FORMAT(time_in, '%Y %M')"))
-            ->orderBy(DB::raw("MIN(time_in)")) // optional: to order correctly from oldest to newest
+            ->orderBy(DB::raw("MIN(time_in)"))
             ->limit(12)
             ->get();
 
+        LogFacade::info('Analytics: Monthly users data fetched successfully', [
+            'records_count' => $monthlyRecord->count(),
+            'user_id' => Auth::id(),
+            'timestamp' => now(),
+        ]);
+
+        LogFacade::debug('Analytics: Monthly users data details', [
+            'data' => $monthlyRecord->toArray(),
+            'user_id' => Auth::id(),
+        ]);
+
         return response()->json($monthlyRecord);
     }
+
+    /**
+     * Fetch the total count of books.
+     *
+     * This function fetches the total count of books stored in the database.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function totalBooks()
     {
+        LogFacade::info('Analytics: Fetching total books count', [
+            'user_id' => Auth::id(),
+            'user_name' => Auth::user()->full_name ?? 'N/A',
+            'timestamp' => now(),
+        ]);
+
         $totalBooks = Book::count();
+
+        LogFacade::info('Analytics: Total books count fetched successfully', [
+            'total_books' => $totalBooks,
+            'user_id' => Auth::id(),
+            'timestamp' => now(),
+        ]);
+
         return response()->json(['total_books' => $totalBooks]);
     }
+
+    /**
+     * Fetches the transaction history of the library, including the count of borrowed, reserved and returned books per month for the past 12 months.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function fetchTransactionHistory(Request $request)
     {
         $now = Carbon::now();
         $startDT = $now->copy()->subMonths(11)->startOfMonth();
         $endDT = $now->copy()->endOfMonth();
+
+        LogFacade::info('Analytics: Fetching transaction history', [
+            'user_id' => Auth::id(),
+            'user_name' => Auth::user()->full_name ?? 'N/A',
+            'start_date' => $startDT->toDateString(),
+            'end_date' => $endDT->toDateString(),
+            'timestamp' => now(),
+        ]);
 
         // Build months list between startDT and endDT (inclusive)
         $months = collect();
@@ -78,6 +195,11 @@ class FetchDataController extends Controller
             ]);
             $cursor->addMonth();
         }
+
+        LogFacade::debug('Analytics: Generated months list for transaction history', [
+            'months_count' => $months->count(),
+            'user_id' => Auth::id(),
+        ]);
 
         $records = Transaction::select(
             DB::raw("DATE_FORMAT(created_at, '%Y-%m') as ym"),
@@ -92,6 +214,11 @@ class FetchDataController extends Controller
             ->orderBy('ym')
             ->get()
             ->keyBy('ym');
+
+        LogFacade::debug('Analytics: Transaction records retrieved', [
+            'records_count' => $records->count(),
+            'user_id' => Auth::id(),
+        ]);
 
         $labels = [];
         $total = [];
@@ -126,7 +253,23 @@ class FetchDataController extends Controller
             $borrowed = array_slice($borrowed, $firstNonZeroIndex);
             $returned = array_slice($returned, $firstNonZeroIndex);
             $reserved = array_slice($reserved, $firstNonZeroIndex);
+
+            LogFacade::debug('Analytics: Trimmed leading zero months', [
+                'first_non_zero_index' => $firstNonZeroIndex,
+                'remaining_months' => count($labels),
+                'user_id' => Auth::id(),
+            ]);
         }
+
+        LogFacade::info('Analytics: Transaction history fetched successfully', [
+            'months_count' => count($labels),
+            'total_transactions' => array_sum($total),
+            'total_borrowed' => array_sum($borrowed),
+            'total_returned' => array_sum($returned),
+            'total_reserved' => array_sum($reserved),
+            'user_id' => Auth::id(),
+            'timestamp' => now(),
+        ]);
 
         return response()->json([
             'labels'      => $labels,
@@ -136,19 +279,58 @@ class FetchDataController extends Controller
             'reserved'    => $reserved,
         ]);
     }
+
+    /**
+     * Fetches the yearly count of acquired books.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function fetchYearlyAquiredBooks()
     {
+        LogFacade::info('Analytics: Fetching yearly acquired books', [
+            'user_id' => Auth::id(),
+            'user_name' => Auth::user()->full_name ?? 'N/A',
+            'timestamp' => now(),
+        ]);
+
         $yearlyRecord = Book::select(
             DB::raw("DATE_FORMAT(created_at, '%Y') as year"),
             DB::raw('COUNT(*) as count')
         )
             ->groupBy(DB::raw("DATE_FORMAT(created_at, '%Y')"))
-            ->orderBy(DB::raw("MIN(created_at)")) // optional: to order correctly from oldest to newest
+            ->orderBy(DB::raw("MIN(created_at)"))
             ->get();
+
+        LogFacade::info('Analytics: Yearly acquired books fetched successfully', [
+            'years_count' => $yearlyRecord->count(),
+            'total_books' => $yearlyRecord->sum('count'),
+            'user_id' => Auth::id(),
+            'timestamp' => now(),
+        ]);
+
+        LogFacade::debug('Analytics: Yearly acquired books details', [
+            'data' => $yearlyRecord->toArray(),
+            'user_id' => Auth::id(),
+        ]);
+
         return response()->json($yearlyRecord);
     }
+
+    /**
+     * Fetches the count of registered users.
+     *
+     * This function fetches the count of students, employees, and visitors and returns the count in a JSON response.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function fetchRegisteredUsers()
     {
+        LogFacade::info('Analytics: Fetching registered users count', [
+            'user_id' => Auth::id(),
+            'user_name' => Auth::user()->full_name ?? 'N/A',
+            'timestamp' => now(),
+        ]);
+
         $students = User::whereHas('privileges', function ($query) {
             $query->where('user_type', 'student');
         })->count();
@@ -156,32 +338,72 @@ class FetchDataController extends Controller
         $employees = User::whereHas('privileges', function ($query) {
             $query->where('user_type', 'employee');
         })->count();
+
         $visitors = User::whereHas('privileges', function ($query) {
             $query->where('user_type', 'visitor');
         })->count();
+
+        LogFacade::info('Analytics: Registered users count fetched successfully', [
+            'students' => $students,
+            'employees' => $employees,
+            'visitors' => $visitors,
+            'total' => $students + $employees + $visitors,
+            'user_id' => Auth::id(),
+            'timestamp' => now(),
+        ]);
+
         return response()->json([
             'students' => $students,
             'employees' => $employees,
             'visitors' => $visitors
         ]);
     }
+
+    /**
+     * Fetches the top 6 most visited students for each level.
+     *
+     * This function fetches the top 6 most visited students for each level and returns the result in a JSON response.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function mostVisitedStudents(Request $request)
     {
+        $start = $request->query('start');
+        $end = $request->query('end');
+
+        LogFacade::info('Analytics: Fetching most visited students', [
+            'user_id' => Auth::id(),
+            'user_name' => Auth::user()->full_name ?? 'N/A',
+            'start_date' => $start,
+            'end_date' => $end,
+            'timestamp' => now(),
+        ]);
+
         try {
             $levels = range(7, 12);
             $results = collect();
 
-            $start = $request->query('start');
-            $end = $request->query('end');
             $hasRange = false;
             $startDT = null;
             $endDT = null;
+
             if ($start && $end) {
                 try {
                     $startDT = Carbon::parse($start)->startOfDay();
                     $endDT = Carbon::parse($end)->endOfDay();
                     $hasRange = true;
+
+                    LogFacade::debug('Analytics: Date range parsed for most visited students', [
+                        'start_datetime' => $startDT->toDateTimeString(),
+                        'end_datetime' => $endDT->toDateTimeString(),
+                        'user_id' => Auth::id(),
+                    ]);
                 } catch (\Throwable $e) {
+                    LogFacade::warning('Analytics: Failed to parse date range, using current year', [
+                        'error' => $e->getMessage(),
+                        'user_id' => Auth::id(),
+                    ]);
                     $hasRange = false;
                 }
             }
@@ -204,36 +426,87 @@ class FetchDataController extends Controller
                     ->take(6)
                     ->get();
 
+                LogFacade::debug('Analytics: Fetched top students for level', [
+                    'level' => $level,
+                    'students_count' => $topStudents->count(),
+                    'user_id' => Auth::id(),
+                ]);
+
                 $results->push([
                     'level' => $level,
                     'students' => $topStudents,
                 ]);
             }
+
+            LogFacade::info('Analytics: Most visited students fetched successfully', [
+                'levels_processed' => count($levels),
+                'total_students' => $results->sum(fn($r) => count($r['students'])),
+                'user_id' => Auth::id(),
+                'timestamp' => now(),
+            ]);
+
             return response()->json($results->values(), 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
+
         } catch (\Throwable $e) {
+            LogFacade::error('Analytics: Error fetching most visited students', [
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'user_id' => Auth::id(),
+                'timestamp' => now(),
+            ]);
+
             return response()->json([
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ], 500);
         }
     }
+
+    /**
+     * Fetch the top 3 students with the most borrowed books per grade level within a given date range.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @throws \Throwable
+     */
     public function mostBorrowedStudents(Request $request)
     {
+        $start = $request->query('start');
+        $end = $request->query('end');
+
+        LogFacade::info('Analytics: Fetching most borrowed students', [
+            'user_id' => Auth::id(),
+            'user_name' => Auth::user()->full_name ?? 'N/A',
+            'start_date' => $start,
+            'end_date' => $end,
+            'timestamp' => now(),
+        ]);
+
         try {
             $levels = range(7, 12);
             $results = collect();
 
-            $start = $request->query('start');
-            $end = $request->query('end');
             $hasRange = false;
             $startDT = null;
             $endDT = null;
+
             if ($start && $end) {
                 try {
                     $startDT = Carbon::parse($start)->startOfDay();
                     $endDT = Carbon::parse($end)->endOfDay();
                     $hasRange = true;
+
+                    LogFacade::debug('Analytics: Date range parsed for most borrowed students', [
+                        'start_datetime' => $startDT->toDateTimeString(),
+                        'end_datetime' => $endDT->toDateTimeString(),
+                        'user_id' => Auth::id(),
+                    ]);
                 } catch (\Throwable $e) {
+                    LogFacade::warning('Analytics: Failed to parse date range, using current year', [
+                        'error' => $e->getMessage(),
+                        'user_id' => Auth::id(),
+                    ]);
                     $hasRange = false;
                 }
             }
@@ -254,22 +527,58 @@ class FetchDataController extends Controller
                     ->take(3)
                     ->get();
 
+                LogFacade::debug('Analytics: Fetched top borrowers for level', [
+                    'level' => $level,
+                    'students_count' => $topStudents->count(),
+                    'user_id' => Auth::id(),
+                ]);
+
                 $results->push([
                     'level' => $level,
                     'students' => $topStudents,
                 ]);
             }
 
+            LogFacade::info('Analytics: Most borrowed students fetched successfully', [
+                'levels_processed' => count($levels),
+                'total_students' => $results->sum(fn($r) => count($r['students'])),
+                'user_id' => Auth::id(),
+                'timestamp' => now(),
+            ]);
+
             return response()->json($results->values(), 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
+
         } catch (\Throwable $e) {
+            LogFacade::error('Analytics: Error fetching most borrowed students', [
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'user_id' => Auth::id(),
+                'timestamp' => now(),
+            ]);
+
             return response()->json([
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ], 500);
         }
     }
-    public function topBooksBorrowed(Request $request)
+
+    /**
+     * Fetch the top 5 books with the most borrowed transactions.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @throws \Throwable
+     */
+    public function topBooksBorrowed()
     {
+        LogFacade::info('Analytics: Fetching top books borrowed', [
+            'user_id' => Auth::id(),
+            'user_name' => Auth::user()->full_name ?? 'N/A',
+            'timestamp' => now(),
+        ]);
+
         try {
             $topBooks = Book::with(['transactions' => function ($query) {
                 $query->whereIn('transaction_type', ['Borrowed', 'Returned']);
@@ -286,19 +595,54 @@ class FetchDataController extends Controller
                 ->take(5)
                 ->values();
 
+            LogFacade::info('Analytics: Top books borrowed fetched successfully', [
+                'books_count' => $topBooks->count(),
+                'total_borrows' => $topBooks->sum('total_borrows'),
+                'user_id' => Auth::id(),
+                'timestamp' => now(),
+            ]);
+
+            LogFacade::debug('Analytics: Top books borrowed details', [
+                'data' => $topBooks->toArray(),
+                'user_id' => Auth::id(),
+            ]);
+
             return response()->json([
                 'labels' => $topBooks->pluck('title'),
                 'counts' => $topBooks->pluck('total_borrows'),
             ], 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
+
         } catch (\Throwable $e) {
+            LogFacade::error('Analytics: Error fetching top books borrowed', [
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'user_id' => Auth::id(),
+                'timestamp' => now(),
+            ]);
+
             return response()->json([
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ], 500);
         }
     }
-    public function topCategoriesBorrowed(Request $request)
+
+    /**
+     * Fetch the top 5 categories with the most borrowed transactions.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     *
+     * @throws \Throwable
+     */
+    public function topCategoriesBorrowed()
     {
+        LogFacade::info('Analytics: Fetching top categories borrowed', [
+            'user_id' => Auth::id(),
+            'user_name' => Auth::user()->full_name ?? 'N/A',
+            'timestamp' => now(),
+        ]);
+
         try {
             $topCategories = Book::with(['transactions' => function ($query) {
                 $query->whereIn('transaction_type', ['Borrowed', 'Returned']);
@@ -315,11 +659,31 @@ class FetchDataController extends Controller
                 ->take(5)
                 ->values();
 
+            LogFacade::info('Analytics: Top categories borrowed fetched successfully', [
+                'categories_count' => $topCategories->count(),
+                'total_borrows' => $topCategories->sum('total_borrows'),
+                'user_id' => Auth::id(),
+                'timestamp' => now(),
+            ]);
+
+            LogFacade::debug('Analytics: Top categories borrowed details', [
+                'data' => $topCategories->toArray(),
+                'user_id' => Auth::id(),
+            ]);
+
             return response()->json([
                 'labels' => $topCategories->pluck('category'),
                 'counts' => $topCategories->pluck('total_borrows'),
             ], 200, [], JSON_INVALID_UTF8_SUBSTITUTE);
+
         } catch (\Throwable $e) {
+            LogFacade::error('Analytics: Error fetching top categories borrowed', [
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'user_id' => Auth::id(),
+                'timestamp' => now(),
+            ]);
+
             return response()->json([
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
