@@ -54,7 +54,7 @@ Route::middleware('guest', RedirectIfAuthenticated::class, PreventBackHistory::c
         return view('main-welcome');
     })->name('main-welcome');
     Route::get('login',                     [AdminLoginController::class, 'index'])         ->name('login');
-    Route::post('login',                    [AdminLoginController::class, 'store'])         ->name('login');
+    Route::post('login',                    [AdminLoginController::class, 'store'])         ->name('login.store');
     Route::get('forgot-password',           [PasswordResetLinkController::class, 'create']) ->name('password.request');
     Route::post('forgot-password',          [PasswordResetLinkController::class, 'store'])  ->name('password.email');
     Route::get('reset-password/{token}',    [NewPasswordController::class, 'create'])       ->name('password.reset');

@@ -1,7 +1,7 @@
 @extends('layouts.app-form')
 @section('content')
 <div class="max-w-lg mx-auto my-8 sm:my-12 md:my-16 lg:my-20 h-auto bg-white shadow-md rounded-lg p-6 sm:p-8 md:p-10 dark:bg-gray-800">
-  <form action="{{ route('login') }}" method="POST">
+  <form action="{{ route('login.store') }}" method="POST">
     @csrf
     <h1 class="text-xl sm:text-2xl md:text-2xl font-semibold text-gray-900 dark:text-white text-center">Log in to your account</h1>
     <div class="my-4 sm:my-5">

@@ -169,6 +169,41 @@
 <script type="module">
   document.addEventListener('DOMContentLoaded', function() {
     const editButtons = document.querySelectorAll('.editBtn');
+    const transactionTypeSelect = document.getElementById('transaction_type');
+    const statusSelect = document.getElementById('status');
+    
+    // Define status options based on transaction type
+    const statusOptions = {
+      'Borrowed': ['Borrowed', 'Overdue', 'Renew'],
+      'Returned': ['Completed', 'Lost', 'Missing'],
+      'Reserved': ['Pending', 'Cancelled', 'Available for pickup']
+    };
+
+    // Function to update status dropdown based on transaction type
+    function updateStatusOptions(transactionType, currentStatus = '') {
+      // Clear existing options
+      statusSelect.innerHTML = '<option selected disabled>Choose a status</option>';
+      
+      // Get available statuses for the selected transaction type
+      const availableStatuses = statusOptions[transactionType] || [];
+      
+      // Populate status dropdown
+      availableStatuses.forEach(status => {
+        const option = document.createElement('option');
+        option.value = status;
+        option.textContent = status;
+        if (status === currentStatus) {
+          option.selected = true;
+        }
+        statusSelect.appendChild(option);
+      });
+    }
+
+    // Add event listener to transaction type select
+    transactionTypeSelect.addEventListener('change', function() {
+      updateStatusOptions(this.value);
+    });
+
     editButtons.forEach(button => {
       button.addEventListener('click', function(e) {
         e.preventDefault();
@@ -188,7 +223,10 @@
             document.getElementById('due-datepicker').value = transaction.due_date ? new Date(transaction.due_date).toLocaleDateString('en-CA') : '';
             document.getElementById('pickup-datepicker').value = transaction.pickup_deadline ? new Date(transaction.pickup_deadline).toLocaleDateString('en-CA') : '';
             document.getElementById('transaction_type').value = transaction.transaction_type;
-            document.getElementById('status').value = transaction.status || '';
+            
+            // Update status options based on transaction type, then set the current status
+            updateStatusOptions(transaction.transaction_type, transaction.status);
+            
             document.getElementById('book_condition').value = transaction.book_condition || '';
             document.getElementById('penalty_total').value = transaction.penalty_total || '';
             document.getElementById('remarks').value = transaction.remarks || '';
