@@ -14,7 +14,7 @@ class CallNumberSeeder extends Seeder
     public function run(): void
     {
         Book::all()->each(function ($book) {
-            $book->update([
+            $book->where('call_number', null)->update([
                 'call_number' => $this->generateCallNumber($book)
             ]); 
         });
