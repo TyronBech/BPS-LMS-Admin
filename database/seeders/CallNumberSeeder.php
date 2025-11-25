@@ -13,10 +13,13 @@ class CallNumberSeeder extends Seeder
      */
     public function run(): void
     {
-        Book::all()->each(function ($book) {
-            $book->where('call_number', null)->update([
-                'call_number' => $this->generateCallNumber($book)
-            ]); 
+        Book::all()->each(function (Book $book) {
+            // Only generate call number if it doesn't already exist
+            if (empty($book->call_number)) {
+                $callNumber = $this->generateCallNumber($book);
+                $book->call_number = $callNumber;
+                $book->save();
+            }
         });
     }
     /**
