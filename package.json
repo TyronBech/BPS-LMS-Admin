@@ -25,6 +25,7 @@
     },
     "dependencies": {
         "@tailwindcss/vite": "^4.0.4",
+        "apexcharts": "^3.46.0",
         "bootstrap": "^5.3.3",
         "chart.js": "^4.4.8",
         "chartjs-plugin-datalabels": "^2.2.0",
