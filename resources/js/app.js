@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'createCopy',           // create book copy button
     'exportBarcodeBtn',     // export barcode button
     'exportBarcode',        // export barcode button (books page)
+    'exportCallNumberBtn',  // export call number button
   ];
 
   // --- 1️⃣ Handle button clicks ---
@@ -47,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         skipButtonIds.includes(id) ||                                     // dropdowns
         (name === 'submit' && (value === 'pdf' || value === 'excel')) ||  // PDF export
         (name === 'barcodeBtn' && value === 'barcode') ||                 // Barcode export
+        (name === 'callNumberBtn' && value === 'callNumber') ||           // Call number export
         btn.disabled ||                                                   // disabled
         btn.offsetParent === null ||                                      // hidden
         btn.closest('.dashboard-card') ||
@@ -70,6 +72,7 @@ document.addEventListener('DOMContentLoaded', () => {
       if (form.classList.contains('skip-loader')) return;
       if (submitter && (submitter.value === 'pdf' || submitter.value === 'excel')) return;
       if (submitter && submitter.name === 'barcodeBtn' && submitter.value === 'barcode') return;
+      if (submitter && submitter.name === 'callNumberBtn' && submitter.value === 'callNumber') return;
       showLoader();
     });
   });

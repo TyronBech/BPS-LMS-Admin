@@ -15,6 +15,13 @@
           Generate Barcode
         </button>
       </form>
+      <form action="{{ route('maintenance.export-call-number') }}" method="GET" class="flex skip-loader">
+        @csrf
+        <input type="hidden" name="ids" id="export_call_number_ids" value="" />
+        <button id="exportCallNumberBtn" type="submit" title="Export Call Number" value="" class="exportCallNumber text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">
+          Generate Call Number
+        </button>
+      </form>
     </div>
   </div>
   <form method="GET" class="flex items-center justify-end w-full md:w-auto">
@@ -211,6 +218,14 @@
   exportBarcodeButtons.forEach(button => {
     button.addEventListener('click', function() {
       exportBarcodeIds.value = Array.from(selectedIds).join(',');
+    });
+  });
+
+  const exportCallNumberButtons = document.querySelectorAll('.exportCallNumber');
+  const exportCallNumberIds = document.getElementById('export_call_number_ids');
+  exportCallNumberButtons.forEach(button => {
+    button.addEventListener('click', function() {
+      exportCallNumberIds.value = Array.from(selectedIds).join(',');
     });
   });
 </script>

@@ -129,18 +129,19 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
     });
     Route::prefix('maintenance')->middleware(MaintenanceAuthentication::class)->group(function () {
         Route::prefix('books')->middleware(BookAuthentication::class)->group(function () {
-            Route::get('books',                 [BookMaintenanceController::class, 'index'])            ->name('maintenance.books');
-            Route::get('add-book',              [BookMaintenanceController::class, 'create'])           ->name('maintenance.create-book');
-            Route::post('add-book',             [BookMaintenanceController::class, 'store'])            ->name('maintenance.store-book');
-            Route::get('edit-book',             [BookMaintenanceController::class, 'edit'])             ->name('maintenance.edit-book');
-            Route::put('edit-book',             [BookMaintenanceController::class, 'update'])           ->name('maintenance.update-book');
-            Route::post('copy-book',            [BookMaintenanceController::class, 'copy'])             ->name('maintenance.copy-book');
-            Route::get('show-books',            [BookMaintenanceController::class, 'show'])             ->name('maintenance.show-books');
-            Route::get('show-book',             [BookMaintenanceController::class, 'view'])             ->name('maintenance.view-book');
-            Route::get('category',              [BookMaintenanceController::class, 'search_category'])  ->name('maintenance.search-category');
-            Route::get('export-barcode',        [BookMaintenanceController::class, 'export_barcode'])   ->name('maintenance.export-barcode');
-            Route::delete('delete-book',        [BookMaintenanceController::class, 'destroy'])          ->name('maintenance.delete-book');
-            Route::delete('bulk-delete-book',   [BookMaintenanceController::class, 'bulkDelete'])       ->name('maintenance.bulk-delete-book');
+            Route::get('books',                 [BookMaintenanceController::class, 'index'])                ->name('maintenance.books');
+            Route::get('add-book',              [BookMaintenanceController::class, 'create'])               ->name('maintenance.create-book');
+            Route::post('add-book',             [BookMaintenanceController::class, 'store'])                ->name('maintenance.store-book');
+            Route::get('edit-book',             [BookMaintenanceController::class, 'edit'])                 ->name('maintenance.edit-book');
+            Route::put('edit-book',             [BookMaintenanceController::class, 'update'])               ->name('maintenance.update-book');
+            Route::post('copy-book',            [BookMaintenanceController::class, 'copy'])                 ->name('maintenance.copy-book');
+            Route::get('show-books',            [BookMaintenanceController::class, 'show'])                 ->name('maintenance.show-books');
+            Route::get('show-book',             [BookMaintenanceController::class, 'view'])                 ->name('maintenance.view-book');
+            Route::get('category',              [BookMaintenanceController::class, 'search_category'])      ->name('maintenance.search-category');
+            Route::get('export-barcode',        [BookMaintenanceController::class, 'export_barcode'])       ->name('maintenance.export-barcode');
+            Route::get('export-call-number',    [BookMaintenanceController::class, 'export_call_numbers'])  ->name('maintenance.export-call-number');
+            Route::delete('delete-book',        [BookMaintenanceController::class, 'destroy'])              ->name('maintenance.delete-book');
+            Route::delete('bulk-delete-book',   [BookMaintenanceController::class, 'bulkDelete'])           ->name('maintenance.bulk-delete-book');
             Route::prefix('categories')->middleware(BookCategoriesAuthentication::class)->group(function () {
                 Route::get('categories',            [CategoryMaintenanceController::class, 'index'])    ->name('maintenance.categories');
                 Route::post('add-category',         [CategoryMaintenanceController::class, 'store'])    ->name('maintenance.store-category');
