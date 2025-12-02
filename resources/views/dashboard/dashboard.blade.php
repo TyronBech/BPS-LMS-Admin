@@ -48,57 +48,61 @@
     </div>
   </div>
   <div class="flex flex-col col-span-1 md:col-span-2 lg:col-span-4 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-    <h5 class="mb-6 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-      Top 6 Most Visited Students per Grade Level
-    </h5>
-    <div id="date-range-picker" date-rangepicker class="flex items-center mb-5">
-      <div class="relative">
-        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-          <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
-          </svg>
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+      <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+        Top 6 Most Visited Students per Grade Level
+      </h5>
+      <div id="date-range-picker" date-rangepicker class="flex items-center">
+        <div class="relative">
+          <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
+            </svg>
+          </div>
+          <input id="datepicker-range-start-top-students" name="start_top_students" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Start date">
         </div>
-        <input id="datepicker-range-start-top-students" name="start_top_students" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Select date start">
-      </div>
-      <span class="mx-4 text-gray-500">to</span>
-      <div class="relative">
-        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-          <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
-          </svg>
+        <span class="mx-4 text-gray-500">to</span>
+        <div class="relative">
+          <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
+            </svg>
+          </div>
+          <input id="datepicker-range-end-top-students" name="end_top_students" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="End date">
         </div>
-        <input id="datepicker-range-end-top-students" name="end_top_students" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Select date end">
       </div>
     </div>
-    <div id="top-students-container" class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <p class="text-center text-gray-500">Loading...</p>
+    <div id="top-students-container" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <p class="text-center text-gray-500 col-span-full py-10">Loading data...</p>
     </div>
   </div>
   <div class="flex flex-col col-span-1 md:col-span-2 lg:col-span-4 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-    <h5 class="mb-6 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-      Top 3 Students with the Most Borrowed Books per Grade Level
-    </h5>
-    <div id="date-range-picker-borrowed" date-rangepicker class="flex items-center mb-5">
-      <div class="relative">
-        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-          <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
-          </svg>
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+      <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
+        Top 3 Students with the Most Borrowed Books per Grade Level
+      </h5>
+      <div id="date-range-picker-borrowed" date-rangepicker class="flex items-center">
+        <div class="relative">
+          <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
+            </svg>
+          </div>
+          <input id="datepicker-range-start-top-borrowed" name="start_top_borrowed" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Start date">
         </div>
-        <input id="datepicker-range-start-top-borrowed" name="start_top_borrowed" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Select date start">
-      </div>
-      <span class="mx-4 text-gray-500">to</span>
-      <div class="relative">
-        <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
-          <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
-          </svg>
+        <span class="mx-4 text-gray-500">to</span>
+        <div class="relative">
+          <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">
+            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
+            </svg>
+          </div>
+          <input id="datepicker-range-end-top-borrowed" name="end_top_borrowed" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="End date">
         </div>
-        <input id="datepicker-range-end-top-borrowed" name="end_top_borrowed" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Select date end">
       </div>
     </div>
-    <div id="top-borrowed-container" class="grid grid-cols-1 lg:grid-cols-3 gap-4">
-      <p class="text-center text-gray-500">Loading...</p>
+    <div id="top-borrowed-container" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <p class="text-center text-gray-500 col-span-full py-10">Loading data...</p>
     </div>
   </div>
   <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
@@ -113,10 +117,12 @@
       <canvas id="top-borrowed-categories"></canvas>
     </div>
   </div>
-  <div class="sticky z-index-100 bottom-10 left-20">
-    <button type="button" id="refresh" class="flex text-white bg-gradient-to-r from-blue-500 via-blue-600 to-blue-700 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-blue-300 dark:focus:ring-blue-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">
-      <span class="">Refresh</span>
-      <svg class="w-6 h-6 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
+  
+  <!-- Fixed Refresh Button (Bottom Right) -->
+  <div class="fixed bottom-6 left-6 z-50">
+    <button type="button" id="refresh" class="flex items-center gap-2 text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-full text-sm px-6 py-3 text-center shadow-lg transition-transform hover:scale-105 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+      <span class="font-semibold">Refresh</span>
+      <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
         <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.651 7.65a7.131 7.131 0 0 0-12.68 3.15M18.001 4v4h-4m-7.652 8.35a7.13 7.13 0 0 0 12.68-3.15M6 20v-4h4" />
       </svg>
     </button>
@@ -227,7 +233,7 @@
       container.innerHTML = ''; // clear old content
 
       if (!data || data.length === 0) {
-        container.innerHTML = `<p class="text-center text-gray-500">No data found.</p>`;
+        container.innerHTML = `<div class="col-span-full text-center py-8 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">No data found for the selected range.</div>`;
         return;
       }
 
@@ -244,35 +250,53 @@
         if (filteredStudents.length === 0) return;
 
         let tableHTML = `
-        <div class="bg-white dark:bg-gray-800 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm overflow-hidden">
-          <h6 class="bg-blue-400 text-white text-lg font-semibold px-3 py-2">
-            Grade ${level}
-          </h6>
-          <div class="overflow-x-auto">
-            <table class="w-full">
-              <thead class="text-left font-bold text-slate-700 dark:text-slate-200 border-b border-slate-300 dark:border-slate-700">
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden flex flex-col h-full">
+          <div class="bg-gradient-to-r from-blue-600 to-blue-500 px-5 py-3 border-b border-blue-600">
+            <h6 class="text-white text-lg font-bold flex items-center gap-2">
+              <svg class="w-5 h-5 text-blue-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+              Grade ${level}
+            </h6>
+          </div>
+          <div class="overflow-x-auto flex-grow scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+            <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+              <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-10">
                 <tr>
-                  <th class="px-3 py-2 w-1/6">Top</th>
-                  <th class="px-3 py-2 w-2/6">Student</th>
-                  <th class="px-3 py-2 w-1/6">Visits</th>
-                  <th class="px-3 py-2 w-2/6">Section</th>
+                  <th scope="col" class="px-4 py-3 w-12 text-center">#</th>
+                  <th scope="col" class="px-4 py-3">Student</th>
+                  <th scope="col" class="px-4 py-3 text-center">Visits</th>
+                  <th scope="col" class="px-4 py-3">Section</th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-slate-300 dark:divide-slate-700">
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
       `;
         let rank = 1;
         filteredStudents.forEach(student => {
           const s = student.students;
           const fullName = `${student.last_name}, ${student.first_name} ${student.middle_name ?? ''}`.trim();
 
+          // Rank styling
+          let rankBadge = `<span class="font-medium text-gray-500 dark:text-gray-400">#${rank}</span>`;
+          if (rank === 1) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full ring-1 ring-yellow-400 dark:bg-yellow-900 dark:text-yellow-300">1</span>`;
+          else if (rank === 2) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-700 text-xs font-bold rounded-full ring-1 ring-gray-400 dark:bg-gray-700 dark:text-gray-300">2</span>`;
+          else if (rank === 3) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 bg-orange-100 text-orange-700 text-xs font-bold rounded-full ring-1 ring-orange-400 dark:bg-orange-900 dark:text-orange-300">3</span>`;
+
           tableHTML += `
-          <tr>
-            <td class="px-3 py-2">${rank++}</td>
-            <td class="px-3 py-2 truncate" title="${fullName}">${fullName}</td>
-            <td class="px-3 py-2">${student.logs_count}</td>
-            <td class="px-3 py-2 truncate" title="${s?.section ?? ''}">${s?.section ?? ''}</td>
+          <tr class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+            <td class="px-4 py-3 text-center font-medium text-gray-900 dark:text-white whitespace-nowrap">
+                ${rankBadge}
+            </td>
+            <td class="px-4 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap truncate max-w-[140px]" title="${fullName}">
+                ${fullName}
+            </td>
+            <td class="px-4 py-3 text-center">
+                <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                    ${student.logs_count}
+                </span>
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap truncate max-w-[100px] text-gray-500 dark:text-gray-400" title="${s?.section ?? ''}">${s?.section ?? '-'}</td>
           </tr>
         `;
+          rank++;
         });
 
         tableHTML += `
@@ -287,7 +311,7 @@
 
       // If no grade level had students with visits
       if (container.innerHTML.trim() === '') {
-        container.innerHTML = `<p class="text-center text-gray-500">No students with visits found.</p>`;
+        container.innerHTML = `<div class="col-span-full text-center py-8 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">No students with visits found for this period.</div>`;
       }
     } catch (error) {
       console.error('Error fetching top visited students:', error);
@@ -306,7 +330,7 @@
       container.innerHTML = ''; // Clear previous content
 
       if (!data || data.length === 0) {
-        container.innerHTML = `<p class="text-center text-gray-500">No data found.</p>`;
+        container.innerHTML = `<div class="col-span-full text-center py-8 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">No data found for the selected range.</div>`;
         return;
       }
 
@@ -321,35 +345,53 @@
         if (filteredStudents.length === 0) return;
 
         let tableHTML = `
-      <div class="bg-white dark:bg-gray-800 border border-slate-300 dark:border-slate-700 rounded-lg shadow-sm overflow-hidden">
-        <h6 class="bg-yellow-400 text-gray-900 text-lg font-semibold px-3 py-2">
-          Grade ${level}
-        </h6>
-        <div class="overflow-x-auto">
-          <table class="w-full">
-            <thead class="text-left font-bold text-slate-700 dark:text-slate-200 border-b border-slate-300 dark:border-slate-700">
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden flex flex-col h-full">
+        <div class="bg-gradient-to-r from-amber-500 to-amber-400 px-5 py-3 border-b border-amber-500">
+          <h6 class="text-white text-lg font-bold flex items-center gap-2">
+             <svg class="w-5 h-5 text-amber-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+            Grade ${level}
+          </h6>
+        </div>
+        <div class="overflow-x-auto flex-grow scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
+          <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400 sticky top-0 z-10">
               <tr>
-                <th class="px-3 py-2 w-1/6">Top</th>
-                <th class="px-3 py-2 w-2/6">Student</th>
-                <th class="px-3 py-2 w-1/6">Borrowed</th>
-                <th class="px-3 py-2 w-2/6">Section</th>
+                <th scope="col" class="px-4 py-3 w-12 text-center">#</th>
+                <th scope="col" class="px-4 py-3">Student</th>
+                <th scope="col" class="px-4 py-3 text-center">Borrowed</th>
+                <th scope="col" class="px-4 py-3">Section</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-300 dark:divide-slate-700">
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
       `;
         let rank = 1;
         filteredStudents.forEach(student => {
           const s = student.students;
           const fullName = `${student.last_name}, ${student.first_name} ${student.middle_name ?? ''}`.trim();
 
+          // Rank styling
+          let rankBadge = `<span class="font-medium text-gray-500 dark:text-gray-400">#${rank}</span>`;
+          if (rank === 1) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full ring-1 ring-yellow-400 dark:bg-yellow-900 dark:text-yellow-300">1</span>`;
+          else if (rank === 2) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-700 text-xs font-bold rounded-full ring-1 ring-gray-400 dark:bg-gray-700 dark:text-gray-300">2</span>`;
+          else if (rank === 3) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 bg-orange-100 text-orange-700 text-xs font-bold rounded-full ring-1 ring-orange-400 dark:bg-orange-900 dark:text-orange-300">3</span>`;
+
           tableHTML += `
-        <tr>
-          <td class="px-3 py-2">${rank++}</td>
-          <td class="px-3 py-2 truncate" title="${fullName}">${fullName}</td>
-          <td class="px-3 py-2">${student.borrow_count}</td>
-          <td class="px-3 py-2 truncate" title="${s?.section ?? ''}">${s?.section ?? ''}</td>
+        <tr class="bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
+          <td class="px-4 py-3 text-center font-medium text-gray-900 dark:text-white whitespace-nowrap">
+            ${rankBadge}
+          </td>
+          <td class="px-4 py-3 font-medium text-gray-900 dark:text-white whitespace-nowrap truncate max-w-[140px]" title="${fullName}">
+            ${fullName}
+          </td>
+          <td class="px-4 py-3 text-center">
+             <span class="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded dark:bg-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+                ${student.borrow_count}
+             </span>
+          </td>
+          <td class="px-4 py-3 whitespace-nowrap truncate max-w-[100px] text-gray-500 dark:text-gray-400" title="${s?.section ?? ''}">${s?.section ?? '-'}</td>
         </tr>
       `;
+          rank++;
         });
 
         tableHTML += `
@@ -363,7 +405,7 @@
       });
 
       if (container.innerHTML.trim() === '') {
-        container.innerHTML = `<p class="text-center text-gray-500">No borrowed book data found.</p>`;
+        container.innerHTML = `<div class="col-span-full text-center py-8 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">No borrowed book data found for this period.</div>`;
       }
     } catch (error) {
       console.error('Error fetching top borrowed students:', error);
@@ -798,7 +840,7 @@
 
 <div class="flex flex-col items-center max-w-sm p-6 my-28 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
   <svg class="w-16 h-16 opacity-70 mb-3 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14v3m-3-6V7a3 3 0 1 1 6 0v4m-8 0h10a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1Z" />
+    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14v3m-3-6V7a3 3 0 1 1 6 0v4m-8 0h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
   </svg>
   <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Access Restricted</h5>
   <p class="font-normal text-center text-gray-700 dark:text-gray-400">Sorry, you don't have access to view the dashboard page. Please contact your administrator.</p>
