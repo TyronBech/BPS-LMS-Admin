@@ -31,6 +31,7 @@ document.addEventListener('DOMContentLoaded', () => {
     'exportBarcodeBtn',     // export barcode button
     'exportBarcode',        // export barcode button (books page)
     'exportCallNumberBtn',  // export call number button
+    'toggleBtn',            // maintenance status toggle button
   ];
 
   // --- 1️⃣ Handle button clicks ---
@@ -47,6 +48,7 @@ document.addEventListener('DOMContentLoaded', () => {
         (name === 'submit' && (value === 'pdf' || value === 'excel')) ||  // PDF export
         (name === 'barcodeBtn' && value === 'barcode') ||                 // Barcode export
         (name === 'callNumberBtn' && value === 'callNumber') ||           // Call number export
+        (name === 'toggleBtn' && value === 'toggle') ||                  // Maintenance toggle
         btn.disabled ||                                                   // disabled
         btn.offsetParent === null ||                                      // hidden
         btn.closest('.dashboard-card') ||
@@ -108,18 +110,21 @@ document.addEventListener('DOMContentLoaded', () => {
     // Skip loader for dashboard analytics fetches and pending extensions
     const isDashboardAnalytics = url.includes('/analytics/most-visited-students') || url.includes('/analytics/most-borrowed-students');
     const isPendingExtensions = url.includes('/maintenance/reservations/show-reservations') || url.includes('maintenance.pending-extensions');
+    const isMaintenanceStatus = url.includes('maintenance/reservations/status') || url.includes('maintenance/reservations/toggle') || url.includes('maintenance/reservations/stats');
+
+    const shouldSkip = isDashboardAnalytics || isPendingExtensions || isMaintenanceStatus;
 
     try {
-      if (!isDashboardAnalytics && !isPendingExtensions) {
+      if (!shouldSkip) {
         showLoader();
       }
       const response = await originalFetch(...args);
-      if (!isDashboardAnalytics && !isPendingExtensions) {
+      if (!shouldSkip) {
         hideLoader();
       }
       return response;
     } catch (error) {
-      if (!isDashboardAnalytics && !isPendingExtensions) {
+      if (!shouldSkip) {
         hideLoader();
       }
       throw error;
@@ -134,7 +139,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlsToSkip = [
       '/report/user-graph',
       '/maintenance/reservations/show-reservations',
-      'maintenance.pending-extensions'
+      'maintenance.pending-extensions',
+      'maintenance/reservations/status',
+      'maintenance/reservations/toggle',
+      'maintenance/reservations/stats'
     ];
 
     const shouldSkipLoader = urlsToSkip.some(skipUrl => url.includes(skipUrl));

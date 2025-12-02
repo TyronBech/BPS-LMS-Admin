@@ -30,6 +30,7 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Backup\BackupController;
 use App\Http\Controllers\Maintenance\PenaltyRuleController;
 use App\Http\Controllers\Maintenance\ReservationExtensionController;
+use App\Http\Controllers\Maintenance\ReservationStatus;
 use App\Http\Controllers\Maintenance\TransactionMaintenanceController;
 use App\Http\Middleware\AuditReportAuthentication;
 use App\Http\Middleware\BackupAuthentication;
@@ -195,6 +196,10 @@ Route::prefix('admin')->middleware('auth:admin', AdminAuthentication::class)->gr
            Route::post('approve-extension/{id}',    [ReservationExtensionController::class, 'approve'])                 ->name('maintenance.approve-extension');
            Route::post('reject-extension/{id}',     [ReservationExtensionController::class, 'reject'])                  ->name('maintenance.reject-extension');
            Route::get('search',                     [ReservationExtensionController::class, 'search'])                  ->name('maintenance.search-extension');
+           Route::get('toggle',                     [ReservationStatus::class, 'index'])                                ->name('maintenance-toggle');
+           Route::get('status',                     [ReservationStatus::class, 'getReservationStatus'])                 ->name('maintenance.status');
+           Route::post('toggle',                    [ReservationStatus::class, 'toggleReservationSystem'])              ->name('maintenance.toggle');
+           Route::get('stats',                      [ReservationStatus::class, 'getReservationStats'])                  ->name('maintenance.stats');
         });
         Route::prefix('admin-management')->middleware(SuperAdminAuthentication::class)->group(function () {
             Route::get('admins',            [AdminMaintenanceController::class, 'index'])           ->name('maintenance.admins');
