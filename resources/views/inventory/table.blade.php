@@ -30,8 +30,18 @@
             <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 block md:table-row mb-4 md:mb-0">
               <td class="px-6 py-4 block md:table-cell text-right md:text-center"><span class="float-left font-bold md:hidden">Accession</span>{{ $item->book->accession }}</td>
               <td class="px-6 py-4 block md:table-cell text-right md:text-center"><span class="float-left font-bold md:hidden">Call Number</span>{{ $item->book->call_number }}</td>
-              <td class="px-6 py-4 block md:table-cell text-right md:text-center"><span class="float-left font-bold md:hidden">Title</span>{{ $item->book->title }}</td>
-              <td class="px-6 py-4 block md:table-cell text-right md:text-center"><span class="float-left font-bold md:hidden">Author</span>{{ optional($item->book)->author ?? 'N/A' }}</td>
+              <td class="px-6 py-4 block md:table-cell text-right md:text-center">
+                <span class="float-left font-bold md:hidden">Title</span>
+                <div class="inline-block md:block md:max-w-[12rem] lg:max-w-xs break-words md:mx-auto">
+                  {{ $item->book->title }}
+                </div>
+              </td>
+              <td class="px-6 py-4 block md:table-cell text-right md:text-center">
+                <span class="float-left font-bold md:hidden">Author</span>
+                <div class="inline-block md:block md:max-w-[12rem] lg:max-w-xs break-words md:mx-auto">
+                  {{ optional($item->book)->author ?? 'N/A' }}
+                </div>
+              </td>
               <td class="px-6 py-4 block md:table-cell text-right md:text-center">
                 <span class="float-left font-bold md:hidden">Remarks</span>
                 <select name="remarks[{{ $item->book->accession }}]" id="remarks" class="w-1/2 md:w-full p-2 border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
