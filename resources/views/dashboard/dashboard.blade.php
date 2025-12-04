@@ -289,7 +289,7 @@
                 ${fullName}
             </td>
             <td class="px-4 py-3 text-center">
-                <span class="bg-blue-100 text-blue-800 text-xs font-semibold px-2.5 py-0.5 rounded dark:bg-blue-900 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                <span class="bg-gray-100 text-gray-800 text-xs font-bold px-2.5 py-0.5 rounded-full dark:bg-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
                     ${student.logs_count}
                 </span>
             </td>
@@ -384,7 +384,7 @@
             ${fullName}
           </td>
           <td class="px-4 py-3 text-center">
-             <span class="bg-amber-100 text-amber-800 text-xs font-semibold px-2.5 py-0.5 rounded dark:bg-amber-900 dark:text-amber-300 border border-amber-200 dark:border-amber-800">
+             <span class="bg-gray-100 text-gray-800 text-xs font-bold px-2.5 py-0.5 rounded-full dark:bg-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
                 ${student.borrow_count}
              </span>
           </td>

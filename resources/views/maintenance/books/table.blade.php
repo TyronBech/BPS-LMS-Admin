@@ -65,8 +65,8 @@
             <label for="bookCheck" class="sr-only">checkbox</label>
           </div>
         </td>
-        <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-          <div class="text-base font-semibold">{{ $item->title }}</div>
+        <th scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white max-w-[15rem] sm:max-w-xs md:max-w-sm lg:max-w-md">
+          <div class="text-base font-semibold break-words">{{ $item->title }}</div>
           <div class="font-normal text-gray-500 md:hidden">Acc: {{ $item->accession }}</div>
         </th>
         <td class="px-6 py-4 hidden md:table-cell">{{ $item->accession }}</td>
