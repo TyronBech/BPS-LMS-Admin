@@ -21,6 +21,15 @@ class ReservationExtensionController extends Controller
     public function index(Request $request)
     {   
         $perPage = $request->input('perPage', 10);
+
+        Log::info('Reservation Extension: List page accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'per_page' => $perPage,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $pendingRequests = Transaction::where('transaction_type', 'Borrowed')
             ->where('status', 'Pending')
             ->with(['user', 'book'])
@@ -43,7 +52,12 @@ class ReservationExtensionController extends Controller
             ->where('status', 'Borrowed')
             ->count();
 
-        Log::info('Pending extension count retrieved: ' . $pendingExtensionCount);
+        Log::debug('Reservation Extension: Statistics retrieved', [
+            'pending_count' => $pendingExtensionCount,
+            'approved_month_count' => $approvedCount,
+            'active_borrowings' => $activeBorrowings,
+            'timestamp' => now(),
+        ]);
 
         return view('maintenance.reservations.index', compact(
             'pendingRequests', 
@@ -67,6 +81,13 @@ class ReservationExtensionController extends Controller
      */
     public function approve($id)
     {
+        Log::info('Reservation Extension: Attempting to approve extension', [
+            'user_id' => Auth::guard('admin')->id(),
+            'transaction_id' => $id,
+            'ip_address' => request()->ip(),
+            'timestamp' => now(),
+        ]);
+
         $transaction = Transaction::where('transaction_type', 'Borrowed')
             ->where('status', 'Pending')
             ->findOrFail($id);
@@ -86,8 +107,14 @@ class ReservationExtensionController extends Controller
 
             $this->sendApprovalEmail($user, $book, $newDueDate, $studentSection);
 
-            Log::info("Extension request ID {$id} approved by librarian: " . Auth::user()->email);
-
+            Log::info('Reservation Extension: Extension approved successfully', [
+                'user_id' => Auth::guard('admin')->id(),
+                'transaction_id' => $id,
+                'book_title' => $book->title,
+                'requester_email' => $user->email,
+                'new_due_date' => $newDueDate,
+                'timestamp' => now(),
+            ]);
 
             // Ensure newDueDate is formatted as string for the response
             $formattedDueDate = ($newDueDate instanceof Carbon)
@@ -95,7 +122,13 @@ class ReservationExtensionController extends Controller
                 : Carbon::parse($newDueDate)->format('M d, Y');
             return redirect()->back()->with('toast-success', 'Extension request for ' . $book->title . ' has been approved. New due date: ' . $formattedDueDate);
         } catch (\Exception $e) {
-            Log::error('Failed to approve extension request: ' . $e->getMessage());
+            Log::error('Reservation Extension: Failed to approve extension', [
+                'user_id' => Auth::guard('admin')->id(),
+                'transaction_id' => $id,
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Failed to approve extension request. Please try again.');
         }
     }
@@ -105,6 +138,13 @@ class ReservationExtensionController extends Controller
      */
     public function reject(Request $request, $id)
     {
+        Log::info('Reservation Extension: Attempting to reject extension', [
+            'user_id' => Auth::guard('admin')->id(),
+            'transaction_id' => $id,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $validated = $request->validate([
             'rejection_reason' => 'required|string|max:500',
         ]);
@@ -125,11 +165,24 @@ class ReservationExtensionController extends Controller
 
             $this->sendRejectionEmail($user, $book, $validated['rejection_reason']);
 
-            Log::info("Extension request ID {$id} rejected by librarian: " . Auth::user()->email . " | Reason: " . $validated['rejection_reason']);
+            Log::info('Reservation Extension: Extension rejected successfully', [
+                'user_id' => Auth::guard('admin')->id(),
+                'transaction_id' => $id,
+                'book_title' => $book->title,
+                'requester_email' => $user->email,
+                'rejection_reason' => $validated['rejection_reason'],
+                'timestamp' => now(),
+            ]);
 
             return redirect()->back()->with('toast-success', 'Extension request for ' . $book->title . ' has been rejected.');
         } catch (\Exception $e) {
-            Log::error('Failed to reject extension request: ' . $e->getMessage());
+            Log::error('Reservation Extension: Failed to reject extension', [
+                'user_id' => Auth::guard('admin')->id(),
+                'transaction_id' => $id,
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Failed to reject extension request. Please try again.');
         }
     }
@@ -139,6 +192,11 @@ class ReservationExtensionController extends Controller
      */
     public function getStatistics()
     {
+        Log::debug('Reservation Extension: Fetching statistics API', [
+            'user_id' => Auth::guard('admin')->id(),
+            'timestamp' => now(),
+        ]);
+
         $pending = Transaction::where('transaction_type', 'Borrowed')
             ->where('status', 'Pending')
             ->count();
@@ -189,9 +247,17 @@ class ReservationExtensionController extends Controller
                     '',
                     'No Penalty'
                 ));
-                Log::info("Approval email sent to: {$user->email}");
+                Log::info('Reservation Extension: Approval email sent', [
+                    'recipient_email' => $user->email,
+                    'book_title' => $book->title,
+                    'timestamp' => now(),
+                ]);
             } catch (\Exception $e) {
-                Log::error('Failed to send approval email: ' . $e->getMessage());
+                Log::error('Reservation Extension: Failed to send approval email', [
+                    'recipient_email' => $user->email,
+                    'error_message' => $e->getMessage(),
+                    'timestamp' => now(),
+                ]);
             }
         }
     }
@@ -215,9 +281,17 @@ class ReservationExtensionController extends Controller
                     '',
                     'Pending'
                 ));
-                Log::info("Rejection email sent to: {$user->email}");
+                Log::info('Reservation Extension: Rejection email sent', [
+                    'recipient_email' => $user->email,
+                    'book_title' => $book->title,
+                    'timestamp' => now(),
+                ]);
             } catch (\Exception $e) {
-                Log::error('Failed to send rejection email: ' . $e->getMessage());
+                Log::error('Reservation Extension: Failed to send rejection email', [
+                    'recipient_email' => $user->email,
+                    'error_message' => $e->getMessage(),
+                    'timestamp' => now(),
+                ]);
             }
         }
     }
@@ -227,6 +301,13 @@ class ReservationExtensionController extends Controller
      */
     public function search(Request $request)
     {
+        Log::info('Reservation Extension: Search performed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'search_term' => $request->search,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $query = Transaction::where('transaction_type', 'Borrowed')
             ->where('status', 'Pending');
 

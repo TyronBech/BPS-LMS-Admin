@@ -7,6 +7,8 @@ use App\Http\Controllers\Controller;
 use App\Models\PenaltyRule;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class PenaltyRuleController extends Controller
 {
@@ -19,6 +21,15 @@ class PenaltyRuleController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('perPage', 10);
+
+        Log::info('Penalty Rules: List page accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'per_page' => $perPage,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $rules = PenaltyRule::orderBy('created_at', 'desc')
             ->paginate($perPage)
             ->appends([
@@ -42,6 +53,15 @@ class PenaltyRuleController extends Controller
      */
     public function store(Request $request)
     {
+        Log::info('Penalty Rules: Attempting to create rule', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'type' => $request->input('type'),
+            'rate' => $request->input('rate'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'type'          => 'required|string',
             'description'   => 'required|string',
@@ -49,10 +69,17 @@ class PenaltyRuleController extends Controller
             'per_day'       => 'required|integer|in:0,1',
         ]);
         if($validator->fails()) {
+            Log::warning('Penalty Rules: Creation validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
         DB::beginTransaction();
         try{
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             PenaltyRule::create([
                 'type'          => $request->input('type'),
                 'description'   => $request->input('description') ?? null,
@@ -61,9 +88,21 @@ class PenaltyRuleController extends Controller
             ]);
         } catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();
+            Log::error('Penalty Rules: Database error during creation', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Failed to create penalty rule. Please try again.');
         }
         DB::commit();
+        Log::info('Penalty Rules: Rule created successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'type' => $request->input('type'),
+            'timestamp' => now(),
+        ]);
         return redirect()->route('maintenance.penalty-rules')->with('toast-success', 'Penalty rule created successfully.');
     }
     /**
@@ -82,6 +121,15 @@ class PenaltyRuleController extends Controller
      */
     public function update(Request $request)
     {
+        Log::info('Penalty Rules: Attempting to update rule', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'rule_id' => $request->input('edit_rule_id'),
+            'type' => $request->input('type'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'type'          => 'required|string|max:50',
             'description'   => 'required|string|max:255',
@@ -89,10 +137,17 @@ class PenaltyRuleController extends Controller
             'per_day'       => 'required|integer|in:0,1 ',
         ]);
         if($validator->fails()) {
+            Log::warning('Penalty Rules: Update validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
         DB::beginTransaction();
         try{
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $rule = PenaltyRule::findOrFail($request->input('edit_rule_id'));
             $rule->update([
                 'type'          => $request->input('type'),
@@ -102,9 +157,22 @@ class PenaltyRuleController extends Controller
             ]);
         } catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();
+            Log::error('Penalty Rules: Database error during update', [
+                'user_id' => Auth::guard('admin')->id(),
+                'rule_id' => $request->input('edit_rule_id'),
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Failed to update penalty rule. Please try again.');
         }
         DB::commit();
+        Log::info('Penalty Rules: Rule updated successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'rule_id' => $request->input('edit_rule_id'),
+            'timestamp' => now(),
+        ]);
         return redirect()->route('maintenance.penalty-rules')->with('toast-success', 'Penalty rule updated successfully.');
     }
     /**
@@ -123,15 +191,37 @@ class PenaltyRuleController extends Controller
      */
     public function destroy(Request $request)
     {
+        Log::warning('Penalty Rules: Attempting to delete rule', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'rule_id' => $request->input('delete_rule_id'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         DB::beginTransaction();
         try{
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $rule = PenaltyRule::findOrFail($request->input('delete_rule_id'));
             $rule->delete();
         } catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();
+            Log::error('Penalty Rules: Database error during deletion', [
+                'user_id' => Auth::guard('admin')->id(),
+                'rule_id' => $request->input('delete_rule_id'),
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Failed to delete penalty rule. Please try again.');
         }
         DB::commit();
+        Log::info('Penalty Rules: Rule deleted successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'rule_id' => $request->input('delete_rule_id'),
+            'timestamp' => now(),
+        ]);
         return redirect()->route('maintenance.penalty-rules')->with('toast-success', 'Penalty rule deleted successfully.');
     }
 }

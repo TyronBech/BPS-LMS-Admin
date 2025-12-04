@@ -9,6 +9,7 @@ use App\Models\Category;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
@@ -17,18 +18,40 @@ use Dompdf\Options;
 
 class BookCirculationController extends Controller
 {
+    /**
+     * Page to display book circulation report.
+     *
+     * @param  Request  $request
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index(Request $request)
     {
         $barcode        = $request->input('barcode', '');
         $title          = $request->input('title', '');
         $perPage        = $request->input('perPage', 10);
         $category       = $request->input('category', '');
+
+        Log::info('Book Circulation Report: Page accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $categories     = Category::all();
         $books          = new Book();
         $availability   = $this->extract_enums($books->getTable(), 'availability_status');
         $data           = $this->generateData($request, false);
         return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability', 'perPage', 'categories', 'category'));
     }
+    /**
+     * Processes the search request for book circulation report.
+     *
+     * @param  Request  $request
+     * @return \Illuminate\Contracts\View\View
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function search(Request $request)
     {
         $barcode        = $request->input('barcode', '');
@@ -36,6 +59,22 @@ class BookCirculationController extends Controller
         $availability   = $request->input('availability', 'All');
         $category       = $request->input('category', 'All');
         $perPage        = $request->input('perPage', 10);
+        $action         = $request->input('submit', 'search');
+
+        Log::info('Book Circulation Report: Processing request', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'action' => $action,
+            'filters' => [
+                'barcode' => $barcode,
+                'title' => $title,
+                'availability' => $availability,
+                'category' => $category,
+            ],
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $books          = new Book();
         $validator = Validator::make($request->all(), [
             'availability'  => 'nullable|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
@@ -44,13 +83,27 @@ class BookCirculationController extends Controller
             'perPage'       => 'nullable|numeric|in:10,25,50',
         ]);
         if($validator->fails()){
+            Log::warning('Book Circulation Report: Validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
         if($request->input('submit') == 'pdf'){
+            Log::info('Book Circulation Report: Generating PDF export', [
+                'user_id' => Auth::guard('admin')->id(),
+                'timestamp' => now()
+            ]);
             $data = $this->generateData($request, true);
             $this->generatePDF($data);
             return redirect()->route('report.accession-list')->with('toast-success', 'Successfully exported to PDF');
         } else if($request->input('submit') == 'excel'){
+            Log::info('Book Circulation Report: Generating Excel export', [
+                'user_id' => Auth::guard('admin')->id(),
+                'timestamp' => now()
+            ]);
             $data = $this->generateData($request, true);
             $this->exportExcel($data);
             return redirect()->route('report.accession-list')->with('toast-success', 'Successfully exported to Excel');
@@ -58,9 +111,22 @@ class BookCirculationController extends Controller
         $data = $this->generateData($request, false);
         $categories = Category::all();
         $availability = $this->extract_enums($books->getTable(), 'availability_status');
-        if(!count($data)) return redirect()->route('report.accession-list')->with('toast-error', 'No data found.');
+        if(!count($data)) {
+            Log::info('Book Circulation Report: No data found for search', [
+                'user_id' => Auth::guard('admin')->id(),
+                'timestamp' => now()
+            ]);
+            return redirect()->route('report.accession-list')->with('toast-error', 'No data found.');
+        }
         return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability', 'perPage', 'categories', 'category'));
     }
+    /**
+     * Generates a PDF report for the book circulation report.
+     * 
+     * @param  array  $data  The data to be included in the report.
+     * 
+     * @return void
+     */
     private function generatePDF($data)
     {
         ini_set('memory_limit', '2048M');
@@ -86,6 +152,13 @@ class BookCirculationController extends Controller
         $dompdf->stream('book-records ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;
     }
+    /**
+     * Exports the book circulation report to an Excel file.
+     * 
+     * @param  array  $data  The data to be included in the report.
+     * 
+     * @return void
+     */
     private function exportExcel($data)
     {
         $spreadsheet    = new Spreadsheet();
@@ -142,6 +215,13 @@ class BookCirculationController extends Controller
         $writer->save("php://output");
         exit;
     }
+    /**
+     * Generates data for the book report.
+     *
+     * @param Request $request
+     * @param bool $isExport
+     * @return array
+     */
     private function generateData(Request $request, bool $isExport = false)
     {
         $barcode        = strtolower($request->input('barcode', ''));
@@ -177,6 +257,13 @@ class BookCirculationController extends Controller
         }
         return $data;
     }
+    /**
+     * Extracts the enum values from a given table and column name.
+     * 
+     * @param string $table The name of the table to query.
+     * @param string $columnName The name of the column to extract the enum values from.
+     * @return array An array of enum values. If no enum values are found, returns ['N/A'].
+     */
     private function extract_enums($table, $columnName){
         $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";
         $column = DB::select($query);

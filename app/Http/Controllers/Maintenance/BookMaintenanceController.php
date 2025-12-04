@@ -29,6 +29,17 @@ class BookMaintenanceController extends Controller
         $perPage    = $request->input('perPage', 10);
         $search     = $request->input('search', '');
         $category   = $request->input('category', '');
+
+        Log::info('Book Maintenance: List page accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'search_term' => $search,
+            'category_filter' => $category,
+            'per_page' => $perPage,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $categories = Category::select('id', 'name')->get();
         $books      = Book::with('category')
             ->orderBy('created_at', 'desc')
@@ -46,6 +57,13 @@ class BookMaintenanceController extends Controller
      */
     public function create()
     {
+        Log::info('Book Maintenance: Create book form accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'ip_address' => request()->ip(),
+            'timestamp' => now(),
+        ]);
+
         $books = new Book();
         $categories     = $categories = Category::select('id', 'name', 'legend')
             ->with(['books' => function ($query) {
@@ -73,6 +91,16 @@ class BookMaintenanceController extends Controller
     {
         ini_set('memory_limit', '4096M');
         $books = new Book();
+
+        Log::info('Book Maintenance: Attempting to store new book(s)', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'accession_input' => $request->input('accession'),
+            'title' => $request->input('title'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string',
             'call_number'       => 'nullable|string|max:50',
@@ -92,9 +120,21 @@ class BookMaintenanceController extends Controller
             'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
         ]);
         if ($validator->fails()) {
+            Log::warning('Book Maintenance: Creation validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         if (Book::where('accession', $request->input('accession'))->exists()) {
+            Log::warning('Book Maintenance: Creation failed - Accession already exists', [
+                'user_id' => Auth::guard('admin')->id(),
+                'accession' => $request->input('accession'),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Book with this accession number already exists!')->withInput();
         }
         if ($request->hasFile('cover_image')) {
@@ -131,6 +171,12 @@ class BookMaintenanceController extends Controller
             }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
+            Log::error('Book Maintenance: Database error during creation', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'timestamp' => now(),
+            ]);
             if ($e->getCode() == 23000) {
                 return redirect()->back()->with('toast-error', 'Book with this accession number already exists!')->withInput();
             } else {
@@ -138,6 +184,12 @@ class BookMaintenanceController extends Controller
             }
         }
         DB::commit();
+        Log::info('Book Maintenance: Book(s) created successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'accessions' => $request->input('accession'),
+            'timestamp' => now(),
+        ]);
         return redirect()->route('maintenance.books')->with('toast-success', 'Book added successfully');
     }
     /**
@@ -155,6 +207,13 @@ class BookMaintenanceController extends Controller
         $book = null;
         try {
             $id = $request->input('id');
+            Log::info('Book Maintenance: Edit book form accessed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'user_name' => Auth::guard('admin')->user()->full_name,
+                'book_id' => $id,
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             $book = Book::findOrFail($id);
             $books = new Book();
             $categories     = Category::pluck('name', 'id');
@@ -163,6 +222,11 @@ class BookMaintenanceController extends Controller
             $remarks        = $this->extract_enums($books->getTable(), 'remarks');
             $book_types     = $this->extract_enums($books->getTable(), 'book_type');
         } catch (\Exception $e) {
+            Log::error('Book Maintenance: Error accessing edit form', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         return view('maintenance.books.edit', compact('book', 'categories', 'condition', 'availability', 'remarks', 'book_types'));
@@ -181,6 +245,17 @@ class BookMaintenanceController extends Controller
         $search = $request->input('search', '');
         $category = $request->input('category', '');
         $perPage = $request->input('perPage', 10);
+
+        Log::info('Book Maintenance: Searching/Filtering books', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'search_term' => $search,
+            'category_filter' => $category,
+            'action' => $request->input('barcodeBtn') ? 'barcode_export' : ($request->input('callNumberBtn') ? 'call_number_export' : 'view'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         if ($request->input('barcodeBtn') === 'barcode') {
             $this->export_barcode($request);
         } elseif( $request->input('callNumberBtn') === 'callNumber') {
@@ -263,6 +338,15 @@ class BookMaintenanceController extends Controller
     {
         $mimeType = null;
         $accession = $request->input('accession');
+        
+        Log::info('Book Maintenance: Viewing book details', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'accession' => $accession,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $book = Book::with('category')->where('accession', $accession)->first();
         try {
             $cover = $this->getBookImage($book->title, $book->author, $book->isbn ?? null);
@@ -293,6 +377,16 @@ class BookMaintenanceController extends Controller
     {
         ini_set('memory_limit', '4096M');
         $books = new Book();
+
+        Log::info('Book Maintenance: Attempting to update book', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'book_id' => $request->input('id'),
+            'accession' => $request->input('accession'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string|max:50',
             'call_number'       => 'nullable|string|max:50',
@@ -312,6 +406,12 @@ class BookMaintenanceController extends Controller
             'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
         ]);
         if ($validator->fails()) {
+            Log::warning('Book Maintenance: Update validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         //dd($request->all());
@@ -347,9 +447,21 @@ class BookMaintenanceController extends Controller
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
+            Log::error('Book Maintenance: Database error during update', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
         }
         DB::commit();
+        Log::info('Book Maintenance: Book updated successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'book_id' => $request->input('id'),
+            'timestamp' => now(),
+        ]);
         return redirect()->route('maintenance.books')->with('toast-success', 'Book updated successfully');
     }
     /**
@@ -368,6 +480,15 @@ class BookMaintenanceController extends Controller
     {
         ini_set('memory_limit', '4096M');
         $books = new Book();
+
+        Log::info('Book Maintenance: Attempting to copy book', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'source_accession' => $request->input('accession'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string',
             'call_number'       => 'nullable|string|max:50',
@@ -387,6 +508,12 @@ class BookMaintenanceController extends Controller
             'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
         ]);
         if ($validator->fails()) {
+            Log::warning('Book Maintenance: Copy validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         if ($request->hasFile('cover_image')) {
@@ -423,9 +550,21 @@ class BookMaintenanceController extends Controller
             }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
+            Log::error('Book Maintenance: Database error during copy', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
         }
         DB::commit();
+        Log::info('Book Maintenance: Book copy created successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'accessions' => $request->input('accession'),
+            'timestamp' => now(),
+        ]);
         return redirect()->route('maintenance.books')->with('toast-success', 'Book copy created successfully');
     }
     /**
@@ -448,6 +587,16 @@ class BookMaintenanceController extends Controller
         $ids      = array_filter(explode(',', $request->input('ids')), function ($id) {
             return is_numeric($id) && $id > 0;
         });
+
+        Log::info('Book Maintenance: Exporting barcodes', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'ids_count' => count($ids),
+            'search_term' => $search,
+            'category_filter' => $category,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
 
         // Start query
         $booksQuery = Book::select('barcode', 'accession');
@@ -517,6 +666,16 @@ class BookMaintenanceController extends Controller
         $ids      = array_filter(explode(',', $request->input('ids')), function ($id) {
             return is_numeric($id) && $id > 0;
         });
+
+        Log::info('Book Maintenance: Exporting call numbers', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'ids_count' => count($ids),
+            'search_term' => $search,
+            'category_filter' => $category,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
 
         // Start query
         $booksQuery = Book::select('barcode', 'accession');
@@ -593,12 +752,34 @@ class BookMaintenanceController extends Controller
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $id = $request->input('id');
+            
+            Log::warning('Book Maintenance: Attempting to delete book', [
+                'user_id' => Auth::guard('admin')->id(),
+                'user_name' => Auth::guard('admin')->user()->full_name,
+                'book_id' => $id,
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
+            
             Book::find($id)->delete();
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
+            Log::error('Book Maintenance: Book deletion failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'book_id' => $request->input('id'),
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'timestamp' => now(),
+            ]);
             return redirect()->route('maintenance.books')->with('toast-error', 'Something went wrong!');
         }
         DB::commit();
+        Log::info('Book Maintenance: Book deleted successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'book_id' => $request->input('id'),
+            'timestamp' => now(),
+        ]);
         return redirect()->route('maintenance.books')->with('toast-success', 'Book deleted successfully');
     }
     /**
@@ -623,15 +804,37 @@ class BookMaintenanceController extends Controller
         if (empty($ids)) {
             return redirect()->back()->with('toast-warning', 'No books selected for deletion!');
         }
+
+        Log::warning('Book Maintenance: Attempting bulk delete', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'ids_count' => count($ids),
+            'ids' => $ids,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             Book::whereIn('id', $ids)->delete();
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
+            Log::error('Book Maintenance: Bulk delete failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         DB::commit();
+        Log::info('Book Maintenance: Bulk delete successful', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'ids_count' => count($ids),
+            'timestamp' => now(),
+        ]);
         return redirect()->route('maintenance.books')->with('toast-success', 'Books deleted successfully');
     }
     /**
@@ -868,7 +1071,7 @@ class BookMaintenanceController extends Controller
         
         // Check if API key exists
         if (empty($apiKey)) {
-            Log::warning('Google Books API key is not set in .env file');
+            Log::warning('Google Books API key is not set in .env file', ['timestamp' => now()]);
             return null;
         }
 
@@ -915,7 +1118,8 @@ class BookMaintenanceController extends Controller
             if (!$response->successful()) {
                 Log::warning('Google Books API request failed', [
                     'status' => $response->status(),
-                    'url' => $url
+                    'url' => $url,
+                    'timestamp' => now()
                 ]);
                 return null;
             }
@@ -927,7 +1131,8 @@ class BookMaintenanceController extends Controller
                 Log::info('No books found in Google Books API', [
                     'title' => $title,
                     'author' => $author,
-                    'isbn' => $isbn
+                    'isbn' => $isbn,
+                    'timestamp' => now()
                 ]);
                 return null;
             }
@@ -939,7 +1144,8 @@ class BookMaintenanceController extends Controller
                 Log::info('Book found but no thumbnail available', [
                     'title' => $title,
                     'author' => $author,
-                    'isbn' => $isbn
+                    'isbn' => $isbn,
+                    'timestamp' => now()
                 ]);
                 return null;
             }
@@ -950,7 +1156,8 @@ class BookMaintenanceController extends Controller
         } catch (ConnectionException $e) {
             Log::error('Connection error while fetching book image', [
                 'message' => $e->getMessage(),
-                'url' => $url
+                'url' => $url,
+                'timestamp' => now()
             ]);
             return null;
         } catch (\Exception $e) {

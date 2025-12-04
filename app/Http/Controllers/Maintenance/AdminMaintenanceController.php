@@ -11,6 +11,7 @@ use App\Enum\RolesEnum;
 use App\Mail\RoleEmailMessage;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 
 class AdminMaintenanceController extends Controller
@@ -24,6 +25,17 @@ class AdminMaintenanceController extends Controller
     {
         $search = $request->input('search', '');
         $perPage = $request->input('perPage', 10);
+
+        Log::info('Admin Maintenance: List page accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'user_email' => Auth::guard('admin')->user()->email,
+            'search_term' => $search,
+            'per_page' => $perPage,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $admins = User::join('model_has_roles', 'usr_users.id', '=', 'model_has_roles.model_id')
             ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
             ->where('model_has_roles.model_type', 'App\Models\User')
@@ -40,6 +52,13 @@ class AdminMaintenanceController extends Controller
      */
     public function create()
     {
+        Log::info('Admin Maintenance: Create admin form accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'ip_address' => request()->ip(),
+            'timestamp' => now(),
+        ]);
+
         $roles = Role::where('guard_name', 'admin')
             ->get();
         return view('maintenance.admins.create', compact('roles'));
@@ -57,6 +76,15 @@ class AdminMaintenanceController extends Controller
     public function search_user(Request $request)
     {
         $search = strtolower($request->input('user-info'));
+
+        Log::info('Admin Maintenance: Searching for user to promote', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'search_query' => $search,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $searched = User::join('privileges', 'usr_users.privilege_id', '=', 'privileges.id')
             ->select('usr_users.id', 'first_name', 'middle_name', 'last_name', 'email', 'rfid')
             ->where('privileges.user_type', '!=', 'visitor')
@@ -103,6 +131,15 @@ class AdminMaintenanceController extends Controller
         $users = new User();
         $search = strtolower($request->input('search'));
         $perPage = $request->input('perPage', 10);
+
+        Log::info('Admin Maintenance: Searching existing admins', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'search_query' => $search,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $admins = User::join('model_has_roles', $users->getTable() . '.id', '=', 'model_has_roles.model_id')
             ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
             ->join('privileges', $users->getTable() . '.privilege_id', '=', 'privileges.id')
@@ -139,10 +176,29 @@ class AdminMaintenanceController extends Controller
      */
     public function store(Request $request)
     {
+        Log::info('Admin Maintenance: Attempting to assign admin role', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'target_rfid' => $request->input('adminID'),
+            'role' => $request->input('role'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         if ($request->input('adminID') == null) {
+            Log::warning('Admin Maintenance: Creation failed - No admin selected', [
+                'user_id' => Auth::guard('admin')->id(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->route('maintenance.create-admin')->with('toast-warning', 'Please select an admin');
         }
         if ($request->input('role') == 'None') {
+            Log::warning('Admin Maintenance: Creation failed - No role selected', [
+                'user_id' => Auth::guard('admin')->id(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->route('maintenance.create-admin')->with('toast-warning', 'Please select a role');
         }
         DB::beginTransaction();
@@ -151,12 +207,35 @@ class AdminMaintenanceController extends Controller
             $role = $request->input('role');
             $admin = User::with('privileges')->where('rfid', $request->input('adminID'))->first();
             if($admin->privileges->user_type === 'student' && $role === 'Super Admin'){
+                Log::warning('Admin Maintenance: Creation failed - Attempted to assign Student as Super Admin', [
+                    'user_id' => Auth::guard('admin')->id(),
+                    'target_user_id' => $admin->id,
+                    'target_user_name' => $admin->full_name,
+                    'ip_address' => $request->ip(),
+                    'timestamp' => now(),
+                ]);
                 DB::rollBack();
                 return redirect()->route('maintenance.create-admin')->with('toast-warning', 'A student cannot be assigned as Super Admin');
             }
             $admin->assignRole($role);
             $this->notification($admin, $role);
+            
+            Log::info('Admin Maintenance: Admin role assigned successfully', [
+                'user_id' => Auth::guard('admin')->id(),
+                'user_name' => Auth::guard('admin')->user()->full_name,
+                'target_user_id' => $admin->id,
+                'target_user_name' => $admin->full_name,
+                'role_assigned' => $role,
+                'timestamp' => now(),
+            ]);
+
         } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Admin Maintenance: Database error during creation', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'timestamp' => now(),
+            ]);
             return redirect()->route('maintenance.create-admin')->with('toast-error', $e->getMessage());
         }
         DB::commit();
@@ -174,6 +253,14 @@ class AdminMaintenanceController extends Controller
      */
     public function edit(Request $request)
     {
+        Log::info('Admin Maintenance: Edit admin form accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'target_user_id' => $request->input('id'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $admin = null;
         $super_admin = null;
         try {
@@ -188,6 +275,11 @@ class AdminMaintenanceController extends Controller
             $roles = Role::where('guard_name', 'admin')
                 ->get();
         } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Admin Maintenance: Error accessing edit admin form', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         return view('maintenance.admins.edit', compact('admin', 'super_admin', 'roles'));
@@ -205,6 +297,14 @@ class AdminMaintenanceController extends Controller
      */
     public function update(Request $request)
     {
+        Log::info('Admin Maintenance: Attempting to update admin details', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'target_user_id' => $request->input('id'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $user = new User();
         $request->validate([
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
@@ -252,6 +352,11 @@ class AdminMaintenanceController extends Controller
                 $admin = User::with('privileges')->findOrFail($request->input('id'));
                 
                 if($admin->privileges->user_type == 'student' && $role->name == 'Super Admin'){
+                    Log::warning('Admin Maintenance: Update failed - Attempted to assign Student as Super Admin', [
+                        'user_id' => Auth::guard('admin')->id(),
+                        'target_user_id' => $admin->id,
+                        'timestamp' => now(),
+                    ]);
                     DB::rollBack();
                     return redirect()->back()->with('toast-warning', 'A student cannot be assigned as Super Admin');
                 }
@@ -265,10 +370,30 @@ class AdminMaintenanceController extends Controller
                 
                 $admin->syncRoles($role);
                 $this->notification($admin, $role->name);
+
+                Log::info('Admin Maintenance: Admin updated successfully', [
+                    'user_id' => Auth::guard('admin')->id(),
+                    'user_name' => Auth::guard('admin')->user()->full_name,
+                    'target_user_id' => $admin->id,
+                    'new_role' => $role->name,
+                    'timestamp' => now(),
+                ]);
+
             } else {
+                Log::warning('Admin Maintenance: Update failed - Insufficient permissions', [
+                    'user_id' => Auth::guard('admin')->id(),
+                    'target_user_id' => $request->input('id'),
+                    'timestamp' => now(),
+                ]);
                 return redirect()->back()->with('toast-error', 'You do not have permission to modify admin');
             }
         } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Admin Maintenance: Database error during admin update', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'timestamp' => now(),
+            ]);
             DB::rollBack();
             return redirect()->back()->with('toast-error', $e->getMessage());
         }
@@ -289,21 +414,51 @@ class AdminMaintenanceController extends Controller
      */
     public function destroy(Request $request)
     {
+        Log::info('Admin Maintenance: Attempting to remove admin rights', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'target_user_id' => $request->input('id'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $userToDelete = User::findOrFail($request->input('id'));
         $authenticatedUser = User::findOrFail(Auth::guard('admin')->user()->id);
 
         if ($authenticatedUser->id === $userToDelete->id) {
+            Log::warning('Admin Maintenance: Delete failed - Self deletion attempt', [
+                'user_id' => $authenticatedUser->id,
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', 'You cannot delete yourself.');
         }
         if ($userToDelete->hasRole(RolesEnum::SUPER_ADMIN)) {
             if (!$authenticatedUser->hasRole(RolesEnum::SUPER_ADMIN)) {
+                Log::warning('Admin Maintenance: Delete failed - Non-Super Admin attempted to delete Super Admin', [
+                    'user_id' => $authenticatedUser->id,
+                    'target_user_id' => $userToDelete->id,
+                    'timestamp' => now(),
+                ]);
                 return redirect()->back()->with('toast-warning', 'You cannot delete a super admin.');
             }
         }
         DB::beginTransaction();
         try {
             $userToDelete->syncRoles([]);  
+            Log::info('Admin Maintenance: Admin rights removed successfully', [
+                'user_id' => $authenticatedUser->id,
+                'user_name' => $authenticatedUser->full_name,
+                'target_user_id' => $userToDelete->id,
+                'target_user_name' => $userToDelete->full_name,
+                'timestamp' => now(),
+            ]);
         } catch (\Exception $e) {
+            Log::error('Admin Maintenance: Error removing admin rights', [
+                'user_id' => $authenticatedUser->id,
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'timestamp' => now(),
+            ]);
             DB::rollBack();
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
@@ -318,6 +473,29 @@ class AdminMaintenanceController extends Controller
      */
     private function notification(User $user, $role)
     {
-        Mail::to($user->email)->send(new RoleEmailMessage($user, $role));
+        Log::info('Admin Maintenance: Sending role notification email', [
+            'sender_id' => Auth::guard('admin')->id(),
+            'recipient_email' => $user->email,
+            'recipient_name' => $user->full_name,
+            'role' => $role,
+            'timestamp' => now(),
+        ]);
+
+        try {
+            Mail::to($user->email)->send(new RoleEmailMessage($user, $role));
+            Log::info('Admin Maintenance: Role notification email sent', [
+                'sender_id' => Auth::guard('admin')->id(),
+                'recipient_email' => $user->email,
+                'timestamp' => now(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Admin Maintenance: Error sending role notification email', [
+                'sender_id' => Auth::guard('admin')->id(),
+                'recipient_email' => $user->email,
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'timestamp' => now(),
+            ]);
+        }
     }
 }

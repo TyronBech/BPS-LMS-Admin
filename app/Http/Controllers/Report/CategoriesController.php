@@ -13,17 +13,50 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 class CategoriesController extends Controller
 {
+    /**
+     * Page to display categories report.
+     *
+     * This function is used to fetch all categories from the database and pass it to the view.
+     *
+     * @param  Request $request
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index()
     {
+        Log::info('Categories Report: Page accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'ip_address' => request()->ip(),
+            'timestamp' => now(),
+        ]);
+
         $data = Category::all();
         return view('report.categories.categories', compact('data'));
     }
+    /**
+     * Handles the export request for categories report.
+     *
+     * This function is used to process the export request and generate the desired file type.
+     *
+     * @param  Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function export(Request $request)
     {
+        Log::info('Categories Report: Export requested', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'export_type' => $request->input('submit'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $data = Category::all();
         if ($request->input('submit') == 'pdf') {
             $this->generatePDF($data);
@@ -32,8 +65,21 @@ class CategoriesController extends Controller
             $this->exportExcel($data);
             return redirect()->back()->with('toast-success', 'Excel generated successfully');
         }
+
+        Log::warning('Categories Report: Invalid export type', [
+            'user_id' => Auth::guard('admin')->id(),
+            'input_type' => $request->input('submit'),
+            'timestamp' => now(),
+        ]);
         return redirect()->back()->with('toast-warning', 'Invalid export type');
     }
+    /**
+     * Generates a PDF report for the summary of BPS collections report.
+     * 
+     * @param  array  $data  The data to be included in the report.
+     * 
+     * @return void
+     */
     private function generatePDF($data)
     {
         $items = [
@@ -57,6 +103,12 @@ class CategoriesController extends Controller
         $dompdf->stream('book-summary-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;
     }
+    /**
+     * Exports the categories report data to an Excel file.
+     *
+     * @param  array  $data  The data to be exported.
+     * @return void
+     */
     private function exportExcel($data)
     {
         $spreadsheet    = new Spreadsheet();
@@ -125,12 +177,34 @@ class CategoriesController extends Controller
         $writer->save("php://output");
         exit();
     }
+    /**
+     * Updates the summary matrix by calling a stored procedure.
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function update(){
+        Log::info('Categories Report: Attempting to update summary matrix', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'ip_address' => request()->ip(),
+            'timestamp' => now(),
+        ]);
+
         try{
             DB::statement('CALL update_summary_matrix()');
         } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Categories Report: Database error during update', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage());
         }
+
+        Log::info('Categories Report: Summary matrix updated successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'timestamp' => now(),
+        ]);
         return redirect()->back()->with('toast-success', 'Successfully updated');
     }
 }

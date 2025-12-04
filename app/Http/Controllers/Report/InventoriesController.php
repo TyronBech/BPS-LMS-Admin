@@ -15,22 +15,67 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Log;
 
 class InventoriesController extends Controller
 {
+    /**
+     * Handles the page request for the inventory report.
+     *
+     * It extracts the start date, end date and page size from the request.
+     * It then logs an info message with the user id, user name, filters, ip address and timestamp.
+     * Finally, it generates the data for the report and returns the view with the data, start date, end date and page size.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index(Request $request){
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
         $perPage        = $request->input('perPage', 10);
+
+        Log::info('Inventory Report: Page accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'filters' => [
+                'start_date' => $fromInputDate,
+                'end_date' => $toInputDate,
+            ],
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $data           = $this->generateData($request, new Inventory(), false);
         return view('report.inventories.index', compact('fromInputDate', 'toInputDate', 'data', 'perPage'));
     }
+    /**
+     * Handles the search request for the inventory report.
+     * It extracts the start date, end date and page size from the request.
+     * It then logs an info message with the user id, user name, filters, ip address and timestamp.
+     * If the validation fails, it logs a warning message with the user id, errors, ip address and timestamp.
+     * If the submit button is 'pdf', it generates the PDF export.
+     * If the submit button is 'excel', it generates the Excel export.
+     * Finally, it generates the data for the report and returns the view with the data, start date, end date and page size.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Contracts\View\View
+     */
     public function search(Request $request){
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
         $perPage        = $request->input('perPage', 10);
         $start          = null;
         $end            = null;
+
+        Log::info('Inventory Report: Search performed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'filters' => $request->only(['start', 'end', 'perPage']),
+            'action' => $request->input('submit', 'search'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $data           = Inventory::with('book')->where('checked_at', '!=', null);
         $validator = Validator::make($request->all(), [
             'start'         => 'nullable|date',
@@ -38,14 +83,28 @@ class InventoriesController extends Controller
             'perPage'       => 'nullable|numeric|in:10,25,50',
         ]);
         if ($validator->fails()) {
+            Log::warning('Inventory Report: Validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
         if($request->input('submit') == 'pdf'){
+            Log::info('Inventory Report: Generating PDF export', [
+                'user_id' => Auth::guard('admin')->id(),
+                'timestamp' => now()
+            ]);
             $data = $this->generateData($request, new Inventory(), true);
             $this->generatePDF($data);
             return redirect()->back()->with('toast-success', 'PDF generated successfully');
         }
         if($request->input('submit') == 'excel'){
+            Log::info('Inventory Report: Generating Excel export', [
+                'user_id' => Auth::guard('admin')->id(),
+                'timestamp' => now()
+            ]);
             $data = $this->generateData($request, new Inventory(), false);
             $this->exportExcel($data);
             return redirect()->back()->with('toast-success', 'Excel generated successfully');
@@ -53,6 +112,13 @@ class InventoriesController extends Controller
         $data = $this->generateData($request, new Inventory(), false);
         return view('report.inventories.index', compact('fromInputDate', 'toInputDate', 'data', 'perPage'));
     }
+    /**
+     * Generates a PDF report for the inventory report.
+     * 
+     * @param  array  $data  The data to be included in the report.
+     * 
+     * @return void
+     */
     private function generatePDF($data)
     {
         $items = [
@@ -76,6 +142,13 @@ class InventoriesController extends Controller
         $dompdf->stream('inventory-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;
     }
+    /**
+     * Exports the inventory report to an Excel file.
+     * 
+     * @param  array  $data  The data to be included in the report.
+     * 
+     * @return void
+     */
     private function exportExcel($data)
     {
         $spreadsheet    = new Spreadsheet();
@@ -129,6 +202,14 @@ class InventoriesController extends Controller
         $writer->save("php://output");
         exit;
     }
+    /**
+     * Generates data for the inventory report.
+     *
+     * @param Request $request
+     * @param Inventory $tableName
+     * @param bool $isExport
+     * @return array
+     */
     private function generateData(Request $request, Inventory $tableName, bool $isExport = false){
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');

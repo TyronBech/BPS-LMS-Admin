@@ -16,9 +16,19 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Auth;
 
 class AuditTrailController extends Controller
 {
+    /**
+     * This function is used to handle the page request for the audit trail report.
+     * It takes in the request object and extracts the types, table type, start date, end date and page size from the request.
+     * It then logs an info message with the user id, user name, filters, ip address and timestamp.
+     * Finally, it generates the data for the report and returns the view with the data, types, start date, end date, table type and page size.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index(Request $request)
     {
         $types          = $request->input('types', 'ALL');
@@ -26,9 +36,33 @@ class AuditTrailController extends Controller
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
         $perPage        = $request->input('perPage', 10);
+
+        Log::info('Audit Trail: Page accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'filters' => [
+                'types' => $types,
+                'table_type' => $tableType,
+                'start_date' => $fromInputDate,
+                'end_date' => $toInputDate,
+            ],
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $data           = $this->generateData($request, new AuditTrail(), false);
         return view('report.audits.index', compact('data', 'types', 'fromInputDate', 'toInputDate', 'tableType', 'perPage'));
     }
+    /**
+     * This function is used to handle the search request for the audit trail report.
+     * It takes in the request object and extracts the types, table type, start date, end date and page size from the request.
+     * It then logs an info message with the user id, user name, filters, ip address and timestamp.
+     * If the validation fails, it logs a warning message with the user id, errors, ip address and timestamp.
+     * Finally, it generates the data for the report and returns the view with the data, types, start date, end date, table type and page size.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Contracts\View\View
+     */
     public function search(Request $request)
     {
         $types          = $request->input('types', 'ALL');
@@ -36,6 +70,15 @@ class AuditTrailController extends Controller
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
         $perPage        = $request->input('perPage', 10);
+
+        Log::info('Audit Trail: Search performed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'filters' => $request->only(['start', 'end', 'types', 'tableType', 'perPage']),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $tableName      = new AuditTrail();
         $validator = Validator::make($request->all(), [
             'start'         => 'nullable|date',
@@ -45,11 +88,26 @@ class AuditTrailController extends Controller
             'perPage'       => 'nullable|numeric|in:10,25,50,100,250,500,1000',
         ]);
         if ($validator->fails()) {
+            Log::warning('Audit Trail: Search validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
         $data = $this->generateData($request, $tableName, false);
         return view('report.audits.index', compact('data', 'types', 'fromInputDate', 'toInputDate', 'tableType', 'perPage'));
     }
+    /**
+     * Generates data for the audit trail report based on the given request inputs.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\AuditTrail $tableName
+     * @param bool $isExport
+     *
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator|\Illuminate\Database\Eloquent\Collection
+     */
     private function generateData(Request $request, AuditTrail $tableName, $isExport = false)
     {
         $fromInputDate  = $request->input('start', '');

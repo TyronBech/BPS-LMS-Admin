@@ -13,27 +13,66 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
-use App\Models\Penalty;
 use App\Models\Transaction;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class PenaltiesController extends Controller
 {
+    /**
+     * Handles the page request for the penalties report.
+     * It takes in the request object and extracts the search term, start date, end date and page size from the request.
+     * It then logs an info message with the user id, user name, filters, ip address and timestamp.
+     * Finally, it generates the data for the report and returns the view with the data, search term, start date, end date, page size.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index(Request $request)
     {
         $search         = $request->input('search');
         $fromInputDate  = $request->input('start');
         $toInputDate    = $request->input('end');
         $perPage        = $request->input('perPage', 10);
+
+        Log::info('Penalties Report: Page accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $data           = $this->generateData($request);
         return view('report.penalties.index', compact('data', 'fromInputDate', 'toInputDate', 'search', 'perPage'));
     }
+    /**
+     * Handles the search request for the penalties report.
+     * It takes in the request object and extracts the search term, start date, end date and page size from the request.
+     * It then logs an info message with the user id, user name, filters, ip address and timestamp.
+     * If the validation fails, it logs a warning message with the user id, errors, ip address and timestamp.
+     * If the submit button is 'pdf', it generates the PDF export.
+     * If the submit button is 'excel', it generates the Excel export.
+     * Finally, it generates the data for the report and returns the view with the data, search term, start date, end date, page size.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Contracts\View\View
+     */
     public function search(Request $request)
     {
         $search         = $request->input('search');
         $fromInputDate  = $request->input('start');
         $toInputDate    = $request->input('end');
         $perPage        = $request->input('perPage', 10);
+
+        Log::info('Penalties Report: Search performed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'filters' => $request->only(['search', 'start', 'end', 'perPage']),
+            'action' => $request->input('submit', 'search'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'start'         => 'nullable|date',
             'end'           => 'nullable|date',
@@ -41,13 +80,27 @@ class PenaltiesController extends Controller
             'perPage'       => 'nullable|numeric|in:10,25,50'
         ]);
         if ($validator->fails()) {
+            Log::warning('Penalties Report: Validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
         if ($request->input('submit') == 'pdf') {
+            Log::info('Penalties Report: Generating PDF export', [
+                'user_id' => Auth::guard('admin')->id(),
+                'timestamp' => now()
+            ]);
             $data = $this->generateData($request, true);
             $this->generatePDF($data);
             return redirect()->route('report.penalties')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {
+            Log::info('Penalties Report: Generating Excel export', [
+                'user_id' => Auth::guard('admin')->id(),
+                'timestamp' => now()
+            ]);
             $data = $this->generateData($request, true);
             $this->exportExcel($data);
             return redirect()->route('report.penalties')->with('toast-success', 'Successfully exported to Excel');
@@ -55,6 +108,15 @@ class PenaltiesController extends Controller
         $data = $this->generateData($request, false);
         return view('report.penalties.index', compact('data', 'search', 'fromInputDate', 'toInputDate', 'perPage'));
     }
+    /**
+     * Generates a PDF report for the overdue fines report.
+     *
+     * It takes in the data to be included in the report and generates a PDF report.
+     * The report includes the title, school name, school address, logo, user name, date, data and total count.
+     * The PDF report is then streamed to the browser with the filename 'overdue-fines-report <date>.pdf'.
+     * 
+     * @param array $data The data to be included in the report.
+     */
     private function generatePDF($data)
     {
         $items = [
@@ -78,6 +140,13 @@ class PenaltiesController extends Controller
         $dompdf->stream('overdue-fines-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;
     }
+    /**
+     * Exports the penalties report to an Excel file.
+     * 
+     * @param  array  $data  The data to be included in the report.
+     * 
+     * @return void
+     */
     private function exportExcel($data)
     {
         $spreadsheet    = new Spreadsheet();
@@ -144,6 +213,13 @@ class PenaltiesController extends Controller
         $writer->save("php://output");
         exit;
     }
+    /**
+     * Generates data for the penalties report.
+     *
+     * @param Request $request
+     * @param bool $isExport
+     * @return array
+     */
     private function generateData(Request $request, bool $isExport = false)
     {
         $fromInputDate = $request->input('start');

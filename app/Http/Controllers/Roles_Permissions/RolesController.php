@@ -3,18 +3,32 @@
 namespace App\Http\Controllers\Roles_Permissions;
 
 use App\Enum\PermissionsEnum;
-use App\Enum\RolesEnum;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\Models\Permission;
 use App\Models\user;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
 
 class RolesController extends Controller
 {
+    /**
+     * Get all roles with their permissions.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     */
     public function index(Request $request)
     {
+        Log::info('Roles & Permissions: Page accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
         $perPage                = request('perPage', 10);
         $roles_with_permissions = Role::with('permissions')
@@ -30,8 +44,21 @@ class RolesController extends Controller
         $admins = User::all();
         return view('roles_permissions.roles', compact('roles_with_permissions', 'permissions', 'admins', 'perPage'));
     }
+    /**
+     * Get all permissions excluding Modify Admins, Create Backups, and View Audit Reports,
+     * then render the roles_permissions.create view with the permissions.
+     *
+     * @return \Illuminate\Http\Response
+     */
     public function create()
     {
+        Log::info('Roles & Permissions: Create Role page accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'ip_address' => request()->ip(),
+            'timestamp' => now(),
+        ]);
+
         $permissions = Permission::select('name')
             ->where('guard_name', 'admin')
             ->where('name', '!=', 'Modify Admins')
@@ -41,14 +68,46 @@ class RolesController extends Controller
             ->get();
         return view('roles_permissions.create', compact('permissions'));
     }
+
+    /**
+     * Create a new role and assign permissions to it.
+     *
+     * The validation rules for this function are:
+     * - The 'role' field must be a required string with a maximum length of 50 characters.
+     * - The 'permissions' field must be an array.
+     *
+     * If the user selects restricted actions without their view, the function will redirect back to the create role page with a toast warning.
+     *
+     * If the role already exists, the function will redirect back to the create role page with a toast warning.
+     *
+     * If an exception occurs during the database transaction, the function will rollback the transaction and redirect back to the management page with a toast error.
+     *
+     * If the transaction is successful, the function will redirect back to the management page with a toast success.
+     * 
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function store(Request $request)
     {
+        Log::info('Roles & Permissions: Attempting to create role', [
+            'user_id' => Auth::guard('admin')->id(),
+            'role_name' => $request->input('role'),
+            'permissions_count' => count($request->input('permissions') ?? []),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $request->validate([
             'role' => 'required|string|max:50',
             'permissions' => 'array',
         ]);
         $permissions = $request->input('permissions');
         if ($permissions == null) {
+            Log::warning('Roles & Permissions: Create role failed - No permissions selected', [
+                'user_id' => Auth::guard('admin')->id(),
+                'timestamp' => now(),
+            ]);
             return redirect()->route('maintenance.roles-and-permissions.create-role')->with('toast-warning', 'Please select at least one permission');
         }
         // Define the mapping between view and action permissions
@@ -65,6 +124,12 @@ class RolesController extends Controller
         foreach ($restrictions as $view => $actions) {
             foreach ($actions as $action) {
                 if (in_array($action, $permissions) && !in_array($view, $permissions)) {
+                    Log::warning('Roles & Permissions: Create role failed - Restriction violation', [
+                        'user_id' => Auth::guard('admin')->id(),
+                        'missing_view' => $view,
+                        'action' => $action,
+                        'timestamp' => now(),
+                    ]);
                     return redirect()->route('maintenance.roles-and-permissions.create-role')
                         ->with('toast-warning', "You must select '{$view}' before selecting '{$action}'");
                 }
@@ -74,20 +139,62 @@ class RolesController extends Controller
         try {
             if (Role::where('name', $request->input('role'))->exists()) {
                 DB::rollBack();
+                Log::warning('Roles & Permissions: Create role failed - Role exists', [
+                    'user_id' => Auth::guard('admin')->id(),
+                    'role_name' => $request->input('role'),
+                    'timestamp' => now(),
+                ]);
                 return redirect()->route('maintenance.roles-and-permissions.create-role')->with('toast-warning', 'Role already exists');
             }
             $role = Role::create(['name' => $request->input('role')]);
             $role->syncPermissions($request->input('permissions'));
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
+            Log::error('Roles & Permissions: Create role failed - Database error', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->route('maintenance.roles-and-permissions.management')->with('toast-error', 'Something went wrong');
         }
         DB::commit();
+        Log::info('Roles & Permissions: Role created successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'role_name' => $request->input('role'),
+            'timestamp' => now(),
+        ]);
         return redirect()->route('maintenance.roles-and-permissions.management')->with('toast-success', 'Role created successfully');
     }
+    /**
+     * Edit an existing role and assign permissions to it.
+     *
+     * The validation rules for this function are:
+     * - The 'role' field must be a required string with a maximum length of 50 characters.
+     * - The 'permissions' field must be an array.
+     *
+     * If the user selects restricted actions without their view, the function will redirect back to the edit role page with a toast warning.
+     *
+     * If the role already exists, the function will redirect back to the edit role page with a toast warning.
+     *
+     * If an exception occurs during the database transaction, the function will rollback the transaction and redirect back to the management page with a toast error.
+     *
+     * If the transaction is successful, the function will redirect back to the management page with a toast success.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function edit(Request $request)
     {
         $role_id = array_keys($request->all())[0];
+        Log::info('Roles & Permissions: Edit Role page accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'role_id' => $role_id,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         try {
             $role = Role::findById($role_id);
             $permissions = Permission::with('roles')
@@ -98,12 +205,45 @@ class RolesController extends Controller
                 ->orderBy('name', 'asc')
                 ->get();
         } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Roles & Permissions: Edit role page failed - Database error', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Something went wrong');
         }
         return view('roles_permissions.edit', compact('role', 'permissions'));
     }
+    /**
+     * Update an existing role and assign permissions to it.
+     *
+     * The validation rules for this function are:
+     * - If the user is trying to update the super admin role, the function will only validate that the 'permissions' field is an array.
+     * - If the user is trying to update any other role, the function will validate that the 'role' field is a required string with a maximum length of 50 characters and that the 'permissions' field is an array.
+     *
+     * If the user selects restricted actions without their view, the function will redirect back to the edit role page with a toast warning.
+     *
+     * If the role already exists, the function will redirect back to the edit role page with a toast warning.
+     *
+     * If an exception occurs during the database transaction, the function will rollback the transaction and redirect back to the management page with a toast error.
+     *
+     * If the transaction is successful, the function will redirect back to the management page with a toast success.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function update(Request $request)
     {
+        Log::info('Roles & Permissions: Attempting to update role', [
+            'user_id' => Auth::guard('admin')->id(),
+            'role_id' => $request->input('role_id'),
+            'new_name' => $request->input('role'),
+            'permissions_count' => count($request->input('permissions') ?? []),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         if($request->input('role_id') == 1) {
             $request->validate([
                 'permissions' => 'array',
@@ -116,6 +256,10 @@ class RolesController extends Controller
         }
         $permissions = $request->input('permissions');
         if ($permissions == null) {
+            Log::warning('Roles & Permissions: Update role failed - No permissions selected', [
+                'user_id' => Auth::guard('admin')->id(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', 'Please select at least one permission');
         }
         // Define the mapping between view and action permissions
@@ -132,6 +276,12 @@ class RolesController extends Controller
         foreach ($restrictions as $view => $actions) {
             foreach ($actions as $action) {
                 if (in_array($action, $permissions) && !in_array($view, $permissions)) {
+                    Log::warning('Roles & Permissions: Update role failed - Restriction violation', [
+                        'user_id' => Auth::guard('admin')->id(),
+                        'missing_view' => $view,
+                        'action' => $action,
+                        'timestamp' => now(),
+                    ]);
                     return redirect()->back()->with('toast-warning', "You must select '{$view}' before selecting '{$action}'");
                 }
             }
@@ -149,51 +299,73 @@ class RolesController extends Controller
             $role->syncPermissions($permissions);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
+            Log::error('Roles & Permissions: Update role failed - Database error', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Something went wrong');
         }
         DB::commit();
+        Log::info('Roles & Permissions: Role updated successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'role_id' => $request->input('role_id'),
+            'timestamp' => now(),
+        ]);
         return redirect()->route('maintenance.roles-and-permissions.management')->with('toast-success', 'Role updated successfully');
     }
+    /**
+     * Delete a role and all of its permissions.
+     *
+     * If the role is assigned to users, the function will rollback the transaction and redirect back to the management page with a toast warning.
+     *
+     * If an exception occurs during the database transaction, the function will rollback the transaction and redirect back to the management page with a toast error.
+     *
+     * If the transaction is successful, the function will redirect back to the management page with a toast success.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     * @throws \Illuminate\Database\QueryException
+     */
     public function destroy(Request $request)
     {
+        Log::info('Roles & Permissions: Attempting to delete role', [
+            'user_id' => Auth::guard('admin')->id(),
+            'role_id' => $request->input('deleteRole'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         DB::beginTransaction();
         try {
             $role = Role::findById($request->input('deleteRole'));
             if ($role->users()->count() > 0) {
                 DB::rollBack();
+                Log::warning('Roles & Permissions: Delete role failed - Role assigned to users', [
+                    'user_id' => Auth::guard('admin')->id(),
+                    'role_id' => $request->input('deleteRole'),
+                    'user_count' => $role->users()->count(),
+                    'timestamp' => now(),
+                ]);
                 return redirect()->back()->with('toast-warning', 'Role cannot be deleted because it is assigned to users');
             }
             $role->revokePermissionTo($role->permissions);
             $role->delete();
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
+            Log::error('Roles & Permissions: Delete role failed - Database error', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Something went wrong');
         }
         DB::commit();
+        Log::info('Roles & Permissions: Role deleted successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'role_id' => $request->input('deleteRole'),
+            'timestamp' => now(),
+        ]);
         return redirect()->route('maintenance.roles-and-permissions.management')->with('toast-success', 'Role deleted successfully');
-    }
-    private function assign_permission(Request $request, $role_id)
-    {
-        $role = Role::findById($role_id);
-        $role->givePermissionTo($request->input('permission'));
-        return redirect()->route('roles_permissions.roles')->with('toast-success', 'Permission assigned successfully');
-    }
-    private function revoke_permission(Request $request, $role_id)
-    {
-        $role = Role::findById($role_id);
-        $role->revokePermissionTo($request->input('permission'));
-        return redirect()->route('roles_permissions.roles')->with('toast-success', 'Permission revoked successfully');
-    }
-    private function assign_role(Request $request, $admin_id)
-    {
-        $admin = User::find($admin_id);
-        $admin->assignRole($request->input('role'));
-        return redirect()->route('roles_permissions.roles')->with('toast-success', 'Role assigned successfully');
-    }
-    private function revoke_role(Request $request, $admin_id)
-    {
-        $admin = User::find($admin_id);
-        $admin->removeRole($request->input('role'));
-        return redirect()->route('roles_permissions.roles')->with('toast-success', 'Role revoked successfully');
     }
 }

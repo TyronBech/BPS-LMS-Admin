@@ -26,6 +26,15 @@ class TransactionMaintenanceController extends Controller
     public function index(Request $request)
     {
         $perPage = $request->input('perPage', 10);
+
+        Log::info('Transaction Maintenance: List page accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'per_page' => $perPage,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $transactions = Transaction::with('user', 'book')
             ->orderBy('created_at', 'desc')
             ->paginate($perPage)
@@ -48,6 +57,14 @@ class TransactionMaintenanceController extends Controller
      */
     public function show(Request $request)
     {
+        Log::info('Transaction Maintenance: Viewing transaction details', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'transaction_id' => $request->input('viewBtn'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $transaction = Transaction::with('user', 'book')
             ->where('id', $request->input('viewBtn'))
             ->firstOrFail();
@@ -74,6 +91,12 @@ class TransactionMaintenanceController extends Controller
      */
     public function retrieve(Request $request)
     {
+        Log::debug('Transaction Maintenance: Retrieving transaction JSON', [
+            'user_id' => Auth::guard('admin')->id(),
+            'transaction_id' => $request->input('viewBtn'),
+            'timestamp' => now(),
+        ]);
+
         $transaction = Transaction::with('user', 'book')
             ->where('id', $request->input('viewBtn'))
             ->firstOrFail();
@@ -97,6 +120,14 @@ class TransactionMaintenanceController extends Controller
      */
     public function update(Request $request)
     {
+        Log::info('Transaction Maintenance: Attempting to update transaction', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'transaction_id' => $request->input('edit_transaction_id'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'due_date'          => 'required|date',
             'pickup_date'       => 'nullable|date',
@@ -107,6 +138,12 @@ class TransactionMaintenanceController extends Controller
             'remarks'           => 'nullable|string|max:2048',
         ]);
         if ($validator->fails()) {
+            Log::warning('Transaction Maintenance: Update validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
         DB::beginTransaction();
@@ -114,6 +151,11 @@ class TransactionMaintenanceController extends Controller
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $transaction = Transaction::find($request->input('edit_transaction_id'));
             if (!$transaction) {
+                Log::warning('Transaction Maintenance: Update failed - Transaction not found', [
+                    'user_id' => Auth::guard('admin')->id(),
+                    'transaction_id' => $request->input('edit_transaction_id'),
+                    'timestamp' => now(),
+                ]);
                 return redirect()->back()->with('toast-error', 'Transaction not found');
             }
             $dueDateInput = $request->input('due_date');
@@ -126,6 +168,11 @@ class TransactionMaintenanceController extends Controller
                 $dueDate = DateTime::createFromFormat('Y-m-d', $dueDateInput);
             }
             if (!$dueDate) {
+                Log::warning('Transaction Maintenance: Update failed - Invalid due date', [
+                    'user_id' => Auth::guard('admin')->id(),
+                    'input_date' => $dueDateInput,
+                    'timestamp' => now(),
+                ]);
                 return redirect()->back()->with('toast-error', 'Invalid due date format');
             }
 
@@ -138,6 +185,11 @@ class TransactionMaintenanceController extends Controller
                     $pickupDate = DateTime::createFromFormat('Y-m-d', $pickupDateInput);
                 }
                 if (!$pickupDate) {
+                    Log::warning('Transaction Maintenance: Update failed - Invalid pickup date', [
+                        'user_id' => Auth::guard('admin')->id(),
+                        'input_date' => $pickupDateInput,
+                        'timestamp' => now(),
+                    ]);
                     return redirect()->back()->with('toast-error', 'Invalid pickup date format');
                 }
             }
@@ -153,9 +205,22 @@ class TransactionMaintenanceController extends Controller
             ]);
         } catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();
+            Log::error('Transaction Maintenance: Database error during update', [
+                'user_id' => Auth::guard('admin')->id(),
+                'transaction_id' => $request->input('edit_transaction_id'),
+                'error_message' => $e->getMessage(),
+                'error_trace' => $e->getTraceAsString(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', $e->getMessage());
         }
         DB::commit();
+        Log::info('Transaction Maintenance: Transaction updated successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'transaction_id' => $request->input('edit_transaction_id'),
+            'timestamp' => now(),
+        ]);
         return redirect()->route('maintenance.circulations')->with('toast-success', 'Transaction updated successfully');
     }
     /**
@@ -175,7 +240,7 @@ class TransactionMaintenanceController extends Controller
         
         // Check if API key exists
         if (empty($apiKey)) {
-            Log::warning('Google Books API key is not set in .env file');
+            Log::warning('Google Books API key is not set in .env file', ['timestamp' => now()]);
             return null;
         }
 
@@ -222,7 +287,8 @@ class TransactionMaintenanceController extends Controller
             if (!$response->successful()) {
                 Log::warning('Google Books API request failed', [
                     'status' => $response->status(),
-                    'url' => $url
+                    'url' => $url,
+                    'timestamp' => now()
                 ]);
                 return null;
             }
@@ -234,7 +300,8 @@ class TransactionMaintenanceController extends Controller
                 Log::info('No books found in Google Books API', [
                     'title' => $title,
                     'author' => $author,
-                    'isbn' => $isbn
+                    'isbn' => $isbn,
+                    'timestamp' => now()
                 ]);
                 return null;
             }
@@ -246,7 +313,8 @@ class TransactionMaintenanceController extends Controller
                 Log::info('Book found but no thumbnail available', [
                     'title' => $title,
                     'author' => $author,
-                    'isbn' => $isbn
+                    'isbn' => $isbn,
+                    'timestamp' => now()
                 ]);
                 return null;
             }
@@ -257,7 +325,8 @@ class TransactionMaintenanceController extends Controller
         } catch (ConnectionException $e) {
             Log::error('Connection error while fetching book image', [
                 'message' => $e->getMessage(),
-                'url' => $url
+                'url' => $url,
+                'timestamp' => now()
             ]);
             return null;
         } catch (\Exception $e) {

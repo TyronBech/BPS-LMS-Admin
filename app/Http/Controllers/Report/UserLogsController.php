@@ -15,9 +15,19 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use DateTime;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log as Logger; // Alias to avoid conflict with App\Models\Log
 
 class UserLogsController extends Controller
 {
+    /**
+     * Handles the page request for the user logs report.
+     * It takes in the request object and extracts the search term, user type, start date, end date and page size from the request.
+     * It then logs an info message with the user id, user name, filters, ip address and timestamp.
+     * Finally, it generates the data for the report and returns the view with the data, search term, user type, start date, end date, peak hour and page size.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index(Request $request)
     {
         $search         = $request->input('search', '');
@@ -26,6 +36,20 @@ class UserLogsController extends Controller
         $userType       = $request->input('user_type', 'all');
         $peak_hour      = "00:00";
         $perPage        = $request->input('perPage', 10);
+
+        Logger::info('User Logs Report: Page accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'filters' => [
+                'search' => $search,
+                'user_type' => $userType,
+                'start_date' => $fromInputDate,
+                'end_date' => $toInputDate,
+            ],
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $data           = $this->generateData($request, new Log(), false);
         $hours = $data->map(function ($item) {
             $item = Carbon::parse($item->time_in)->format('H:i:s');
@@ -43,6 +67,17 @@ class UserLogsController extends Controller
         }
         return view('report.users.user-logs', compact('data', 'search', 'fromInputDate', 'toInputDate', 'peak_hour', 'perPage', 'userType'));
     }
+    /**
+     * Handles the search request for the user logs report.
+     * It takes in the request object and extracts the search term, user type, start date, end date and page size from the request.
+     * It then logs an info message with the user id, user name, filters, ip address and timestamp.
+     * If the validation fails, it logs a warning message with the user id, errors, ip address and timestamp.
+     * If the submit button is 'pdf', it generates the PDF export.
+     * If the submit button is 'excel', it generates the Excel export.
+     * Finally, it generates the data for the report and returns the view with the data, search term, user type, start date, end date, peak hour and page size.
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Contracts\View\View
+     */
     public function search(Request $request)
     {
         $search         = $request->input('search', '');
@@ -52,6 +87,16 @@ class UserLogsController extends Controller
         $peak_hour      = "00:00";
         $perPage        = $request->input('perPage', 10);
         $tableName      = new Log();
+
+        Logger::info('User Logs Report: Search performed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'filters' => $request->only(['search', 'start', 'end', 'user_type', 'perPage']),
+            'action' => $request->input('submit', 'search'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'start'         => 'nullable|date',
             'end'           => 'nullable|date',
@@ -60,13 +105,27 @@ class UserLogsController extends Controller
             'user_type'     => 'in:all,student,employee,visitor',
         ]);
         if ($validator->fails()) {
+            Logger::warning('User Logs Report: Validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
         if ($request->input('submit') == 'pdf') {
+            Logger::info('User Logs Report: Generating PDF export', [
+                'user_id' => Auth::guard('admin')->id(),
+                'timestamp' => now()
+            ]);
             $data = $this->generateData($request, $tableName, true);
             $this->generatePDF($data);
             return redirect()->route('report.user')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {
+            Logger::info('User Logs Report: Generating Excel export', [
+                'user_id' => Auth::guard('admin')->id(),
+                'timestamp' => now()
+            ]);
             $data = $this->generateData($request, $tableName, true);
             $this->exportExcel($data);
             return redirect()->route('report.user')->with('toast-success', 'Successfully exported to Excel');
@@ -88,8 +147,25 @@ class UserLogsController extends Controller
         }
         return view('report.users.user-logs', compact('data', 'search', 'fromInputDate', 'toInputDate', 'peak_hour', 'perPage', 'userType'));
     }
+    /**
+     * Returns JSON data for user logs graph.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     *
+     * @throws \Illuminate\Validation\ValidationException
+     */
     public function graph(Request $request)
     {
+        Logger::info('User Logs Report: Graph data requested', [
+            'user_id' => Auth::guard('admin')->id(),
+            'type' => $request->type,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $baseQuery = Log::query();
         $baseQuery->whereNotNull('time_in')
             ->where('computer_use', 'No');
@@ -304,8 +380,18 @@ class UserLogsController extends Controller
             'chart_title' => $chartTitle
         ]);
     }
-
-
+    /**
+     * Finds the peak hour from an array of times.
+     * 
+     * The peak hour is the hour with the highest count of occurrences in the array.
+     * If there are no times, it returns "00".
+     * It goes through each time in the array, extracts the hour from it, and counts how many times the hour occurs.
+     * It then compares each hour's count with the max count and updates the max count and peak hour if necessary.
+     * Finally, it returns the peak hour in the format "HH".
+     * 
+     * @param array $times an array of times in the format "HH:MM:SS"
+     * @return string the peak hour in the format "HH"
+     */
     private function findPeakHour($times)
     {
         $hourCounts = array();
@@ -323,8 +409,23 @@ class UserLogsController extends Controller
         }
         return $peakHour;
     }
+    /**
+     * Exports the user logs report to a PDF file.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\Response
+     *
+     * @throws \Exception
+     */
     public function exportGraph(Request $request)
     {
+        Logger::info('User Logs Report: Graph export requested', [
+            'user_id' => Auth::guard('admin')->id(),
+            'type' => $request->input('type'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         try {
             $chart = $request->input('chart');
             $type  = strtolower($request->input('type')); // daily, weekly, monthly
@@ -390,10 +491,21 @@ class UserLogsController extends Controller
                 ->header('Content-Type', 'application/pdf')
                 ->header('Content-Disposition', 'attachment; filename="user-logs-graph-' . date('Y-m-d') . '.pdf"');
         } catch (\Exception $e) {
-            Log::error('PDF generation failed: ' . $e->getMessage());
+            Logger::error('User Logs Report: PDF generation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error' => $e->getMessage(),
+                'timestamp' => now()
+            ]);
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
+    /**
+     * Generates a PDF report for the user logs report.
+     *
+     * @param array $data The data to be included in the report.
+     *
+     * @return void
+     */
     private function generatePDF($data)
     {
         $items = [
@@ -417,6 +529,13 @@ class UserLogsController extends Controller
         $dompdf->stream('users-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;
     }
+    /**
+     * Exports the user logs report to an Excel file.
+     *
+     * @param array $data The data to be included in the report.
+     *
+     * @return void
+     */
     private function exportExcel($data)
     {
         $spreadsheet    = new Spreadsheet();
@@ -474,6 +593,14 @@ class UserLogsController extends Controller
         $writer->save("php://output");
         exit;
     }
+    /**
+     * Generates the data for the user logs report based on the request parameters.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @param \App\Models\Log $tableName
+     * @param bool $isExport
+     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator|\Illuminate\Support\Collection
+     */
     private function generateData(Request $request, Log $tableName, bool $isExport = false)
     {
         $fromInputDate  = $request->input('start', '');

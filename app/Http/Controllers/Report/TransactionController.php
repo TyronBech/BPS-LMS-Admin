@@ -3,13 +3,13 @@
 namespace App\Http\Controllers\Report;
 
 use App\Http\Controllers\Controller;
-use App\Models\Book;
 use Illuminate\Http\Request;
 use App\Models\Transaction;
 use DateTime;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
@@ -18,6 +18,16 @@ use Dompdf\Options;
 
 class TransactionController extends Controller
 {
+    /**
+     * Handles the page request for the transaction report.
+     *
+     * It extracts the start date, end date, search, type and page size from the request.
+     * It then logs an info message with the user id, user name, filters, ip address and timestamp.
+     * Finally, it generates the data for the report and returns the view with the data, search, start date, end date, type, page size and availability.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Contracts\View\View
+     */
     public function index(Request $request)
     {
         $fromInputDate  = $request->input('start', '');
@@ -26,9 +36,36 @@ class TransactionController extends Controller
         $perPage        = $request->input('perPage', 10);
         $type           = $request->input('type', 'All');
         $availability   = $this->extract_enums((new Transaction())->getTable(), 'transaction_type');
+
+        Log::info('Transaction Report: Page accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'filters' => [
+                'start_date' => $fromInputDate,
+                'end_date' => $toInputDate,
+                'search' => $search,
+                'type' => $type,
+            ],
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $data           = $this->generateData($request, false);
         return view('report.transactions.transactions', compact('data', 'search', 'fromInputDate', 'toInputDate', 'type', 'perPage', 'availability'));
     }
+    /**
+     * Handles the search request for the transaction report.
+     *
+     * It takes in the request object and extracts the search term, start date, end date, type and page size from the request.
+     * It then logs an info message with the user id, user name, filters, ip address and timestamp.
+     * If the validation fails, it logs a warning message with the user id, errors, ip address and timestamp.
+     * If the submit button is 'pdf', it generates the PDF export.
+     * If the submit button is 'excel', it generates the Excel export.
+     * Finally, it generates the data for the report and returns the view with the data, search term, start date, end date, type, page size and availability.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Contracts\View\View
+     */
     public function search(Request $request)
     {
         $search         = $request->input('search', '');
@@ -37,6 +74,16 @@ class TransactionController extends Controller
         $type           = $request->input('type', 'All');
         $availability   = $this->extract_enums((new Transaction())->getTable(), 'transaction_type');
         $perPage        = $request->input('perPage', 10);
+
+        Log::info('Transaction Report: Search performed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'filters' => $request->only(['start', 'end', 'search', 'type', 'perPage']),
+            'action' => $request->input('submit', 'search'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'start'         => 'nullable|date',
             'end'           => 'nullable|date',
@@ -44,13 +91,27 @@ class TransactionController extends Controller
             'perPage'       => 'nullable|numeric|in:10,25,50'
         ]);
         if ($validator->fails()) {
+            Log::warning('Transaction Report: Validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
         if ($request->input('submit') == 'pdf') {
+            Log::info('Transaction Report: Generating PDF export', [
+                'user_id' => Auth::guard('admin')->id(),
+                'timestamp' => now()
+            ]);
             $data = $this->generateData($request, true);
             $this->generatePDF($data, $type);
             return redirect()->route('report.circulation')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {
+            Log::info('Transaction Report: Generating Excel export', [
+                'user_id' => Auth::guard('admin')->id(),
+                'timestamp' => now()
+            ]);
             $data = $this->generateData($request, true);
             $this->exportExcel($data, $type);
             return redirect()->route('report.circulation')->with('toast-success', 'Successfully exported to Excel');
@@ -58,6 +119,16 @@ class TransactionController extends Controller
         $data = $this->generateData($request, false);
         return view('report.transactions.transactions', compact('data', 'search', 'fromInputDate', 'toInputDate', 'type', 'perPage', 'availability'));
     }
+    /**
+     * Generates a PDF report for the transaction report.
+     *
+     * It takes in the data to be included in the report and the type of report to be generated.
+     * The report includes the title, school name, type, logo, address, user name, date, data and total count.
+     * The PDF report is then streamed to the browser with the filename 'transaction-report <date>.pdf'.
+     *
+     * @param array $data The data to be included in the report.
+     * @param string $type The type of report to be generated.
+     */
     private function generatePDF($data, $type)
     {
         $items = [
@@ -82,6 +153,14 @@ class TransactionController extends Controller
         $dompdf->stream('transaction-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;
     }
+    /**
+     * Exports the transaction report to an Excel file.
+     * 
+     * @param  array  $data  The data to be included in the report.
+     * @param  string  $type  The type of report to be generated.
+     * 
+     * @return void
+     */
     private function exportExcel($data, $type)
     {
         $spreadsheet    = new Spreadsheet();
@@ -192,6 +271,13 @@ class TransactionController extends Controller
         $writer->save("php://output");
         exit;
     }
+    /**
+     * Generates data for the transaction report.
+     *
+     * @param Request $request
+     * @param bool $isExport
+     * @return array
+     */
     private function generateData(Request $request, bool $isExport = false)
     {
         $fromInputDate  = $request->input('start', '');
@@ -252,6 +338,13 @@ class TransactionController extends Controller
         }
         return $data;
     }
+    /**
+     * Extracts enum values from a database table column.
+     *
+     * @param string $table The name of the database table.
+     * @param string $columnName The name of the column.
+     * @return array An array of enum values.
+     */
     private function extract_enums($table, $columnName)
     {
         $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";

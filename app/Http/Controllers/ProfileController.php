@@ -2,20 +2,16 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\ProfileUpdateRequest;
-use App\Models\EmployeeDetail;
-use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Redirect;
 use App\Models\User;
-use Illuminate\View\View;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ChangePasswordMail;
+use Illuminate\Support\Facades\Log;
 
 class ProfileController extends Controller
 {
@@ -24,100 +20,127 @@ class ProfileController extends Controller
      */
     public function index()
     {
+        Log::info('Profile: Page accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'ip_address' => request()->ip(),
+            'timestamp' => now(),
+        ]);
+
         $user = User::findOrFail(Auth::id());
         return view('profile.index', compact('user'));
     }
+    /**
+     * Update the user's information.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
     public function update(Request $request)
     {
+        Log::info('Profile: Update attempt', [
+            'user_id' => Auth::guard('admin')->id(),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $rules = [
             'first_name'    => ['required', 'string', 'max:50'],
             'middle_name'   => ['nullable', 'string', 'max:50'],
             'email'         => ['required', 'string', 'max:50', 'email'],
             'user_id'       => ['required', 'string', 'max:50'],
         ];
-        if($request->filled('current_password')) {
-            if($request->filled('new_password') && $request->filled('new_password_confirmation')) {
+        if ($request->filled('current_password')) {
+            if ($request->filled('new_password') && $request->filled('new_password_confirmation')) {
                 $rules['current_password']          = ['required', 'current_password'];
                 $rules['new_password']              = ['required', 'string', Password::min(8)->mixedCase()->letters()->numbers()->symbols()->uncompromised(), 'confirmed'];
                 $rules['new_password_confirmation'] = 'required';
             } else {
+                Log::warning('Profile: Update failed - Missing password confirmation', [
+                    'user_id' => Auth::guard('admin')->id(),
+                    'timestamp' => now(),
+                ]);
                 return redirect()->back()->with('toast-warning', 'Please fill in the new password and confirmation fields.')->withInput();
             }
         }
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
+            Log::warning('Profile: Validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         DB::beginTransaction();
-        try{
+        try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $user = User::findOrFail(Auth::id());
             $user->first_name   = $request->input('first_name');
             $user->middle_name  = $request->input('middle_name');
             $user->last_name    = $request->input('last_name');
             $user->email        = $request->input('email');
-            $user->password     = Hash::make($request->input('new_password'));
+
+            if ($request->filled('new_password')) {
+                $user->password = Hash::make($request->input('new_password'));
+            }
+
             $user->save();
-            if($user->privileges->user_type === 'student') {
+            if ($user->privileges->user_type === 'student') {
                 $user->students->id_number = $request->input('user_id');
                 $user->students->save();
-            } elseif($user->privileges->user_type === 'employee') {
+            } elseif ($user->privileges->user_type === 'employee') {
                 $user->employees->employee_id = $request->input('user_id');
                 $user->employees->save();
             }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
+            Log::error('Profile: Update failed - Database error', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Failed to update information. Please try again.')->withInput();
         }
         DB::commit();
+
+        Log::info('Profile: Information updated successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'timestamp' => now(),
+        ]);
+
         // Send email notification
-        $this->changePasswordMail($user);
+        if ($request->filled('new_password')) {
+            $this->changePasswordMail($user);
+        }
         return redirect()->back()->with('toast-success', 'Information updated successfully!');
     }
-    private function changePasswordMail($user) {
-        Mail::to($user->email)->send(new ChangePasswordMail($user));
+    /**
+     * Sends an email notification to the user when their password is updated.
+     *
+     * @param  \App\Models\User  $user
+     */
+    private function changePasswordMail($user)
+    {
+        Log::info('Profile: Sending password change email', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'timestamp' => now(),
+        ]);
+        try {
+            Mail::to($user->email)->send(new ChangePasswordMail($user));
+        } catch (\Exception $e) {
+            Log::error('Profile: Failed to send password change email', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
+        }
+        Log::info('Profile: Password change email sent', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'timestamp' => now(),
+        ]);
     }
-    // public function edit(Request $request): View
-    // {
-    //     return view('profile.edit', [
-    //         'user' => $request->user(),
-    //     ]);
-    // }
-
-    // /**
-    //  * Update the user's profile information.
-    //  */
-    // public function update(ProfileUpdateRequest $request): RedirectResponse
-    // {
-    //     $request->user()->fill($request->validated());
-
-    //     if ($request->user()->isDirty('email')) {
-    //         $request->user()->email_verified_at = null;
-    //     }
-
-    //     $request->user()->save();
-
-    //     return Redirect::route('profile.edit')->with('status', 'profile-updated');
-    // }
-
-    // /**
-    //  * Delete the user's account.
-    //  */
-    // public function destroy(Request $request): RedirectResponse
-    // {
-    //     $request->validateWithBag('userDeletion', [
-    //         'password' => ['required', 'current_password'],
-    //     ]);
-
-    //     $user = $request->user();
-
-    //     Auth::logout();
-
-    //     $user->delete();
-
-    //     $request->session()->invalidate();
-    //     $request->session()->regenerateToken();
-
-    //     return Redirect::to('/');
-    // }
 }

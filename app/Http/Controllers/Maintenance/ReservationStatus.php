@@ -13,6 +13,12 @@ class ReservationStatus extends Controller
 {
     public function index()
     {
+        Log::info('Reservation Status: Page accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'ip_address' => request()->ip(),
+            'timestamp' => now(),
+        ]);
         return view('maintenance.status.index');
     }
     /**
@@ -20,6 +26,11 @@ class ReservationStatus extends Controller
      */
     public function getReservationStatus()
     {
+        Log::debug('Reservation Status: Fetching current status', [
+            'user_id' => Auth::guard('admin')->id(),
+            'timestamp' => now(),
+        ]);
+
         $status = SystemSetting::where('key', 'reservation_system_active')
             ->value('value');
 
@@ -38,11 +49,17 @@ class ReservationStatus extends Controller
      */
     public function toggleReservationSystem(Request $request)
     {
-        $user = Auth::user();
+        $user = Auth::guard('admin')->user();
 
         // 1. Authorization Check (Privilege ID 1 = Admin, 2 = Superadmin)
         if (!$user || ($user->privilege_id !== 1 && $user->privilege_id !== 2)) {
-            Log::warning('Unauthorized reservation toggle attempt', ['user_id' => $user->id]);
+            Log::warning('Reservation Status: Unauthorized toggle attempt', [
+                'user_id' => $user ? $user->id : 'guest',
+                'user_name' => $user ? ($user->full_name ?? $user->first_name) : 'guest',
+                'privilege_id' => $user ? $user->privilege_id : null,
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return response()->json(['message' => 'Unauthorized - Admin access required'], 403);
         }
 
@@ -57,10 +74,12 @@ class ReservationStatus extends Controller
         );
 
         // 4. Log the Action
-        Log::info('Reservation system toggled', [
-            'enabled' => $enabled,
-            'admin_id' => $user->id,
-            'admin_name' => $user->name ?? 'Unknown'
+        Log::info('Reservation Status: System toggled', [
+            'user_id' => $user->id,
+            'user_name' => $user->full_name ?? $user->first_name,
+            'action' => $enabled ? 'ACTIVATED' : 'DEACTIVATED',
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
         ]);
 
         return response()->json([
@@ -76,6 +95,11 @@ class ReservationStatus extends Controller
      */
     public function getReservationStats()
     {
+        Log::debug('Reservation Status: Fetching statistics', [
+            'user_id' => Auth::guard('admin')->id(),
+            'timestamp' => now(),
+        ]);
+
         // NOTE: Adjust table/column names based on your actual Books/Reservations schema
         // This is a placeholder logic based on the guide.
         try {
@@ -90,6 +114,10 @@ class ReservationStatus extends Controller
                 'last_updated' => now()->toDateTimeString()
             ]);
         } catch (\Exception $e) {
+            Log::error('Reservation Status: Error fetching statistics', [
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             // Fallback if table doesn't exist yet
             return response()->json([
                 'pending' => 0,

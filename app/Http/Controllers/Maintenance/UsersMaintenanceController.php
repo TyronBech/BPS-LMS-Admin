@@ -32,6 +32,17 @@ class UsersMaintenanceController extends Controller
         $perVisitorPage     = $request->input('perVisitorPage', 10);
         $search             = $request->input('search-users', '');
 
+        Log::info('Users Maintenance: List page accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name,
+            'search_term' => $search,
+            'per_student_page' => $perStudentPage,
+            'per_employee_page' => $perEmployeePage,
+            'per_visitor_page' => $perVisitorPage,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $students = User::whereHas('students')
             ->with('students')
             ->orderBy('created_at', 'desc')
@@ -72,14 +83,22 @@ class UsersMaintenanceController extends Controller
     public function view_student(Request $request)
     {
         $mimeType = null;
-        Log::info($request->all());
         $studentID = $request->input('id_number');
+
+        Log::info('Users Maintenance: Viewing student profile', [
+            'user_id' => Auth::guard('admin')->id(),
+            'student_id_number' => $studentID,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $student = User::whereHas('students', function ($query) use ($studentID) {
             $query->where('id_number', $studentID);
         })
             ->with('students')
             ->first();
         if(!$student) {
+            Log::warning('Users Maintenance: Student not found', ['student_id_number' => $studentID]);
             return redirect()->back()->with('toast-error', 'Student not found.');
         }
         $base64Image = $student->profile_image;
@@ -105,12 +124,21 @@ class UsersMaintenanceController extends Controller
     {
         $mimeType = null;
         $employeeID = $request->input('employee_id');
+
+        Log::info('Users Maintenance: Viewing employee profile', [
+            'user_id' => Auth::guard('admin')->id(),
+            'employee_id' => $employeeID,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $employee = User::whereHas('employees', function ($query) use ($employeeID) {
             $query->where('employee_id', $employeeID);
         })
             ->with('employees')
             ->first();
         if(!$employee) {
+            Log::warning('Users Maintenance: Employee not found', ['employee_id' => $employeeID]);
             return redirect()->back()->with('toast-error', 'Employee not found.');
         }
         $base64Image = $employee->profile_image;
@@ -131,6 +159,10 @@ class UsersMaintenanceController extends Controller
      */
     public function create_student()
     {
+        Log::info('Users Maintenance: Create student form accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'timestamp' => now(),
+        ]);
         return view('maintenance.users.create-student');
     }
     /**
@@ -144,6 +176,10 @@ class UsersMaintenanceController extends Controller
      */
     public function create_employee()
     {
+        Log::info('Users Maintenance: Create employee form accessed', [
+            'user_id' => Auth::guard('admin')->id(),
+            'timestamp' => now(),
+        ]);
         $groups = UserGroup::where(DB::raw('lower(category)'), '!=', 'visitor')
             ->where(DB::raw('lower(category)'), '!=', 'student')
             ->pluck('category');
@@ -165,6 +201,13 @@ class UsersMaintenanceController extends Controller
         $perEmployeePage    = $request->input('perEmployeePage', 10);
         $perVisitorPage     = $request->input('perVisitorPage', 10);
         $search             = strtolower($request->input('search-users', ''));
+
+        Log::info('Users Maintenance: Searching users', [
+            'user_id' => Auth::guard('admin')->id(),
+            'search_term' => $search,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
 
         // Common search filter closure
         $searchFilter = function ($query) use ($search) {
@@ -234,6 +277,16 @@ class UsersMaintenanceController extends Controller
     {
         ini_set('memory_limit', '4096M');
         $users = new User();
+
+        Log::info('Users Maintenance: Attempting to create student', [
+            'user_id' => Auth::guard('admin')->id(),
+            'rfid' => $request->input('rfid'),
+            'email' => $request->input('email'),
+            'id_number' => $request->input('id_number'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'rfid'          => 'required|string|min:10|regex:/^[0-9]+$/u',
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
@@ -250,6 +303,12 @@ class UsersMaintenanceController extends Controller
             'email.unique' => 'The email has already been registered.',
         ]);
         if ($validator->fails()) {
+            Log::warning('Users Maintenance: Student creation validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         if ($request->hasFile('profile-image')) {
@@ -279,12 +338,22 @@ class UsersMaintenanceController extends Controller
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
+            Log::error('Users Maintenance: Database error during student creation', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'User with RFID or email ' . $request->input('rfid') . ' already exists. Error code: ' . $e->getMessage())->withInput();
         }
         DB::commit();
         try {
             DB::statement('CALL DistributeStagingUsers()');
         } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Users Maintenance: Error calling DistributeStagingUsers', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage())->withInput();
         }
         $this->account_notification(User::where('email', $request->input('email'))->first(), $password);
@@ -303,6 +372,16 @@ class UsersMaintenanceController extends Controller
     {
         ini_set('memory_limit', '4096M');
         $users = new User();
+
+        Log::info('Users Maintenance: Attempting to create employee', [
+            'user_id' => Auth::guard('admin')->id(),
+            'rfid' => $request->input('rfid'),
+            'email' => $request->input('email'),
+            'employee_id' => $request->input('employee_id'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'rfid'          => 'required|string|min:10|regex:/^[0-9]+$/u',
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
@@ -319,6 +398,12 @@ class UsersMaintenanceController extends Controller
             'email.unique' => 'The email has already been registered.',
         ]);
         if ($validator->fails()) {
+            Log::warning('Users Maintenance: Employee creation validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         if ($request->hasFile('profile-image')) {
@@ -347,12 +432,22 @@ class UsersMaintenanceController extends Controller
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
+            Log::error('Users Maintenance: Database error during employee creation', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'User with RFID or email ' . $request->input('rfid') . ' already exists. Error code: ' . $e->getMessage())->withInput();
         }
         DB::commit();
         try {
             DB::statement('CALL DistributeStagingUsers()');
         } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Users Maintenance: Error calling DistributeStagingUsers', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage())->withInput();
         }
         $this->account_notification(User::where('email', $request->input('email'))->first(), $password);
@@ -370,8 +465,18 @@ class UsersMaintenanceController extends Controller
         $user = null;
         try {
             $id = $request->input('id');
+            Log::info('Users Maintenance: Edit student form accessed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'target_user_id' => $id,
+                'timestamp' => now(),
+            ]);
             $user = User::with('students')->where('id', $id)->first();
         } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Users Maintenance: Error accessing edit student form', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         return view('maintenance.users.edit-student', compact('user'));
@@ -388,11 +493,21 @@ class UsersMaintenanceController extends Controller
         $user = null;
         try {
             $id = $request->input('id');
+            Log::info('Users Maintenance: Edit employee form accessed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'target_user_id' => $id,
+                'timestamp' => now(),
+            ]);
             $user = User::with('employees', 'privileges')->where('id', $id)->first();
             $privileges = UserGroup::where(DB::raw('lower(user_type)'), '!=', 'visitor')
                 ->where(DB::raw('lower(user_type)'), '!=', 'student')
                 ->pluck('category');
         } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Users Maintenance: Error accessing edit employee form', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         return view('maintenance.users.edit-employee', compact('user', 'privileges'));
@@ -409,8 +524,18 @@ class UsersMaintenanceController extends Controller
         $user = null;
         try {
             $id = $request->input('id');
+            Log::info('Users Maintenance: Edit visitor form accessed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'target_user_id' => $id,
+                'timestamp' => now(),
+            ]);
             $user = User::with('visitors')->where('id', $id)->first();
         } catch (\Illuminate\Database\QueryException $e) {
+            Log::error('Users Maintenance: Error accessing edit visitor form', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         return view('maintenance.users.edit-visitor', compact('user'));
@@ -432,6 +557,15 @@ class UsersMaintenanceController extends Controller
     {
         ini_set('memory_limit', '4096M');
         $users = new User();
+
+        Log::info('Users Maintenance: Attempting to update student', [
+            'user_id' => Auth::guard('admin')->id(),
+            'target_user_id' => $request->input('id'),
+            'rfid' => $request->input('rfid'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'rfid'          => 'required|string|min:10|regex:/^[0-9]+$/u',
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
@@ -446,6 +580,12 @@ class UsersMaintenanceController extends Controller
             'email'         => 'required|string|email',
         ]);
         if ($validator->fails()) {
+            Log::warning('Users Maintenance: Student update validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         if ($request->hasFile('profile-image')) {
@@ -477,9 +617,20 @@ class UsersMaintenanceController extends Controller
             }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
+            Log::error('Users Maintenance: Database error during student update', [
+                'user_id' => Auth::guard('admin')->id(),
+                'target_user_id' => $request->input('id'),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
         }
         DB::commit();
+        Log::info('Users Maintenance: Student updated successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'target_user_id' => $request->input('id'),
+            'timestamp' => now(),
+        ]);
         return redirect()->back()->with('toast-success', 'User updated successfully');
     }
     /**
@@ -495,6 +646,15 @@ class UsersMaintenanceController extends Controller
     {
         ini_set('memory_limit', '4096M');
         $users = new User();
+
+        Log::info('Users Maintenance: Attempting to update employee', [
+            'user_id' => Auth::guard('admin')->id(),
+            'target_user_id' => $request->input('id'),
+            'rfid' => $request->input('rfid'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'rfid'          => 'required|string|min:10|regex:/^[0-9]+$/u',
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
@@ -508,6 +668,12 @@ class UsersMaintenanceController extends Controller
             'email'         => 'required|string|email',
         ]);
         if ($validator->fails()) {
+            Log::warning('Users Maintenance: Employee update validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         if ($request->hasFile('profile-image')) {
@@ -542,9 +708,20 @@ class UsersMaintenanceController extends Controller
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
+            Log::error('Users Maintenance: Database error during employee update', [
+                'user_id' => Auth::guard('admin')->id(),
+                'target_user_id' => $request->input('id'),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
         }
         DB::commit();
+        Log::info('Users Maintenance: Employee updated successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'target_user_id' => $request->input('id'),
+            'timestamp' => now(),
+        ]);
         return redirect()->route('maintenance.users')->with('toast-success', 'User updated successfully');
     }
     /**
@@ -560,6 +737,14 @@ class UsersMaintenanceController extends Controller
     {
         ini_set('memory_limit', '4096M');
         $users = new User();
+
+        Log::info('Users Maintenance: Attempting to update visitor', [
+            'user_id' => Auth::guard('admin')->id(),
+            'target_user_id' => $request->input('id'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         $validator = Validator::make($request->all(), [
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
@@ -571,6 +756,12 @@ class UsersMaintenanceController extends Controller
             'school_org'   => 'required|string|max:100',
         ]);
         if ($validator->fails()) {
+            Log::warning('Users Maintenance: Visitor update validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         if ($request->hasFile('profile-image')) {
@@ -597,9 +788,20 @@ class UsersMaintenanceController extends Controller
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
+            Log::error('Users Maintenance: Database error during visitor update', [
+                'user_id' => Auth::guard('admin')->id(),
+                'target_user_id' => $request->input('id'),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
         }
         DB::commit();
+        Log::info('Users Maintenance: Visitor updated successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'target_user_id' => $request->input('id'),
+            'timestamp' => now(),
+        ]);
         return redirect()->route('maintenance.users')->with('toast-success', 'User updated successfully');
     }
     /**
@@ -615,6 +817,13 @@ class UsersMaintenanceController extends Controller
      */
     public function destroy(Request $request)
     {
+        Log::warning('Users Maintenance: Attempting to delete user', [
+            'user_id' => Auth::guard('admin')->id(),
+            'target_user_id' => $request->input('id'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
@@ -622,6 +831,11 @@ class UsersMaintenanceController extends Controller
             $user = User::findOrFail($id); // Throws ModelNotFoundException if not found
 
             if ($user->hasRole(RolesEnum::SUPER_ADMIN)) {
+                Log::warning('Users Maintenance: Delete failed - Cannot delete super admin', [
+                    'user_id' => Auth::guard('admin')->id(),
+                    'target_user_id' => $id,
+                    'timestamp' => now(),
+                ]);
                 DB::rollBack(); // Rollback transaction before redirecting
                 return redirect()->back()->with('delete-error', 'Cannot delete a super admin user');
             } else if ($user->getRoleNames()) {
@@ -631,15 +845,37 @@ class UsersMaintenanceController extends Controller
             $user->delete();
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             DB::rollBack();
+            Log::error('Users Maintenance: Delete failed - User not found', [
+                'user_id' => Auth::guard('admin')->id(),
+                'target_user_id' => $request->input('id'),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('delete-error', 'User not found.');
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
+            Log::error('Users Maintenance: Database error during deletion', [
+                'user_id' => Auth::guard('admin')->id(),
+                'target_user_id' => $request->input('id'),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('delete-error', 'A database error occurred while deleting the user.');
         } catch (\Exception $e) {
             DB::rollBack();
+            Log::error('Users Maintenance: Unexpected error during deletion', [
+                'user_id' => Auth::guard('admin')->id(),
+                'target_user_id' => $request->input('id'),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('delete-error', 'An unexpected error occurred while deleting the user.');
         }
         DB::commit();
+        Log::info('Users Maintenance: User deleted successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'target_user_id' => $request->input('id'),
+            'timestamp' => now(),
+        ]);
         return redirect()->route('maintenance.users')->with('toast-success', 'User deleted successfully');
     }
     /**
@@ -659,15 +895,34 @@ class UsersMaintenanceController extends Controller
         if (empty($ids)) {
             return redirect()->back()->with('toast-warning', 'No students selected for deletion!');
         }
+
+        Log::warning('Users Maintenance: Attempting bulk delete students', [
+            'user_id' => Auth::guard('admin')->id(),
+            'ids_count' => count($ids),
+            'ids' => $ids,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             User::whereIn('id', $ids)->delete();
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
+            Log::error('Users Maintenance: Bulk delete students failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         DB::commit();
+        Log::info('Users Maintenance: Bulk delete students successful', [
+            'user_id' => Auth::guard('admin')->id(),
+            'ids_count' => count($ids),
+            'timestamp' => now(),
+        ]);
         return redirect()->route('maintenance.users')->with('toast-success', 'Users deleted successfully');
     }
     /**
@@ -693,11 +948,24 @@ class UsersMaintenanceController extends Controller
         if (empty($ids)) {
             return redirect()->back()->with('toast-warning', 'No employees selected for deletion!');
         }
+
+        Log::warning('Users Maintenance: Attempting bulk delete employees', [
+            'user_id' => Auth::guard('admin')->id(),
+            'ids_count' => count($ids),
+            'ids' => $ids,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
         $user = User::whereIn('id', $ids)->get();
         if ($user->contains(function ($u) {
             return $u->hasRole(RolesEnum::SUPER_ADMIN);
         })) {
+            Log::warning('Users Maintenance: Bulk delete employees failed - Contains super admin', [
+                'user_id' => Auth::guard('admin')->id(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-warning', 'Cannot delete a super admin user');
         }
         DB::beginTransaction();
@@ -712,9 +980,19 @@ class UsersMaintenanceController extends Controller
             User::whereIn('id', $ids)->delete();
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
+            Log::error('Users Maintenance: Bulk delete employees failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         DB::commit();
+        Log::info('Users Maintenance: Bulk delete employees successful', [
+            'user_id' => Auth::guard('admin')->id(),
+            'ids_count' => count($ids),
+            'timestamp' => now(),
+        ]);
         return redirect()->route('maintenance.users')->with('toast-success', 'Users deleted successfully');
     }
     /**
@@ -739,15 +1017,34 @@ class UsersMaintenanceController extends Controller
         if (empty($ids)) {
             return redirect()->back()->with('toast-warning', 'No visitors selected for deletion!');
         }
+
+        Log::warning('Users Maintenance: Attempting bulk delete visitors', [
+            'user_id' => Auth::guard('admin')->id(),
+            'ids_count' => count($ids),
+            'ids' => $ids,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             User::whereIn('id', $ids)->delete();
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
+            Log::error('Users Maintenance: Bulk delete visitors failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', 'Something went wrong!');
         }
         DB::commit();
+        Log::info('Users Maintenance: Bulk delete visitors successful', [
+            'user_id' => Auth::guard('admin')->id(),
+            'ids_count' => count($ids),
+            'timestamp' => now(),
+        ]);
         return redirect()->route('maintenance.users')->with('toast-success', 'Users deleted successfully');
     }
     /**
@@ -758,7 +1055,23 @@ class UsersMaintenanceController extends Controller
      */
     private function account_notification($user, $password)
     {
-        Mail::to($user->email)->send(new AccountEmailMessage($user, $password));
+        Log::info('Users Maintenance: Sending account notification email', [
+            'recipient_email' => $user->email,
+            'timestamp' => now(),
+        ]);
+        try{
+            Mail::to($user->email)->send(new AccountEmailMessage($user, $password));
+            Log::info('Users Maintenance: Account notification email sent', [
+                'recipient_email' => $user->email,
+                'timestamp' => now(),
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Users Maintenance: Failed to send account notification email', [
+                'recipient_email' => $user->email,
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
+        }
     }
     /**
      * Extracts the enum values from a given table and column name.
