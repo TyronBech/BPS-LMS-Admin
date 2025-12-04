@@ -1,14 +1,39 @@
 @extends('layouts.app-form')
 @section('content')
-<div class="max-w-lg mx-auto my-8 sm:my-12 md:my-16 lg:my-20 h-auto bg-white shadow-md rounded-lg p-6 sm:p-8 md:p-10 dark:bg-gray-800">
+<div class="relative max-w-lg mx-auto my-8 sm:my-12 md:my-16 lg:my-20 h-auto bg-white shadow-md rounded-lg p-6 sm:p-8 md:p-10 dark:bg-gray-800">
+  
+  {{-- Lockout Overlay --}}
+  @if (session('lockout_time'))
+  <div id="lockout-overlay" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-gray-50/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-gray-700 transition-all duration-300">
+      <div class="text-center p-8 animate-pulse">
+          <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-red-100 dark:bg-red-900/30 mb-6 shadow-sm">
+              <svg class="h-10 w-10 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+              </svg>
+          </div>
+          <h3 class="text-xl font-bold text-gray-900 dark:text-white mb-2">Temporarily Locked</h3>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-6 max-w-xs mx-auto">
+              Too many failed login attempts. For security, please wait before trying again.
+          </p>
+          <div class="flex flex-col items-center justify-center">
+              <div class="text-5xl font-black text-gray-800 dark:text-white font-mono tracking-wider mb-1" id="countdown">
+                  {{ session('lockout_time') }}
+              </div>
+              <span class="text-xs font-medium text-gray-400 uppercase tracking-widest">Seconds Remaining</span>
+          </div>
+      </div>
+  </div>
+  @endif
+
   <form action="{{ route('login.store') }}" method="POST">
     @csrf
     <h1 class="text-xl sm:text-2xl md:text-2xl font-semibold text-gray-900 dark:text-white text-center">Log in to your account</h1>
+    
     <div class="my-4 sm:my-5">
       <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
       <input type="email" id="email" name="email" value="{{ old('email') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="admin@gmail.com" autofocus required />
       @error('email')
-      <div class="p-3 sm:p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
+      <div id="email-error" class="p-3 sm:p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
       </div>
       @enderror
@@ -69,5 +94,46 @@
     openEye.classList.toggle('hidden', !isPassword);
     closedEye.classList.toggle('hidden', isPassword);
   });
+
+  const lockoutTime = <?php echo session('lockout_time', 0); ?>;
+  if (lockoutTime > 0) {
+    document.addEventListener('DOMContentLoaded', function() {
+      let timeLeft = Number(lockoutTime);
+      const countdownEl = document.getElementById('countdown');
+      const overlayEl = document.getElementById('lockout-overlay');
+      const emailErrorEl = document.getElementById('email-error'); // Select the error message
+      const submitBtn = document.querySelector('button[type="submit"]');
+      const inputs = document.querySelectorAll('input');
+
+      // Disable form elements
+      submitBtn.disabled = true;
+      inputs.forEach(input => input.disabled = true);
+
+      const timer = setInterval(function() {
+        timeLeft--;
+        if (countdownEl) countdownEl.textContent = timeLeft;
+
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          // Re-enable form elements
+          submitBtn.disabled = false;
+          inputs.forEach(input => input.disabled = false);
+          
+          // Hide email error message
+          if (emailErrorEl) {
+              emailErrorEl.style.display = 'none';
+          }
+
+          // Fade out overlay
+          if (overlayEl) {
+              overlayEl.style.opacity = '0';
+              setTimeout(() => {
+                  overlayEl.style.display = 'none';
+              }, 300); // Match the duration of the CSS transition
+          }
+        }
+      }, 1000);
+    });
+  }
 </script>
 @endsection

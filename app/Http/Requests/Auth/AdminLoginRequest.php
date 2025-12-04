@@ -5,6 +5,7 @@ namespace App\Http\Requests\Auth;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Facades\Cache; // Add this import
 use Illuminate\Validation\ValidationException;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Support\Str;
@@ -70,7 +71,25 @@ class AdminLoginRequest extends FormRequest
        $this->ensureIsNotRateLimited();
 
        if (! Auth::guard('admin')->attempt($this->only('email', 'password'), $this->boolean('remember'))) {
-           RateLimiter::hit($this->throttleKey());
+           
+           // Calculate dynamic decay based on previous lockouts
+           $penaltyKey = $this->throttleKey() . '.penalty';
+           $lockoutLevel = Cache::get($penaltyKey, 0);
+           
+           // Decay duration tiers: 1 min, 5 mins, 15 mins, 1 hour
+           $decaySeconds = match($lockoutLevel) {
+               0 => 60,
+               1 => 300,
+               2 => 900,
+               default => 3600,
+           };
+
+           RateLimiter::hit($this->throttleKey(), $decaySeconds);
+
+           // If this failure caused a lockout, increment the penalty level for next time
+           if (RateLimiter::tooManyAttempts($this->throttleKey(), 3)) {
+               Cache::put($penaltyKey, $lockoutLevel + 1, now()->addDay());
+           }
 
            throw ValidationException::withMessages([
                'email' => trans('auth.failed'),
@@ -87,13 +106,15 @@ class AdminLoginRequest extends FormRequest
     */
    public function ensureIsNotRateLimited(): void
    {
-       if (! RateLimiter::tooManyAttempts($this->throttleKey(), 5)) {
+       if (! RateLimiter::tooManyAttempts($this->throttleKey(), 3)) {
            return;
        }
 
        event(new Lockout($this));
 
        $seconds = RateLimiter::availableIn($this->throttleKey());
+
+       session()->flash('lockout_time', $seconds);
 
        throw ValidationException::withMessages([
            'email' => trans('auth.throttle', [
