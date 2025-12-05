@@ -49,6 +49,7 @@ class ProfileController extends Controller
             'middle_name'   => ['nullable', 'string', 'max:50'],
             'email'         => ['required', 'string', 'max:50', 'email'],
             'user_id'       => ['required', 'string', 'max:50'],
+            'profile_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:5120'],
         ];
         if ($request->filled('current_password')) {
             if ($request->filled('new_password') && $request->filled('new_password_confirmation')) {
@@ -80,6 +81,11 @@ class ProfileController extends Controller
             $user->middle_name  = $request->input('middle_name');
             $user->last_name    = $request->input('last_name');
             $user->email        = $request->input('email');
+
+            if ($request->hasFile('profile_image')) {
+                $base64Image = base64_encode(file_get_contents($request->file('profile_image')->getRealPath()));
+                $user->profile_image = $base64Image;
+            }
 
             if ($request->filled('new_password')) {
                 $user->password = Hash::make($request->input('new_password'));

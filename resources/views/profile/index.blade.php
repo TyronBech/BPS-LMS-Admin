@@ -3,55 +3,70 @@
 <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <h1 class="font-semibold text-center text-3xl md:text-4xl mb-8">Profile</h1>
   <div class="max-w-5xl mx-auto p-4 sm:p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
+      @csrf
+      @method('PATCH')
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-      {{-- Left Column: Profile Image and Basic Info --}}
-      <div class="lg:col-span-1 flex flex-col items-center text-center lg:border-r lg:border-gray-200 dark:lg:border-gray-700 lg:pr-8">
-        @if($user->profile_image === null)
-        <img class="hidden rounded-full w-40 h-40 md:w-48 md:h-48 object-cover mb-4 shadow-md dark:block" src="{{ asset('img/User-dark.png') }}" alt="Profile Image">
-        <img class="rounded-full w-40 h-40 md:w-48 md:h-48 object-cover mb-4 shadow-md dark:hidden" src="{{ asset('img/User-light.png') }}" alt="Profile Image">
-        @else
-        <img class="rounded-full w-40 h-40 md:w-48 md:h-48 object-cover mb-4 shadow-md" src="data:image/jpeg;base64, {{ $user->profile_image }}" alt="Profile Image">
-        @endif
+        {{-- Left Column: Profile Image and Basic Info --}}
+        <div class="lg:col-span-1 flex flex-col items-center text-center lg:border-r lg:border-gray-200 dark:lg:border-gray-700 lg:pr-8">
+          
+          <div class="relative mb-6">
+            @if($user->profile_image === null)
+            <img id="preview-image-dark" class="hidden rounded-full w-40 h-40 md:w-48 md:h-48 object-cover shadow-md dark:block" src="{{ asset('img/User-dark.png') }}" alt="Profile Image">
+            <img id="preview-image-light" class="rounded-full w-40 h-40 md:w-48 md:h-48 object-cover shadow-md dark:hidden" src="{{ asset('img/User-light.png') }}" alt="Profile Image">
+            @else
+            <img id="preview-image-custom" class="rounded-full w-40 h-40 md:w-48 md:h-48 object-cover shadow-md" src="data:image/jpeg;base64, {{ $user->profile_image }}" alt="Profile Image">
+            @endif
 
-        <h5 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{{ $user->first_name }} {{ $user->middle_name ?? '' }} {{ $user->last_name }}</h5>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
-          @if($user->privileges->user_type === 'student')
-          Student
-          @elseif($user->privileges->user_type === 'employee')
-          {{ $user->employees->employee_role }}
-          @else
-          Visitor
-          @endif
-        </p>
-
-        <div class="w-full max-w-xs space-y-3">
-          @if($user->privileges->user_type === 'student')
-          <div class="text-center">
-            <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">{{ $user->students->id_number }}</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400">ID Number</p>
+            <label for="profile_image" class="absolute bottom-2 right-2 bg-blue-600 hover:bg-blue-700 text-white p-2.5 rounded-full cursor-pointer shadow-lg border-4 border-white dark:border-gray-800 transition-transform hover:scale-110" title="Upload new photo">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+              </svg>
+              <input class="hidden" id="profile_image" name="profile_image" type="file" accept="image/jpeg, image/png, image/jpg, image/gif" onchange="previewFile()">
+            </label>
           </div>
-          @elseif($user->privileges->user_type === 'employee')
-          <div class="text-center">
-            <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">{{ $user->employees->employee_id }}</p>
-            <p class="text-xs text-gray-500 dark:text-gray-400">Employee ID</p>
+
+          @error('profile_image')
+          <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+          @enderror
+
+          <h5 class="text-xl md:text-2xl font-bold text-gray-900 dark:text-white">{{ $user->first_name }} {{ $user->middle_name ?? '' }} {{ $user->last_name }}</h5>
+          <p class="text-sm text-gray-500 dark:text-gray-400 mb-4">
+            @if($user->privileges->user_type === 'student')
+            Student
+            @elseif($user->privileges->user_type === 'employee')
+            {{ $user->employees->employee_role }}
+            @else
+            Visitor
+            @endif
+          </p>
+
+          <div class="w-full max-w-xs space-y-3">
+            @if($user->privileges->user_type === 'student')
+            <div class="text-center">
+              <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">{{ $user->students->id_number }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">ID Number</p>
+            </div>
+            @elseif($user->privileges->user_type === 'employee')
+            <div class="text-center">
+              <p class="text-lg font-semibold text-gray-800 dark:text-gray-200">{{ $user->employees->employee_id }}</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Employee ID</p>
+            </div>
+            @endif
           </div>
-          @endif
         </div>
-      </div>
 
-      {{-- Right Column: Form --}}
-      <div class="lg:col-span-2">
-        <h6 class="mb-6 text-lg font-bold tracking-tight text-gray-900 dark:text-white">Personal Information</h6>
-        <form action="{{ route('profile.update') }}" method="POST">
-          @csrf
-          @method('PATCH')
-          @if($user->privileges->user_type === 'student')
-          <input type="hidden" name="user_id" value="{{ $user->students->student_id }}">
-          @elseif($user->privileges->user_type === 'employee')
-          <input type="hidden" name="user_id" value="{{ $user->employees->employee_id }}">
-          @endif
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+        {{-- Right Column: Form --}}
+        <div class="lg:col-span-2">
+          <h6 class="mb-6 text-lg font-bold tracking-tight text-gray-900 dark:text-white">Personal Information</h6>
+          
+            @if($user->privileges->user_type === 'student')
+            <input type="hidden" name="user_id" value="{{ $user->students->student_id }}">
+            @elseif($user->privileges->user_type === 'employee')
+            <input type="hidden" name="user_id" value="{{ $user->employees->employee_id }}">
+            @endif
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {{-- First Name --}}
             <div class="relative z-0 w-full group">
               <input type="text" name="first_name" id="first_name" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " value="{{ old('first_name', $user->first_name) }}" required />
@@ -125,12 +140,28 @@
           <div class="flex justify-end mt-8">
             <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Save Changes</button>
           </div>
-        </form>
+        </div>
       </div>
-    </div>
+    </form>
   </div>
 </div>
 <script>
-  // ...existing code...
+  function previewFile() {
+    const previewDark = document.getElementById('preview-image-dark');
+    const previewLight = document.getElementById('preview-image-light');
+    const previewCustom = document.getElementById('preview-image-custom');
+    const file = document.querySelector('input[type=file]').files[0];
+    const reader = new FileReader();
+
+    reader.addEventListener("load", function () {
+      if(previewDark) previewDark.src = reader.result;
+      if(previewLight) previewLight.src = reader.result;
+      if(previewCustom) previewCustom.src = reader.result;
+    }, false);
+
+    if (file) {
+      reader.readAsDataURL(file);
+    }
+  }
 </script>
 @endsection
