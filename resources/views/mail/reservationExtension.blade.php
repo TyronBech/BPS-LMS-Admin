@@ -330,7 +330,7 @@
                   <tr>
                     <td align="left">
                       <!--[if mso]>
-                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ config('app.url') }}" style="height:44px; v-text-anchor:middle; width:220px;" arcsize="10%" strokecolor="#1e293b" fillcolor="#1e293b">
+                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ env('E_LIBRARY_URL') }}" style="height:44px; v-text-anchor:middle; width:220px;" arcsize="10%" strokecolor="#1e293b" fillcolor="#1e293b">
                           <w:anchorlock/>
                           <center style="color:#ffffff; font-family:Segoe UI, Arial, sans-serif; font-size:16px; font-weight:600;">
                             View My Borrowings
@@ -338,7 +338,7 @@
                         </v:roundrect>
                       <![endif]-->
                       <!--[if !mso]><!-- -->
-                      <a href="{{ config('app.url') }}">View My Borrowings</a>
+                      <a href="{{ env('E_LIBRARY_URL') }}">View My Borrowings</a>
                       <!--<![endif]-->
                     </td>
                   </tr>

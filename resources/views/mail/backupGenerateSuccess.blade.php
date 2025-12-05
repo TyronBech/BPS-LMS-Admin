@@ -207,7 +207,7 @@
                   <tr>
                     <td align="left">
                       <!--[if mso]>
-                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ $url ?? config('app.url') }}" style="height:44px; v-text-anchor:middle; width:220px;" arcsize="10%" strokecolor="#1e293b" fillcolor="#1e293b">
+                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ $url ?? env('APP_URL') }}" style="height:44px; v-text-anchor:middle; width:220px;" arcsize="10%" strokecolor="#1e293b" fillcolor="#1e293b">
                           <w:anchorlock/>
                           <center style="color:#ffffff; font-family:Segoe UI, Arial, sans-serif; font-size:16px; font-weight:600;">
                             Open {{ $app }}
@@ -215,7 +215,7 @@
                         </v:roundrect>
                       <![endif]-->
                       <!--[if !mso]><!-- -->
-                      <a href="{{ $url ?? config('app.url') }}">Open {{ $app }}</a>
+                      <a href="{{ $url ?? env('APP_URL') }}">Open {{ $app }}</a>
                       <!--<![endif]-->
                     </td>
                   </tr>

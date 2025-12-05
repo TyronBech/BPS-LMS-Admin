@@ -42,7 +42,7 @@ class RoleEmailMessage extends Mailable
             'email_label'     => 'Account email 📧',
             'role_label'      => 'Assigned role 🏷️',
             'cta_label'       => 'Sign in 🔓',
-            'cta_url'         => config('app.frontend_login_url', route('login')),
+            'cta_url'         => env('APP_URL', route('login')) . '/login',
             'thanks'          => 'Thank you for your continued support of our library services.',
             'footer'          => 'If you believe this change was made in error, please contact support. ℹ️',
         ], $msg);

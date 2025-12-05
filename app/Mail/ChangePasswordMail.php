@@ -40,7 +40,7 @@ class ChangePasswordMail extends Mailable
             'email_label'     => 'Account email',
             'security_note'   => 'If you did not make this change, please reset your password immediately and contact support. 🛡️',
             'cta_label'       => 'Reset your password',
-            'cta_url'         => config('app.frontend_reset_url', 'https://e-library.bps.edu.ph/web/forgot-password'),
+            'cta_url'         => env('APP_URL') . '/admin/profile',
             'thanks'          => 'Thank you for helping us keep your account secure.',
             'footer'          => 'This is an automated message. Please do not reply. ℹ️',
         ], $msg);
