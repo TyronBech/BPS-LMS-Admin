@@ -106,9 +106,8 @@ class UsersMaintenanceController extends Controller
             $imageData = base64_decode($base64Image);
 
             // Detect MIME type
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mimeType = finfo_buffer($finfo, $imageData);
-            finfo_close($finfo);
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $mimeType = $finfo->buffer($imageData);
         }
         return view('maintenance.users.view-student', compact('student', 'mimeType'));
     }
@@ -146,9 +145,8 @@ class UsersMaintenanceController extends Controller
             $imageData = base64_decode($base64Image);
 
             // Detect MIME type
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mimeType = finfo_buffer($finfo, $imageData);
-            finfo_close($finfo);
+            $finfo = new \finfo(FILEINFO_MIME_TYPE);
+            $mimeType = $finfo->buffer($imageData);
         }
         return view('maintenance.users.view-employee', compact('employee', 'mimeType'));
     }

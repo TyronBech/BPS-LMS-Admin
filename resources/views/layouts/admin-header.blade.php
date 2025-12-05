@@ -254,6 +254,7 @@
                       </svg>
                       <span class="ms-2">Reservation Approvals</span>
                     </div>
+                    <span id="reservation-notification-badge" class="hidden me-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full"></span>
                   </a>
                 </li>
                 <li>
@@ -326,9 +327,9 @@
               $imageData = base64_decode($base64Image);
 
               // Detect MIME type
-              $finfo = finfo_open(FILEINFO_MIME_TYPE);
-              $mimeType = finfo_buffer($finfo, $imageData);
-              finfo_close($finfo);
+              $finfo = new \finfo(FILEINFO_MIME_TYPE);
+              $mimeType = $finfo->buffer($imageData);
+
             }
             ?>
             <button id="dropdownNavbarLink" data-dropdown-toggle="userSettings" class="flex items-center text-white rounded hover:bg-blue-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-300 lg:p-0 dark:text-white lg:dark:hover:text-blue-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent">
