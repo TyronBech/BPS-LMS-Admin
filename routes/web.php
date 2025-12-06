@@ -71,15 +71,8 @@ Route::middleware(['guest', RedirectIfAuthenticated::class, PreventBackHistory::
 
     // Guest routes (no auth guard)
     Route::controller(NewPasswordController::class)->group(function () {
-        // Reset password pages
         Route::get('reset-password/{token}', 'create')->name('password.reset');
         Route::post('reset-password', 'store')->name('password.store');
-
-        // 2FA gates for reset
-        Route::get('reset-password/2fa', 'showReset2FA')->name('password.reset.2fa');
-        Route::post('reset-password/2fa/verify', 'verifyReset2FA')->name('password.reset.2fa.verify');
-        Route::post('reset-password/2fa/resend', 'resendReset2FA')->name('password.reset.2fa.resend');
-        Route::post('reset-password/2fa/cancel', 'cancelReset2FA')->name('password.reset.2fa.cancel');
     });
 });
 
