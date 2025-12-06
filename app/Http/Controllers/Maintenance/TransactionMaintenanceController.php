@@ -203,6 +203,11 @@ class TransactionMaintenanceController extends Controller
                 'penalty_total'     => $request->input('penalty_total') ?? 0,
                 'remarks'           => $request->input('remarks') ?? null,
             ]);
+            $book = Book::find($transaction->book_id);
+            $book->update([
+                'condition_status' => $request->input('book_condition') ?? $book->condition_status,
+                'availability_status' => $request->input('status') ?? $book->availability_status,
+            ]);
         } catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();
             Log::error('Transaction Maintenance: Database error during update', [
