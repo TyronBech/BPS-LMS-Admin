@@ -120,7 +120,6 @@ class TransactionMaintenanceController extends Controller
      */
     public function update(Request $request)
     {
-        dd($request->all());
         Log::info('Transaction Maintenance: Attempting to update transaction', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name,
