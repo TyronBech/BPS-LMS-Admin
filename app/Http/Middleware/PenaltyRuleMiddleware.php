@@ -19,11 +19,11 @@ class PenaltyRuleMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         // Check if the user has permission to manage penalty rules
-        if(!Auth::guard('admin')->check()) return redirect()->route('dashboard')->with('toast-error', 'You are not authenticated');
+        if(!Auth::guard('admin')->check()) return redirect()->route('login')->with('toast-error', 'You are not authenticated');
         $authAdmin = User::findOrFail(Auth::guard('admin')->user()->id);
         if(!$authAdmin->hasPermissionTo(PermissionsEnum::ADD_PENALTY_RULES) && 
             !$authAdmin->hasPermissionTo(PermissionsEnum::EDIT_PENALTY_RULES) && 
-            !$authAdmin->hasPermissionTo(PermissionsEnum::DELETE_PENALTY_RULES)) return redirect()->route('dashboard')->with('toast-error', 'You are unable to access this page');
+            !$authAdmin->hasPermissionTo(PermissionsEnum::DELETE_PENALTY_RULES)) return abort(403);
         return $next($request);
     }
 }

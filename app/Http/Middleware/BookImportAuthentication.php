@@ -2,14 +2,14 @@
 
 namespace App\Http\Middleware;
 
+use App\Enum\PermissionsEnum;
+use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
-use App\Enum\PermissionsEnum;
+use Symfony\Component\HttpFoundation\Response;
 
-class TransactionAuthentication
+class BookImportAuthentication
 {
     /**
      * Handle an incoming request.
@@ -18,10 +18,9 @@ class TransactionAuthentication
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // Check if the user has permission to manage penalty rules
         if(!Auth::guard('admin')->check()) return redirect()->route('login')->with('toast-error', 'You are not authenticated');
         $authAdmin = User::findOrFail(Auth::guard('admin')->user()->id);
-        if(!$authAdmin->hasPermissionTo(PermissionsEnum::EDIT_TRANSACTIONS)) return abort(403);
+        if(!$authAdmin->hasPermissionTo(PermissionsEnum::IMPORT_BOOKS)) return abort(403);
         return $next($request);
     }
 }

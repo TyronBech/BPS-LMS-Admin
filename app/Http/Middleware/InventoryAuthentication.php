@@ -18,9 +18,9 @@ class InventoryAuthentication
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(!Auth::guard('admin')->check()) return redirect()->route('dashboard')->with('toast-error', 'You are not authenticated');
+        if(!Auth::guard('admin')->check()) return redirect()->route('login')->with('toast-error', 'You are not authenticated');
         $authAdmin = User::findOrFail(Auth::guard('admin')->user()->id);
-        if(!$authAdmin->hasPermissionTo(PermissionsEnum::BOOK_INVENTORY)) return redirect()->route('dashboard')->with('toast-error', 'You are unable to access this page');
+        if(!$authAdmin->hasPermissionTo(PermissionsEnum::BOOK_INVENTORY)) return abort(403);
         return $next($request);
     }
 }

@@ -18,15 +18,16 @@ class MaintenanceAuthentication
      */
     public function handle(Request $request, Closure $next): Response
     {
-        // if(!Auth::guard('admin')->check()) return redirect()->route('dashboard')->with('toast-error', 'You are not authenticated');
-        // $authAdmin = User::findOrFail(Auth::guard('admin')->user()->id);
-        // if(!$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_USERS_MAINTENANCE) &&
-        //     !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_BOOKS_MAINTENANCE) &&
-        //     !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_BOOK_CATEGORIES_MAINTENANCE) &&
-        //     !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_PRIVILEGES_MAINTENANCE) &&
-        //     !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_PENALTY_RULES_MAINTENANCE) &&
-        //     !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_TRANSACTIONS_MAINTENANCE) &&
-        //     !$authAdmin->hasPermissionTo(PermissionsEnum::MODIFY_ADMIN)) return redirect()->route('dashboard')->with('toast-error', 'You are unable to access this page');
+        if(!Auth::guard('admin')->check()) return redirect()->route('login')->with('toast-error', 'You are not authenticated');
+        $authAdmin = User::findOrFail(Auth::guard('admin')->user()->id);
+        if(!$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_USERS_MAINTENANCE) &&
+            !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_BOOKS_MAINTENANCE) &&
+            !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_BOOK_CATEGORIES_MAINTENANCE) &&
+            !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_PRIVILEGES_MAINTENANCE) &&
+            !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_PENALTY_RULES_MAINTENANCE) &&
+            !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_TRANSACTIONS_MAINTENANCE) &&
+            !$authAdmin->hasPermissionTo(PermissionsEnum::RESERVATION_APPROVALS) &&
+            !$authAdmin->hasPermissionTo(PermissionsEnum::MODIFY_ADMIN)) return abort(403);
         return $next($request);
     }
 }

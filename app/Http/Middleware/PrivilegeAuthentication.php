@@ -18,11 +18,11 @@ class PrivilegeAuthentication
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(!Auth::guard('admin')->check()) return redirect()->route('dashboard')->with('toast-error', 'You are not authenticated');
+        if(!Auth::guard('admin')->check()) return redirect()->route('login')->with('toast-error', 'You are not authenticated');
         $authAdmin = User::findOrFail(Auth::guard('admin')->user()->id);
         if(!$authAdmin->hasPermissionTo(PermissionsEnum::ADD_PRIVILEGES) && 
             !$authAdmin->hasPermissionTo(PermissionsEnum::EDIT_PRIVILEGES) && 
-            !$authAdmin->hasPermissionTo(PermissionsEnum::DELETE_PRIVILEGES)) return redirect()->route('dashboard')->with('toast-error', 'You are unable to access this page');
+            !$authAdmin->hasPermissionTo(PermissionsEnum::DELETE_PRIVILEGES)) return abort(403);
         return $next($request);
     }
 }

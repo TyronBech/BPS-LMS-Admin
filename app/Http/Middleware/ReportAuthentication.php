@@ -18,14 +18,14 @@ class ReportAuthentication
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(!Auth::guard('admin')->check()) return redirect()->route('dashboard')->with('toast-error', 'You are not authenticated');
+        if(!Auth::guard('admin')->check()) return redirect()->route('login')->with('toast-error', 'You are not authenticated');
         $authAdmin = User::findOrFail(Auth::guard('admin')->user()->id);
         if(!$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_USER_REPORTS)
             && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_INVENTORY_REPORTS)
             && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_SUMMARY_REPORTS)
             && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_TRANSACTION_REPORTS)
             && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_BOOK_CIRCULATION_REPORTS)
-            && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_PENALTY_REPORTS)) return redirect()->route('dashboard')->with('toast-error', 'You are unable to access this page');
+            && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_PENALTY_REPORTS)) return abort(403);
         return $next($request);
     }
 }

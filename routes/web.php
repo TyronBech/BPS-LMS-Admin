@@ -41,11 +41,14 @@ use App\Http\Middleware\InventoryAuthentication;
 use App\Http\Middleware\ReportAuthentication;
 use App\Http\Middleware\PrivilegeAuthentication;
 use App\Http\Middleware\BookCategoriesAuthentication;
+use App\Http\Middleware\BookImportAuthentication;
+use App\Http\Middleware\EmployeeImportAuthentication;
 use App\Http\Middleware\ImportAuthentication;
 use App\Http\Middleware\MaintenanceAuthentication;
 use App\Http\Middleware\PenaltyRuleMiddleware;
 use App\Http\Middleware\PreventBackHistory;
 use App\Http\Middleware\ReservationAuthentication;
+use App\Http\Middleware\StudentImportAuthentication;
 
 Route::middleware(['guest', RedirectIfAuthenticated::class, PreventBackHistory::class])->group(function () {
     Route::get('/', function () {
@@ -147,21 +150,21 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
     });
 
     Route::prefix('import')->middleware(ImportAuthentication::class)->group(function () {
-        Route::controller(StudentImportController::class)->group(function () {
+        Route::controller(StudentImportController::class)->middleware(StudentImportAuthentication::class)->group(function () {
             Route::get('students', 'index')                                 ->name('import.import-students');
             Route::match(['get', 'post'], 'upload-students', 'upload')      ->name('import.upload-students');
             Route::post('store-students', 'store')                          ->name('import.store-students');
             Route::get('students/download-template', 'downloadTemplate')    ->name('import.download-students-template');
         });
 
-        Route::controller(FacultyStaffImportController::class)->group(function () {
+        Route::controller(FacultyStaffImportController::class)->middleware(EmployeeImportAuthentication::class)->group(function () {
             Route::get('faculties-staffs', 'index')                             ->name('import.import-faculties-staffs');
             Route::match(['get', 'post'], 'upload-faculties-staffs', 'upload')  ->name('import.upload-faculties-staffs');
             Route::post('store-faculties-staffs', 'store')                      ->name('import.store-faculties-staffs');
             Route::get('employees/download-template', 'downloadTemplate')       ->name('import.download-employee-template');
         });
 
-        Route::controller(BookImportController::class)->group(function () {
+        Route::controller(BookImportController::class)->middleware(BookImportAuthentication::class)->group(function () {
             Route::get('books', 'index')                                ->name('import.import-books');
             Route::match(['get', 'post'], 'upload-books', 'upload')     ->name('import.upload-books');
             Route::post('store-books', 'store')                         ->name('import.store-books');

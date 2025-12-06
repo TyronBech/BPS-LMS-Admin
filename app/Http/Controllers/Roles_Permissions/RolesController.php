@@ -158,6 +158,7 @@ class RolesController extends Controller
             return redirect()->route('maintenance.roles-and-permissions.management')->with('toast-error', 'Something went wrong');
         }
         DB::commit();
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
         Log::info('Roles & Permissions: Role created successfully', [
             'user_id' => Auth::guard('admin')->id(),
             'role_name' => $request->input('role'),
@@ -307,6 +308,7 @@ class RolesController extends Controller
             return redirect()->back()->with('toast-error', 'Something went wrong');
         }
         DB::commit();
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
         Log::info('Roles & Permissions: Role updated successfully', [
             'user_id' => Auth::guard('admin')->id(),
             'role_id' => $request->input('role_id'),
@@ -361,6 +363,7 @@ class RolesController extends Controller
             return redirect()->back()->with('toast-error', 'Something went wrong');
         }
         DB::commit();
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
         Log::info('Roles & Permissions: Role deleted successfully', [
             'user_id' => Auth::guard('admin')->id(),
             'role_id' => $request->input('deleteRole'),
