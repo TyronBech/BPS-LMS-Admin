@@ -166,8 +166,6 @@ class TransactionController extends Controller
         $spreadsheet    = new Spreadsheet();
         $logo           = new Drawing();
         $sheet          = $spreadsheet->getActiveSheet();
-        $cells1          = null;
-        $cells2          = null;
 
         $logo->setName('BPS Logo');
         $logo->setDescription('BPS Logo');
@@ -191,22 +189,12 @@ class TransactionController extends Controller
         $sheet->getColumnDimension('E')->setWidth(20);
         $sheet->getColumnDimension('F')->setWidth(20);
         $sheet->getColumnDimension('G')->setWidth(20);
-        if ($type && $type == 'All') {
-            $cells1 = 'A7:J8';
-            $cells2 = 'A10:J10';
-            $sheet->getColumnDimension('H')->setWidth(20);
-            $sheet->getColumnDimension('I')->setWidth(20);
-            $sheet->getColumnDimension('J')->setWidth(20);
-            $sheet->mergeCells('A7:J7');
-            $sheet->mergeCells('A8:J8');
-            $sheet->setCellValue('D10', 'Reserved');
-            $sheet->setCellValue('E10', 'Pickup Deadline');
-            $sheet->setCellValue('F10', 'Borrowed');
-            $sheet->setCellValue('G10', 'Due');
-            $sheet->setCellValue('H10', 'Returned');
-            $sheet->setCellValue('I10', 'Transaction Type');
-            $sheet->setCellValue('J10', 'Status');
-        } else if ($type && $type == 'Borrowed') {
+        
+        // Default values for cells
+        $cells1 = 'A7:J8';
+        $cells2 = 'A10:J10';
+        
+        if ($type && $type == 'Borrowed') {
             $cells1 = 'A7:H8';
             $cells2 = 'A10:H10';
             $sheet->getColumnDimension('H')->setWidth(20);
@@ -226,7 +214,23 @@ class TransactionController extends Controller
             $sheet->setCellValue('E10', 'Pickup Deadline');
             $sheet->setCellValue('F10', 'Transaction Type');
             $sheet->setCellValue('G10', 'Status');
+        } else {
+            $cells1 = 'A7:J8';
+            $cells2 = 'A10:J10';
+            $sheet->getColumnDimension('H')->setWidth(20);
+            $sheet->getColumnDimension('I')->setWidth(20);
+            $sheet->getColumnDimension('J')->setWidth(20);
+            $sheet->mergeCells('A7:J7');
+            $sheet->mergeCells('A8:J8');
+            $sheet->setCellValue('D10', 'Reserved');
+            $sheet->setCellValue('E10', 'Pickup Deadline');
+            $sheet->setCellValue('F10', 'Borrowed');
+            $sheet->setCellValue('G10', 'Due');
+            $sheet->setCellValue('H10', 'Returned');
+            $sheet->setCellValue('I10', 'Transaction Type');
+            $sheet->setCellValue('J10', 'Status');
         }
+        
         $sheet->getStyle($cells1)->getFont()->setBold(true);
         $sheet->getStyle($cells1)->getFont()->setSize(10);
         $sheet->getStyle($cells1)->getAlignment()->setHorizontal('left');
