@@ -120,6 +120,7 @@ class TransactionMaintenanceController extends Controller
      */
     public function update(Request $request)
     {
+        dd($request->all());
         Log::info('Transaction Maintenance: Attempting to update transaction', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name,
@@ -197,7 +198,7 @@ class TransactionMaintenanceController extends Controller
             $transaction->update([
                 'due_date'          => $dueDate->format('Y-m-d'),
                 'pickup_date'       => $pickupDate ? $pickupDate->format('Y-m-d') : null,
-                'transaction_type'  => $request->input('transcaction_type'),
+                'transaction_type'  => $request->input('transaction_type'),
                 'status'            => $request->input('status'),
                 'book_condition'    => $request->input('book_condition') ?? null,
                 'penalty_total'     => $request->input('penalty_total') ?? 0,
