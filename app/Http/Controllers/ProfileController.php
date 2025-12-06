@@ -11,7 +11,9 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ChangePasswordMail;
+use App\Mail\TwoFactorMail;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class ProfileController extends Controller
 {
@@ -121,6 +123,125 @@ class ProfileController extends Controller
         }
         return redirect()->back()->with('toast-success', 'Information updated successfully!');
     }
+    /**
+     * Enable two-factor authentication for the user.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function enableTwoFactor(Request $request)
+    {
+        Log::info('Profile: 2FA Enable attempt', [
+            'user_id' => Auth::guard('admin')->id(),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
+        $request->validate([
+            'password' => 'required|string',
+        ]);
+
+        if (!Hash::check($request->password, Auth::guard('admin')->user()->password)) {
+            Log::warning('Profile: 2FA Enable failed - Incorrect password', [
+                'user_id' => Auth::guard('admin')->id(),
+                'timestamp' => now(),
+            ]);
+            return back()->with('toast-error', 'Incorrect password.');
+        }
+
+        DB::beginTransaction();
+        try {
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
+            
+            $user = User::findOrFail(Auth::guard('admin')->id());
+            $user->two_factor_enabled = 1;
+            
+            // Generate backup codes (10 codes)
+            $backupCodes = [];
+            for ($i = 0; $i < 10; $i++) {
+                $backupCodes[] = strtoupper(Str::random(8));
+            }
+            $user->two_factor_backup_codes = json_encode($backupCodes);
+            
+            $user->save();
+            
+            DB::commit();
+
+            Log::info('Profile: 2FA enabled successfully', [
+                'user_id' => $user->id,
+                'timestamp' => now(),
+            ]);
+
+            return back()->with([
+                'toast-success' => 'Two-factor authentication has been enabled successfully.',
+                'backup_codes' => $backupCodes
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Profile: 2FA Enable failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
+            return back()->with('toast-error', 'Failed to enable two-factor authentication. Please try again.');
+        }
+    }
+
+    /**
+     * Disable two-factor authentication for the user.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function disableTwoFactor(Request $request)
+    {
+        Log::info('Profile: 2FA Disable attempt', [
+            'user_id' => Auth::guard('admin')->id(),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
+        $request->validate([
+            'password' => 'required|string',
+        ]);
+
+        if (!Hash::check($request->password, Auth::guard('admin')->user()->password)) {
+            Log::warning('Profile: 2FA Disable failed - Incorrect password', [
+                'user_id' => Auth::guard('admin')->id(),
+                'timestamp' => now(),
+            ]);
+            return back()->with('toast-error', 'Incorrect password.');
+        }
+
+        DB::beginTransaction();
+        try {
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
+            
+            $user = User::findOrFail(Auth::guard('admin')->id());
+            $user->two_factor_enabled = 0;
+            $user->two_factor_secret = null;
+            $user->two_factor_backup_codes = null;
+            $user->save();
+            
+            DB::commit();
+
+            Log::info('Profile: 2FA disabled successfully', [
+                'user_id' => $user->id,
+                'timestamp' => now(),
+            ]);
+
+            return back()->with('toast-success', 'Two-factor authentication has been disabled.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Profile: 2FA Disable failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
+            return back()->with('toast-error', 'Failed to disable two-factor authentication. Please try again.');
+        }
+    }
+
     /**
      * Sends an email notification to the user when their password is updated.
      *

@@ -1,8 +1,10 @@
 @extends('layouts.admin-app')
 @section('content')
 <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <h1 class="font-semibold text-center text-3xl md:text-4xl mb-8">Profile</h1>
-  <div class="max-w-5xl mx-auto p-4 sm:p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+  <h1 class="font-semibold text-center text-3xl md:text-4xl mb-8">Account Settings</h1>
+
+  {{-- Profile Information Card --}}
+  <div class="max-w-5xl mx-auto p-4 sm:p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 mb-8">
     <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
       @csrf
       @method('PATCH')
@@ -10,7 +12,7 @@
 
         {{-- Left Column: Profile Image and Basic Info --}}
         <div class="lg:col-span-1 flex flex-col items-center text-center lg:border-r lg:border-gray-200 dark:lg:border-gray-700 lg:pr-8">
-          
+
           <div class="relative mb-6">
             @if($user->profile_image === null)
             <img id="preview-image-dark" class="hidden rounded-full w-40 h-40 md:w-48 md:h-48 object-cover shadow-md dark:block" src="{{ asset('img/User-dark.png') }}" alt="Profile Image">
@@ -60,13 +62,13 @@
         {{-- Right Column: Form --}}
         <div class="lg:col-span-2">
           <h6 class="mb-6 text-lg font-bold tracking-tight text-gray-900 dark:text-white">Personal Information</h6>
-          
-            @if($user->privileges->user_type === 'student')
-            <input type="hidden" name="user_id" value="{{ $user->students->student_id }}">
-            @elseif($user->privileges->user_type === 'employee')
-            <input type="hidden" name="user_id" value="{{ $user->employees->employee_id }}">
-            @endif
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+
+          @if($user->privileges->user_type === 'student')
+          <input type="hidden" name="user_id" value="{{ $user->students->student_id }}">
+          @elseif($user->privileges->user_type === 'employee')
+          <input type="hidden" name="user_id" value="{{ $user->employees->employee_id }}">
+          @endif
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {{-- First Name --}}
             <div class="relative z-0 w-full group">
               <input type="text" name="first_name" id="first_name" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " value="{{ old('first_name', $user->first_name) }}" required />
@@ -144,7 +146,137 @@
       </div>
     </form>
   </div>
+
+  {{-- Two-Factor Authentication Card --}}
+  <div class="max-w-5xl mx-auto p-6 sm:p-8 bg-gradient-to-br from-white to-gray-50 dark:from-gray-800 dark:to-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300">
+    <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+      <div class="flex-1">
+        <div class="flex items-center gap-3 mb-3">
+          <div class="p-3 bg-blue-100 dark:bg-blue-900 rounded-lg">
+            <svg class="w-6 h-6 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <h6 class="text-xl font-bold tracking-tight text-gray-900 dark:text-white">Two-Factor Authentication</h6>
+        </div>
+
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 leading-relaxed">
+          Strengthen your account security by adding an additional verification step. When enabled, you'll need to enter a code from your authentication app along with your password.
+        </p>
+
+        <div class="flex flex-wrap items-center gap-4">
+          @if($user->two_factor_enabled ?? false)
+          <div class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-green-100 to-green-200 text-green-800 dark:from-green-900 dark:to-green-800 dark:text-green-200 shadow-sm">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+            </svg>
+            <span>Active & Protected</span>
+          </div>
+          <div class="flex items-center text-xs text-gray-500 dark:text-gray-400">
+            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd" />
+            </svg>
+            <span>Activated on {{ $user->updated_at->format('M d, Y') }}</span>
+          </div>
+          @else
+          <div class="inline-flex items-center px-4 py-2 rounded-full text-sm font-semibold bg-gradient-to-r from-amber-100 to-amber-200 text-amber-800 dark:from-amber-900 dark:to-amber-800 dark:text-amber-200 shadow-sm">
+            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+            <span>Not Configured</span>
+          </div>
+          <div class="flex items-center text-xs text-gray-500 dark:text-gray-400">
+            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+            </svg>
+            <span>Recommended for enhanced security</span>
+          </div>
+          @endif
+        </div>
+      </div>
+
+      <div class="flex-shrink-0">
+        @if($user->two_factor_enabled ?? false)
+        <button type="button" onclick="openTwoFactorModal('disable')" class="group relative inline-flex items-center justify-center px-6 py-3 text-white bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 font-semibold rounded-lg text-sm transition-all duration-300 shadow-md hover:shadow-lg dark:from-red-600 dark:to-red-700 dark:hover:from-red-700 dark:hover:to-red-800 dark:focus:ring-red-800">
+          <svg class="w-5 h-5 mr-2 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <span>Disable 2FA</span>
+        </button>
+        @else
+        <button type="button" onclick="openTwoFactorModal('enable')" class="group relative inline-flex items-center justify-center px-6 py-3 text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-semibold rounded-lg text-sm transition-all duration-300 shadow-md hover:shadow-lg dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 dark:focus:ring-blue-800">
+          <svg class="w-5 h-5 mr-2 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+          </svg>
+          <span>Enable 2FA</span>
+        </button>
+        @endif
+      </div>
+    </div>
+
+    @if(!($user->two_factor_enabled ?? false))
+    <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900/20 border-l-4 border-blue-500 rounded-r-lg">
+      <div class="flex items-start">
+        <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+        </svg>
+        <div class="ml-3">
+          <p class="text-sm font-medium text-blue-800 dark:text-blue-300">Security Tip</p>
+          <p class="text-xs text-blue-700 dark:text-blue-400 mt-1">Enable 2FA to add an extra layer of protection to your account. You'll need an authenticator app like Google Authenticator or Microsoft Authenticator.</p>
+        </div>
+      </div>
+    </div>
+    @endif
+  </div>
 </div>
+
+{{-- Two-Factor Authentication Modal --}}
+<div id="twoFactorModal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full bg-gray-900 bg-opacity-50">
+  <div class="relative p-4 w-full max-w-md max-h-full mx-auto mt-20">
+    {{-- Modal content --}}
+    <div class="relative bg-white rounded-lg shadow dark:bg-gray-700">
+      {{-- Modal header --}}
+      <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
+        <h3 class="text-xl font-semibold text-gray-900 dark:text-white" id="modalTitle">
+          Confirm Password
+        </h3>
+        <button type="button" onclick="closeTwoFactorModal()" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white">
+          <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+          </svg>
+          <span class="sr-only">Close modal</span>
+        </button>
+      </div>
+      {{-- Modal body --}}
+      <form id="twoFactorForm" action="" method="POST">
+        @csrf
+        @method('PATCH')
+        <div class="p-4 md:p-5 space-y-4">
+          <p class="text-sm text-gray-500 dark:text-gray-400" id="modalDescription">
+            Please enter your password to continue.
+          </p>
+          <div class="relative z-0 w-full group">
+            <input type="password" name="password" id="modal_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required autocomplete="current-password" />
+            <label for="modal_password" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Password</label>
+          </div>
+          <div id="modalError" class="hidden p-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
+            <span class="font-medium">Error!</span> <span id="errorMessage"></span>
+          </div>
+        </div>
+        {{-- Modal footer --}}
+        <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
+          <button type="submit" id="modalSubmitBtn" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+            Confirm
+          </button>
+          <button type="button" onclick="closeTwoFactorModal()" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
 <script>
   function previewFile() {
     const previewDark = document.getElementById('preview-image-dark');
@@ -153,15 +285,69 @@
     const file = document.querySelector('input[type=file]').files[0];
     const reader = new FileReader();
 
-    reader.addEventListener("load", function () {
-      if(previewDark) previewDark.src = reader.result;
-      if(previewLight) previewLight.src = reader.result;
-      if(previewCustom) previewCustom.src = reader.result;
+    reader.addEventListener("load", function() {
+      if (previewDark) previewDark.src = reader.result;
+      if (previewLight) previewLight.src = reader.result;
+      if (previewCustom) previewCustom.src = reader.result;
     }, false);
 
     if (file) {
       reader.readAsDataURL(file);
     }
   }
+
+  function openTwoFactorModal(action) {
+    const modal = document.getElementById('twoFactorModal');
+    const form = document.getElementById('twoFactorForm');
+    const title = document.getElementById('modalTitle');
+    const description = document.getElementById('modalDescription');
+    const submitBtn = document.getElementById('modalSubmitBtn');
+    const passwordInput = document.getElementById('modal_password');
+    const errorDiv = document.getElementById('modalError');
+
+    // Reset form and hide errors
+    form.reset();
+    errorDiv.classList.add('hidden');
+
+    if (action === 'enable') {
+      title.textContent = 'Enable Two-Factor Authentication';
+      description.textContent = 'Please enter your password to enable two-factor authentication.';
+      submitBtn.textContent = 'Enable 2FA';
+      submitBtn.classList.remove('bg-red-600', 'hover:bg-red-700', 'focus:ring-red-300', 'dark:bg-red-600', 'dark:hover:bg-red-700', 'dark:focus:ring-red-800');
+      submitBtn.classList.add('bg-blue-700', 'hover:bg-blue-800', 'focus:ring-blue-300', 'dark:bg-blue-600', 'dark:hover:bg-blue-700', 'dark:focus:ring-blue-800');
+      form.action = "";
+    } else {
+      title.textContent = 'Disable Two-Factor Authentication';
+      description.textContent = 'Please enter your password to disable two-factor authentication.';
+      submitBtn.textContent = 'Disable 2FA';
+      submitBtn.classList.remove('bg-blue-700', 'hover:bg-blue-800', 'focus:ring-blue-300', 'dark:bg-blue-600', 'dark:hover:bg-blue-700', 'dark:focus:ring-blue-800');
+      submitBtn.classList.add('bg-red-600', 'hover:bg-red-700', 'focus:ring-red-300', 'dark:bg-red-600', 'dark:hover:bg-red-700', 'dark:focus:ring-red-800');
+      form.action = "";
+    }
+
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+    passwordInput.focus();
+  }
+
+  function closeTwoFactorModal() {
+    const modal = document.getElementById('twoFactorModal');
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
+
+  // Close modal on outside click
+  document.getElementById('twoFactorModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+      closeTwoFactorModal();
+    }
+  });
+
+  // Close modal on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeTwoFactorModal();
+    }
+  });
 </script>
 @endsection

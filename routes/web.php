@@ -56,8 +56,12 @@ Route::middleware(['guest', RedirectIfAuthenticated::class, PreventBackHistory::
     })->name('main-welcome');
 
     Route::controller(AdminLoginController::class)->group(function () {
-        Route::get('login', 'index')    ->name('login');
-        Route::post('login', 'store')   ->name('login.store');
+        Route::get('login', 'index')                    ->name('login');
+        Route::post('login', 'store')                   ->name('login.store');
+        Route::get('/login/2fa', 'show2FA')             ->name('login.2fa');
+        Route::post('/login/2fa/verify', 'verify2FA')   ->name('login.2fa.verify');
+        Route::post('/login/2fa/resend', 'resend2FA')   ->name('login.2fa.resend');
+        Route::post('/login/2fa/cancel', 'cancel2FA')   ->name('login.2fa.cancel');
     });
 
     Route::controller(PasswordResetLinkController::class)->group(function () {
@@ -65,9 +69,17 @@ Route::middleware(['guest', RedirectIfAuthenticated::class, PreventBackHistory::
         Route::post('forgot-password', 'store') ->name('password.email');
     });
 
+    // Guest routes (no auth guard)
     Route::controller(NewPasswordController::class)->group(function () {
-        Route::get('reset-password/{token}', 'create')  ->name('password.reset');
-        Route::post('reset-password', 'store')          ->name('password.store');
+        // Reset password pages
+        Route::get('reset-password/{token}', 'create')->name('password.reset');
+        Route::post('reset-password', 'store')->name('password.store');
+
+        // 2FA gates for reset
+        Route::get('reset-password/2fa', 'showReset2FA')->name('password.reset.2fa');
+        Route::post('reset-password/2fa/verify', 'verifyReset2FA')->name('password.reset.2fa.verify');
+        Route::post('reset-password/2fa/resend', 'resendReset2FA')->name('password.reset.2fa.resend');
+        Route::post('reset-password/2fa/cancel', 'cancelReset2FA')->name('password.reset.2fa.cancel');
     });
 });
 
@@ -82,8 +94,10 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
     });
 
     Route::controller(ProfileController::class)->group(function () {
-        Route::get('profile', 'index')      ->name('profile');
-        Route::patch('profile', 'update')   ->name('profile.update');
+        Route::get('profile', 'index')                              ->name('profile');
+        Route::patch('profile', 'update')                           ->name('profile.update');
+        Route::patch('/profile/2fa/enable', 'enableTwoFactor')      ->name('profile.2fa.enable');
+        Route::patch('/profile/2fa/disable', 'disableTwoFactor')    ->name('profile.2fa.disable');
     });
 
     Route::prefix('analytics')->controller(FetchDataController::class)->group(function () {
