@@ -112,12 +112,12 @@ class RolesController extends Controller
         }
         // Define the mapping between view and action permissions
         $restrictions = [
-            'View Users Maintenance'            => ['Add Users', 'Edit Users', 'Delete Users'],
-            'View Books Maintenance'            => ['Add Books', 'Edit Books', 'Delete Books'],
-            'View Book Categories Maintenance'  => ['Add Categories', 'Edit Categories', 'Delete Categories'],
-            'View Privileges Maintenance'       => ['Add Privileges', 'Edit Privileges', 'Delete Privileges'],
-            'View Penalty Rules Maintenance'    => ['Add Penalty Rule', 'Edit Penalty Rule', 'Delete Penalty Rule'],
-            'View Transactions Maintenance'     => ['Edit Transactions'],
+            PermissionsEnum::VIEW_USERS_MAINTENANCE            => [PermissionsEnum::ADD_USERS, PermissionsEnum::EDIT_USERS, PermissionsEnum::DELETE_USERS],
+            PermissionsEnum::VIEW_BOOKS_MAINTENANCE            => [PermissionsEnum::ADD_BOOKS, PermissionsEnum::EDIT_BOOKS, PermissionsEnum::DELETE_BOOKS],
+            PermissionsEnum::VIEW_BOOK_CATEGORIES_MAINTENANCE  => [PermissionsEnum::ADD_CATEGORIES, PermissionsEnum::EDIT_CATEGORIES, PermissionsEnum::DELETE_CATEGORIES],
+            PermissionsEnum::VIEW_PRIVILEGES_MAINTENANCE       => [PermissionsEnum::ADD_PRIVILEGES, PermissionsEnum::EDIT_PRIVILEGES, PermissionsEnum::DELETE_PRIVILEGES],
+            PermissionsEnum::VIEW_PENALTY_RULES_MAINTENANCE    => [PermissionsEnum::ADD_PENALTY_RULES, PermissionsEnum::EDIT_PENALTY_RULES, PermissionsEnum::DELETE_PENALTY_RULES],
+            PermissionsEnum::VIEW_TRANSACTIONS_MAINTENANCE     => [PermissionsEnum::EDIT_TRANSACTIONS],
         ];
 
         // Check if user selected restricted actions without corresponding view
@@ -137,6 +137,7 @@ class RolesController extends Controller
         }
         DB::beginTransaction();
         try {
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             if (Role::where('name', $request->input('role'))->exists()) {
                 DB::rollBack();
                 Log::warning('Roles & Permissions: Create role failed - Role exists', [
@@ -265,12 +266,12 @@ class RolesController extends Controller
         }
         // Define the mapping between view and action permissions
         $restrictions = [
-            'View Users Maintenance'            => ['Add Users', 'Edit Users', 'Delete Users'],
-            'View Books Maintenance'            => ['Add Books', 'Edit Books', 'Delete Books'],
-            'View Book Categories Maintenance'  => ['Add Categories', 'Edit Categories', 'Delete Categories'],
-            'View Privileges Maintenance'       => ['Add Privileges', 'Edit Privileges', 'Delete Privileges'],
-            'View Penalty Rules Maintenance'    => ['Add Penalty Rule', 'Edit Penalty Rule', 'Delete Penalty Rule'],
-            'View Transactions Maintenance'     => ['Edit Transactions'],
+            PermissionsEnum::VIEW_USERS_MAINTENANCE            => [PermissionsEnum::ADD_USERS, PermissionsEnum::EDIT_USERS, PermissionsEnum::DELETE_USERS],
+            PermissionsEnum::VIEW_BOOKS_MAINTENANCE            => [PermissionsEnum::ADD_BOOKS, PermissionsEnum::EDIT_BOOKS, PermissionsEnum::DELETE_BOOKS],
+            PermissionsEnum::VIEW_BOOK_CATEGORIES_MAINTENANCE  => [PermissionsEnum::ADD_CATEGORIES, PermissionsEnum::EDIT_CATEGORIES, PermissionsEnum::DELETE_CATEGORIES],
+            PermissionsEnum::VIEW_PRIVILEGES_MAINTENANCE       => [PermissionsEnum::ADD_PRIVILEGES, PermissionsEnum::EDIT_PRIVILEGES, PermissionsEnum::DELETE_PRIVILEGES],
+            PermissionsEnum::VIEW_PENALTY_RULES_MAINTENANCE    => [PermissionsEnum::ADD_PENALTY_RULES, PermissionsEnum::EDIT_PENALTY_RULES, PermissionsEnum::DELETE_PENALTY_RULES],
+            PermissionsEnum::VIEW_TRANSACTIONS_MAINTENANCE     => [PermissionsEnum::EDIT_TRANSACTIONS],
         ];
 
         // Check if user selected restricted actions without corresponding view
@@ -289,6 +290,7 @@ class RolesController extends Controller
         }
         DB::beginTransaction();
         try {
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $role = Role::findById($request->input('role_id'));
             if (!$request->input('role_id') == 1) {
                 $role->name = $request->input('role');
@@ -340,6 +342,7 @@ class RolesController extends Controller
 
         DB::beginTransaction();
         try {
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $role = Role::findById($request->input('deleteRole'));
             if ($role->users()->count() > 0) {
                 DB::rollBack();
