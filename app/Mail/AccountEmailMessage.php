@@ -45,7 +45,7 @@ class AccountEmailMessage extends Mailable
             'reminder'       => 'For your security, please change your password after your first login. 🛡️',
             'thanks'         => 'Thank you for being part of the BPS learning community.',
             'cta_label'      => 'Access your account 🔓',
-            'cta_url'        => env('E_LIBRARY_URL') . '/login',
+            'cta_url'        => env('E_LIBRARY_URL') . '/web/login',
             'footer'         => 'If you did not request or expect this message, please disregard this email or contact support. ℹ️',
         ], $msg);
     }
