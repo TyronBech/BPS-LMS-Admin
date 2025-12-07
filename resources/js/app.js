@@ -32,6 +32,11 @@ document.addEventListener('DOMContentLoaded', () => {
     'exportBarcode',        // export barcode button (books page)
     'exportCallNumberBtn',  // export call number button
     'toggleBtn',            // maintenance status toggle button
+    'toggleModalPassword',  // 2FA modal password toggle
+    'togglePassword',       // Login password toggle
+    'toggleCurrentPassword', // Profile current password toggle
+    'toggleNewPassword',    // Profile new password toggle
+    'toggleConfirmPassword', // Profile confirm password toggle
   ];
 
   // --- 1️⃣ Handle button clicks ---

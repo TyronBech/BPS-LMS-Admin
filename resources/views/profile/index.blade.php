@@ -116,8 +116,18 @@
 
             {{-- Current Password --}}
             <div class="relative z-0 w-full sm:col-span-2 group">
-              <input type="password" name="current_password" id="current_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " autocomplete="current-password" />
+              <input type="password" name="current_password" id="current_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer pr-10" placeholder=" " autocomplete="current-password" />
               <label for="current_password" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Current Password</label>
+              
+              <button type="button" id="toggleCurrentPassword" class="absolute right-0 top-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none" aria-label="Toggle password visibility">
+                  <span id="currentOpenEye" class="hidden">
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z" /><path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                  </span>
+                  <span id="currentClosedEye">
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                  </span>
+              </button>
+
               @error('current_password')
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
               @enderror
@@ -125,8 +135,18 @@
 
             {{-- New Password --}}
             <div class="relative z-0 w-full group">
-              <input type="password" name="new_password" id="new_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " autocomplete="new-password" />
+              <input type="password" name="new_password" id="new_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer pr-10" placeholder=" " autocomplete="new-password" />
               <label for="new_password" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">New Password</label>
+              
+              <button type="button" id="toggleNewPassword" class="absolute right-0 top-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none" aria-label="Toggle password visibility">
+                  <span id="newOpenEye" class="hidden">
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z" /><path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                  </span>
+                  <span id="newClosedEye">
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                  </span>
+              </button>
+
               @error('new_password')
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
               @enderror
@@ -134,8 +154,17 @@
 
             {{-- Confirm New Password --}}
             <div class="relative z-0 w-full group">
-              <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " autocomplete="new-password" />
+              <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer pr-10" placeholder=" " autocomplete="new-password" />
               <label for="new_password_confirmation" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Confirm password</label>
+              
+              <button type="button" id="toggleConfirmPassword" class="absolute right-0 top-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none" aria-label="Toggle password visibility">
+                  <span id="confirmOpenEye" class="hidden">
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z" /><path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                  </span>
+                  <span id="confirmClosedEye">
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
+                  </span>
+              </button>
             </div>
           </div>
 
@@ -256,8 +285,25 @@
             Please enter your password to continue.
           </p>
           <div class="relative z-0 w-full group">
-            <input type="password" name="password" id="modal_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer" placeholder=" " required autocomplete="current-password" />
+            <input type="password" name="password" id="modal_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-blue-500 focus:outline-none focus:ring-0 focus:border-blue-600 peer pr-10" placeholder=" " required autocomplete="current-password" />
             <label for="modal_password" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-blue-600 peer-focus:dark:text-blue-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Password</label>
+            
+            <!-- Toggle Password Visibility Button -->
+            <button type="button" id="toggleModalPassword" class="absolute right-0 top-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none" aria-label="Toggle password visibility">
+                <!-- Closed Eye Icon (Hidden Initially) -->
+                <span id="modalOpenEye" class="hidden">
+                  <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z" />
+                    <path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                  </svg>
+                </span>
+                <!-- Open Eye Icon (Default Visible) -->
+                <span id="modalClosedEye">
+                  <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                  </svg>
+                </span>
+            </button>
           </div>
           <div id="modalError" class="hidden p-4 text-sm text-red-800 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400" role="alert">
             <span class="font-medium">Error!</span> <span id="errorMessage"></span>
@@ -309,20 +355,25 @@
     form.reset();
     errorDiv.classList.add('hidden');
 
+    // Reset password visibility
+    passwordInput.type = 'password';
+    document.getElementById('modalOpenEye').classList.add('hidden');
+    document.getElementById('modalClosedEye').classList.remove('hidden');
+
     if (action === 'enable') {
       title.textContent = 'Enable Two-Factor Authentication';
       description.textContent = 'Please enter your password to enable two-factor authentication.';
       submitBtn.textContent = 'Enable 2FA';
       submitBtn.classList.remove('bg-red-600', 'hover:bg-red-700', 'focus:ring-red-300', 'dark:bg-red-600', 'dark:hover:bg-red-700', 'dark:focus:ring-red-800');
       submitBtn.classList.add('bg-blue-700', 'hover:bg-blue-800', 'focus:ring-blue-300', 'dark:bg-blue-600', 'dark:hover:bg-blue-700', 'dark:focus:ring-blue-800');
-      form.action = "";
+      form.action = "{{ route('profile.2fa.enable') }}";
     } else {
       title.textContent = 'Disable Two-Factor Authentication';
       description.textContent = 'Please enter your password to disable two-factor authentication.';
       submitBtn.textContent = 'Disable 2FA';
       submitBtn.classList.remove('bg-blue-700', 'hover:bg-blue-800', 'focus:ring-blue-300', 'dark:bg-blue-600', 'dark:hover:bg-blue-700', 'dark:focus:ring-blue-800');
       submitBtn.classList.add('bg-red-600', 'hover:bg-red-700', 'focus:ring-red-300', 'dark:bg-red-600', 'dark:hover:bg-red-700', 'dark:focus:ring-red-800');
-      form.action = "";
+      form.action = "{{ route('profile.2fa.disable') }}";
     }
 
     modal.classList.remove('hidden');
@@ -349,5 +400,44 @@
       closeTwoFactorModal();
     }
   });
+
+  // Toggle Password Visibility for Modal
+  const toggleModalPassword = document.getElementById('toggleModalPassword');
+  const modalPasswordInput = document.getElementById('modal_password');
+  const modalOpenEye = document.getElementById('modalOpenEye');
+  const modalClosedEye = document.getElementById('modalClosedEye');
+
+  if (toggleModalPassword) {
+      toggleModalPassword.addEventListener('click', function() {
+        const isPassword = modalPasswordInput.type === 'password';
+        modalPasswordInput.type = isPassword ? 'text' : 'password';
+
+        // Toggle icons
+        modalOpenEye.classList.toggle('hidden', !isPassword);
+        modalClosedEye.classList.toggle('hidden', isPassword);
+      });
+  }
+
+  // Helper function for password toggles
+  function setupPasswordToggle(toggleId, inputId, openEyeId, closedEyeId) {
+    const toggleBtn = document.getElementById(toggleId);
+    const input = document.getElementById(inputId);
+    const openEye = document.getElementById(openEyeId);
+    const closedEye = document.getElementById(closedEyeId);
+
+    if (toggleBtn && input && openEye && closedEye) {
+      toggleBtn.addEventListener('click', function() {
+        const isPassword = input.type === 'password';
+        input.type = isPassword ? 'text' : 'password';
+        openEye.classList.toggle('hidden', !isPassword);
+        closedEye.classList.toggle('hidden', isPassword);
+      });
+    }
+  }
+
+  // Initialize toggles for profile form
+  setupPasswordToggle('toggleCurrentPassword', 'current_password', 'currentOpenEye', 'currentClosedEye');
+  setupPasswordToggle('toggleNewPassword', 'new_password', 'newOpenEye', 'newClosedEye');
+  setupPasswordToggle('toggleConfirmPassword', 'new_password_confirmation', 'confirmOpenEye', 'confirmClosedEye');
 </script>
 @endsection

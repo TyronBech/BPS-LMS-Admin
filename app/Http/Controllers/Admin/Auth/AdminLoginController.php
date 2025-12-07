@@ -66,8 +66,25 @@ class AdminLoginController extends Controller
 
             return redirect()->back()->with('toast-error', 'Invalid email or password.')->withInput();
         }
-
+        
         Log::debug('Admin Login: User found in database', [
+            'user_id' => $user->id,
+            'email' => $email,
+            'user_name' => $user->full_name,
+            'ip_address' => $request->ip(),
+        ]);
+
+        if(!Hash::check($request->password, $user->password)) {
+            Log::error('Admin Login: Failed - Invalid password', [
+                'email' => $email,
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'timestamp' => now(),
+            ]);
+            return redirect()->back()->with('toast-error', 'Invalid email or password.')->withInput();
+        }
+
+        Log::debug('Admin Login: Password matched', [
             'user_id' => $user->id,
             'email' => $email,
             'user_name' => $user->full_name,
