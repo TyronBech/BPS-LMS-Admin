@@ -136,7 +136,7 @@
       </table>
     </div>
     <div class="p-4">
-      {{ $data->links() }}
+      {{ $data->withQueryString()->links() }}
     </div>
   </div>
 </div>

@@ -46,7 +46,7 @@
     </tbody>
   </table>
   <div class="p-4">
-    {{ $categories->links() }}
+    {{ $categories->withQueryString()->links() }}
   </div>
 </div>
 <!-- Edit modal -->
