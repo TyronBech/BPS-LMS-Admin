@@ -275,7 +275,7 @@
           const fullName = `${student.last_name}, ${student.first_name} ${student.middle_name ?? ''}`.trim();
 
           // Rank styling
-          let rankBadge = `<span class="font-medium text-gray-500 dark:text-gray-400">#${rank}</span>`;
+          let rankBadge = `<span class="font-medium text-gray-500 dark:text-gray-400">${rank}</span>`;
           if (rank === 1) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full ring-1 ring-yellow-400 dark:bg-yellow-900 dark:text-yellow-300">1</span>`;
           else if (rank === 2) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-700 text-xs font-bold rounded-full ring-1 ring-gray-400 dark:bg-gray-700 dark:text-gray-300">2</span>`;
           else if (rank === 3) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 bg-orange-100 text-orange-700 text-xs font-bold rounded-full ring-1 ring-orange-400 dark:bg-orange-900 dark:text-orange-300">3</span>`;
@@ -370,7 +370,7 @@
           const fullName = `${student.last_name}, ${student.first_name} ${student.middle_name ?? ''}`.trim();
 
           // Rank styling
-          let rankBadge = `<span class="font-medium text-gray-500 dark:text-gray-400">#${rank}</span>`;
+          let rankBadge = `<span class="font-medium text-gray-500 dark:text-gray-400">${rank}</span>`;
           if (rank === 1) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 bg-yellow-100 text-yellow-700 text-xs font-bold rounded-full ring-1 ring-yellow-400 dark:bg-yellow-900 dark:text-yellow-300">1</span>`;
           else if (rank === 2) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 bg-gray-100 text-gray-700 text-xs font-bold rounded-full ring-1 ring-gray-400 dark:bg-gray-700 dark:text-gray-300">2</span>`;
           else if (rank === 3) rankBadge = `<span class="inline-flex items-center justify-center w-6 h-6 bg-orange-100 text-orange-700 text-xs font-bold rounded-full ring-1 ring-orange-400 dark:bg-orange-900 dark:text-orange-300">3</span>`;
