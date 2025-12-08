@@ -40,7 +40,6 @@
       <div class="flex flex-col w-full lg:w-auto lg:flex-1 lg:max-w-[180px]">
         <label for="type" class="block text-sm font-medium mb-1">Type</label>
         <select id="type" name="type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500">
-          <option value="" selected>All Types</option>
           @foreach($availability as $typeOption)
           <option value="{{ $typeOption }}" {{ request('type') == $typeOption ? 'selected' : '' }}>{{ $typeOption }}</option>
           @endforeach
