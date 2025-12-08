@@ -122,7 +122,7 @@ class AdminLoginController extends Controller
                 'timestamp' => now(),
             ]);
 
-            return redirect()->intended(route('dashboard', absolute: false))->with('toast-error', 'A user is already logged in.');
+            return redirect()->route('dashboard')->with('toast-error', 'A user is already logged in.');
         }
 
         Log::debug('Admin Login: Attempting authentication', [
@@ -222,7 +222,7 @@ class AdminLoginController extends Controller
                 'timestamp' => now(),
             ]);
 
-            return redirect()->intended(route('dashboard', absolute: false));
+            return redirect()->route('dashboard');
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             Log::error('Admin Login: Authentication failed - Invalid credentials', [
@@ -328,7 +328,7 @@ class AdminLoginController extends Controller
         // Clear temporary 2FA data
         $request->session()->forget(['2fa_user_id','2fa_email','2fa_password','2fa_remember','show_2fa_modal']);
 
-        return redirect()->intended(route('dashboard', absolute: false));
+        return redirect()->route('dashboard');
     }
 
     /**
