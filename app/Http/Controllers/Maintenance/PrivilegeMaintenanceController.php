@@ -57,6 +57,8 @@ class PrivilegeMaintenanceController extends Controller
         ]);
 
         $validator = Validator::make($request->all(), [
+            'user_type'                 => 'required|string|max:50|in:employee,student,visitor',
+            'category'                  => 'required|string|max:50',
             'max_book_allowed_add'      => 'required|integer|min:0|max:999',
             'renewal_limit_add'         => 'required|integer|min:0|max:999',
             'duration_type'             => 'required|string|max:50|in:'.implode(',', $this->extract_enums((new UserGroup)->getTable(), 'duration_type')),
@@ -74,6 +76,8 @@ class PrivilegeMaintenanceController extends Controller
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             UserGroup::create([
+                'user_type'             => $request->input('user_type'),
+                'category'              => $request->input('category'),
                 'max_book_allowed'      => $request->input('max_book_allowed_add'),
                 'renewal_limit'         => $request->input('renewal_limit_add'),
                 'duration_type'         => $request->input('duration_type'),

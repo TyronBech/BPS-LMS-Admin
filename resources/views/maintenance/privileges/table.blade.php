@@ -24,7 +24,7 @@
       @forelse($privileges as $item)
       <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
         <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-          <div class="text-base font-semibold">{{ $item->user_type }}</div>
+          <div class="text-base font-semibold">{{ ucfirst($item->user_type) }}</div>
           <div class="font-normal text-gray-500 sm:hidden">{{ $item->category }}</div>
         </th>
         <td class="px-6 py-4 hidden sm:table-cell">{{ $item->category }}</td>
