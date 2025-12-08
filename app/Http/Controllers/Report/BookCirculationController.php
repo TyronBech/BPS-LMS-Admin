@@ -15,6 +15,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Illuminate\Database\Eloquent\Collection;
 
 class BookCirculationController extends Controller
 {
@@ -123,11 +124,11 @@ class BookCirculationController extends Controller
     /**
      * Generates a PDF report for the book circulation report.
      * 
-     * @param  array  $data  The data to be included in the report.
+     * @param \Illuminate\Database\Eloquent\Collection $data The data to be included in the report.
      * 
      * @return void
      */
-    private function generatePDF($data)
+    private function generatePDF(Collection $data)
     {
         ini_set('memory_limit', '2048M');
         ini_set('max_execution_time', 300);
@@ -155,11 +156,11 @@ class BookCirculationController extends Controller
     /**
      * Exports the book circulation report to an Excel file.
      * 
-     * @param  array  $data  The data to be included in the report.
+     * @param \Illuminate\Database\Eloquent\Collection $data The data to be included in the report.
      * 
      * @return void
      */
-    private function exportExcel($data)
+    private function exportExcel(Collection $data)
     {
         $spreadsheet    = new Spreadsheet();
         $logo           = new Drawing();
@@ -220,7 +221,7 @@ class BookCirculationController extends Controller
      *
      * @param Request $request
      * @param bool $isExport
-     * @return array
+     * @return Collection|\Illuminate\Pagination\LengthAwarePaginator
      */
     private function generateData(Request $request, bool $isExport = false)
     {
@@ -229,7 +230,9 @@ class BookCirculationController extends Controller
         $category       = $request->input('category', 'All');
         $availability   = strtolower($request->input('availability', 'All'));
         $perPage        = $request->input('perPage', 10);
-        $query          = Book::with('category')->whereHas('category')->select('id', 'created_at', 'accession', 'call_number', 'title', 'barcode', 'availability_status', 'condition_status', 'category_id');
+        $query          = Book::with('category:id,name')
+                        ->whereHas('category')
+                        ->select('id', 'accession', 'call_number', 'title', 'barcode', 'availability_status', 'condition_status', 'category_id');
         if (strlen($barcode) > 0) {
             $query->where('barcode', 'like', '%' . $barcode . '%');
         }

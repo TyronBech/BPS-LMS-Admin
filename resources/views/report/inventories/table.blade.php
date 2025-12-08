@@ -28,12 +28,12 @@
         <tbody>
           @forelse($data as $item)
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-            <td class="px-6 py-4">{{ $item->book->accession }}</td>
-            <td class="px-6 py-4">{{ $item->book->call_number }}</td>
+            <td class="px-6 py-4">{{ $item->book->accession ?? '-' }}</td>
+            <td class="px-6 py-4">{{ $item->book->call_number ?? '-' }}</td>
             <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-              {{ $item->book->title }}
+              {{ $item->book->title ?? '-' }}
             </th>
-            <td class="px-6 py-4">{{ $item->book->author }}</td>
+            <td class="px-6 py-4">{{ $item->book->author ?? '-' }}</td>
             <td class="px-6 py-4">{{ $item->checked_at ? \Carbon\Carbon::parse($item->checked_at)->format('Y-m-d') : 'Pending' }}</td>
           </tr>
           @empty

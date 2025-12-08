@@ -15,6 +15,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Illuminate\Database\Eloquent\Collection;
 
 class TransactionController extends Controller
 {
@@ -126,10 +127,10 @@ class TransactionController extends Controller
      * The report includes the title, school name, type, logo, address, user name, date, data and total count.
      * The PDF report is then streamed to the browser with the filename 'transaction-report <date>.pdf'.
      *
-     * @param array $data The data to be included in the report.
+     * @param Illuminate\Database\Eloquent\Collection $data The data to be included in the report.
      * @param string $type The type of report to be generated.
      */
-    private function generatePDF($data, $type)
+    private function generatePDF(Collection $data, string $type)
     {
         $items = [
             'title'         => 'Book Circulation Report',
@@ -156,12 +157,12 @@ class TransactionController extends Controller
     /**
      * Exports the transaction report to an Excel file.
      * 
-     * @param  array  $data  The data to be included in the report.
+     * @param  Illuminate\Database\Eloquent\Collection  $data  The data to be included in the report.
      * @param  string  $type  The type of report to be generated.
      * 
      * @return void
      */
-    private function exportExcel($data, $type)
+    private function exportExcel(Collection $data, string $type)
     {
         $spreadsheet    = new Spreadsheet();
         $logo           = new Drawing();
@@ -280,7 +281,7 @@ class TransactionController extends Controller
      *
      * @param Request $request
      * @param bool $isExport
-     * @return array
+     * @return Collection|\Illuminate\Pagination\LengthAwarePaginator
      */
     private function generateData(Request $request, bool $isExport = false)
     {
@@ -290,9 +291,13 @@ class TransactionController extends Controller
         $type           = $request->input('type', 'All');
         $perPage        = $request->input('perPage', 10);
 
-        $query = Transaction::with('book', 'user')
+        $query = Transaction::with(
+            'book:title,accession,id', 
+            'user:first_name,middle_name,last_name,id')
             ->whereHas('book')
-            ->whereHas('user');
+            ->whereHas('user')
+            ->whereNotNull('date_borrowed')
+            ->select('book_id', 'user_id', 'transaction_type', 'reserved_date', 'pickup_deadline', 'date_borrowed', 'due_date', 'return_date', 'status');
         if (!empty($fromInputDate) && !empty($toInputDate)) {
             $start = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
             $end = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');

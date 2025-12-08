@@ -14,6 +14,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use DateTime;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log as Logger; // Alias to avoid conflict with App\Models\Log
 
@@ -502,11 +503,11 @@ class UserLogsController extends Controller
     /**
      * Generates a PDF report for the user logs report.
      *
-     * @param array $data The data to be included in the report.
+     * @param \Illuminate\Database\Eloquent\Collection $data The data to be included in the report.
      *
      * @return void
      */
-    private function generatePDF($data)
+    private function generatePDF(Collection $data)
     {
         $items = [
             'title'         => 'Attendance Monitoring Report',
@@ -532,11 +533,11 @@ class UserLogsController extends Controller
     /**
      * Exports the user logs report to an Excel file.
      *
-     * @param array $data The data to be included in the report.
+     * @param Illuminate\Database\Eloquent\Collection $data The data to be included in the report.
      *
      * @return void
      */
-    private function exportExcel($data)
+    private function exportExcel(Collection $data)
     {
         $spreadsheet    = new Spreadsheet();
         $logo           = new Drawing();
@@ -599,7 +600,7 @@ class UserLogsController extends Controller
      * @param \Illuminate\Http\Request $request
      * @param \App\Models\Log $tableName
      * @param bool $isExport
-     * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator|\Illuminate\Support\Collection
+     * @return Collection|\Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     private function generateData(Request $request, Log $tableName, bool $isExport = false)
     {
@@ -609,7 +610,11 @@ class UserLogsController extends Controller
         $userType       = $request->input('user_type', 'all');
         $perPage        = $request->input('perPage', 10);
 
-        $query = Log::with('user')->whereHas('user')->where("computer_use", "No")->whereNotNull('time_in');
+        $query = Log::with('user:id,privilege_id,first_name,middle_name,last_name')
+            ->select('user_id', 'time_in', 'computer_use', 'remarks')
+            ->whereHas('user')
+            ->where("computer_use", "No")
+            ->whereNotNull('time_in');
 
         if (!empty($fromInputDate) && !empty($toInputDate)) {
             $start = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');

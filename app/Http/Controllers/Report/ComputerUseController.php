@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use DateTime;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Illuminate\Database\Eloquent\Collection;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
@@ -176,9 +177,9 @@ class ComputerUseController extends Controller
     /**
      * Generates a PDF report for the online research report.
      * 
-     * @param array $data the data to be included in the report
+     * @param Illuminate\Database\Eloquent\Collection $data the data to be included in the report
      */
-    private function generatePDF($data)
+    private function generatePDF(Collection $data)
     {
         $items = [
             'title'         => 'Online Research Report',
@@ -204,9 +205,9 @@ class ComputerUseController extends Controller
     /**
      * Exports the computer use report to an Excel file.
      * 
-     * @param array $data the data to be included in the report
+     * @param Illuminate\Database\Eloquent\Collection $data the data to be included in the report
      */
-    private function exportExcel($data)
+    private function exportExcel(Collection $data)
     {
         $spreadsheet    = new Spreadsheet();
         $logo           = new Drawing();
@@ -306,7 +307,7 @@ class ComputerUseController extends Controller
      * @param Request $request
      * @param AppLog $tableName
      * @param bool $isExport
-     * @return array
+     * @return Collection|Illuminate\Pagination\LengthAwarePaginator
      */
     private function generateData(Request $request, AppLog $tableName, bool $isExport = false)
     {
@@ -316,7 +317,12 @@ class ComputerUseController extends Controller
         $perPage        = $request->input('perPage', 10);
         $userType       = $request->input('user_type', 'students');
 
-        $query = $tableName::with(['user.students', 'user.employees'])
+        $query = $tableName::with([
+            'user:id,first_name,middle_name,last_name',
+            'user.students:user_id,level,section',
+            'user.employees:user_id,employee_role'
+            ])
+            ->select('user_id', 'time_in', 'computer_use', 'remarks')
             ->where('computer_use', 'Yes');
 
         $searchFilter = function ($q) use ($search) {

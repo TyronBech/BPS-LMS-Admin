@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Models\Category;
 use Dompdf\Dompdf;
 use Dompdf\Options;
+use Illuminate\Database\Eloquent\Collection;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
@@ -34,7 +35,7 @@ class CategoriesController extends Controller
             'timestamp' => now(),
         ]);
 
-        $data = Category::all();
+        $data = Category::select('legend', 'name', 'previous_inventory', 'newly_acquired', 'discarded', 'present_inventory')->get();
         return view('report.categories.categories', compact('data'));
     }
     /**
@@ -57,7 +58,7 @@ class CategoriesController extends Controller
             'timestamp' => now(),
         ]);
 
-        $data = Category::all();
+        $data = Category::select('legend', 'name', 'previous_inventory', 'newly_acquired', 'discarded', 'present_inventory')->get();
         if ($request->input('submit') == 'pdf') {
             $this->generatePDF($data);
             return redirect()->back()->with('toast-success', 'PDF generated successfully');
@@ -76,11 +77,11 @@ class CategoriesController extends Controller
     /**
      * Generates a PDF report for the summary of BPS collections report.
      * 
-     * @param  array  $data  The data to be included in the report.
+     * @param Illuminate\Database\Eloquent\Collection $data The data to be included in the report.
      * 
      * @return void
      */
-    private function generatePDF($data)
+    private function generatePDF(Collection $data)
     {
         $items = [
             'title'         => 'Summary of BPS Collections Report',
@@ -106,10 +107,10 @@ class CategoriesController extends Controller
     /**
      * Exports the categories report data to an Excel file.
      *
-     * @param  array  $data  The data to be exported.
+     * @param  Illuminate\Database\Eloquent\Collection $data The data to be exported.
      * @return void
      */
-    private function exportExcel($data)
+    private function exportExcel(Collection $data)
     {
         $spreadsheet    = new Spreadsheet();
         $logo           = new Drawing();

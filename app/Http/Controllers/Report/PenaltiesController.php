@@ -14,6 +14,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 use App\Models\Transaction;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 
@@ -115,9 +116,9 @@ class PenaltiesController extends Controller
      * The report includes the title, school name, school address, logo, user name, date, data and total count.
      * The PDF report is then streamed to the browser with the filename 'overdue-fines-report <date>.pdf'.
      * 
-     * @param array $data The data to be included in the report.
+     * @param \Illuminate\Database\Eloquent\Collection $data The data to be included in the report.
      */
-    private function generatePDF($data)
+    private function generatePDF(Collection $data)
     {
         $items = [
             'title'         => 'Overdue Fines Report',
@@ -143,11 +144,11 @@ class PenaltiesController extends Controller
     /**
      * Exports the penalties report to an Excel file.
      * 
-     * @param  array  $data  The data to be included in the report.
+     * @param  \Illuminate\Database\Eloquent\Collection  $data  The data to be included in the report.
      * 
      * @return void
      */
-    private function exportExcel($data)
+    private function exportExcel(Collection $data)
     {
         $spreadsheet    = new Spreadsheet();
         $logo           = new Drawing();
@@ -218,7 +219,7 @@ class PenaltiesController extends Controller
      *
      * @param Request $request
      * @param bool $isExport
-     * @return array
+     * @return Collection|\Illuminate\Pagination\LengthAwarePaginator
      */
     private function generateData(Request $request, bool $isExport = false)
     {

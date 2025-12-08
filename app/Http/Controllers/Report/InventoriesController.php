@@ -13,6 +13,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
@@ -115,11 +116,11 @@ class InventoriesController extends Controller
     /**
      * Generates a PDF report for the inventory report.
      * 
-     * @param  array  $data  The data to be included in the report.
+     * @param  \Illuminate\Database\Eloquent\Collection $data The data to be included in the report.
      * 
      * @return void
      */
-    private function generatePDF($data)
+    private function generatePDF(Collection $data)
     {
         $items = [
             'title'         => 'Inventory Report',
@@ -145,11 +146,11 @@ class InventoriesController extends Controller
     /**
      * Exports the inventory report to an Excel file.
      * 
-     * @param  array  $data  The data to be included in the report.
+     * @param  \Illuminate\Database\Eloquent\Collection $data The data to be included in the report.
      * 
      * @return void
      */
-    private function exportExcel($data)
+    private function exportExcel(Collection $data)
     {
         $spreadsheet    = new Spreadsheet();
         $logo           = new Drawing();
@@ -208,7 +209,7 @@ class InventoriesController extends Controller
      * @param Request $request
      * @param Inventory $tableName
      * @param bool $isExport
-     * @return array
+     * @return Collection|\Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
     private function generateData(Request $request, Inventory $tableName, bool $isExport = false){
         $fromInputDate  = $request->input('start', '');
@@ -216,7 +217,10 @@ class InventoriesController extends Controller
         $perPage        = $request->input('perPage', 10);
         $start          = null;
         $end            = null;
-        $query          = Inventory::with('book')->whereHas('book')->where('checked_at', '!=', null);
+        $query          = Inventory::with('book:id,accession,call_number,title,author')
+                        ->whereHas('book')
+                        ->where('checked_at', '!=', null)
+                        ->select('book_id', 'checked_at');
         if(strlen($fromInputDate) > 0) $start = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
         if(strlen($toInputDate) > 0) $end = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
         if(strlen($fromInputDate) > 0 || strlen($toInputDate) > 0){
