@@ -64,6 +64,8 @@
         }
 
         return (string) $book;
+    })->filter(function ($callNumber) {
+        return !empty($callNumber);
     });
   @endphp
 
