@@ -25,15 +25,16 @@
       border: 1px solid #333;
       box-sizing: border-box;
       text-align: center;
-      vertical-align: middle;
-      padding-top: 10px;
-      padding-bottom: 20px;
+      vertical-align: top;
+      padding-top: 15px;
+      padding-bottom: 10px;
+      height: 100px;
     }
 
     .label {
       display: flex;
       flex-direction: column;
-      justify-content: center;
+      justify-content: flex-start;
       align-items: center;
       gap: 3px;
     }
@@ -60,10 +61,10 @@
         }
 
         if (is_object($book)) {
-            return $book->call_number ?? (string) $book;
+            return $book->call_number ?? '';
         }
 
-        return (string) $book;
+        return is_string($book) ? $book : '';
     })->filter(function ($callNumber) {
         return !empty($callNumber);
     });

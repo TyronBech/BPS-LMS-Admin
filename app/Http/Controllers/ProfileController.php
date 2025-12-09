@@ -11,7 +11,6 @@ use Illuminate\Validation\Rules\Password;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ChangePasswordMail;
-use App\Mail\ProfileUpdateVerificationMail; // Add this import
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
@@ -49,6 +48,8 @@ class ProfileController extends Controller
         $rules = [
             'first_name'    => ['required', 'string', 'max:50'],
             'middle_name'   => ['nullable', 'string', 'max:50'],
+            'last_name'     => ['required', 'string', 'max:50'],
+            'suffix'        => ['nullable', 'string', 'max:10'],
             'email'         => ['required', 'string', 'max:50', 'email'],
             'user_id'       => ['required', 'string', 'max:50'],
             'profile_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:5120'],
@@ -75,95 +76,31 @@ class ProfileController extends Controller
             ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
-
-        // Check if 2FA is enabled
-        if (Auth::guard('admin')->user()->two_factor_enabled) {
-            $data = $request->except(['_token', '_method', 'profile_image']);
-            
-            if ($request->hasFile('profile_image')) {
-                $base64Image = base64_encode(file_get_contents($request->file('profile_image')->getRealPath()));
-                session(['profile_update_image' => $base64Image]);
-            }
-            
-            session(['profile_update_data' => $data]);
-
-            // Generate and send code
-            $code = rand(100000, 999999);
-            session([
-                'profile_update_2fa_code' => $code,
-                'profile_update_2fa_expires' => now()->addMinutes(10)
-            ]);
-
-            $user = Auth::guard('admin')->user();
-            try {
-                Mail::to($user->email)->send(new ProfileUpdateVerificationMail($user, $code));
-            } catch (\Exception $e) {
-                Log::error('Profile: Failed to send 2FA code', ['error' => $e->getMessage()]);
-                return back()->with('toast-error', 'Failed to send verification code.');
-            }
-
-            return redirect()->route('profile.2fa.verify.page');
-        }
-
-        return $this->performUpdate($request->all(), $request->hasFile('profile_image') ? $request->file('profile_image') : null);
-    }
-
-    public function showVerificationPage()
-    {
-        if (!session()->has('profile_update_data')) {
-            return redirect()->route('profile');
-        }
-        return view('profile.verify-2fa');
-    }
-
-    public function verifyCode(Request $request)
-    {
-        $request->validate(['code' => 'required|string']);
-
-        if ($request->code != session('profile_update_2fa_code') || now()->greaterThan(session('profile_update_2fa_expires'))) {
-            return back()->with('toast-error', 'Invalid or expired code.');
-        }
-
-        $data = session('profile_update_data');
-        $imageBase64 = session('profile_update_image');
-        
-        if ($imageBase64) {
-            $data['profile_image_base64'] = $imageBase64;
-        }
-
-        session()->forget(['profile_update_data', 'profile_update_image', 'profile_update_2fa_code', 'profile_update_2fa_expires']);
-
-        return $this->performUpdate($data);
-    }
-
-    protected function performUpdate(array $data, $imageFile = null)
-    {
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $user = User::findOrFail(Auth::id());
-            $user->first_name   = $data['first_name'] ?? $user->first_name;
-            $user->middle_name  = $data['middle_name'] ?? $user->middle_name;
-            $user->last_name    = $data['last_name'] ?? $user->last_name;
-            $user->email        = $data['email'] ?? $user->email;
+            $user->first_name   = $request->input('first_name');
+            $user->middle_name  = $request->input('middle_name');
+            $user->last_name    = $request->input('last_name');
+            $user->suffix       = $request->input('suffix');
+            $user->email        = $request->input('email');
 
-            if ($imageFile) {
-                $base64Image = base64_encode(file_get_contents($imageFile->getRealPath()));
-                $user->profile_image = $base64Image ?? $user->profile_image;
-            } elseif (isset($data['profile_image_base64'])) {
-                $user->profile_image = $data['profile_image_base64'];
+            if ($request->hasFile('profile_image')) {
+                $base64Image = base64_encode(file_get_contents($request->file('profile_image')->getRealPath()));
+                $user->profile_image = $base64Image;
             }
 
-            if (!empty($data['new_password'])) {
-                $user->password = Hash::make($data['new_password']) ?? $user->password;
+            if ($request->filled('new_password')) {
+                $user->password = Hash::make($request->input('new_password'));
             }
 
             $user->save();
             if ($user->privileges->user_type === 'student') {
-                $user->students->id_number = $data['user_id'] ?? $user->students->id_number;
+                $user->students->id_number = $request->input('user_id');
                 $user->students->save();
             } elseif ($user->privileges->user_type === 'employee') {
-                $user->employees->employee_id = $data['user_id'] ?? $user->employees->employee_id;
+                $user->employees->employee_id = $request->input('user_id');
                 $user->employees->save();
             }
         } catch (\Illuminate\Database\QueryException $e) {
@@ -173,7 +110,7 @@ class ProfileController extends Controller
                 'error' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->route('profile')->with('toast-error', 'Failed to update information. Please try again.')->withInput();
+            return redirect()->back()->with('toast-error', 'Failed to update information. Please try again.')->withInput();
         }
         DB::commit();
 
@@ -183,10 +120,10 @@ class ProfileController extends Controller
         ]);
 
         // Send email notification
-        if (!empty($data['new_password'])) {
+        if ($request->filled('new_password')) {
             $this->changePasswordMail($user);
         }
-        return redirect()->route('profile')->with('toast-success', 'Information updated successfully!');
+        return redirect()->back()->with('toast-success', 'Information updated successfully!');
     }
     /**
      * Enable two-factor authentication for the user.

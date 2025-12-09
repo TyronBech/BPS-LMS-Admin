@@ -89,8 +89,6 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
     Route::controller(ProfileController::class)->group(function () {
         Route::get('profile', 'index')                              ->name('profile');
         Route::patch('profile', 'update')                           ->name('profile.update');
-        Route::get('/profile/verify-2fa', 'showVerificationPage')   ->name('profile.2fa.verify.page');
-        Route::post('/profile/verify-2fa', 'verifyCode')            ->name('profile.2fa.verify.code');
         Route::patch('/profile/2fa/enable', 'enableTwoFactor')      ->name('profile.2fa.enable');
         Route::patch('/profile/2fa/disable', 'disableTwoFactor')    ->name('profile.2fa.disable');
     });
