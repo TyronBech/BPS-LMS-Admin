@@ -132,6 +132,25 @@
             @enderror
           </div>
           <div>
+            <label for="penalty_status" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Penalty Status:</label>
+            <select id="penalty_status" name="penalty_status" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
+              <option selected disabled>Choose a status</option>
+              @foreach($penaltyStatuses as $item)
+              <option value="{{ $item }}">{{ $item }}</option>
+              @endforeach
+            </select>
+            @error('penalty_status')
+            <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+            @enderror
+          </div>
+          <div>
+            <label for="penalty_total" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Penalty Total:</label>
+            <input type="number" id="penalty_total" name="penalty_total" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Amount" min="0" max="1000" required />
+            @error('penalty_total')
+            <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+            @enderror
+          </div>
+          <div class="md:col-span-2">
             <label for="book_condition" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Book Condition:</label>
             <select id="book_condition" name="book_condition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
               <option selected disabled>Choose a condition</option>
@@ -140,13 +159,6 @@
               @endforeach
             </select>
             @error('book_condition')
-            <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
-            @enderror
-          </div>
-          <div>
-            <label for="penalty_total" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Penalty Total:</label>
-            <input type="number" id="penalty_total" name="penalty_total" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Amount" min="0" max="1000" required />
-            @error('penalty_total')
             <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
             @enderror
           </div>
@@ -223,6 +235,7 @@
             document.getElementById('due-datepicker').value = transaction.due_date ? new Date(transaction.due_date).toLocaleDateString('en-CA') : '';
             document.getElementById('pickup-datepicker').value = transaction.pickup_deadline ? new Date(transaction.pickup_deadline).toLocaleDateString('en-CA') : '';
             document.getElementById('transaction_type').value = transaction.transaction_type;
+            document.getElementById('penalty_status').value = transaction.penalty_status || 'No Penalty';
             
             // Update status options based on transaction type, then set the current status
             updateStatusOptions(transaction.transaction_type, transaction.status);

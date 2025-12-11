@@ -134,6 +134,7 @@ class TransactionMaintenanceController extends Controller
             'transaction_type'  => 'required|in:' . implode(',', $this->extract_enums((new Transaction())->getTable(), 'transaction_type')),
             'status'            => 'required|in:' . implode(',', $this->extract_enums((new Transaction())->getTable(), 'status')),
             'book_condition'    => 'nullable|in:' . implode(',', $this->extract_enums((new Book())->getTable(), 'condition_status')),
+            'penalty_status'    => 'nullable|in:' . implode(',', $this->extract_enums((new Transaction())->getTable(), 'penalty_status')),
             'penalty_total'     => 'nullable|numeric|min:0',
             'remarks'           => 'nullable|string|max:2048',
         ]);
@@ -201,13 +202,19 @@ class TransactionMaintenanceController extends Controller
                 'status'            => $request->input('status'),
                 'book_condition'    => $request->input('book_condition') ?? null,
                 'penalty_total'     => $request->input('penalty_total') ?? 0,
+                'penalty_status'    => $request->input('penalty_status') ?? 'No Penalty',
                 'remarks'           => $request->input('remarks') ?? null,
             ]);
-            $book = Book::find($transaction->book_id);
-            $book->update([
-                'condition_status' => $request->input('book_condition') ?? $book->condition_status,
-                'availability_status' => $request->input('status') ?? $book->availability_status,
-            ]);
+            if(!$transaction->book) {
+                Log::warning('Transaction Maintenance: Update failed - Book not found', [
+                    'user_id' => Auth::guard('admin')->id(),
+                    'transaction_id' => $request->input('edit_transaction_id'),
+                    'book_id' => $transaction->book_id,
+                    'timestamp' => now(),
+                ]);
+                DB::rollBack();
+                return redirect()->back()->with('toast-error', 'Associated book not found');
+            }
         } catch(\Illuminate\Database\QueryException $e){
             DB::rollBack();
             Log::error('Transaction Maintenance: Database error during update', [
