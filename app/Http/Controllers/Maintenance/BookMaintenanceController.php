@@ -42,7 +42,7 @@ class BookMaintenanceController extends Controller
 
         $categories = Category::select('id', 'name')->get();
         $books      = Book::with('category')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->paginate($perPage)
             ->appends([
                 'perPage' => $perPage,

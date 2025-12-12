@@ -14,8 +14,9 @@
       <tr>
         <th scope="col" class="px-6 py-3">User</th>
         <th scope="col" class="px-6 py-3 hidden sm:table-cell">Book Title</th>
-        <th scope="col" class="px-6 py-3 hidden md:table-cell">Borrowed Date</th>
-        <th scope="col" class="px-6 py-3 hidden lg:table-cell">Due Date</th>
+        <th scope="col" class="px-6 py-3 hidden sm:table-cell">Status</th>
+        <th scope="col" class="px-6 py-3 hidden lg:table-cell">Borrowed Date</th>
+        <th scope="col" class="px-6 py-3 hidden xl:table-cell">Due Date</th>
         <th scope="col" class="px-6 py-3 hidden xl:table-cell">Returned Date</th>
         <th scope="col" class="px-6 py-3">Actions</th>
       </tr>
@@ -30,8 +31,9 @@
           <div class="font-normal text-gray-500 sm:hidden mt-1">Book: {{ $item->book->title }}</div>
         </th>
         <td class="px-6 py-4 hidden sm:table-cell">{{ $item->book->title }}</td>
+        <td class="px-6 py-4 hidden sm:table-cell">{{ $item->status }}</td>
         <td class="px-6 py-4 hidden md:table-cell">{{ \Carbon\Carbon::parse($item->date_borrowed)->format('Y-m-d') }}</td>
-        <td class="px-6 py-4 hidden lg:table-cell">{{ $item->due_date ? \Carbon\Carbon::parse($item->due_date)->format('Y-m-d') : '-' }}</td>
+        <td class="px-6 py-4 hidden xl:table-cell">{{ $item->due_date ? \Carbon\Carbon::parse($item->due_date)->format('Y-m-d') : '-' }}</td>
         <td class="px-6 py-4 hidden xl:table-cell">{{ $item->return_date ? \Carbon\Carbon::parse($item->return_date)->format('Y-m-d') : 'Not Returned' }}</td>
         <td class="px-6 py-4">
           <div class="flex items-center space-x-2">

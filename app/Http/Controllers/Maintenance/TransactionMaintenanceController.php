@@ -205,6 +205,20 @@ class TransactionMaintenanceController extends Controller
                 'penalty_status'    => $request->input('penalty_status') ?? 'No Penalty',
                 'remarks'           => $request->input('remarks') ?? null,
             ]);
+            if($request->input('transaction_type') == 'Returned' && $request->input('status') == 'Completed') {
+                Log::debug('Transaction Maintenance: Updating book availability and return date', [
+                    'user_id' => Auth::guard('admin')->id(),
+                    'transaction_id' => $request->input('edit_transaction_id'),
+                    'book_id' => $transaction->book_id,
+                    'timestamp' => now(),
+                ]);
+                $transaction->book->update([
+                    'availability_status' => 'Available',
+                ]);
+                $transaction->update([
+                    'return_date' => now()->format('Y-m-d'),
+                ]);
+            }
             if(!$transaction->book) {
                 Log::warning('Transaction Maintenance: Update failed - Book not found', [
                     'user_id' => Auth::guard('admin')->id(),
