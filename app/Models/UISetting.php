@@ -12,6 +12,7 @@ class UISetting extends Model
         'org_name',
         'org_address',
         'org_logo',
+        'org_logo_full',
         'social_links',
         'theme_colors',
     ];
