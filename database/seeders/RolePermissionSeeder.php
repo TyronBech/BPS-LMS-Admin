@@ -57,7 +57,8 @@ class RolePermissionSeeder extends Seeder
         // Permission::create(['name' => 'View Dashboard',                      'guard_name' => 'admin']);
         // Permission::create(['name' => 'Create Backups',                      'guard_name' => 'admin']);
         // Permission::create(['name' => 'View Audit Reports',                  'guard_name' => 'admin']);
-        // Permission::create(['name' => 'Reservation Approvals',                      'guard_name' => 'admin']);
+        // Permission::create(['name' => 'Reservation Approvals',               'guard_name' => 'admin']);
+        // Permission::create(['name' => 'Modify UI Settings',                  'guard_name' => 'admin']);
 
 
         // $permission = Permission::findByName('View User Audit Reports', 'admin');

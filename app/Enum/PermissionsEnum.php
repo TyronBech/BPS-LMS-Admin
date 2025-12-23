@@ -42,5 +42,6 @@ enum PermissionsEnum : string
     case VIEW_DASHBOARD                     = 'View Dashboard';
     case CREATE_BACKUPS                     = 'Create Backups';
     case RESERVATION_APPROVALS              = 'Reservation Approvals';
+    case MODIFY_UI_SETTINGS                 = 'Modify UI Settings';
 
 }

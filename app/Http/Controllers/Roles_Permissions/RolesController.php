@@ -34,9 +34,10 @@ class RolesController extends Controller
         $roles_with_permissions = Role::with('permissions')
             ->whereHas('permissions', function ($query) {
                 $query->where('guard_name', 'admin')
-                    ->where('name', '!=', 'Modify Admins')
-                    ->where('name', '!=', 'Create Backups')
-                    ->where('name', '!=', 'View Audit Reports')
+                    ->where('name', '!=', PermissionsEnum::MODIFY_ADMIN->value)
+                    ->where('name', '!=', PermissionsEnum::CREATE_BACKUPS->value)
+                    ->where('name', '!=', PermissionsEnum::VIEW_AUDIT_REPORTS->value)
+                    ->where('name', '!=', PermissionsEnum::MODIFY_UI_SETTINGS->value)
                     ->orderBy('name', 'asc');
             })
             ->get();
@@ -61,9 +62,10 @@ class RolesController extends Controller
 
         $permissions = Permission::select('name')
             ->where('guard_name', 'admin')
-            ->where('name', '!=', 'Modify Admins')
-            ->where('name', '!=', 'Create Backups')
-            ->where('name', '!=', 'View Audit Reports')
+            ->where('name', '!=', PermissionsEnum::MODIFY_ADMIN->value)
+            ->where('name', '!=', PermissionsEnum::CREATE_BACKUPS->value)
+            ->where('name', '!=', PermissionsEnum::VIEW_AUDIT_REPORTS->value)
+            ->where('name', '!=', PermissionsEnum::MODIFY_UI_SETTINGS->value)
             ->orderBy('name', 'asc')
             ->get();
         return view('roles_permissions.create', compact('permissions'));
@@ -112,12 +114,12 @@ class RolesController extends Controller
         }
         // Define the mapping between view and action permissions
         $restrictions = [
-            PermissionsEnum::VIEW_USERS_MAINTENANCE            => [PermissionsEnum::ADD_USERS, PermissionsEnum::EDIT_USERS, PermissionsEnum::DELETE_USERS],
-            PermissionsEnum::VIEW_BOOKS_MAINTENANCE            => [PermissionsEnum::ADD_BOOKS, PermissionsEnum::EDIT_BOOKS, PermissionsEnum::DELETE_BOOKS],
-            PermissionsEnum::VIEW_BOOK_CATEGORIES_MAINTENANCE  => [PermissionsEnum::ADD_CATEGORIES, PermissionsEnum::EDIT_CATEGORIES, PermissionsEnum::DELETE_CATEGORIES],
-            PermissionsEnum::VIEW_PRIVILEGES_MAINTENANCE       => [PermissionsEnum::ADD_PRIVILEGES, PermissionsEnum::EDIT_PRIVILEGES, PermissionsEnum::DELETE_PRIVILEGES],
-            PermissionsEnum::VIEW_PENALTY_RULES_MAINTENANCE    => [PermissionsEnum::ADD_PENALTY_RULES, PermissionsEnum::EDIT_PENALTY_RULES, PermissionsEnum::DELETE_PENALTY_RULES],
-            PermissionsEnum::VIEW_TRANSACTIONS_MAINTENANCE     => [PermissionsEnum::EDIT_TRANSACTIONS],
+            PermissionsEnum::VIEW_USERS_MAINTENANCE->value            => [PermissionsEnum::ADD_USERS->value, PermissionsEnum::EDIT_USERS->value, PermissionsEnum::DELETE_USERS->value],
+            PermissionsEnum::VIEW_BOOKS_MAINTENANCE->value            => [PermissionsEnum::ADD_BOOKS->value, PermissionsEnum::EDIT_BOOKS->value, PermissionsEnum::DELETE_BOOKS->value],
+            PermissionsEnum::VIEW_BOOK_CATEGORIES_MAINTENANCE->value  => [PermissionsEnum::ADD_CATEGORIES->value, PermissionsEnum::EDIT_CATEGORIES->value, PermissionsEnum::DELETE_CATEGORIES->value],
+            PermissionsEnum::VIEW_PRIVILEGES_MAINTENANCE->value       => [PermissionsEnum::ADD_PRIVILEGES->value, PermissionsEnum::EDIT_PRIVILEGES->value, PermissionsEnum::DELETE_PRIVILEGES->value],
+            PermissionsEnum::VIEW_PENALTY_RULES_MAINTENANCE->value    => [PermissionsEnum::ADD_PENALTY_RULES->value, PermissionsEnum::EDIT_PENALTY_RULES->value, PermissionsEnum::DELETE_PENALTY_RULES->value],
+            PermissionsEnum::VIEW_TRANSACTIONS_MAINTENANCE->value     => [PermissionsEnum::EDIT_TRANSACTIONS->value],
         ];
 
         // Check if user selected restricted actions without corresponding view
@@ -201,9 +203,10 @@ class RolesController extends Controller
             $role = Role::findById($role_id);
             $permissions = Permission::with('roles')
                 ->where('guard_name', 'admin')
-                ->where('name', '!=', 'Modify Admins')
-                ->where('name', '!=', 'Create Backups')
-                ->where('name', '!=', 'View Audit Reports')
+                ->where('name', '!=', PermissionsEnum::MODIFY_ADMIN->value)
+                ->where('name', '!=', PermissionsEnum::CREATE_BACKUPS->value)
+                ->where('name', '!=', PermissionsEnum::VIEW_AUDIT_REPORTS->value)
+                ->where('name', '!=', PermissionsEnum::MODIFY_UI_SETTINGS->value)
                 ->orderBy('name', 'asc')
                 ->get();
         } catch (\Illuminate\Database\QueryException $e) {
@@ -266,12 +269,12 @@ class RolesController extends Controller
         }
         // Define the mapping between view and action permissions
         $restrictions = [
-            PermissionsEnum::VIEW_USERS_MAINTENANCE            => [PermissionsEnum::ADD_USERS, PermissionsEnum::EDIT_USERS, PermissionsEnum::DELETE_USERS],
-            PermissionsEnum::VIEW_BOOKS_MAINTENANCE            => [PermissionsEnum::ADD_BOOKS, PermissionsEnum::EDIT_BOOKS, PermissionsEnum::DELETE_BOOKS],
-            PermissionsEnum::VIEW_BOOK_CATEGORIES_MAINTENANCE  => [PermissionsEnum::ADD_CATEGORIES, PermissionsEnum::EDIT_CATEGORIES, PermissionsEnum::DELETE_CATEGORIES],
-            PermissionsEnum::VIEW_PRIVILEGES_MAINTENANCE       => [PermissionsEnum::ADD_PRIVILEGES, PermissionsEnum::EDIT_PRIVILEGES, PermissionsEnum::DELETE_PRIVILEGES],
-            PermissionsEnum::VIEW_PENALTY_RULES_MAINTENANCE    => [PermissionsEnum::ADD_PENALTY_RULES, PermissionsEnum::EDIT_PENALTY_RULES, PermissionsEnum::DELETE_PENALTY_RULES],
-            PermissionsEnum::VIEW_TRANSACTIONS_MAINTENANCE     => [PermissionsEnum::EDIT_TRANSACTIONS],
+            PermissionsEnum::VIEW_USERS_MAINTENANCE->value            => [PermissionsEnum::ADD_USERS->value, PermissionsEnum::EDIT_USERS->value, PermissionsEnum::DELETE_USERS->value],
+            PermissionsEnum::VIEW_BOOKS_MAINTENANCE->value            => [PermissionsEnum::ADD_BOOKS->value, PermissionsEnum::EDIT_BOOKS->value, PermissionsEnum::DELETE_BOOKS->value],
+            PermissionsEnum::VIEW_BOOK_CATEGORIES_MAINTENANCE->value  => [PermissionsEnum::ADD_CATEGORIES->value, PermissionsEnum::EDIT_CATEGORIES->value, PermissionsEnum::DELETE_CATEGORIES->value],
+            PermissionsEnum::VIEW_PRIVILEGES_MAINTENANCE->value       => [PermissionsEnum::ADD_PRIVILEGES->value, PermissionsEnum::EDIT_PRIVILEGES->value, PermissionsEnum::DELETE_PRIVILEGES->value],
+            PermissionsEnum::VIEW_PENALTY_RULES_MAINTENANCE->value    => [PermissionsEnum::ADD_PENALTY_RULES->value, PermissionsEnum::EDIT_PENALTY_RULES->value, PermissionsEnum::DELETE_PENALTY_RULES->value],
+            PermissionsEnum::VIEW_TRANSACTIONS_MAINTENANCE->value     => [PermissionsEnum::EDIT_TRANSACTIONS->value],
         ];
 
         // Check if user selected restricted actions without corresponding view

@@ -32,6 +32,7 @@ use App\Http\Controllers\Maintenance\PenaltyRuleController;
 use App\Http\Controllers\Maintenance\ReservationExtensionController;
 use App\Http\Controllers\Maintenance\ReservationStatus;
 use App\Http\Controllers\Maintenance\TransactionMaintenanceController;
+use App\Http\Controllers\Settings\UISettingController;
 use App\Http\Middleware\AuditReportAuthentication;
 use App\Http\Middleware\BackupAuthentication;
 use App\Http\Middleware\BookAuthentication;
@@ -49,6 +50,7 @@ use App\Http\Middleware\PenaltyRuleMiddleware;
 use App\Http\Middleware\PreventBackHistory;
 use App\Http\Middleware\ReservationAuthentication;
 use App\Http\Middleware\StudentImportAuthentication;
+use App\Http\Middleware\UISettingAuthentication;
 
 Route::middleware(['guest', RedirectIfAuthenticated::class, PreventBackHistory::class])->group(function () {
     Route::get('/', function () {
@@ -302,6 +304,11 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
         Route::post('create', 'create')     ->name('backup.create');
         Route::post('download', 'download') ->name('backup.download');
         Route::delete('delete', 'destroy')  ->name('backup.destroy');
+    });
+
+    Route::prefix('settings')->middleware(UISettingAuthentication::class)->controller(UISettingController::class)->group(function () {
+        Route::get('ui-settings', 'index')          ->name('settings.ui-settings');
+        Route::post('ui-settings', 'update')        ->name('settings.update-ui-settings');
     });
 
     Route::post('logout', [AdminLoginController::class, 'destroy'])->name('admin.logout');
