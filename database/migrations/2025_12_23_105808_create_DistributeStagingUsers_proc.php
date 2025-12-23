@@ -10,7 +10,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::unprepared("CREATE DEFINER=`root`@`localhost` PROCEDURE `DistributeStagingUsers`()
+        DB::unprepared("CREATE DEFINER=`u815439804_stagelms`@`127.0.0.1` PROCEDURE `DistributeStagingUsers`()
 BEGIN
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN

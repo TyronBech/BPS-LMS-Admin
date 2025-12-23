@@ -10,12 +10,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        DB::unprepared("CREATE DEFINER=`root`@`localhost` PROCEDURE `AutoTimeoutUsers`()
+        DB::unprepared("CREATE DEFINER=`u815439804_stagelms`@`127.0.0.1` PROCEDURE `AutoTimeoutUsers`()
 UPDATE log_user_logs  
     SET 
         time_out = TIMESTAMP(CURRENT_DATE, '15:30:00'),
-        remarks = 'System Generated Timeout',
-        updated_at = CONVERT_TZ(NOW(), '+00:00', '+08:00')
+        remarks = 'System Generated Timeout'  
     WHERE 
         time_out IS NULL  
         AND DATE(time_in) = CURRENT_DATE");

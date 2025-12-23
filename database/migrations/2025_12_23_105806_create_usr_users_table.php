@@ -24,6 +24,9 @@ return new class extends Migration
             $table->string('email', 50)->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password')->nullable()->default('123');
+            $table->boolean('two_factor_enabled')->default(false);
+            $table->string('two_factor_secret')->nullable();
+            $table->text('two_factor_backup_codes')->nullable();
             $table->rememberToken();
             $table->timestamp('created_at')->nullable()->useCurrent();
             $table->timestamp('updated_at')->useCurrentOnUpdate()->nullable()->useCurrent();
