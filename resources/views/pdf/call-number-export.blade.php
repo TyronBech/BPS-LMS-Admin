@@ -29,6 +29,7 @@
       padding-top: 15px;
       padding-bottom: 10px;
       height: 100px;
+      width: 14.28%;
     }
 
     .label {
@@ -56,6 +57,10 @@
   @php
     $columns = 7;
     $items = collect($books ?? [])->map(function ($book) {
+        if (empty($book)) {
+            return '';
+        }
+
         if (is_array($book)) {
             return $book['call_number'] ?? '';
         }
@@ -76,7 +81,8 @@
         <tr>
           @foreach ($chunk as $raw)
             @php
-              $segments = $raw === '' ? [] : preg_split('/\s+/u', trim($raw));
+              $safeRaw = (string)($raw ?? '');
+              $segments = $safeRaw === '' ? [] : preg_split('/\s+/u', trim($safeRaw));
             @endphp
             <td>
               <div class="label">
@@ -91,7 +97,7 @@
           @endforeach
 
           @for ($i = $chunk->count(); $i < $columns; $i++)
-            <td></td>
+            <td>&nbsp;</td>
           @endfor
         </tr>
       @empty
