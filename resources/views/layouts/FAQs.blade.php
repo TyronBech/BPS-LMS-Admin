@@ -1,7 +1,7 @@
 @use('App\Enum\PermissionsEnum')
 <button type="button" data-modal-target="FAQsModal" data-modal-toggle="FAQsModal"
   class="fixed bottom-4 right-4 md:bottom-6 md:right-6 lg:bottom-8 lg:right-8 
-            bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-600 
+            bg-primary-500 hover:bg-primary-600 dark:bg-primary-500 dark:hover:bg-primary-400 
             text-white rounded-full p-3 md:p-4 shadow-lg hover:shadow-xl 
             transition-all duration-300 hover:scale-110 z-50 group"
   title="Frequently Asked Questions">
@@ -30,7 +30,7 @@
     <!-- Modal content -->
     <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-2xl">
       <!-- Modal header -->
-      <div class="flex items-center justify-between p-4 md:p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-blue-600 to-blue-700 rounded-t-lg">
+      <div class="flex items-center justify-between p-4 md:p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-primary-700 to-primary-800 rounded-t-lg">
         <div class="flex items-center gap-3">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -67,9 +67,9 @@
             @foreach($dashboardFAQs['questions'] as $index => $question)
             <div class="mb-2">
               <h2 id="accordion-dashboard-heading-{{ $index }}">
-                <button type="button" class="flex items-center justify-between w-full p-4 font-medium text-left text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors [&[aria-expanded=true]]:bg-blue-100 dark:[&[aria-expanded=true]]:bg-blue-900 [&[aria-expanded=true]]:text-blue-700 dark:[&[aria-expanded=true]]:text-blue-300" data-accordion-target="#accordion-dashboard-body-{{ $index }}" aria-expanded="false" aria-controls="accordion-dashboard-body-{{ $index }}">
+                <button type="button" class="flex items-center justify-between w-full p-4 font-medium text-left text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors [&[aria-expanded=true]]:bg-primary-100 dark:[&[aria-expanded=true]]:bg-primary-900 [&[aria-expanded=true]]:text-primary-700 dark:[&[aria-expanded=true]]:text-primary-300" data-accordion-target="#accordion-dashboard-body-{{ $index }}" aria-expanded="false" aria-controls="accordion-dashboard-body-{{ $index }}">
                   <span class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 text-tertiary-600 dark:text-tertiary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     {{ $question }}
@@ -108,9 +108,9 @@
             @foreach($inventoryFAQs['questions'] as $index => $question)
             <div class="mb-2">
               <h2 id="accordion-inventory-heading-{{ $index }}">
-                <button type="button" class="flex items-center justify-between w-full p-4 font-medium text-left text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors [&[aria-expanded=true]]:bg-blue-100 dark:[&[aria-expanded=true]]:bg-blue-900 [&[aria-expanded=true]]:text-blue-700 dark:[&[aria-expanded=true]]:text-blue-300" data-accordion-target="#accordion-inventory-body-{{ $index }}" aria-expanded="false" aria-controls="accordion-inventory-body-{{ $index }}">
+                <button type="button" class="flex items-center justify-between w-full p-4 font-medium text-left text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors [&[aria-expanded=true]]:bg-primary-100 dark:[&[aria-expanded=true]]:bg-primary-900 [&[aria-expanded=true]]:text-primary-700 dark:[&[aria-expanded=true]]:text-primary-300" data-accordion-target="#accordion-inventory-body-{{ $index }}" aria-expanded="false" aria-controls="accordion-inventory-body-{{ $index }}">
                   <span class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 text-tertiary-600 dark:text-tertiary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     {{ $question }}
@@ -154,9 +154,9 @@
             @foreach($reportFAQs['questions'] as $index => $question)
             <div class="mb-2">
               <h2 id="accordion-report-heading-{{ $index }}">
-                <button type="button" class="flex items-center justify-between w-full p-4 font-medium text-left text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors [&[aria-expanded=true]]:bg-blue-100 dark:[&[aria-expanded=true]]:bg-blue-900 [&[aria-expanded=true]]:text-blue-700 dark:[&[aria-expanded=true]]:text-blue-300" data-accordion-target="#accordion-report-body-{{ $index }}" aria-expanded="false" aria-controls="accordion-report-body-{{ $index }}">
+                <button type="button" class="flex items-center justify-between w-full p-4 font-medium text-left text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors [&[aria-expanded=true]]:bg-primary-100 dark:[&[aria-expanded=true]]:bg-primary-900 [&[aria-expanded=true]]:text-primary-700 dark:[&[aria-expanded=true]]:text-primary-300" data-accordion-target="#accordion-report-body-{{ $index }}" aria-expanded="false" aria-controls="accordion-report-body-{{ $index }}">
                   <span class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 text-tertiary-600 dark:text-tertiary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     {{ $question }}
@@ -196,9 +196,9 @@
             @foreach($importFAQs['questions'] as $index => $question)
             <div class="mb-2">
               <h2 id="accordion-import-heading-{{ $index }}">
-                <button type="button" class="flex items-center justify-between w-full p-4 font-medium text-left text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors [&[aria-expanded=true]]:bg-blue-100 dark:[&[aria-expanded=true]]:bg-blue-900 [&[aria-expanded=true]]:text-blue-700 dark:[&[aria-expanded=true]]:text-blue-300" data-accordion-target="#accordion-import-body-{{ $index }}" aria-expanded="false" aria-controls="accordion-import-body-{{ $index }}">
+                <button type="button" class="flex items-center justify-between w-full p-4 font-medium text-left text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors [&[aria-expanded=true]]:bg-primary-100 dark:[&[aria-expanded=true]]:bg-primary-900 [&[aria-expanded=true]]:text-primary-700 dark:[&[aria-expanded=true]]:text-primary-300" data-accordion-target="#accordion-import-body-{{ $index }}" aria-expanded="false" aria-controls="accordion-import-body-{{ $index }}">
                   <span class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 text-tertiary-600 dark:text-tertiary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     {{ $question }}
@@ -246,9 +246,9 @@
             @foreach($maintenanceFAQs['questions'] as $index => $question)
             <div class="mb-2">
               <h2 id="accordion-maintenance-heading-{{ $index }}">
-                <button type="button" class="flex items-center justify-between w-full p-4 font-medium text-left text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors [&[aria-expanded=true]]:bg-blue-100 dark:[&[aria-expanded=true]]:bg-blue-900 [&[aria-expanded=true]]:text-blue-700 dark:[&[aria-expanded=true]]:text-blue-300" data-accordion-target="#accordion-maintenance-body-{{ $index }}" aria-expanded="false" aria-controls="accordion-maintenance-body-{{ $index }}">
+                <button type="button" class="flex items-center justify-between w-full p-4 font-medium text-left text-gray-900 dark:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-colors [&[aria-expanded=true]]:bg-primary-100 dark:[&[aria-expanded=true]]:bg-primary-900 [&[aria-expanded=true]]:text-primary-700 dark:[&[aria-expanded=true]]:text-primary-300" data-accordion-target="#accordion-maintenance-body-{{ $index }}" aria-expanded="false" aria-controls="accordion-maintenance-body-{{ $index }}">
                   <span class="flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="w-5 h-5 text-tertiary-600 dark:text-tertiary-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     {{ $question }}

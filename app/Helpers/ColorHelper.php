@@ -4,94 +4,111 @@ namespace App\Helpers;
 
 class ColorHelper
 {
-    
-    /**
-     * Generates a color palette with the given hex color.
-     * The palette consists of 9 shades from 50 (very light) to 950 (very dark)
-     * The shades are as follows:
-     * - 50: very light
-     * - 100: light
-     * - 200: semi light
-     * - 300: semi dark
-     * - 400: dark
-     * - 500: the exact color you picked
-     * - 600: very dark
-     * - 700: good for headers
-     * - 800: darker
-     * - 900: dark
-     * - 950: very dark
-     *
-     * @param string $hex The hex color to generate the palette with
-     * @return array The generated color palette
-     */
-    public static function generatePalette($hex)
+    public static function generatePalette(string $hex): array
     {
+        [$r, $g, $b] = self::parseHex($hex);
+        [$h, $s, $l0] = self::rgbToHsl($r, $g, $b);
+
+        $scale = [
+            50  =>  0.95,
+            100 =>  0.85,
+            200 =>  0.70,
+            300 =>  0.50,
+            400 =>  0.25,
+            500 =>  0.00,
+            600 => -0.15,
+            700 => -0.30,
+            800 => -0.50,
+            900 => -0.70,
+        ];
+
+        $palette = [];
+
+        foreach ($scale as $key => $delta) {
+            $l = $delta > 0
+                ? $l0 + (1 - $l0) * $delta
+                : $l0 * (1 + $delta);
+
+            // clamp
+            $l = max(0, min(1, $l));
+
+            // Slight desaturation for extremes (Tailwind behavior)
+            $sAdj = $s * match (true) {
+                $key <= 100 => 0.80,
+                $key >= 800 => 0.90,
+                default    => 1.0,
+            };
+
+            [$rr, $gg, $bb] = self::hslToRgb($h, $sAdj, $l);
+            $palette[$key] = "$rr $gg $bb";
+        }
+
+        return $palette;
+    }
+
+    /* ---------------- HSL CORE ---------------- */
+
+    private static function rgbToHsl($r, $g, $b): array
+    {
+        $r /= 255; $g /= 255; $b /= 255;
+        $max = max($r, $g, $b);
+        $min = min($r, $g, $b);
+        $l = ($max + $min) / 2;
+
+        if ($max === $min) {
+            return [0, 0, $l];
+        }
+
+        $d = $max - $min;
+        $s = $l > 0.5 ? $d / (2 - $max - $min) : $d / ($max + $min);
+
+        $h = match ($max) {
+            $r => ($g - $b) / $d + ($g < $b ? 6 : 0),
+            $g => ($b - $r) / $d + 2,
+            default => ($r - $g) / $d + 4,
+        };
+
+        return [$h / 6, $s, $l];
+    }
+
+    private static function hslToRgb($h, $s, $l): array
+    {
+        if ($s == 0) {
+            $v = round($l * 255);
+            return [$v, $v, $v];
+        }
+
+        $q = $l < 0.5 ? $l * (1 + $s) : $l + $s - $l * $s;
+        $p = 2 * $l - $q;
+
         return [
-            50  => self::mix($hex, '#ffffff', 95),
-            100 => self::mix($hex, '#ffffff', 90),
-            200 => self::mix($hex, '#ffffff', 75),
-            300 => self::mix($hex, '#ffffff', 60),
-            400 => self::mix($hex, '#ffffff', 30),
-            500 => self::hex2rgb($hex),           // The exact color you picked
-            600 => self::mix($hex, '#000000', 10),
-            700 => self::mix($hex, '#000000', 25), // Good for Headers
-            800 => self::mix($hex, '#000000', 45),
-            900 => self::mix($hex, '#000000', 65),
-            950 => self::mix($hex, '#000000', 85),
+            round(self::hueToRgb($p, $q, $h + 1/3) * 255),
+            round(self::hueToRgb($p, $q, $h) * 255),
+            round(self::hueToRgb($p, $q, $h - 1/3) * 255),
         ];
     }
 
-    
-    /**
-     * Mixes two colors together.
-     * The $percentage parameter determines how much of $color2 should be added to $color1.
-     * The result is returned as an RGB string (e.g. "255 255 255").
-     *
-     * @param string $color1 The base color
-     * @param string $color2 The color to add to $color1
-     * @param int $percentage The percentage of $color2 to add to $color1
-     * @return string The mixed color as an RGB string
-     */
-    private static function mix($color1, $color2, $percentage)
+    private static function hueToRgb($p, $q, $t)
     {
-        $rgb1 = self::parseHex($color1);
-        $rgb2 = self::parseHex($color2);
-
-        $r = round($rgb1[0] + ($rgb2[0] - $rgb1[0]) * ($percentage / 100));
-        $g = round($rgb1[1] + ($rgb2[1] - $rgb1[1]) * ($percentage / 100));
-        $b = round($rgb1[2] + ($rgb2[2] - $rgb1[2]) * ($percentage / 100));
-
-        return "$r $g $b";
+        if ($t < 0) $t += 1;
+        if ($t > 1) $t -= 1;
+        if ($t < 1/6) return $p + ($q - $p) * 6 * $t;
+        if ($t < 1/2) return $q;
+        if ($t < 2/3) return $p + ($q - $p) * (2/3 - $t) * 6;
+        return $p;
     }
 
-    
-    /**
-     * Converts a hex color code to an RGB array.
-     * If the given hex code is in the short form (e.g. "#fff"), it will be converted to the long form.
-     * The returned array contains the red, green and blue values of the color in the order of [r, g, b]
-     * @param string $hex The hex color code to convert
-     * @return array The RGB array
-     */
-    private static function parseHex($hex)
+    private static function parseHex(string $hex): array
     {
-        $hex = str_replace("#", "", $hex);
-        if (strlen($hex) == 3) {
-            $hex = $hex[0].$hex[0].$hex[1].$hex[1].$hex[2].$hex[2];
+        $hex = ltrim($hex, '#');
+        if (strlen($hex) === 3) {
+            $hex = "{$hex[0]}{$hex[0]}{$hex[1]}{$hex[1]}{$hex[2]}{$hex[2]}";
         }
-        $r = hexdec(substr($hex, 0, 2));
-        $g = hexdec(substr($hex, 2, 2));
-        $b = hexdec(substr($hex, 4, 2));
-        return [$r, $g, $b];
-    }
-    
-    /**
-     * Converts a hex color code to an RGB string.
-     * The returned string is in the format of "r g b".
-     * @param string $hex The hex color code to convert
-     * @return string The RGB string
-     */
-    private static function hex2rgb($hex) {
-        $rgb = self::parseHex($hex);
-        return "{$rgb[0]} {$rgb[1]} {$rgb[2]}";
+
+        return [
+            hexdec(substr($hex, 0, 2)),
+            hexdec(substr($hex, 2, 2)),
+            hexdec(substr($hex, 4, 2)),
+        ];
     }
 }

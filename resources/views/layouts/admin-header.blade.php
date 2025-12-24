@@ -1,11 +1,11 @@
 @use('App\Enum\PermissionsEnum')
 <header class="sticky top-0 z-50">
-  <nav class="bg-bpsBlue border-gray-200 dark:bg-bpsBlue">
+  <nav class="bg-primary-500 border-gray-200 dark:bg-primary-500">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
       <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 rtl:space-x-reverse">
-        <img class="rounded-full w-16 h-16 md:w-20 md:h-20" src="{{ asset('img/BPSLogo.png') }}" alt="School Logo">
+        <img class="rounded-full w-16 h-16 md:w-20 md:h-20" src="{{ $settings->org_logo ? asset('storage/' . $settings->org_logo) : '' }}" alt="School Logo">
         <div class="flex flex-col justify-center">
-          <h1 class="text-sm md:text-lg lg:text-xl text-white font-semibold text-start">Bicutan Parochial School, Inc.</h1>
+          <h1 class="text-sm md:text-lg lg:text-xl text-white font-semibold text-start">{{ $settings->org_name }}</h1>
           <hr class="h-px my-1 bg-gray-200 border-0">
           <h1 class="text-sm md:text-lg lg:text-xl text-white font-semibold text-start">Library Management System</h1>
         </div>
@@ -17,13 +17,13 @@
         </svg>
       </button>
       <div class="hidden w-full lg:block lg:w-auto" id="navbar-dropdown">
-        <ul class="flex flex-col font-medium p-3 lg:p-0 mt-4 border border-gray-100 rounded-lg bg-bpsBlue lg:flex-row lg:items-center lg:space-x-6 rtl:space-x-reverse lg:mt-0 lg:border-0 lg:bg-bpsBlue dark:bg-gray-800 lg:dark:bg-bpsBlue dark:border-gray-700">
+        <ul class="flex flex-col font-medium p-3 lg:p-0 mt-4 border border-gray-100 rounded-lg lg:flex-row lg:items-center lg:space-x-6 rtl:space-x-reverse lg:mt-0 lg:border-0 lg:bg-primary-500 dark:bg-gray-800 lg:dark:bg-primary-500 dark:border-gray-700">
           <li>
-            <a href="{{ route('dashboard') }}" class="block py-2 px-3 text-white rounded hover:bg-blue-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-300 lg:p-0 dark:text-white lg:dark:hover:text-blue-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent" aria-current="page">Home</a>
+            <a href="{{ route('dashboard') }}" class="block py-2 px-3 text-white rounded hover:bg-primary-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-300 lg:p-0 dark:text-white lg:dark:hover:text-primary-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent" aria-current="page">Home</a>
           </li>
           @can(PermissionsEnum::BOOK_INVENTORY)
           <li>
-            <a href="{{ route('inventory.dashboard') }}" class="block py-2 px-3 text-white rounded hover:bg-blue-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-300 lg:p-0 dark:text-white lg:dark:hover:text-blue-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent" aria-current="page">Inventory</a>
+            <a href="{{ route('inventory.dashboard') }}" class="block py-2 px-3 text-white rounded hover:bg-primary-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-300 lg:p-0 dark:text-white lg:dark:hover:text-primary-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent" aria-current="page">Inventory</a>
           </li>
           @endcan
           @if(auth()->user()->can(PermissionsEnum::VIEW_USER_REPORTS)
@@ -32,7 +32,7 @@
           || auth()->user()->can(PermissionsEnum::VIEW_TRANSACTION_REPORTS)
           || auth()->user()->can(PermissionsEnum::VIEW_BOOK_CIRCULATION_REPORTS))
           <li>
-            <button id="dropdownNavbarLink" data-dropdown-toggle="navbarReport" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:bg-blue-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-300 lg:p-0 lg:w-auto dark:text-white lg:dark:hover:text-blue-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent">Reports <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+            <button id="dropdownNavbarLink" data-dropdown-toggle="navbarReport" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:bg-primary-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-300 lg:p-0 lg:w-auto dark:text-white lg:dark:hover:text-primary-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent">Reports <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
               </svg></button>
             <!-- Dropdown menu -->
@@ -123,7 +123,7 @@
           @endif
           @if(auth()->user()->can(PermissionsEnum::IMPORT_USERS) || auth()->user()->can(PermissionsEnum::IMPORT_BOOKS))
           <li>
-            <button id="dropdownNavbarLink" data-dropdown-toggle="navbarImport" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:bg-blue-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-300 lg:p-0 lg:w-auto dark:text-white lg:dark:hover:text-blue-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent">Imports <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+            <button id="dropdownNavbarLink" data-dropdown-toggle="navbarImport" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:bg-primary-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-300 lg:p-0 lg:w-auto dark:text-white lg:dark:hover:text-primary-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent">Imports <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
               </svg></button>
             <!-- Dropdown menu -->
@@ -174,7 +174,7 @@
           auth()->user()->can(PermissionsEnum::CREATE_BACKUPS) ||
           auth()->user()->can(PermissionsEnum::MODIFY_ADMIN))
           <li>
-            <button id="dropdownNavbarLink" data-dropdown-toggle="navbarMaintenance" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:bg-blue-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-300 lg:p-0 lg:w-auto dark:text-white lg:dark:hover:text-blue-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent">
+            <button id="dropdownNavbarLink" data-dropdown-toggle="navbarMaintenance" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:bg-primary-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-300 lg:p-0 lg:w-auto dark:text-white lg:dark:hover:text-primary-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent">
               <div>Maintenance <span id="maintenance-notification-badge" class="hidden ms-2 bg-red-500 text-white text-xs font-semibold px-1.5 py-0.5 rounded-full"></span></div><svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
               </svg>
@@ -331,7 +331,7 @@
               $mimeType = $finfo->buffer($imageData);
             }
             ?>
-            <button id="dropdownNavbarLink" data-dropdown-toggle="userSettings" class="flex items-center text-white rounded hover:bg-blue-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-300 lg:p-0 dark:text-white lg:dark:hover:text-blue-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent">
+            <button id="dropdownNavbarLink" data-dropdown-toggle="userSettings" class="flex items-center text-white rounded hover:bg-primary-800 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-300 lg:p-0 dark:text-white lg:dark:hover:text-primary-400 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent">
               @if(!empty($base64Image))
               <img class="w-8 h-8 rounded-full" src="data:{{ $mimeType }};base64,{{ $base64Image }}" alt="{{ auth()->user()->first_name }} image">
               @else
