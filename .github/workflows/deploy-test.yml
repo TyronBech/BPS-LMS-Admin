@@ -54,15 +54,3 @@ jobs:
           target: ${{ secrets.SFTP_DIR_TEST }}
           rm: true
           overwrite: true
-
-      - name: Execute Remote Commands
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SFTP_HOST_TEST }}
-          username: ${{ secrets.SFTP_USERNAME_TEST }}
-          key: ${{ secrets.SFTP_PRIVATE_KEY_TEST }}
-          port: ${{ secrets.SFTP_PORT_TEST }}
-          script: |
-            cd ${{ secrets.SFTP_DIR_TEST }}
-            php artisan storage:link
-            php artisan optimize:clear
