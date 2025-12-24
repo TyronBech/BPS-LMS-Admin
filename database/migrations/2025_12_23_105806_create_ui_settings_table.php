@@ -17,8 +17,13 @@ return new class extends Migration
             $table->text('org_address');
             $table->binary('org_logo');
             $table->binary('org_logo_full');
+            $table->string('email', 100);
+            $table->string('contact_number', 45);
             $table->json('social_links')->nullable();
             $table->json('theme_colors')->nullable();
+            $table->timestamp('created_at')->nullable()->useCurrent();
+            $table->timestamp('updated_at')->useCurrentOnUpdate()->nullable()->useCurrent();
+            $table->softDeletes();
         });
     }
 

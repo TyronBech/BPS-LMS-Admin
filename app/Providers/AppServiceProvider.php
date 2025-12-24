@@ -2,9 +2,13 @@
 
 namespace App\Providers;
 
+use App\Models\UISetting;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\View;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -30,5 +34,9 @@ class AppServiceProvider extends ServiceProvider
             return $user->hasRole('Super Admin') ? true : null;
         });
         DB::statement('SET time_zone = "+08:00"');
+        if (Schema::hasTable('ui_settings')) {
+            $settings = UISetting::first() ?? new UISetting();
+            View::share('settings', $settings);
+        }
     }
 }
