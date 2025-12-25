@@ -1,7 +1,7 @@
 @use('App\Enum\PermissionsEnum')
 @extends('layouts.admin-app')
 @section('content')
-<h1 class="font-semibold text-center text-4xl p-5">Home</h1>
+<h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Home</h1>
 @if(auth()->user()->can(PermissionsEnum::VIEW_DASHBOARD))
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
   <div class="flex flex-col min-h-96 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">

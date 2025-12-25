@@ -1,6 +1,6 @@
 @extends('layouts.admin-app')
 @section('content')
-<h1 class="font-semibold text-center text-4xl p-5">Inventory</h1>
+<h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Inventory</h1>
 <div class="flex justify-center">
   <div class="w-full max-w-sm md:max-w-xl lg:max-w-4xl flex flex-col items-center bg-white border border-gray-200 rounded-lg shadow-sm mb-12 md:flex-row dark:border-gray-700 dark:bg-gray-800">
     <img class="object-cover w-full rounded-t-lg h-64 md:h-48 md:rounded-none md:rounded-s-lg" src="{{ asset('gif/Book.gif') }}" id="book-img" alt="Book Image">

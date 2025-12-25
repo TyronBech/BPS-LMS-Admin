@@ -216,7 +216,7 @@
               <input type="color" name="tertiary" id="tertiary"
                 value="{{ old('tertiary', ($settings->theme_colors ?? [])['tertiary'] ?? '#F59E0B') }}"
                 class="h-10 w-20 p-1 rounded border border-gray-300 dark:border-gray-600 dark:bg-gray-700 cursor-pointer">
-              <span class="text-sm text-gray-500 dark:text-gray-400">Used for other buttons and accents.</span>
+              <span class="text-sm text-gray-500 dark:text-gray-400">Used for other buttons, hover, and other accents.</span>
             </div>
             @error('tertiary')
             <p class="text-red-500 text-xs mt-1">{{ $message }}</p>

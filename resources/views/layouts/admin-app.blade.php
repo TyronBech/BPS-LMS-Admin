@@ -14,7 +14,7 @@
   @vite(['resources/css/app.css', 'resources/js/app.js'])
   <style>
     :root {
-      --loader-dot-default: {{ $settings->theme_colors['primary'] ?? '#20246c' }};
+      --loader-dot-default: {{ $settings->theme_colors['tertiary'] ?? '#C27803' }};
       <?php
         use App\Helpers\ColorHelper;
         use Illuminate\Support\Facades\Log;
