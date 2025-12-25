@@ -27,7 +27,7 @@ class FAQHelper
                 "What is the dashboard?",
                 "How to navigate through the dashboard?",
                 "What information is displayed on the dashboard?",
-                "Can I generte reports from the dashboard?",
+                "Can I generate reports from the dashboard?",
             ],
             'answers' => [
                 "The dashboard is the main interface where users can view important information at a glance.",

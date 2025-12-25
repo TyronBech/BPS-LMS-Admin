@@ -25,8 +25,6 @@
 
 .loader-overlay.hidden { display: none; }
 
-/* default dot color (light mode) */
-:root { --loader-dot-default: #20246c; }
 
 /* loader — uses CSS variable for color */
 .loader {
@@ -67,7 +65,7 @@ body.dark .loader-overlay {
 
 /* optional: make sure light preference forces the blue color */
 @media (prefers-color-scheme: light) {
-  .loader { --dot-color: #20246c; }
+  .loader { --dot-color: var(--loader-dot-default); }
   .loader-overlay { background-color: rgba(15, 23, 42, 0.08); }
 }
 

@@ -14,13 +14,14 @@
   @vite(['resources/css/app.css', 'resources/js/app.js'])
   <style>
     :root {
+      --loader-dot-default: {{ $settings->theme_colors['primary'] ?? '#20246c' }};
       <?php
         use App\Helpers\ColorHelper;
         use Illuminate\Support\Facades\Log;
 
         $colors = [
             'primary' => $settings->theme_colors['primary'] ?? '#20246c',
-            'secondary' => $settings->theme_colors['secondary'] ?? '#3F83F8',
+            'secondary' => $settings->theme_colors['secondary'] ?? '#EBF5FF',
             'tertiary' => $settings->theme_colors['tertiary'] ?? '#C27803',
         ];
         Log::info('Theme Colors: ' . json_encode($colors));
