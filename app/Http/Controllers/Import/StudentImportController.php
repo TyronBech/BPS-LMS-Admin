@@ -678,6 +678,10 @@ class StudentImportController extends Controller
         $otherParts = trim($parts[1] ?? '');
 
         if ($otherParts === '') {
+            Log::debug('Student Import: No other name parts found, only last name extracted', [
+                'full_name' => $fullName,
+                'last_name' => $lastName,
+            ]);
             return [
                 'first_name' => '',
                 'middle_name' => '',
