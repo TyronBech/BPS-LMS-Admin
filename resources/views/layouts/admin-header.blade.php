@@ -3,7 +3,7 @@
   <nav class="bg-primary-500 border-gray-200 dark:bg-primary-500">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
       <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 rtl:space-x-reverse">
-        <img class="rounded-full w-16 h-16 md:w-20 md:h-20" src="{{ $settings->org_logo ? asset('storage/' . $settings->org_logo) : '' }}" alt="School Logo">
+        <img class="rounded-full w-16 h-16 md:w-20 md:h-20" src="{{ $settings->org_logo_base64 ?? '' }}" alt="School Logo">
         <div class="flex flex-col justify-center">
           <h1 class="text-sm md:text-lg lg:text-xl text-white font-semibold text-start">{{ $settings->org_name ?? 'School Name' }}</h1>
           <hr class="h-px my-1 bg-gray-200 border-0">

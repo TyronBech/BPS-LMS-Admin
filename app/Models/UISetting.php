@@ -27,4 +27,26 @@ class UISetting extends Model
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];
+
+    /**
+     * Get the org_logo as a base64 data URL for display
+     */
+    public function getOrgLogoBase64Attribute()
+    {
+        if (!$this->org_logo) {
+            return null;
+        }
+        return 'data:image/png;base64,' . $this->org_logo;
+    }
+
+    /**
+     * Get the org_logo_full as a base64 data URL for display
+     */
+    public function getOrgLogoFullBase64Attribute()
+    {
+        if (!$this->org_logo_full) {
+            return null;
+        }
+        return 'data:image/png;base64,' . $this->org_logo_full;
+    }
 }

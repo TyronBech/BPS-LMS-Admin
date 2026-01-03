@@ -5,7 +5,6 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Models\UISetting;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
@@ -41,8 +40,8 @@ class UISettingController extends Controller
             'org_address'       => 'nullable|string|max:500',
             'email'             => 'nullable|email|max:255',
             'contact_number'    => 'nullable|string|max:45',
-            'org_logo'          => 'nullable|image|mimes:jpeg,png,jpg|max:5012',
-            'org_logo_full'     => 'nullable|image|mimes:jpeg,png,jpg|max:5012',
+            'org_logo'          => 'nullable|image|mimes:png|max:5012',
+            'org_logo_full'     => 'nullable|image|mimes:png|max:5012',
             'facebook'          => 'nullable|url',
             'instagram'         => 'nullable|url',
             'twitter'           => 'nullable|url',
@@ -71,23 +70,11 @@ class UISettingController extends Controller
         $settings->contact_number = $request->input('contact_number');
 
         if ($request->hasFile('org_logo')) {
-            // Delete old logo if exists
-            if ($settings->org_logo && Storage::disk('public')->exists($settings->org_logo)) {
-                Storage::disk('public')->delete($settings->org_logo);
-            }
-
-            $path = $request->file('org_logo')->store('org_logos', 'public');
-            $settings->org_logo = $path;
+            $settings->org_logo = base64_encode(file_get_contents($request->file('org_logo')->getRealPath()));
         }
 
         if ($request->hasFile('org_logo_full')) {
-            // Delete old logo full if exists
-            if ($settings->org_logo_full && Storage::disk('public')->exists($settings->org_logo_full)) {
-                Storage::disk('public')->delete($settings->org_logo_full);
-            }
-
-            $pathFull = $request->file('org_logo_full')->store('org_logos/full', 'public');
-            $settings->org_logo_full = $pathFull;
+            $settings->org_logo_full = base64_encode(file_get_contents($request->file('org_logo_full')->getRealPath()));
         }
 
         $settings->social_links = $request->only([

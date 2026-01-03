@@ -3,7 +3,7 @@
     <div class="md:flex md:justify-between">
       <div class="mb-10 md:mb-0 md:max-w-sm">
         <a href="{{ $settings->social_links['website'] ?? '#' }}" target="_blank" rel="noopener noreferrer" class="flex items-center skip-loader">
-          <img src="{{ $settings->org_logo ? asset('storage/' . $settings->org_logo) : '' }}" class="h-16 me-3" alt="{{ $settings->org_name ?? 'Library Management System' }} Logo" />
+          <img src="{{ $settings->org_logo_base64 ?? '' }}" class="h-16 me-3" alt="{{ $settings->org_name ?? 'Library Management System' }} Logo" />
           <div>
             <span class="self-center text-xl font-semibold whitespace-nowrap dark:text-white">{{ $settings->org_name ?? 'Library Management System' }}</span>
             <p class="text-xs text-gray-500 dark:text-gray-400">{{ $settings->org_address ?? '123 Main St, City, Country' }}</p>
