@@ -42,7 +42,8 @@ class BookMaintenanceController extends Controller
 
         $categories = Category::select('id', 'name')->get();
         $books      = Book::with('category')
-            ->orderBy('updated_at', 'desc')
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
             ->paginate($perPage)
             ->appends([
                 'perPage' => $perPage,
@@ -314,7 +315,8 @@ class BookMaintenanceController extends Controller
         }
 
         // Finalize query
-        $books = $books->orderBy('accession', 'asc')
+        $books = $books->orderBy('updated_at', 'desc')
+            ->orderBy('id', 'desc')
             ->paginate($perPage)
             ->appends([
                 'perPage' => $perPage,

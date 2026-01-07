@@ -13,6 +13,7 @@ class Book extends Model
     use HasFactory, SoftDeletes;
     protected $table = 'bk_books';
     protected $primaryKey = 'id';
+    public $timestamps = true;
     protected $fillable = [
         'accession',
         'call_number',
