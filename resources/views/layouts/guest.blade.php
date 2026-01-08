@@ -13,6 +13,27 @@
 
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
+
+        <style>
+            :root {
+                --loader-dot-default: {{ ($settings->theme_colors ?? [])['tertiary'] ?? '#C27803' }};
+                <?php
+                    use App\Helpers\ColorHelper;
+
+                    $colors = [
+                        'primary' => ($settings->theme_colors ?? [])['primary'] ?? '#20246c',
+                        'secondary' => ($settings->theme_colors ?? [])['secondary'] ?? '#EBF5FF',
+                        'tertiary' => ($settings->theme_colors ?? [])['tertiary'] ?? '#C27803',
+                    ];
+                ?>
+
+                <?php foreach($colors as $name => $hex): ?>
+                    <?php foreach(ColorHelper::generatePalette($hex) as $shade => $rgbValue): ?>
+                        --color-<?= $name ?>-<?= $shade ?>: <?= $rgbValue ?>;
+                    <?php endforeach; ?>
+                <?php endforeach; ?>
+            }
+        </style>
     </head>
     <body class="font-sans text-gray-900 antialiased">
         <div class="min-h-screen flex flex-col sm:justify-center items-center pt-6 sm:pt-0 bg-gray-100">

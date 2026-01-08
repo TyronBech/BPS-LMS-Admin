@@ -1,3 +1,8 @@
+@php
+  $primaryColor = ($settings->theme_colors ?? [])['primary'] ?? '#20246b';
+  $secondaryColor = ($settings->theme_colors ?? [])['secondary'] ?? '#ebf5ff';
+  $tertiaryColor = ($settings->theme_colors ?? [])['tertiary'] ?? '#ffcf01';
+@endphp
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 
@@ -39,7 +44,7 @@
     /* Typography */
     .font {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      color: #0f172a;
+      color: <?php echo $primaryColor; ?>;
     }
 
     .muted {
@@ -71,7 +76,7 @@
 
     /* Panel */
     .panel {
-      background: #f8fafc;
+      background: <?php echo $secondaryColor; ?>;
       border: 1px solid #e2e8f0;
       border-radius: 8px;
     }
@@ -84,13 +89,13 @@
     .btn a {
       display: inline-block;
       padding: 14px 22px;
-      background: #1e293b;
+      background: <?php echo $primaryColor; ?>;
       color: #ffffff !important;
       text-decoration: none;
       font-weight: 600;
       font-size: 16px;
       border-radius: 8px;
-      border: 1px solid #1e293b;
+      border: 1px solid <?php echo $primaryColor; ?>;
     }
 
     /* Responsive */
@@ -146,7 +151,7 @@
             style="width:640px; max-width:640px;">
             <!-- Brand header -->
             <tr>
-              <td align="center" style="background:#0f172a; padding:18px 24px;">
+              <td align="center" style="background:<?php echo $primaryColor; ?> ; padding:18px 24px;">
                 <table role="presentation" width="100%">
                   <tr>
                     <td align="left" class="font"
@@ -165,7 +170,7 @@
             <!-- Main content -->
             <tr>
               <td class="content font">
-                <h1 style="margin:0 0 8px; font-size:24px; font-weight:700; color:#0f172a;">
+                <h1 style="margin:0 0 8px; font-size:24px; font-weight:700; color:<?php echo $primaryColor; ?>;">
                   {{ $msg['title'] ?? 'Role Update Notification' }}
                 </h1>
 
@@ -181,18 +186,18 @@
                 </p>
 
                 <!-- Details panel -->
-                <h2 style="margin:0 0 10px; font-size:18px; color:#0f172a; font-weight:700;">
+                <h2 style="margin:0 0 10px; font-size:18px; color:<?php echo $primaryColor; ?>; font-weight:700;">
                   {{ $msg['details_title'] ?? 'Assignment details' }}
                 </h2>
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="panel"
                   style="margin:0 0 16px;">
                   <tr>
                     <td class="panel-td muted" width="180" style="font-weight:600;">{{ $msg['email_label'] ?? 'Account email' }}:</td>
-                    <td class="panel-td" style="font-weight:600; color:#0f172a;">{{ $user->email }}</td>
+                    <td class="panel-td" style="font-weight:600; color:<?php echo $primaryColor; ?>;">{{ $user->email }}</td>
                   </tr>
                   <tr>
                     <td class="panel-td muted" width="180" style="font-weight:600;">{{ $msg['role_label'] ?? 'Assigned role' }}:</td>
-                    <td class="panel-td" style="font-weight:600; color:#0f172a;">{{ $role }}</td>
+                    <td class="panel-td" style="font-weight:600; color:<?php echo $primaryColor; ?>;">{{ $role }}</td>
                   </tr>
                 </table>
 
@@ -201,7 +206,7 @@
                   <tr>
                     <td align="left">
                       <!--[if mso]>
-                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ $msg['cta_url'] ?? '#' }}" style="height:44px; v-text-anchor:middle; width:200px;" arcsize="10%" strokecolor="#1e293b" fillcolor="#1e293b">
+                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ $msg['cta_url'] ?? '#' }}" style="height:44px; v-text-anchor:middle; width:200px;" arcsize="10%" strokecolor="<?php echo $primaryColor; ?>" fillcolor="<?php echo $primaryColor; ?>">
                           <w:anchorlock/>
                           <center style="color:#ffffff; font-family:Segoe UI, Arial, sans-serif; font-size:16px; font-weight:600;">
                             {{ $msg['cta_label'] ?? 'Sign in' }}

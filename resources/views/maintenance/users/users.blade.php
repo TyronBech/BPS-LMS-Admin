@@ -17,9 +17,9 @@
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5v10M3 5a2 2 0 1 0 0-4 2 2 0 0 0 0 4Zm0 10a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm12 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4Zm0 0V6a3 3 0 0 0-3-3H9m1.5-2-2 2 2 2" />
               </svg>
             </div>
-            <input type="text" id="search-users" name="search-users" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="Search..." value="{{ $search }}" />
+            <input type="text" id="search-users" name="search-users" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Search..." value="{{ $search }}" />
           </div>
-          <button type="submit" class="p-2.5 ms-2 text-sm font-medium text-white bg-blue-700 rounded-lg border border-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">
+          <button type="submit" class="p-2.5 ms-2 text-sm font-medium text-white bg-primary-700 rounded-lg border border-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
             <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
             </svg>
@@ -28,8 +28,8 @@
         </form>
         @can(PermissionsEnum::ADD_USERS, 'admin')
         <div class="flex items-stretch sm:items-center gap-2 flex-col sm:flex-row">
-          <a href="{{ route('maintenance.create-employee', ['return_to' => request()->fullUrl()]) }}" class="inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">Add new employee</a>
-          <a href="{{ route('maintenance.create-student', ['return_to' => request()->fullUrl()]) }}" class="inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-center text-white bg-blue-700 rounded-lg hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300">Add new student</a>
+          <a href="{{ route('maintenance.create-employee', ['return_to' => request()->fullUrl()]) }}" class="inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300">Add new employee</a>
+          <a href="{{ route('maintenance.create-student', ['return_to' => request()->fullUrl()]) }}" class="inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300">Add new student</a>
         </div>
         @endcan
       </div>
@@ -40,13 +40,13 @@
     <!-- Toggle buttons -->
     <div class="mb-4" role="tablist" aria-label="Choose table">
       <div class="inline-flex rounded-md shadow-sm border border-gray-200 dark:border-gray-700" role="group">
-        <button type="button" id="toggle-students" data-table="students" class="js-user-toggle px-4 py-2 text-sm font-medium rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-blue-700 text-white border-r border-gray-200 dark:border-gray-700" aria-selected="true" role="tab">
+        <button type="button" id="toggle-students" data-table="students" class="js-user-toggle px-4 py-2 text-sm font-medium rounded-l-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-primary-700 text-white border-r border-gray-200 dark:border-gray-700" aria-selected="true" role="tab">
           Students
         </button>
-        <button type="button" id="toggle-employees" data-table="employees" class="js-user-toggle px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 border-r border-gray-200 dark:border-gray-700" aria-selected="false" role="tab">
+        <button type="button" id="toggle-employees" data-table="employees" class="js-user-toggle px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 border-r border-gray-200 dark:border-gray-700" aria-selected="false" role="tab">
           Faculties & Staffs
         </button>
-        <button type="button" id="toggle-visitors" data-table="visitors" class="js-user-toggle px-4 py-2 text-sm font-medium rounded-r-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600" aria-selected="false" role="tab">
+        <button type="button" id="toggle-visitors" data-table="visitors" class="js-user-toggle px-4 py-2 text-sm font-medium rounded-r-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600" aria-selected="false" role="tab">
           Visitors
         </button>
       </div>
@@ -79,7 +79,7 @@
     const buttons = document.querySelectorAll('.js-user-toggle');
     const sections = document.querySelectorAll('[data-content]');
     const hiddenTabInput = document.getElementById('users-tab-input');
-    const activeBtnClasses = ['bg-blue-700', 'text-white'];
+    const activeBtnClasses = ['bg-primary-700', 'text-white'];
     const inactiveBtnClasses = ['bg-white', 'text-gray-700', 'hover:bg-gray-50', 'dark:bg-gray-700', 'dark:text-gray-200', 'dark:hover:bg-gray-600'];
 
     function setActive(tab) {

@@ -8,11 +8,31 @@
   <title>BPS Library Management System</title>
   @vite(['resources/css/app.css', 'resources/js/app.js'])
   <link rel="icon" href="{{ asset('img/BPSLogo.png') }}">
+  <style>
+    :root {
+      --loader-dot-default: {{ ($settings->theme_colors ?? [])['tertiary'] ?? '#C27803' }};
+      <?php
+        use App\Helpers\ColorHelper;
+
+        $colors = [
+            'primary' => ($settings->theme_colors ?? [])['primary'] ?? '#20246c',
+            'secondary' => ($settings->theme_colors ?? [])['secondary'] ?? '#EBF5FF',
+            'tertiary' => ($settings->theme_colors ?? [])['tertiary'] ?? '#C27803',
+        ];
+      ?>
+
+      <?php foreach($colors as $name => $hex): ?>
+        <?php foreach(ColorHelper::generatePalette($hex) as $shade => $rgbValue): ?>
+          --color-<?= $name ?>-<?= $shade ?>: <?= $rgbValue ?>;
+        <?php endforeach; ?>
+      <?php endforeach; ?>
+    }
+  </style>
 </head>
 
-<body class="relative bg-blue-50 dark:bg-gray-900">
+<body class="relative bg-secondary-500 dark:bg-gray-900">
   <header>
-    <div class="bg-bpsBlue border-gray-200 dark:bg-bpsBlue min-h-20 sm:min-h-24 md:min-h-28 lg:min-h-36 py-3 sm:py-4 md:py-5">
+    <div class="bg-primary-500 border-gray-200 dark:bg-primary-500 min-h-20 sm:min-h-24 md:min-h-28 lg:min-h-36 py-3 sm:py-4 md:py-5">
       <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto px-4 sm:px-6">
         <a href="{{ route('dashboard') }}" class="flex items-center space-x-2 sm:space-x-3 rtl:space-x-reverse">
           <img class="rounded-full w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24" src="{{ asset('img/BPSLogo.png') }}" alt="School Logo">

@@ -7,7 +7,7 @@
         <input type="hidden" name="barcode" value="{{ request('barcode') }}">
         <input type="hidden" name="title" value="{{ request('title') }}">
         <input type="hidden" name="availability" value="{{ request('availability') }}">
-        <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+        <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
           <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
           <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
           <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>

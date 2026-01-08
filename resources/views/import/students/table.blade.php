@@ -3,7 +3,7 @@
   <div class="p-4">
     <div class="flex items-center">
       <label for="perPage" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Show</label>
-      <select name="perPage" id="perPage" onchange="submitImportForm()" class="border border-gray-300 text-xs rounded-lg focus:ring-blue-500 focus:border-blue-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+      <select name="perPage" id="perPage" onchange="submitImportForm()" class="border border-gray-300 text-xs rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
         <option value="10" @if(isset($perPage) && $perPage == 10) selected @endif>10</option>
         <option value="25" @if(isset($perPage) && $perPage == 25) selected @endif>25</option>
         <option value="50" @if(isset($perPage) && $perPage == 50) selected @endif>50</option>
@@ -18,7 +18,7 @@
   </div>
   <div class="overflow-x-auto p-4">
     <table class="min-w-full table-auto bg-white dark:bg-gray-800">
-      <thead class="bg-blue-400 font-bold text-slate-200">
+      <thead class="bg-primary-400 font-bold text-slate-200">
         <tr>
           <th class="px-6 py-3 text-left">RFID</th>
           <th class="px-6 py-3 text-left">First Name</th>
@@ -67,7 +67,7 @@
   </div>
   <div class="overflow-x-auto p-4">
     <table class="min-w-full table-auto bg-white dark:bg-gray-800">
-      <thead class="bg-blue-400 font-bold text-slate-200">
+      <thead class="bg-primary-400 font-bold text-slate-200">
         <tr>
           <th class="px-6 py-3 text-left">RFID</th>
           <th class="px-6 py-3 text-left">First Name</th>

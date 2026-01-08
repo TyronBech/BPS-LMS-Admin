@@ -6,7 +6,7 @@
 
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 relative">
     <!-- Edit Button -->
-    <button data-modal-target="edit-settings-modal" data-modal-toggle="edit-settings-modal" class="absolute top-4 right-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-3 sm:px-4 rounded-lg shadow transition duration-150 ease-in-out flex items-center">
+    <button data-modal-target="edit-settings-modal" data-modal-toggle="edit-settings-modal" class="absolute top-4 right-4 bg-primary-600 hover:bg-primary-700 text-white font-semibold py-2 px-3 sm:px-4 rounded-lg shadow transition duration-150 ease-in-out flex items-center">
       <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
       </svg>
@@ -176,7 +176,7 @@
                   <label for="org_name" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Organization Name</label>
                   <input type="text" name="org_name" id="org_name"
                     value="{{ old('org_name', $settings->org_name) }}"
-                    class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                     placeholder="e.g. BPS Library">
                   @error('org_name')
                   <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -187,7 +187,7 @@
                 <div>
                   <label for="org_address" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Organization Address</label>
                   <textarea name="org_address" id="org_address" rows="2"
-                    class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                     placeholder="e.g. 123 Main St, City, Country">{{ old('org_address', $settings->org_address) }}</textarea>
                   @error('org_address')
                   <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -201,7 +201,7 @@
                     <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email Address</label>
                     <input type="email" name="email" id="email"
                       value="{{ old('email', $settings->email) }}"
-                      class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                       placeholder="e.g. info@bps.edu.ph">
                     @error('email')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -213,7 +213,7 @@
                     <label for="contact_number" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Contact Number</label>
                     <input type="text" name="contact_number" id="contact_number"
                       value="{{ old('contact_number', $settings->contact_number) }}"
-                      class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                      class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                       placeholder="e.g. +63 912 345 6789">
                     @error('contact_number')
                     <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -237,7 +237,7 @@
                           <p class="text-xs text-white dark:text-gray-100">PNG only (MAX. 5MB)</p>
                           <p class="text-xs text-white dark:text-gray-100 mt-1 text-center px-2">This image should only contain the organization's logo itself.</p>
                           <p class="text-xs text-yellow-300 dark:text-yellow-200 mt-1 text-center px-2 font-semibold">⚠️ Please use a PNG with transparent background</p>
-                          <p class="text-xs text-blue-300 dark:text-blue-200 mt-1 text-center px-2 font-semibold">📐 Recommended: 1:1 aspect ratio (square image)</p>
+                          <p class="text-xs text-primary-300 dark:text-primary-200 mt-1 text-center px-2 font-semibold">📐 Recommended: 1:1 aspect ratio (square image)</p>
                         </div>
                         <input id="org_logo" name="org_logo" type="file" class="hidden" accept="image/png" onchange="handleFileSelect(this, 'preview_org_logo', 'text_org_logo')" />
                       </label>
@@ -261,7 +261,7 @@
                           <p class="text-xs text-white dark:text-gray-100">PNG only (MAX. 5MB)</p>
                           <p class="text-xs text-white dark:text-gray-100 mt-1 text-center px-2">This image should contain the full organization logo including text.</p>
                           <p class="text-xs text-yellow-300 dark:text-yellow-200 mt-1 text-center px-2 font-semibold">⚠️ Please use a PNG with transparent background</p>
-                          <p class="text-xs text-blue-300 dark:text-blue-200 mt-1 text-center px-2 font-semibold">📐 Recommended: Banner-style (wide, horizontal image)</p>
+                          <p class="text-xs text-primary-300 dark:text-primary-200 mt-1 text-center px-2 font-semibold">📐 Recommended: Banner-style (wide, horizontal image)</p>
                         </div>
                         <input id="org_logo_full" name="org_logo_full" type="file" class="hidden" accept="image/png" onchange="handleFileSelect(this, 'preview_org_logo_full', 'text_org_logo_full')" />
                       </label>
@@ -283,7 +283,7 @@
                   <label for="facebook" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Facebook</label>
                   <input type="url" name="facebook" id="facebook"
                     value="{{ old('facebook', ($settings->social_links ?? [])['facebook'] ?? '') }}"
-                    class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                    class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 shadow-sm focus:border-primary-500 focus:ring-primary-500"
                     placeholder="https://facebook.com/yourpage">
                   @error('facebook')
                   <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
@@ -390,8 +390,8 @@
 
             <!-- Modal Actions -->
             <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t dark:border-gray-700">
-              <button data-modal-hide="edit-settings-modal" type="button" class="skip-loader w-full sm:w-auto py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-blue-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Cancel</button>
-              <button type="submit" class="w-full sm:w-auto text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Save Settings</button>
+              <button data-modal-hide="edit-settings-modal" type="button" class="skip-loader w-full sm:w-auto py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Cancel</button>
+              <button type="submit" class="w-full sm:w-auto text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Save Settings</button>
             </div>
           </div>
         </form>
@@ -446,11 +446,11 @@
     });
 
     function highlight(e) {
-      dropzone.classList.add('border-blue-500', 'bg-gray-100', 'dark:bg-gray-600');
+      dropzone.classList.add('border-primary-500', 'bg-gray-100', 'dark:bg-gray-600');
     }
 
     function unhighlight(e) {
-      dropzone.classList.remove('border-blue-500', 'bg-gray-100', 'dark:bg-gray-600');
+      dropzone.classList.remove('border-primary-500', 'bg-gray-100', 'dark:bg-gray-600');
     }
 
     dropzone.addEventListener('drop', handleDrop, false);

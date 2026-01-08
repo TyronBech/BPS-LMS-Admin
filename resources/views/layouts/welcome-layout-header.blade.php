@@ -18,15 +18,15 @@
       <div class="hidden w-full lg:block lg:w-auto" id="navbar-dropdown">
         <ul class="flex flex-col font-medium p-4 lg:p-0 mt-4 border border-gray-100 rounded-lg bg-bpsBlue lg:flex-row lg:space-x-8 rtl:space-x-reverse lg:mt-0 lg:border-0 lg:bg-bpsBlue dark:bg-bpsBlue lg:dark:bg-bpsBlue dark:border-gray-700">
           <li>
-            <a href="#services" class="block py-2 px-3 text-white rounded hover:bg-gray-100/20 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-100 lg:p-0 dark:text-white lg:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent" aria-current="page">Services</a>
+            <a href="#services" class="block py-2 px-3 text-white rounded hover:bg-gray-100/20 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-100 lg:p-0 dark:text-white lg:dark:hover:text-primary-500 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent" aria-current="page">Services</a>
           </li>
           <li>
-            <a href="#about" class="block py-2 px-3 text-white rounded hover:bg-gray-100/20 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-100 lg:p-0 dark:text-white lg:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent">About</a>
+            <a href="#about" class="block py-2 px-3 text-white rounded hover:bg-gray-100/20 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-100 lg:p-0 dark:text-white lg:dark:hover:text-primary-500 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent">About</a>
           </li>
           <li>
             <form action="{{ route('login') }}" method="GET">
               @csrf
-              <button class="block w-full text-left py-2 px-3 text-white rounded hover:bg-gray-100/20 lg:hover:bg-transparent lg:border-0 lg:hover:text-blue-100 lg:p-0 dark:text-white lg:dark:hover:text-blue-500 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent" type="submit">
+              <button class="block w-full text-left py-2 px-3 text-white rounded hover:bg-gray-100/20 lg:hover:bg-transparent lg:border-0 lg:hover:text-primary-100 lg:p-0 dark:text-white lg:dark:hover:text-primary-500 dark:hover:bg-gray-700 dark:hover:text-white lg:dark:hover:bg-transparent" type="submit">
                 Login
               </button>
             </form>

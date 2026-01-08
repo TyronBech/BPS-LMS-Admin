@@ -942,7 +942,7 @@
             z-index: 10
         }
 
-        .focus\:border-blue-300:focus {
+        .focus\:border-primary-300:focus {
             --tw-border-opacity: 1;
             border-color: rgb(147 197 253 / var(--tw-border-opacity, 1))
         }
@@ -1179,12 +1179,12 @@
                 --tw-ring-color: rgb(63 63 70 / var(--tw-ring-opacity, 1))
             }
 
-            .dark\:focus\:border-blue-700:focus {
+            .dark\:focus\:border-primary-700:focus {
                 --tw-border-opacity: 1;
                 border-color: rgb(29 78 216 / var(--tw-border-opacity, 1))
             }
 
-            .dark\:focus\:border-blue-800:focus {
+            .dark\:focus\:border-primary-800:focus {
                 --tw-border-opacity: 1;
                 border-color: rgb(30 64 175 / var(--tw-border-opacity, 1))
             }

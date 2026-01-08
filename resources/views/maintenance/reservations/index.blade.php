@@ -40,10 +40,10 @@
     </div>
 
     <!-- Active Borrowings Card -->
-    <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-lg md:rounded-xl shadow-lg p-4 md:p-6 text-white transform hover:scale-105 transition-transform duration-200 sm:col-span-2 lg:col-span-1">
+    <div class="bg-gradient-to-br from-primary-500 to-primary-600 rounded-lg md:rounded-xl shadow-lg p-4 md:p-6 text-white transform hover:scale-105 transition-transform duration-200 sm:col-span-2 lg:col-span-1">
       <div class="flex items-center justify-between">
         <div>
-          <p class="text-blue-100 text-xs md:text-sm font-medium mb-1">Active Borrowings</p>
+          <p class="text-primary-100 text-xs md:text-sm font-medium mb-1">Active Borrowings</p>
           <h3 class="text-3xl md:text-4xl font-bold">{{ $activeBorrowings ?? 0 }}</h3>
         </div>
         <div class="bg-white bg-opacity-30 rounded-full p-3 md:p-4">
@@ -64,11 +64,11 @@
           name="search"
           placeholder="Search by student name, email, or book title..."
           value="{{ request('search') }}"
-          class="w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+          class="w-full px-3 md:px-4 py-2 md:py-3 text-sm md:text-base border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white">
       </div>
       <button
         type="submit"
-        class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-6 md:px-8 py-2 md:py-3 text-sm md:text-base rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
+        class="bg-primary-600 hover:bg-primary-700 text-white font-semibold px-6 md:px-8 py-2 md:py-3 text-sm md:text-base rounded-lg transition-colors duration-200 flex items-center justify-center gap-2">
         <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
         </svg>
@@ -79,7 +79,7 @@
 
   <!-- Table Section -->
   <div class="bg-white dark:bg-gray-800 rounded-lg md:rounded-xl shadow-md overflow-hidden">
-    <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-4 md:px-6 py-3 md:py-4">
+    <div class="bg-gradient-to-r from-primary-600 to-primary-700 px-4 md:px-6 py-3 md:py-4">
       <h2 class="text-lg md:text-xl font-bold text-white flex items-center gap-2">
         <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>

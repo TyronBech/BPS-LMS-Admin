@@ -1,3 +1,8 @@
+@php
+  $primaryColor = ($settings->theme_colors ?? [])['primary'] ?? '#20246b';
+  $secondaryColor = ($settings->theme_colors ?? [])['secondary'] ?? '#ebf5ff';
+  $tertiaryColor = ($settings->theme_colors ?? [])['tertiary'] ?? '#ffcf01';
+@endphp
 <!DOCTYPE html>
 <html lang="en" xmlns="http://www.w3.org/1999/xhtml">
 
@@ -6,7 +11,7 @@
   <title>Two-Factor Authentication Code - {{ config('app.name') }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
-  <style>
+  <?php echo "<style>"; ?>
     /* Client resets */
     body,
     table,
@@ -39,7 +44,7 @@
     /* Typography */
     .font {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      color: #0f172a;
+      color: <?php echo $primaryColor; ?>;
     }
 
     .muted {
@@ -71,12 +76,12 @@
 
     /* OTP Box */
     .otp-box {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: <?php echo $primaryColor; ?>;
       border-radius: 12px;
       padding: 32px;
       text-align: center;
       margin: 24px 0;
-      box-shadow: 0 4px 6px rgba(102, 126, 234, 0.2);
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     .otp-code {
@@ -105,16 +110,16 @@
 
     /* Alert boxes */
     .alert-warning {
-      background: #fef3c7;
-      border-left: 4px solid #f59e0b;
+      background: <?php echo $tertiaryColor; ?>20;
+      border-left: 4px solid <?php echo $tertiaryColor; ?>;
       padding: 16px;
       border-radius: 6px;
       margin: 16px 0;
     }
 
     .alert-info {
-      background: #dbeafe;
-      border-left: 4px solid #3b82f6;
+      background: <?php echo $secondaryColor; ?>;
+      border-left: 4px solid <?php echo $primaryColor; ?>;
       padding: 16px;
       border-radius: 6px;
       margin: 16px 0;
@@ -122,7 +127,7 @@
 
     /* Security Features List */
     .security-list {
-      background: #f8fafc;
+      background: <?php echo $secondaryColor; ?>;
       border: 1px solid #e2e8f0;
       border-radius: 8px;
       padding: 20px;
@@ -150,13 +155,13 @@
     .btn a {
       display: inline-block;
       padding: 14px 22px;
-      background: #1e293b;
+      background: <?php echo $primaryColor; ?>;
       color: #ffffff !important;
       text-decoration: none;
       font-weight: 600;
       font-size: 16px;
       border-radius: 8px;
-      border: 1px solid #1e293b;
+      border: 1px solid <?php echo $primaryColor; ?>;
     }
 
     /* Responsive */
@@ -197,7 +202,7 @@
         width: 56px !important;
       }
     }
-  </style>
+  <?php echo "</style>"; ?>
 
   <!--[if mso]>
   <style type="text/css">
@@ -222,7 +227,7 @@
 
             <!-- Brand header -->
             <tr>
-              <td align="center" style="background:#0f172a; padding:18px 24px;">
+              <td align="center" style="background:<?php echo $primaryColor; ?>; padding:18px 24px;">
                 <table role="presentation" width="100%">
                   <tr>
                     <td align="left" class="font"
@@ -243,12 +248,12 @@
               <td class="content font">
                 <!-- Header Icon -->
                 <div style="text-align:center; margin-bottom:20px;">
-                  <div style="display:inline-block; background:linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius:50%; padding:20px; width:60px; height:60px;">
+                  <div style="display:inline-block; background:<?php echo $primaryColor; ?>; border-radius:50%; padding:20px; width:60px; height:60px;">
                     <span style="font-size:36px;">🔐</span>
                   </div>
                 </div>
 
-                <h1 style="margin:0 0 8px; font-size:28px; font-weight:700; color:#0f172a; text-align:center;">
+                <h1 style="margin:0 0 8px; font-size:28px; font-weight:700; color:<?php echo $primaryColor; ?>; text-align:center;">
                   Two-Factor Authentication
                 </h1>
 
@@ -258,10 +263,10 @@
 
                 <!-- Info Alert -->
                 <div class="alert-info">
-                  <p style="margin:0; color:#1e40af; font-weight:600;">
+                  <p style="margin:0; color:<?php echo $primaryColor; ?>; font-weight:600;">
                     🔔 Login Verification Required
                   </p>
-                  <p style="margin:8px 0 0; color:#1e40af; font-size:14px;">
+                  <p style="margin:8px 0 0; color:<?php echo $primaryColor; ?>; font-size:14px;">
                     Someone is attempting to access your account. If this was you, use the code below to complete your login.
                   </p>
                 </div>
@@ -284,7 +289,7 @@
                 </div>
 
                 <!-- Security Features -->
-                <h2 style="margin:24px 0 12px; font-size:18px; color:#0f172a; font-weight:700;">
+                <h2 style="margin:24px 0 12px; font-size:18px; color:<?php echo $primaryColor; ?>; font-weight:700;">
                   For Your Security
                 </h2>
                 <div class="security-list">
@@ -320,7 +325,7 @@
                   <tr>
                     <td align="center">
                       <!--[if mso]>
-                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ env('E_LIBRARY_URL') }}" style="height:44px; v-text-anchor:middle; width:220px;" arcsize="10%" strokecolor="#1e293b" fillcolor="#1e293b">
+                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ env('E_LIBRARY_URL') }}" style="height:44px; v-text-anchor:middle; width:220px;" arcsize="10%" strokecolor="<?php echo $primaryColor; ?>" fillcolor="<?php echo $primaryColor; ?>">
                           <w:anchorlock/>
                           <center style="color:#ffffff; font-family:Segoe UI, Arial, sans-serif; font-size:16px; font-weight:600;">
                             Go to Login Page

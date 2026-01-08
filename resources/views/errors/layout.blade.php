@@ -8,23 +8,32 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="icon" href="{{ asset('img/BPSLogo.png') }}">
     <meta name="robots" content="noindex, nofollow" />
-    <meta name="theme-color" content="#20246c" />
+    <meta name="theme-color" content="{{ ($settings->theme_colors ?? [])['primary'] ?? '#20246b' }}" />
     <title>@yield('code') • @yield('message') | BPS LMS</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Libre+Baskerville:wght@400;700&display=swap"
         rel="stylesheet">
+    @php
+        $primaryColor = ($settings->theme_colors ?? [])['primary'] ?? '#20246b';
+        // Convert hex to RGB for rgba() usage
+        $hex = ltrim($primaryColor, '#');
+        $r = hexdec(substr($hex, 0, 2));
+        $g = hexdec(substr($hex, 2, 2));
+        $b = hexdec(substr($hex, 4, 2));
+    @endphp
     <style>
         :root {
-            --blue: #20246c;
+            --blue: {{ $primaryColor }};
+            --blue-rgb: {{ $r }}, {{ $g }}, {{ $b }};
             --ink: #ffffff;
             --ink-dim: rgba(255, 255, 255, .88);
             --muted: rgba(255, 255, 255, .66);
-            --panel: rgba(32, 36, 108, .45);
-            --panel-2: rgba(32, 36, 108, .6);
+            --panel: color-mix(in srgb, {{ $primaryColor }} 45%, transparent);
+            --panel-2: color-mix(in srgb, {{ $primaryColor }} 60%, transparent);
             --edge: rgba(255, 255, 255, .12);
-            --shadow: rgba(32, 36, 108, .35);
+            --shadow: rgba(var(--blue-rgb), .35);
         }
 
         * {
@@ -42,7 +51,7 @@
             background:
                 radial-gradient(1200px 700px at 80% -10%, rgba(255, 255, 255, .06) 0%, rgba(255, 255, 255, 0) 55%),
                 radial-gradient(900px 600px at 10% 110%, rgba(255, 255, 255, .04) 0%, rgba(255, 255, 255, 0) 55%),
-                linear-gradient(180deg, rgba(32, 36, 108, 1) 0%, rgba(32, 36, 108, .96) 100%);
+                linear-gradient(180deg, var(--blue) 0%, color-mix(in srgb, var(--blue) 96%, transparent) 100%);
             font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Noto Sans", "Apple Color Emoji",
                 "Segoe UI Emoji", "Segoe UI Symbol";
             line-height: 1.6;
@@ -104,7 +113,7 @@
             font-size: clamp(28px, 4.2vw, 40px);
             line-height: 1.2;
             color: var(--ink);
-            text-shadow: 0 2px 0 rgba(32, 36, 108, .25);
+            text-shadow: 0 2px 0 rgba(var(--blue-rgb), .25);
         }
 
         .lede {
@@ -151,7 +160,7 @@
             background: var(--ink);
             color: var(--blue);
             border-color: rgba(255, 255, 255, .9);
-            box-shadow: 0 6px 16px rgba(32, 36, 108, .25), inset 0 1px 0 rgba(32, 36, 108, .12);
+            box-shadow: 0 6px 16px rgba(var(--blue-rgb), .25), inset 0 1px 0 rgba(var(--blue-rgb), .12);
         }
 
         .btn.primary:hover {
@@ -166,10 +175,10 @@
             min-height: 300px;
             border-radius: 18px;
             overflow: hidden;
-            box-shadow: inset 0 8px 40px rgba(32, 36, 108, .55), 0 10px 30px rgba(32, 36, 108, .45);
+            box-shadow: inset 0 8px 40px rgba(var(--blue-rgb), .55), 0 10px 30px rgba(var(--blue-rgb), .45);
             background:
                 radial-gradient(120% 85% at 80% 10%, rgba(255, 255, 255, .08), rgba(255, 255, 255, 0) 60%),
-                linear-gradient(180deg, rgba(32, 36, 108, .95) 0%, rgba(32, 36, 108, 1) 100%);
+                linear-gradient(180deg, rgba(var(--blue-rgb), .95) 0%, rgba(var(--blue-rgb), 1) 100%);
             border: 1px solid var(--edge);
         }
 
@@ -181,7 +190,7 @@
             height: 16%;
             background:
                 linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .04) 24%),
-                linear-gradient(180deg, rgba(32, 36, 108, .9), rgba(32, 36, 108, 1));
+                linear-gradient(180deg, rgba(var(--blue-rgb), .9), rgba(var(--blue-rgb), 1));
             box-shadow: inset 0 -2px 0 rgba(255, 255, 255, .08);
             border-top: 1px solid rgba(255, 255, 255, .12);
         }
@@ -210,8 +219,8 @@
             width: 22px;
             height: 80px;
             border-radius: 3px 3px 2px 2px;
-            background: linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .02)), rgba(32, 36, 108, .95);
-            box-shadow: 2px 3px 0 rgba(32, 36, 108, .6), inset 0 0 0 2px rgba(255, 255, 255, .05);
+            background: linear-gradient(180deg, rgba(255, 255, 255, .12), rgba(255, 255, 255, .02)), rgba(var(--blue-rgb), .95);
+            box-shadow: 2px 3px 0 rgba(var(--blue-rgb), .6), inset 0 0 0 2px rgba(255, 255, 255, .05);
         }
 
         .book::after {
@@ -227,23 +236,23 @@
         }
 
         .b1 {
-            background: linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .03)), rgba(32, 36, 108, .92)
+            background: linear-gradient(180deg, rgba(255, 255, 255, .14), rgba(255, 255, 255, .03)), rgba(var(--blue-rgb), .92)
         }
 
         .b2 {
-            background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .02)), rgba(32, 36, 108, .98)
+            background: linear-gradient(180deg, rgba(255, 255, 255, .10), rgba(255, 255, 255, .02)), rgba(var(--blue-rgb), .98)
         }
 
         .b3 {
-            background: linear-gradient(180deg, rgba(255, 255, 255, .18), rgba(255, 255, 255, .04)), rgba(32, 36, 108, .88)
+            background: linear-gradient(180deg, rgba(255, 255, 255, .18), rgba(255, 255, 255, .04)), rgba(var(--blue-rgb), .88)
         }
 
         .b4 {
-            background: linear-gradient(180deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .02)), rgba(32, 36, 108, 1)
+            background: linear-gradient(180deg, rgba(255, 255, 255, .09), rgba(255, 255, 255, .02)), rgba(var(--blue-rgb), 1)
         }
 
         .b5 {
-            background: linear-gradient(180deg, rgba(255, 255, 255, .2), rgba(255, 255, 255, .05)), rgba(32, 36, 108, .85)
+            background: linear-gradient(180deg, rgba(255, 255, 255, .2), rgba(255, 255, 255, .05)), rgba(var(--blue-rgb), .85)
         }
 
         /* Hanging sign */
@@ -255,7 +264,7 @@
             transform: translateX(-50%) rotate(0deg);
             width: 240px;
             height: 130px;
-            filter: drop-shadow(0 8px 12px rgba(32, 36, 108, .6));
+            filter: drop-shadow(0 8px 12px rgba(var(--blue-rgb), .6));
             animation: swing 4s ease-in-out infinite;
         }
 
@@ -267,7 +276,7 @@
             height: 42px;
             background: linear-gradient(180deg, rgba(255, 255, 255, .9), rgba(255, 255, 255, .7));
             transform: translateX(-50%);
-            box-shadow: 0 0 0 1px rgba(32, 36, 108, .35);
+            box-shadow: 0 0 0 1px rgba(var(--blue-rgb), .35);
         }
 
         .board {
@@ -275,7 +284,7 @@
             height: 100%;
             background: linear-gradient(180deg, rgba(255, 255, 255, 1), rgba(255, 255, 255, .92));
             border-radius: 10px;
-            border: 1px solid rgba(32, 36, 108, .25);
+            border: 1px solid rgba(var(--blue-rgb), .25);
             display: flex;
             align-items: center;
             justify-content: center;
@@ -287,7 +296,7 @@
             position: absolute;
             inset: 0;
             border-radius: 10px;
-            box-shadow: inset 0 2px 0 rgba(255, 255, 255, .8), inset 0 -2px 10px rgba(32, 36, 108, .18);
+            box-shadow: inset 0 2px 0 rgba(255, 255, 255, .8), inset 0 -2px 10px rgba(var(--blue-rgb), .18);
             pointer-events: none;
         }
 
@@ -305,7 +314,7 @@
             left: 0;
             right: 0;
             text-align: center;
-            color: rgba(32, 36, 108, .9);
+            color: rgba(var(--blue-rgb), .9);
             font-weight: 600;
             letter-spacing: 1px;
             font-size: 12px;

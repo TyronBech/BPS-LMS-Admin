@@ -8,11 +8,31 @@
   <title>BPS Library Management System</title>
   @vite(['resources/css/app.css', 'resources/js/app.js'])
   <link rel="icon" href="{{ asset('img/BPSLogo.png') }}">
+  <style>
+    :root {
+      --loader-dot-default: {{ ($settings->theme_colors ?? [])['tertiary'] ?? '#C27803' }};
+      <?php
+        use App\Helpers\ColorHelper;
+
+        $colors = [
+            'primary' => ($settings->theme_colors ?? [])['primary'] ?? '#20246c',
+            'secondary' => ($settings->theme_colors ?? [])['secondary'] ?? '#EBF5FF',
+            'tertiary' => ($settings->theme_colors ?? [])['tertiary'] ?? '#C27803',
+        ];
+      ?>
+
+      <?php foreach($colors as $name => $hex): ?>
+        <?php foreach(ColorHelper::generatePalette($hex) as $shade => $rgbValue): ?>
+          --color-<?= $name ?>-<?= $shade ?>: <?= $rgbValue ?>;
+        <?php endforeach; ?>
+      <?php endforeach; ?>
+    }
+  </style>
 </head>
 
-<body class="relative bg-blue-50 dark:bg-gray-900">
+<body class="relative bg-secondary-500 dark:bg-gray-900">
   <header>
-    <div class="bg-bpsBlue border-gray-200 dark:bg-bpsBlue min-h-36 pt-5">
+    <div class="bg-primary-500 border-gray-200 dark:bg-primary-500 min-h-36 pt-5">
       <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto">
         <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 rtl:space-x-reverse">
           <img class="rounded-full w-24 h-24" src="{{ asset('img/BPSLogo.png') }}" alt="School Logo">
@@ -40,7 +60,7 @@
           @csrf
           <div class="mb-5">
             <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Email:</label>
-            <input type="email" id="email" name="email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="sample@me.com" value="{{ old('email') }}" required autofocus />
+            <input type="email" id="email" name="email" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="sample@me.com" value="{{ old('email') }}" required autofocus />
           </div>
           @error('email')
           <div class="p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
@@ -48,7 +68,7 @@
           </div>
           @enderror
           <div class="flex justify-end w-full">
-            <button type="submit" class="text-white uppercase bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:ring-blue-300 font-medium rounded-lg text-xs px-5 py-2.5 mb-2 dark:bg-blue-600 dark:hover:bg-blue-700 focus:outline-none dark:focus:ring-blue-800">Send Link</button>
+            <button type="submit" class="text-white uppercase bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-xs px-5 py-2.5 mb-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">Send Link</button>
           </div>
         </form>
       </div>

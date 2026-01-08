@@ -29,7 +29,7 @@
   <div id="2fa-modal" class="hidden absolute inset-0 z-40 flex-col items-center justify-center bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-gray-700 transition-all duration-300">
     <div class="text-center p-6 sm:p-8 w-full max-w-md">
       <!-- Header -->
-      <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 mb-4 shadow-lg">
+      <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-primary-500 to-purple-600 mb-4 shadow-lg">
         <svg class="h-8 w-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76" />
         </svg>
@@ -41,13 +41,13 @@
       </p>
 
       <!-- Info Alert -->
-      <div class="mb-6 p-4 bg-blue-50 border-l-4 border-blue-500 dark:bg-blue-900/20 dark:border-blue-400 text-left">
+      <div class="mb-6 p-4 bg-secondary-500 border-l-4 border-primary-500 dark:bg-primary-900/20 dark:border-primary-400 text-left">
         <div class="flex items-start">
-          <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+          <svg class="w-5 h-5 text-primary-600 dark:text-primary-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
           </svg>
           <div class="ml-3">
-            <p class="text-xs text-blue-700 dark:text-blue-300">
+            <p class="text-xs text-primary-700 dark:text-primary-300">
               <strong class="font-semibold">Security Tip:</strong> The code will expire in 10 minutes. If you don't see the email, check your spam folder.
             </p>
           </div>
@@ -56,13 +56,13 @@
 
       <!-- Loading Animation -->
       <div class="flex items-center justify-center mb-6">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 dark:border-primary-400"></div>
         <span class="ml-3 text-sm text-gray-600 dark:text-gray-400">Redirecting to verification page...</span>
       </div>
 
       <!-- Action Buttons -->
       <div class="space-y-3">
-        <button type="button" id="2fa-continue-btn" class="w-full text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-semibold rounded-lg text-sm px-5 py-3 text-center transition-all duration-200 dark:from-blue-600 dark:to-blue-700 dark:hover:from-blue-700 dark:hover:to-blue-800 dark:focus:ring-blue-800 shadow-md hover:shadow-lg">
+        <button type="button" id="2fa-continue-btn" class="w-full text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-semibold rounded-lg text-sm px-5 py-3 text-center transition-all duration-200 dark:from-primary-600 dark:to-primary-700 dark:hover:from-primary-700 dark:hover:to-primary-800 dark:focus:ring-primary-800 shadow-md hover:shadow-lg">
           <svg class="inline w-5 h-5 mr-2 -mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6" />
           </svg>
@@ -80,7 +80,7 @@
       <!-- Help Text -->
       <p class="mt-6 text-xs text-gray-500 dark:text-gray-400">
         Having trouble? Contact support at
-        <a href="mailto:owlquery.tech@gmail.com" class="text-blue-600 hover:underline dark:text-blue-400">owlquery.tech@gmail.com</a>
+        <a href="mailto:owlquery.tech@gmail.com" class="text-primary-600 hover:underline dark:text-primary-400">owlquery.tech@gmail.com</a>
       </p>
     </div>
   </div>
@@ -91,7 +91,7 @@
 
     <div class="my-4 sm:my-5">
       <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
-      <input type="email" id="email" name="email" value="{{ old('email') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" placeholder="admin@gmail.com" autofocus value="{{ old('email') }}" required />
+      <input type="email" id="email" name="email" value="{{ old('email') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="admin@gmail.com" autofocus value="{{ old('email') }}" required />
       @error('email')
       <div id="email-error" class="p-3 sm:p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -100,7 +100,7 @@
     </div>
     <div class="mb-4 sm:mb-5 relative">
       <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your password</label>
-      <input type="password" id="password" name="password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full pr-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500" value="{{ old('password') }}" placeholder="••••••••" required />
+      <input type="password" id="password" name="password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pr-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" value="{{ old('password') }}" placeholder="••••••••" required />
       <!-- Toggle Password Visibility Button -->
       <button type="button" id="togglePassword" class="absolute right-3 top-[38px] text-gray-500 dark:text-white" aria-label="Toggle password visibility">
         <!-- Closed Eye Icon (Hidden Initially) -->
@@ -129,15 +129,15 @@
     </div>
     <div class="flex items-start mb-4 sm:mb-5">
       <div class="flex items-center h-5">
-        <input id="remember" name="remember" type="checkbox" class="w-4 h-4 border border-gray-300 rounded-sm bg-gray-50 focus:ring-3 focus:ring-blue-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-blue-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800" />
+        <input id="remember" name="remember" type="checkbox" class="w-4 h-4 border border-gray-300 rounded-sm bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800" />
       </div>
       <label for="remember" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Remember me</label>
     </div>
-    <button type="submit" class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800">Submit</button>
+    <button type="submit" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Submit</button>
   </form>
   <form action="{{ route('password.request') }}" method="GET">
     @csrf
-    <button type="submit" class="mt-2 text-sm font-medium text-blue-600 hover:underline dark:text-blue-500">Forgot Password</button>
+    <button type="submit" class="mt-2 text-sm font-medium text-primary-600 hover:underline dark:text-primary-500">Forgot Password</button>
   </form>
 </div>
 

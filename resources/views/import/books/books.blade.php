@@ -23,7 +23,7 @@
   @endif
   @if(!$showTable)
   <div class="flex justify-center mt-4">
-    <a href="{{ route('import.download-book-template') }}" class="skip-loader flex items-center text-blue-600 hover:text-blue-800 dark:text-blue-200 dark:hover:text-blue-400 underline">
+    <a href="{{ route('import.download-book-template') }}" class="skip-loader flex items-center text-primary-600 hover:text-primary-800 dark:text-primary-200 dark:hover:text-primary-400 underline">
       Download template for books
       <svg class="w-6 h-6 ml-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
         <path fill-rule="evenodd" d="M13 11.15V4a1 1 0 1 0-2 0v7.15L8.78 8.374a1 1 0 1 0-1.56 1.25l4 5a1 1 0 0 0 1.56 0l4-5a1 1 0 1 0-1.56-1.25L13 11.15Z" clip-rule="evenodd" />

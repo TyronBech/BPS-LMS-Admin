@@ -6,7 +6,7 @@
       name="perPage"
       id="perPage"
       onchange="this.form.submit()"
-      class="border border-gray-300 text-xs md:text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 p-1.5 md:p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+      class="border border-gray-300 text-xs md:text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 p-1.5 md:p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
       <option value="10" {{ request('perPage', 10) == 10 ? 'selected' : '' }}>10</option>
       <option value="25" {{ request('perPage', 10) == 25 ? 'selected' : '' }}>25</option>
       <option value="50" {{ request('perPage', 10) == 50 ? 'selected' : '' }}>50</option>
