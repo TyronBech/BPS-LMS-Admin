@@ -91,7 +91,7 @@
 
     <div class="my-4 sm:my-5">
       <label for="email" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your email</label>
-      <input type="email" id="email" name="email" value="{{ old('email') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="admin@gmail.com" autofocus value="{{ old('email') }}" required />
+      <input type="email" id="email" name="email" value="{{ old('email') }}" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="admin@gmail.com" autofocus value="{{ old('email') }}" required />
       @error('email')
       <div id="email-error" class="p-3 sm:p-4 my-2 text-sm text-red-800 rounded-lg bg-red-50" role="alert">
         <span class="font-medium">{{ $message }}</span>
@@ -100,7 +100,7 @@
     </div>
     <div class="mb-4 sm:mb-5 relative">
       <label for="password" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Your password</label>
-      <input type="password" id="password" name="password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full pr-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" value="{{ old('password') }}" placeholder="••••••••" required />
+      <input type="password" id="password" name="password" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full pr-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" value="{{ old('password') }}" placeholder="••••••••" required />
       <!-- Toggle Password Visibility Button -->
       <button type="button" id="togglePassword" class="absolute right-3 top-[38px] text-gray-500 dark:text-white" aria-label="Toggle password visibility">
         <!-- Closed Eye Icon (Hidden Initially) -->
@@ -129,15 +129,15 @@
     </div>
     <div class="flex items-start mb-4 sm:mb-5">
       <div class="flex items-center h-5">
-        <input id="remember" name="remember" type="checkbox" class="w-4 h-4 border border-gray-300 rounded-sm bg-gray-50 focus:ring-3 focus:ring-primary-300 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800" />
+        <input id="remember" name="remember" type="checkbox" class="w-4 h-4 border border-gray-300 rounded-sm bg-gray-50 focus:ring-3 focus:ring-primary-400 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary-500 dark:ring-offset-gray-400 dark:focus:ring-offset-gray-400 accent-primary-500" />
       </div>
       <label for="remember" class="ms-2 text-sm font-medium text-gray-900 dark:text-gray-300">Remember me</label>
     </div>
-    <button type="submit" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Submit</button>
+    <button type="submit" class="text-white bg-primary-500 hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">Submit</button>
   </form>
   <form action="{{ route('password.request') }}" method="GET">
     @csrf
-    <button type="submit" class="mt-2 text-sm font-medium text-primary-600 hover:underline dark:text-primary-500">Forgot Password</button>
+    <button type="submit" class="mt-2 text-sm font-medium text-primary-600 hover:underline dark:text-primary-50">Forgot Password</button>
   </form>
 </div>
 

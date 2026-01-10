@@ -54,6 +54,25 @@ class AdminLoginController extends Controller
             'timestamp' => now(),
         ]);
 
+        // Check rate limiting first
+        $throttleKey = \Illuminate\Support\Str::transliterate(\Illuminate\Support\Str::lower($email) . '|' . $request->ip());
+        
+        if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($throttleKey, 3)) {
+            $seconds = \Illuminate\Support\Facades\RateLimiter::availableIn($throttleKey);
+            
+            Log::warning('Admin Login: Rate limited', [
+                'email' => $email,
+                'ip_address' => $request->ip(),
+                'lockout_seconds' => $seconds,
+                'timestamp' => now(),
+            ]);
+            
+            return redirect()->back()
+                ->with('lockout_time', $seconds)
+                ->with('toast-error', trans('auth.throttle', ['seconds' => $seconds, 'minutes' => ceil($seconds / 60)]))
+                ->withInput();
+        }
+
         $user = User::where('email', $email)->first();
 
         if (!$user) {
@@ -64,7 +83,8 @@ class AdminLoginController extends Controller
                 'timestamp' => now(),
             ]);
 
-            return redirect()->back()->with('toast-error', 'Invalid email or password.')->withInput();
+            $this->handleFailedAttempt($throttleKey);
+            return $this->handleLockoutResponse($request, $throttleKey, 'Invalid email or password.');
         }
         
         Log::debug('Admin Login: User found in database', [
@@ -81,7 +101,9 @@ class AdminLoginController extends Controller
                 'user_agent' => $request->userAgent(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Invalid email or password.')->withInput();
+            
+            $this->handleFailedAttempt($throttleKey);
+            return $this->handleLockoutResponse($request, $throttleKey, 'Invalid email or password.');
         }
 
         Log::debug('Admin Login: Password matched', [
@@ -244,6 +266,55 @@ class AdminLoginController extends Controller
 
             return redirect()->back()->with('toast-error', 'An error occurred during login. Please try again.')->withInput();
         }
+    }
+
+    /**
+     * Handle a failed login attempt by incrementing the rate limiter.
+     *
+     * @param  string  $throttleKey
+     * @return void
+     */
+    private function handleFailedAttempt(string $throttleKey): void
+    {
+        $penaltyKey = $throttleKey . '.penalty';
+        $lockoutLevel = \Illuminate\Support\Facades\Cache::get($penaltyKey, 0);
+        
+        // Decay duration tiers: 1 min, 5 mins, 15 mins, 1 hour
+        $decaySeconds = match($lockoutLevel) {
+            0 => 60,
+            1 => 300,
+            2 => 900,
+            default => 3600,
+        };
+
+        \Illuminate\Support\Facades\RateLimiter::hit($throttleKey, $decaySeconds);
+
+        // If this failure caused a lockout, increment the penalty level for next time
+        if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($throttleKey, 3)) {
+            \Illuminate\Support\Facades\Cache::put($penaltyKey, $lockoutLevel + 1, now()->addDay());
+        }
+    }
+
+    /**
+     * Handle the lockout response after a failed login attempt.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  string  $throttleKey
+     * @param  string  $message
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    private function handleLockoutResponse($request, string $throttleKey, string $message): RedirectResponse
+    {
+        if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($throttleKey, 3)) {
+            $seconds = \Illuminate\Support\Facades\RateLimiter::availableIn($throttleKey);
+            
+            return redirect()->back()
+                ->with('lockout_time', $seconds)
+                ->with('toast-error', trans('auth.throttle', ['seconds' => $seconds, 'minutes' => ceil($seconds / 60)]))
+                ->withInput();
+        }
+        
+        return redirect()->back()->with('toast-error', $message)->withInput();
     }
 
     /**

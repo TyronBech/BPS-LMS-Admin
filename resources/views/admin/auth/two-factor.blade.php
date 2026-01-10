@@ -43,7 +43,7 @@
         autocapitalize="off"
         autocorrect="off"
         spellcheck="false"
-        class="bg-gray-50 border border-gray-300 text-gray-900 text-lg font-mono text-center tracking-widest rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-3.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+        class="bg-gray-50 border border-gray-300 text-gray-900 text-lg font-mono text-center tracking-widest rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-3.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
         placeholder="000000"
         required
         onpaste="return false"
@@ -61,7 +61,7 @@
       @enderror
     </div>
 
-    <button type="submit" class="w-full text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-semibold rounded-lg text-sm px-5 py-3 text-center transition-all duration-200 dark:from-primary-600 dark:to-primary-700 dark:hover:from-primary-700 dark:hover:to-primary-800 dark:focus:ring-primary-800">
+    <button type="submit" class="w-full text-white bg-primary-500 hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 font-semibold rounded-lg text-sm px-5 py-3 text-center transition-all duration-200 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">
       Verify Code
     </button>
   </form>
