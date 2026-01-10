@@ -48,7 +48,7 @@
 
       {{-- Action Buttons --}}
       <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-        <button type="submit" name="submit" value="find" class="bg-primary-500 hover:bg-primary-700 active:bg-primary-900 text-white font-bold py-2 px-4 rounded whitespace-nowrap transition-colors">Find</button>
+        <button type="submit" name="submit" value="find" class="bg-primary-500 hover:bg-primary-400 active:bg-primary-400 text-white font-bold py-2 px-4 rounded whitespace-nowrap transition-colors dark:bg-primary-400 dark:hover:bg-primary-500 dark:active:bg-primary-500">Find</button>
         @can(PermissionsEnum::CREATE_REPORTS)
         <button type="submit" name="submit" value="pdf" class="bg-red-500 hover:bg-red-700 active:bg-red-900 text-white font-bold py-2 px-4 rounded whitespace-nowrap transition-colors">PDF</button>
         <button type="submit" name="submit" value="excel" class="bg-green-500 hover:bg-green-700 active:bg-green-900 text-white font-bold py-2 px-4 rounded whitespace-nowrap transition-colors">Excel</button>

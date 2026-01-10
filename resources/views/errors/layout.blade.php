@@ -161,10 +161,16 @@
             color: var(--blue);
             border-color: rgba(255, 255, 255, .9);
             box-shadow: 0 6px 16px rgba(var(--blue-rgb), .25), inset 0 1px 0 rgba(var(--blue-rgb), .12);
+            transition: all .2s ease;
         }
 
         .btn.primary:hover {
-            filter: brightness(1.05)
+            filter: brightness(1.08);
+            box-shadow: 0 8px 20px rgba(var(--blue-rgb), .35), inset 0 1px 0 rgba(var(--blue-rgb), .15);
+        }
+
+        .btn.primary:active {
+            filter: brightness(1.02);
         }
 
         /* Library scene */

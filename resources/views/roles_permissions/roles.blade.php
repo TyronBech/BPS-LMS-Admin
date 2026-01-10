@@ -10,7 +10,7 @@ $roleID = null;
       <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Roles</h5>
       <form action="{{ route('maintenance.roles-and-permissions.create-role') }}" method="GET" class="mt-4 sm:mt-0">
         @csrf
-        <button type="submit" class="w-full sm:w-auto text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">Add New Role</button>
+        <button type="submit" class="w-full sm:w-auto text-white bg-primary-500 hover:bg-primary-400 focus:ring-4 focus:ring-primary-400 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-400 dark:hover:bg-primary-500 focus:outline-none dark:focus:ring-primary-500">Add New Role</button>
       </form>
     </div>
     <hr class="h-px my-4 bg-gray-200 border-0 dark:bg-gray-700">
@@ -62,7 +62,7 @@ $roleID = null;
       <div class="flex justify-end mb-4">
         <form method="GET" class="flex items-center">
           <label for="perPage" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Show</label>
-          <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+          <select name="perPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-primary-400 focus:border-primary-400 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
             <option value="10" {{ $perPage == 10 ? 'selected' : '' }}>10</option>
             <option value="25" {{ $perPage == 25 ? 'selected' : '' }}>25</option>
             <option value="50" {{ $perPage == 50 ? 'selected' : '' }}>50</option>

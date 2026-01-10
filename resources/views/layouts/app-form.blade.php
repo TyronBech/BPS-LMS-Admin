@@ -32,14 +32,14 @@
 
 <body class="relative bg-secondary-500 dark:bg-gray-900">
   <header>
-    <div class="bg-primary-500 border-gray-200 dark:bg-primary-500 min-h-20 sm:min-h-24 md:min-h-28 lg:min-h-36 py-3 sm:py-4 md:py-5">
+    <div class="bg-primary-500 border-gray-200 dark:bg-primary-500 min-h-20 sm:min-h-24 md:min-h-28 lg:min-h-30 py-3 sm:py-4 md:py-5">
       <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto px-4 sm:px-6">
-        <a href="{{ route('dashboard') }}" class="flex items-center space-x-2 sm:space-x-3 rtl:space-x-reverse">
-          <img class="rounded-full w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24" src="{{ asset('img/BPSLogo.png') }}" alt="School Logo">
+        <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 rtl:space-x-reverse">
+          <img class="rounded-full w-16 h-16 md:w-20 md:h-20" src="{{ asset('img/BPSLogo.png') }}" alt="School Logo">
           <div class="flex flex-col justify-center">
-            <h1 class="text-sm sm:text-base md:text-lg lg:text-2xl text-white font-semibold text-center">Bicutan Parochial School, Inc.</h1>
+            <h1 class="text-sm md:text-lg lg:text-xl text-white font-semibold text-start">Bicutan Parochial School, Inc.</h1>
             <hr class="h-px bg-gray-200 border-0 my-1">
-            <h1 class="text-xs sm:text-sm md:text-md lg:text-xl text-white font-semibold text-center">Library Management System</h1>
+            <h1 class="text-sm md:text-lg lg:text-xl text-white font-semibold text-start">Library Management System</h1>
           </div>
         </a>
       </div>

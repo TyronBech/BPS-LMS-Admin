@@ -21,7 +21,7 @@
             <img id="preview-image-custom" class="rounded-full w-40 h-40 md:w-48 md:h-48 object-cover shadow-md" src="data:image/jpeg;base64, {{ $user->profile_image }}" alt="Profile Image">
             @endif
 
-            <label for="profile_image" class="absolute bottom-2 right-2 bg-primary-600 hover:bg-primary-700 text-white p-2.5 rounded-full cursor-pointer shadow-lg border-4 border-white dark:border-gray-800 transition-transform hover:scale-110" title="Upload new photo">
+            <label for="profile_image" class="absolute bottom-2 right-2 bg-primary-500 hover:bg-primary-400 text-white p-2.5 rounded-full cursor-pointer shadow-lg border-4 border-white dark:border-gray-800 dark:bg-primary-400 dark:hover:bg-background-500 transition-transform hover:scale-110" title="Upload new photo">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
               </svg>
@@ -71,7 +71,7 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
             {{-- First Name --}}
             <div class="relative z-0 w-full group">
-              <input type="text" name="first_name" id="first_name" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-600 peer" placeholder=" " value="{{ old('first_name', $user->first_name) }}" required />
+              <input type="text" name="first_name" id="first_name" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer" placeholder=" " value="{{ old('first_name', $user->first_name) }}" required />
               <label for="first_name" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">First Name</label>
               @error('first_name')
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
@@ -80,7 +80,7 @@
 
             {{-- Middle Name --}}
             <div class="relative z-0 w-full group">
-              <input type="text" name="middle_name" id="middle_name" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-600 peer" placeholder=" " value="{{ old('middle_name', $user->middle_name) }}" />
+              <input type="text" name="middle_name" id="middle_name" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer" placeholder=" " value="{{ old('middle_name', $user->middle_name) }}" />
               <label for="middle_name" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Middle Name</label>
               @error('middle_name')
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
@@ -89,7 +89,7 @@
 
             {{-- Last Name --}}
             <div class="relative z-0 w-full group">
-              <input type="text" name="last_name" id="last_name" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-600 peer" placeholder=" " value="{{ old('last_name', $user->last_name) }}" required />
+              <input type="text" name="last_name" id="last_name" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer" placeholder=" " value="{{ old('last_name', $user->last_name) }}" required />
               <label for="last_name" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Last Name</label>
               @error('last_name')
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
@@ -98,7 +98,7 @@
 
             {{-- Suffix --}}
             <div class="relative z-0 w-full group">
-              <input type="text" name="suffix" id="suffix" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-600 peer" placeholder=" " value="{{ old('suffix', $user->suffix) }}" />
+              <input type="text" name="suffix" id="suffix" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer" placeholder=" " value="{{ old('suffix', $user->suffix) }}" />
               <label for="suffix" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Suffix</label>
               @error('suffix')
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
@@ -107,7 +107,7 @@
 
             {{-- Email --}}
             <div class="relative z-0 w-full sm:col-span-2 group">
-              <input type="email" name="email" id="email" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-600 peer" placeholder=" " value="{{ old('email', $user->email) }}" required />
+              <input type="email" name="email" id="email" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer" placeholder=" " value="{{ old('email', $user->email) }}" required />
               <label for="email" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Email address</label>
               @error('email')
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
@@ -116,7 +116,7 @@
 
             {{-- Current Password --}}
             <div class="relative z-0 w-full sm:col-span-2 group">
-              <input type="password" name="current_password" id="current_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-600 peer pr-10" placeholder=" " autocomplete="current-password" />
+              <input type="password" name="current_password" id="current_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer pr-10" placeholder=" " autocomplete="current-password" />
               <label for="current_password" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Current Password</label>
               
               <button type="button" id="toggleCurrentPassword" class="absolute right-0 top-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none" aria-label="Toggle password visibility">
@@ -135,7 +135,7 @@
 
             {{-- New Password --}}
             <div class="relative z-0 w-full group">
-              <input type="password" name="new_password" id="new_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-600 peer pr-10" placeholder=" " autocomplete="new-password" />
+              <input type="password" name="new_password" id="new_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer pr-10" placeholder=" " autocomplete="new-password" />
               <label for="new_password" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">New Password</label>
               
               <button type="button" id="toggleNewPassword" class="absolute right-0 top-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none" aria-label="Toggle password visibility">
@@ -154,7 +154,7 @@
 
             {{-- Confirm New Password --}}
             <div class="relative z-0 w-full group">
-              <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-600 peer pr-10" placeholder=" " autocomplete="new-password" />
+              <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer pr-10" placeholder=" " autocomplete="new-password" />
               <label for="new_password_confirmation" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Confirm password</label>
               
               <button type="button" id="toggleConfirmPassword" class="absolute right-0 top-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none" aria-label="Toggle password visibility">
@@ -169,7 +169,7 @@
           </div>
 
           <div class="flex justify-end mt-8">
-            <button type="submit" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Save Changes</button>
+            <button type="submit" class="text-white bg-primary-500 hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">Save Changes</button>
           </div>
         </div>
       </div>
@@ -233,7 +233,7 @@
           <span>Disable 2FA</span>
         </button>
         @else
-        <button type="button" onclick="openTwoFactorModal('enable')" class="group relative inline-flex items-center justify-center px-6 py-3 text-white bg-gradient-to-r from-primary-600 to-primary-700 hover:from-primary-700 hover:to-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-semibold rounded-lg text-sm transition-all duration-300 shadow-md hover:shadow-lg dark:from-primary-600 dark:to-primary-700 dark:hover:from-primary-700 dark:hover:to-primary-800 dark:focus:ring-primary-800">
+        <button type="button" onclick="openTwoFactorModal('enable')" class="group relative inline-flex items-center justify-center px-6 py-3 text-white bg-gradient-to-r from-primary-500 to-primary-400 hover:from-primary-400 hover:to-primary-500 focus:ring-4 focus:outline-none focus:ring-primary-400 font-semibold rounded-lg text-sm transition-all duration-300 shadow-md hover:shadow-lg dark:from-primary-400 dark:to-primary-500 dark:hover:from-primary-500 dark:hover:to-primary-400 dark:focus:ring-primary-500">
           <svg class="w-5 h-5 mr-2 transition-transform group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
           </svg>
@@ -285,7 +285,7 @@
             Please enter your password to continue.
           </p>
           <div class="relative z-0 w-full group">
-            <input type="password" name="password" id="modal_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-600 peer pr-10" placeholder=" " required autocomplete="current-password" />
+            <input type="password" name="password" id="modal_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer pr-10" placeholder=" " required autocomplete="current-password" />
             <label for="modal_password" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Password</label>
             
             <!-- Toggle Password Visibility Button -->
@@ -311,10 +311,10 @@
         </div>
         {{-- Modal footer --}}
         <div class="flex items-center p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
-          <button type="submit" id="modalSubmitBtn" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">
+          <button type="submit" id="modalSubmitBtn" class="text-white bg-primary-500 hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">
             Confirm
           </button>
-          <button type="button" onclick="closeTwoFactorModal()" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">
+          <button type="button" onclick="closeTwoFactorModal()" class="py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-500 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-50 dark:border-gray-600 dark:hover:text-gray-50 dark:hover:bg-gray-700">
             Cancel
           </button>
         </div>
@@ -365,13 +365,13 @@
       description.textContent = 'Please enter your password to enable two-factor authentication.';
       submitBtn.textContent = 'Enable 2FA';
       submitBtn.classList.remove('bg-red-600', 'hover:bg-red-700', 'focus:ring-red-300', 'dark:bg-red-600', 'dark:hover:bg-red-700', 'dark:focus:ring-red-800');
-      submitBtn.classList.add('bg-primary-700', 'hover:bg-primary-800', 'focus:ring-primary-300', 'dark:bg-primary-600', 'dark:hover:bg-primary-700', 'dark:focus:ring-primary-800');
+      submitBtn.classList.add('bg-primary-500', 'hover:bg-primary-400', 'focus:ring-primary-400', 'dark:bg-primary-400', 'dark:hover:bg-primary-500', 'dark:focus:ring-primary-500');
       form.action = "{{ route('profile.2fa.enable') }}";
     } else {
       title.textContent = 'Disable Two-Factor Authentication';
       description.textContent = 'Please enter your password to disable two-factor authentication.';
       submitBtn.textContent = 'Disable 2FA';
-      submitBtn.classList.remove('bg-primary-700', 'hover:bg-primary-800', 'focus:ring-primary-300', 'dark:bg-primary-600', 'dark:hover:bg-primary-700', 'dark:focus:ring-primary-800');
+      submitBtn.classList.remove('bg-primary-500', 'hover:bg-primary-400', 'focus:ring-primary-400', 'dark:bg-primary-400', 'dark:hover:bg-primary-500', 'dark:focus:ring-primary-500');
       submitBtn.classList.add('bg-red-600', 'hover:bg-red-700', 'focus:ring-red-300', 'dark:bg-red-600', 'dark:hover:bg-red-700', 'dark:focus:ring-red-800');
       form.action = "{{ route('profile.2fa.disable') }}";
     }

@@ -55,7 +55,7 @@
 
       {{-- Action Buttons --}}
       <div class="flex flex-wrap items-center justify-center gap-2">
-        <button type="submit" name="submit" value="find" class="bg-primary-500 hover:bg-primary-700 active:bg-primary-900 text-white font-bold py-2 px-4 rounded w-full sm:w-auto">Find</button>
+        <button type="submit" name="submit" value="find" class="bg-primary-500 hover:bg-primary-400 active:bg-primary-400 text-white font-bold py-2 px-4 rounded w-full sm:w-auto whitespace-nowrap transition-colors dark:bg-primary-400 dark:hover:bg-primary-500 dark:active:bg-primary-500">Find</button>
       </div>
     </div>
   </form>

@@ -7,7 +7,7 @@
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
       <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Privileges</h5>
       @can(PermissionsEnum::ADD_PRIVILEGES)
-      <button data-modal-target="add-privilege-modal" data-modal-toggle="add-privilege-modal" class="w-full sm:w-auto mt-4 sm:mt-0 inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-primary-700 rounded-lg hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Add New Privilege</button>
+      <button data-modal-target="add-privilege-modal" data-modal-toggle="add-privilege-modal" class="w-full sm:w-auto mt-4 sm:mt-0 inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-primary-500 rounded-lg hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">Add New Privilege</button>
       @endcan
     </div>
     <hr class="h-px my-3 bg-gray-200 border-0 dark:bg-gray-700">
@@ -37,7 +37,7 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label for="user_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">User Type:</label>
-              <select id="user_type" name="user_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
+              <select id="user_type" name="user_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
                 <option selected disabled>Choose a type</option>
                 <option value="employee" {{ old('user_type') == 'employee' ? 'selected' : '' }}>Employee</option>
                 <option value="student" {{ old('user_type') == 'student' ? 'selected' : '' }}>Student</option>
@@ -49,14 +49,14 @@
             </div>
             <div>
               <label for="category" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Category:</label>
-              <input type="text" id="category" name="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., Teacher" value="{{ old('category') }}" required>
+              <input type="text" id="category" name="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Teacher" value="{{ old('category') }}" required>
               @error('category')
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
               @enderror
             </div>
             <div class="md:col-span-2">
               <label for="duration_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Duration Type:</label>
-              <select id="duration_type" name="duration_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+              <select id="duration_type" name="duration_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
                 <option selected disabled>Choose an option</option>
                 @foreach ($durations as $duration)
                 <option value="{{ $duration }}" {{ old('duration_type') == $duration ? 'selected' : '' }}>{{ $duration }}</option>
@@ -68,14 +68,14 @@
             </div>
             <div>
               <label for="max_book_allowed_add" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Max Books Allowed:</label>
-              <input type="number" id="max_book_allowed_add" name="max_book_allowed_add" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., 5" value="{{ old('max_book_allowed_add') }}" value="5" min="0" required>
+              <input type="number" id="max_book_allowed_add" name="max_book_allowed_add" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 5" value="{{ old('max_book_allowed_add') }}" value="5" min="0" required>
               @error('max_book_allowed_add')
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
               @enderror
             </div>
             <div>
               <label for="renewal_limit_add" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Renewal Limit:</label>
-              <input type="number" id="renewal_limit_add" name="renewal_limit_add" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., 5" value="{{ old('renewal_limit_add') }}" value="5" min="0" required>
+              <input type="number" id="renewal_limit_add" name="renewal_limit_add" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 5" value="{{ old('renewal_limit_add') }}" value="5" min="0" required>
               @error('renewal_limit_add')
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
               @enderror
@@ -83,8 +83,8 @@
           </div>
         </div>
         <div class="flex items-center justify-end p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
-          <button type="submit" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Add</button>
-          <button data-modal-hide="add-privilege-modal" type="button" class="skip-loader py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700">Cancel</button>
+          <button type="submit" class="text-white bg-primary-500 hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">Add</button>
+          <button data-modal-hide="add-privilege-modal" type="button" class="skip-loader py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-500 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-primary-50 dark:hover:bg-gray-700">Cancel</button>
         </div>
       </form>
     </div>

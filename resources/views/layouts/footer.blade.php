@@ -1,19 +1,19 @@
 <footer class="bg-white dark:bg-gray-900 mt-10 border-t border-gray-200 dark:border-gray-700">
-  <div class="mx-auto w-full max-w-screen-xl p-4 py-6 lg:py-8">
-    <div class="md:flex md:justify-between">
-      <div class="mb-10 md:mb-0 md:max-w-sm">
+  <div class="mx-auto w-full max-w-screen-xl px-4 py-6 lg:py-8">
+    <div class="md:flex md:justify-between md:gap-6 lg:gap-8">
+      <div class="mb-6 md:mb-0 md:max-w-xs lg:max-w-md">
         <a href="{{ $settings->social_links['website'] ?? '#' }}" target="_blank" rel="noopener noreferrer" class="flex items-center skip-loader">
-          <img src="{{ $settings->org_logo_base64 ?? '' }}" class="h-16 me-3" alt="{{ $settings->org_name ?? 'Library Management System' }} Logo" />
-          <div>
-            <span class="self-center text-xl font-semibold whitespace-nowrap dark:text-white">{{ $settings->org_name ?? 'Library Management System' }}</span>
-            <p class="text-xs text-gray-500 dark:text-gray-400">{{ $settings->org_address ?? '123 Main St, City, Country' }}</p>
+          <img src="{{ $settings->org_logo_base64 ?? '' }}" class="h-12 w-12 md:h-16 md:w-16 me-3 rounded-full flex-shrink-0" alt="{{ $settings->org_name ?? 'Library Management System' }} Logo" />
+          <div class="min-w-0">
+            <span class="self-center text-sm md:text-lg font-semibold dark:text-white break-words">{{ $settings->org_name ?? 'Library Management System' }}</span>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 break-words">{{ $settings->org_address ?? '123 Main St, City, Country' }}</p>
           </div>
         </a>
-        <p class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+        <p class="mt-4 text-xs md:text-sm text-gray-500 dark:text-gray-400">
           Library Management System Admin Panel for managing school library attendance and resources.
         </p>
       </div>
-      <div class="grid grid-cols-2 gap-8 sm:gap-6 sm:grid-cols-3 mx-5">
+      <div class="grid grid-cols-2 gap-6 sm:gap-6 sm:grid-cols-3 flex-1">
         <div>
           <h2 class="mb-6 text-sm font-semibold text-gray-900 uppercase dark:text-white">Official Links</h2>
           <ul class="text-gray-500 dark:text-gray-400 font-medium">

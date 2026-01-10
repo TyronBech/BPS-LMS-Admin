@@ -9,7 +9,7 @@
     <form action="{{ route('import.upload-faculties-staffs') }}" method="POST" enctype="multipart/form-data" class="w-full">
       @csrf
       <label class="block mt-4 text-sm font-medium text-gray-600" for="file_input">Upload a file in Excel format</label>
-      <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 mt-2" id="file_input" name="file" type="file">
+      <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none focus:ring-primary-400 focus:border-primary-400 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:focus:ring-primary-500 dark:focus:border-primary-500 mt-2" id="file_input" name="file" type="file">
       <button type="submit" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-2 focus:ring-green-300 font-medium rounded-lg text-md px-4 py-2 me-2 mb-2 mt-4">Import</button>
     </form>
   </div>
@@ -26,7 +26,7 @@
   @endif
   @if(!$showTable)
   <div class="flex justify-center mt-4">
-    <a href="{{ route('import.download-employee-template') }}" class="skip-loader flex items-center text-primary-600 hover:text-primary-800 dark:text-primary-200 dark:hover:text-primary-400 underline">
+    <a href="{{ route('import.download-employee-template') }}" class="skip-loader flex items-center text-primary-500 hover:text-primary-400 dark:text-primary-400 dark:hover:text-primary-500 underline">
       Download template for employees
       <svg class="w-6 h-6 ml-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
         <path fill-rule="evenodd" d="M13 11.15V4a1 1 0 1 0-2 0v7.15L8.78 8.374a1 1 0 1 0-1.56 1.25l4 5a1 1 0 0 0 1.56 0l4-5a1 1 0 1 0-1.56-1.25L13 11.15Z" clip-rule="evenodd" />
