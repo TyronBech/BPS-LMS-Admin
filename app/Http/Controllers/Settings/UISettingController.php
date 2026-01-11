@@ -37,6 +37,7 @@ class UISettingController extends Controller
         ]);
         $validator = Validator::make($request->all(), [
             'org_name'          => 'nullable|string|max:255',
+            'org_initial'       => 'nullable|string|max:50',
             'org_address'       => 'nullable|string|max:500',
             'email'             => 'nullable|email|max:255',
             'contact_number'    => 'nullable|string|max:45',
@@ -65,6 +66,7 @@ class UISettingController extends Controller
         }
 
         $settings->org_name = $request->input('org_name');
+        $settings->org_initial = $request->input('org_initial');
         $settings->org_address = $request->input('org_address');
         $settings->email = $request->input('email');
         $settings->contact_number = $request->input('contact_number');

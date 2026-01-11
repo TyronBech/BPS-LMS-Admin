@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\UISetting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -28,15 +29,23 @@ class RoleEmailMessage extends Mailable
         $middle = trim((string)($user->middle_name ?? ''));
         $last   = trim((string)($user->last_name ?? ''));
         $displayName = trim($first . ' ' . ($middle ? $middle . ' ' : '') . $last);
+        $settings = UISetting::first() ?? new UISetting();
+
+        // Get logo from settings or fallback to default
+        $logo = $settings->org_logo 
+            ? 'data:image/png;base64,' . $settings->org_logo 
+            : asset('img/OwlQuery.png');
 
         // Formal, emoji-friendly defaults
         $this->msg = array_replace([
-            'brand_name'      => 'BPS Library Management System',
-            'brand_logo_alt'  => 'BPS Logo',
+            'org_initial'     => $settings->org_initial ?? '',
+            'brand_name'      => ($settings->org_initial ?? '') . ' Library Management System',
+            'brand_logo'      => $logo,
+            'brand_logo_alt'  => ($settings->org_initial ?? '') . ' Logo',
             'subject'         => '🎓 Role Assignment Notification',
             'title'           => 'Role Update Notification 📩',
             'greeting'        => "Dear {$displayName},",
-            'intro'           => 'We are pleased to inform you that your role within the BPS Library Management System has been updated.',
+            'intro'           => 'We are pleased to inform you that your role within the ' . ($settings->org_initial ?? '') . ' Library Management System has been updated.',
             'instruction'     => 'Please sign in to review your updated access and permissions.',
             'details_title'   => 'Assignment details 🧩',
             'email_label'     => 'Account email 📧',
@@ -55,7 +64,7 @@ class RoleEmailMessage extends Mailable
     {
         return new Envelope(
             subject: $this->msg['subject'],
-            from: new Address('bps@gmail.com', 'BPS Admin'),
+            from: new Address(env('MAIL_FROM_ADDRESS', 'bps@gmail.com'), ($this->msg['org_initial'] ?? '') . ' Admin'),
         );
     }
 

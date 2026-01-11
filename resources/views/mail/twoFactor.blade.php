@@ -232,10 +232,10 @@
                   <tr>
                     <td align="left" class="font"
                       style="color:#ffffff; font-weight:600; font-size:16px;">
-                      {{ config('app.name', 'BPS Library Management System') }}
+                      {{ $msg['brand_name'] ?? config('app.name', 'Library Management System') }}
                     </td>
                     <td align="right">
-                      <img src="{{ asset('img/BPSLogo.png') }}" alt="BPS Logo" class="logo"
+                      <img src="{{ $msg['brand_logo'] ?? asset('img/OwlQuery.png') }}" alt="{{ $msg['brand_logo_alt'] ?? 'Logo' }}" class="logo"
                         style="height:48px; width:48px;">
                     </td>
                   </tr>
@@ -254,11 +254,11 @@
                 </div>
 
                 <h1 style="margin:0 0 8px; font-size:28px; font-weight:700; color:<?php echo $primaryColor; ?>; text-align:center;">
-                  Two-Factor Authentication
+                  {{ $msg['title'] ?? 'Two-Factor Authentication' }}
                 </h1>
 
                 <p class="muted" style="margin:0 0 16px; text-align:center; font-size:16px;">
-                  Dear {{ $user->first_name }} {{ $user->last_name }},
+                  {{ $msg['greeting'] ?? 'Dear ' . $user->first_name . ' ' . $user->last_name . ',' }}
                 </p>
 
                 <!-- Info Alert -->
@@ -267,15 +267,15 @@
                     🔔 Login Verification Required
                   </p>
                   <p style="margin:8px 0 0; color:<?php echo $primaryColor; ?>; font-size:14px;">
-                    Someone is attempting to access your account. If this was you, use the code below to complete your login.
+                    {{ $msg['intro'] ?? 'Someone is attempting to access your account. If this was you, use the code below to complete your login.' }}
                   </p>
                 </div>
 
                 <!-- OTP Box -->
                 <div class="otp-box">
-                  <p class="otp-label">Your Verification Code</p>
+                  <p class="otp-label">{{ $msg['otp_label'] ?? 'Your Verification Code' }}</p>
                   <p class="otp-code">{{ $otp }}</p>
-                  <p class="otp-expiry">⏱️ This code expires in 10 minutes</p>
+                  <p class="otp-expiry">{{ $msg['otp_expiry'] ?? '⏱️ This code expires in 10 minutes' }}</p>
                 </div>
 
                 <!-- Security Warning -->
@@ -284,7 +284,7 @@
                     ⚠️ Security Notice
                   </p>
                   <p style="margin:8px 0 0; color:#92400e; font-size:14px;">
-                    If you did not attempt to log in, please <strong>ignore this email</strong> and ensure your password is secure. Never share this code with anyone, including library staff.
+                    {{ $msg['security_notice'] ?? 'If you did not attempt to log in, please ignore this email and ensure your password is secure. Never share this code with anyone, including library staff.' }}
                   </p>
                 </div>
 
@@ -293,29 +293,19 @@
                   For Your Security
                 </h2>
                 <div class="security-list">
+                  @foreach($msg['security_tips'] ?? ['This code can only be used once', 'Do not share this code with anyone', 'Our team will never ask for this code', 'Code expires automatically after 10 minutes'] as $tip)
                   <div class="security-item">
                     <span class="security-icon">✓</span>
-                    <span class="muted" style="font-size:14px;">This code can only be used once</span>
+                    <span class="muted" style="font-size:14px;">{{ $tip }}</span>
                   </div>
-                  <div class="security-item">
-                    <span class="security-icon">✓</span>
-                    <span class="muted" style="font-size:14px;">Do not share this code with anyone</span>
-                  </div>
-                  <div class="security-item">
-                    <span class="security-icon">✓</span>
-                    <span class="muted" style="font-size:14px;">Our team will never ask for this code</span>
-                  </div>
-                  <div class="security-item">
-                    <span class="security-icon">✓</span>
-                    <span class="muted" style="font-size:14px;">Code expires automatically after 10 minutes</span>
-                  </div>
+                  @endforeach
                 </div>
 
                 <!-- Additional Info -->
                 <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:16px; margin:20px 0;">
                   <p style="margin:0; color:#475569; font-size:14px;">
                     <strong>Having trouble?</strong><br>
-                    If you didn't receive the code or it has expired, you can request a new one by returning to the login page and clicking "Resend Code."
+                    {{ $msg['help_text'] ?? 'If you didn\'t receive the code or it has expired, you can request a new one by returning to the login page and clicking "Resend Code."' }}
                   </p>
                 </div>
 
@@ -325,15 +315,15 @@
                   <tr>
                     <td align="center">
                       <!--[if mso]>
-                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ env('E_LIBRARY_URL') }}" style="height:44px; v-text-anchor:middle; width:220px;" arcsize="10%" strokecolor="<?php echo $primaryColor; ?>" fillcolor="<?php echo $primaryColor; ?>">
+                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ $msg['cta_url'] ?? env('E_LIBRARY_URL') }}" style="height:44px; v-text-anchor:middle; width:220px;" arcsize="10%" strokecolor="<?php echo $primaryColor; ?>" fillcolor="<?php echo $primaryColor; ?>">
                           <w:anchorlock/>
                           <center style="color:#ffffff; font-family:Segoe UI, Arial, sans-serif; font-size:16px; font-weight:600;">
-                            Go to Login Page
+                            {{ $msg['cta_label'] ?? 'Go to Login Page' }}
                           </center>
                         </v:roundrect>
                       <![endif]-->
                       <!--[if !mso]><!-- -->
-                      <a href="{{ env('E_LIBRARY_URL') }}">Go to Login Page</a>
+                      <a href="{{ $msg['cta_url'] ?? env('E_LIBRARY_URL') }}">{{ $msg['cta_label'] ?? 'Go to Login Page' }}</a>
                       <!--<![endif]-->
                     </td>
                   </tr>
@@ -346,16 +336,16 @@
                   If you have any security concerns, please contact us immediately:
                 </p>
                 <p class="small" style="margin:0 0 12px;">
-                  📧 Email: owlquery.tech@gmail.com<br>
-                  📞 Phone: (02) 8252-9613<br>
-                  🕐 Hours: Monday-Friday, 8:00 AM - 5:00 PM
+                  📧 Email: {{ $msg['contact_email'] ?? 'owlquery.tech@gmail.com' }}<br>
+                  📞 Phone: {{ $msg['contact_phone'] ?? '(02) 8252-9613' }}<br>
+                  🕐 Hours: {{ $msg['contact_hours'] ?? 'Monday-Friday, 8:00 AM - 5:00 PM' }}
                 </p>
 
-                <p class="muted" style="margin:12px 0 0;">Thank you for keeping your account secure.</p>
-                <p class="small" style="margin:8px 0 0;">This is an automated security message. Please do not reply to this email.</p>
+                <p class="muted" style="margin:12px 0 0;">{{ $msg['thanks'] ?? 'Thank you for keeping your account secure.' }}</p>
+                <p class="small" style="margin:8px 0 0;">{{ $msg['footer'] ?? 'This is an automated security message. Please do not reply to this email.' }}</p>
 
                 <p class="small" style="margin:16px 0 0; text-align:center; color:#94a3b8;">
-                  © {{ date('Y') }} {{ config('app.name') }}. All rights reserved.
+                  © {{ date('Y') }} {{ $msg['brand_name'] ?? config('app.name') }}. All rights reserved.
                 </p>
               </td>
             </tr>

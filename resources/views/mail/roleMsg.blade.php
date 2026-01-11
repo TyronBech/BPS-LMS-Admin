@@ -156,10 +156,10 @@
                   <tr>
                     <td align="left" class="font"
                       style="color:#ffffff; font-weight:600; font-size:16px;">
-                      {{ $msg['brand_name'] ?? 'BPS Library Management System' }}
+                      {{ $msg['brand_name'] ?? 'Library Management System' }}
                     </td>
                     <td align="right">
-                      <img src="{{ asset('img/BPSLogo.png') }}" alt="{{ $msg['brand_logo_alt'] ?? 'BPS Logo' }}"
+                      <img src="{{ $msg['brand_logo'] ?? asset('img/OwlQuery.png') }}" alt="{{ $msg['brand_logo_alt'] ?? 'Logo' }}"
                         class="logo" style="height:48px; width:48px;">
                     </td>
                   </tr>

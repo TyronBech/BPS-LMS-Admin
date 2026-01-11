@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('ui_settings', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('org_name', 100);
+            $table->string('org_initial', 45)->nullable();
             $table->text('org_address');
             $table->binary('org_logo');
             $table->binary('org_logo_full');

@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\UISetting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -22,28 +23,36 @@ class AccountEmailMessage extends Mailable
         $this->user = $user;
         $this->password = $password;
 
+        $settings = UISetting::first() ?? new UISetting();
+
         // Build a clean display name (handles optional middle name)
         $first  = trim((string)($user->first_name ?? ''));
         $middle = trim((string)($user->middle_name ?? ''));
         $last   = trim((string)($user->last_name ?? ''));
         $displayName = trim($first . ' ' . ($middle ? $middle . ' ' : '') . $last);
 
+        // Get logo from settings or fallback to default
+        $logo = $settings->org_logo 
+            ? 'data:image/png;base64,' . $settings->org_logo 
+            : asset('img/OwlQuery.png');
+
         $this->msg = array_replace([
             // UI/brand text now message-driven
-            'brand_name'     => 'BPS Library Management System',
-            'brand_logo_alt' => 'BPS Logo',
+            'brand_name'     => ($settings->org_initial ?? '') . ' Library Management System',
+            'brand_logo'     => $logo,
+            'brand_logo_alt' => ($settings->org_initial ?? '') . ' Logo',
 
             // Formal copy with emojis
-            'subject'        => '📚 Your BPS Library Account Details',
-            'title'          => 'BPS Library Account 📩',
+            'subject'        => '📚 Your ' . ($settings->org_initial ?? '') . ' Library Account Details',
+            'title'          => ($settings->org_initial ?? '') . ' Library Account 📩',
             'greeting'       => "Dear {$displayName},",
-            'intro'          => 'We are pleased to inform you that your BPS Library Management System account has been successfully created.',
+            'intro'          => 'We are pleased to inform you that your ' . ($settings->org_initial ?? '') . ' Library Management System account has been successfully created.',
             'instruction'    => 'To begin, please sign in using the credentials provided below.',
             'details_title'  => 'Account credentials 🔐',
             'email_label'    => 'Email',
             'password_label' => 'Temporary password',
             'reminder'       => 'For your security, please change your password after your first login. 🛡️',
-            'thanks'         => 'Thank you for being part of the BPS learning community.',
+            'thanks'         => 'Thank you for being part of the ' . ($settings->org_initial ?? '') . ' learning community.',
             'cta_label'      => 'Access your account 🔓',
             'cta_url'        => env('E_LIBRARY_URL') . '/web/login',
             'footer'         => 'If you did not request or expect this message, please disregard this email or contact support. ℹ️',

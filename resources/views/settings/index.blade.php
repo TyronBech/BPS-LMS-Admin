@@ -23,6 +23,12 @@
           <p class="text-gray-800 dark:text-white">{{ $settings->org_name ?? 'Not set' }}</p>
         </div>
 
+        <!-- Organization Initial -->
+        <div>
+          <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Organization Initial</label>
+          <p class="text-gray-800 dark:text-white">{{ $settings->org_initial ?? 'Not set' }}</p>
+        </div>
+
         <!-- Organization Address -->
         <div>
           <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Organization Address</label>
@@ -179,6 +185,18 @@
                     class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 shadow-sm focus:border-primary-400 focus:ring-primary-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
                     placeholder="e.g. BPS Library">
                   @error('org_name')
+                  <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                  @enderror
+                </div>
+
+                <!-- Organization Initial -->
+                <div>
+                  <label for="org_initial" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Organization Initial</label>
+                  <input type="text" name="org_initial" id="org_initial"
+                    value="{{ old('org_initial', $settings->org_initial) }}"
+                    class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 shadow-sm focus:border-primary-400 focus:ring-primary-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
+                    placeholder="e.g. BPS">
+                  @error('org_initial')
                   <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                   @enderror
                 </div>

@@ -8,7 +8,7 @@
 
 <head>
   <meta charset="UTF-8">
-  <title>BPS Library Management System - Backup Password</title>
+  <title>{{ $msg['brand_name'] ?? 'Library Management System' }} - Backup Password</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
@@ -143,7 +143,7 @@
 
 <body>
   <div style="display:none; overflow:hidden; line-height:1px; opacity:0; max-height:0; max-width:0;">
-    Your encrypted database backup password is inside this email.
+    {{ $msg['intro'] ?? 'Your encrypted database backup password is inside this email.' }}
   </div>
 
   <center role="article" aria-roledescription="email" lang="en" style="width:100%; background:#f4f6f8;">
@@ -156,10 +156,10 @@
                 <table role="presentation" width="100%">
                   <tr>
                     <td align="left" class="font" style="color:#ffffff; font-weight:600; font-size:16px;">
-                      BPS Library Management System
+                      {{ $msg['brand_name'] ?? 'Library Management System' }}
                     </td>
                     <td align="right">
-                      <img src="{{ asset('img/BPSLogo.png') }}" alt="BPS Logo" class="logo" style="height:48px; width:48px;">
+                      <img src="{{ $msg['brand_logo'] ?? asset('img/OwlQuery.png') }}" alt="{{ $msg['brand_logo_alt'] ?? 'Logo' }}" class="logo" style="height:48px; width:48px;">
                     </td>
                   </tr>
                 </table>
@@ -169,27 +169,27 @@
             <tr>
               <td class="content font">
                 <h1 style="margin:0 0 8px; font-size:24px; font-weight:700; color:<?php echo $primaryColor; ?>;">
-                  Database Backup Password
+                  {{ $msg['title'] ?? 'Database Backup Password' }}
                 </h1>
 
                 <p class="muted" style="margin:0 0 16px;">
-                  Dear {{ $username }},
+                  {{ $msg['greeting'] ?? 'Dear ' . $username . ',' }}
                 </p>
 
                 <p class="muted" style="margin:0 0 12px;">
-                  A new database backup has been created and secured with encryption. Use the password below to open the backup archive when restoring or reviewing the backup.
+                  {{ $msg['intro'] ?? 'A new database backup has been created and secured with encryption. Use the password below to open the backup archive when restoring or reviewing the backup.' }}
                 </p>
 
                 <h2 style="margin:16px 0 10px; font-size:18px; color:<?php echo $primaryColor; ?>; font-weight:700;">
-                  Backup details
+                  {{ $msg['details_title'] ?? 'Backup details' }}
                 </h2>
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="panel" style="margin:0 0 16px;">
                   <tr>
-                    <td class="panel-td muted" width="180" style="font-weight:600;">Requested by:</td>
+                    <td class="panel-td muted" width="180" style="font-weight:600;">{{ $msg['username_label'] ?? 'Requested by' }}:</td>
                     <td class="panel-td" style="font-weight:600; color:<?php echo $primaryColor; ?>;">{{ $username }}</td>
                   </tr>
                   <tr>
-                    <td class="panel-td muted" width="180" style="font-weight:600; vertical-align: top;">Backup password:</td>
+                    <td class="panel-td muted" width="180" style="font-weight:600; vertical-align: top;">{{ $msg['password_label'] ?? 'Backup password' }}:</td>
                     <td class="panel-td" style="font-weight:600; color:<?php echo $primaryColor; ?>;">
                       <span class="code">{{ $password }}</span>
                     </td>
@@ -200,15 +200,15 @@
                   <tr>
                     <td align="left">
                       <!--[if mso]>
-                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ env('APP_URL') }}" style="height:44px; v-text-anchor:middle; width:220px;" arcsize="10%" strokecolor="<?php echo $primaryColor; ?>" fillcolor="<?php echo $primaryColor; ?>">
+                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ $msg['cta_url'] ?? env('APP_URL') }}" style="height:44px; v-text-anchor:middle; width:220px;" arcsize="10%" strokecolor="<?php echo $primaryColor; ?>" fillcolor="<?php echo $primaryColor; ?>">
                           <w:anchorlock/>
                           <center style="color:#ffffff; font-family:Segoe UI, Arial, sans-serif; font-size:16px; font-weight:600;">
-                            Open the System
+                            {{ $msg['cta_label'] ?? 'Open the System' }}
                           </center>
                         </v:roundrect>
                       <![endif]-->
                       <!--[if !mso]><!-- -->
-                      <a href="{{ env('APP_URL') }}">Open the System</a>
+                      <a href="{{ $msg['cta_url'] ?? env('APP_URL') }}">{{ $msg['cta_label'] ?? 'Open the System' }}</a>
                       <!--<![endif]-->
                     </td>
                   </tr>
@@ -217,10 +217,10 @@
                 <div class="divider" style="margin:24px 0;"></div>
 
                 <p class="muted" style="margin:0 0 12px;">
-                  Keep this password secure. Do not share it over chat or with untrusted parties. BPS staff will never ask you to disclose this password.
+                  {{ $msg['security_note'] ?? 'Keep this password secure. Do not share it over chat or with untrusted parties. BPS staff will never ask you to disclose this password.' }}
                 </p>
                 <p class="small" style="margin:0;">
-                  This is an automated message. Please do not reply.
+                  {{ $msg['footer'] ?? 'This is an automated message. Please do not reply.' }}
                 </p>
               </td>
             </tr>

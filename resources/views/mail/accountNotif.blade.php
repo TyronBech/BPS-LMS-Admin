@@ -8,7 +8,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>{{ $msg['subject'] ?? 'BPS Library Account' }}</title>
+  <title>{{ $msg['subject'] ?? 'Library Account' }}</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 
   <style>
@@ -157,10 +157,10 @@
                   <tr>
                     <td align="left" class="font"
                       style="color:#ffffff; font-weight:600; font-size:16px;">
-                      {{ $msg['brand_name'] ?? 'BPS Library Management System' }}
+                      {{ $msg['brand_name'] ?? 'Library Management System' }}
                     </td>
                     <td align="right">
-                      <img src="{{ asset('img/BPSLogo.png') }}" alt="{{ $msg['brand_logo_alt'] ?? 'BPS Logo' }}" class="logo"
+                      <img src="{{ $msg['brand_logo'] ?? asset('img/OwlQuery.png') }}" alt="{{ $msg['brand_logo_alt'] ?? 'Logo' }}" class="logo"
                         style="height:48px; width:48px;">
                     </td>
                   </tr>

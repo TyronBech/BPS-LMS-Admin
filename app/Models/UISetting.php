@@ -14,6 +14,7 @@ class UISetting extends Model
     public $timestamps = true;
     protected $fillable = [
         'org_name',
+        'org_initial',
         'org_address',
         'org_logo',
         'org_logo_full',

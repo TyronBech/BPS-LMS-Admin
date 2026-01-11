@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\UISetting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
@@ -27,15 +28,23 @@ class ChangePasswordMail extends Mailable
         $middle = trim((string)($user->middle_name ?? ''));
         $last   = trim((string)($user->last_name ?? ''));
         $displayName = trim($first . ' ' . ($middle ? $middle . ' ' : '') . $last);
+        $settings = UISetting::first() ?? new UISetting();
+
+        // Get logo from settings or fallback to default
+        $logo = $settings->org_logo 
+            ? 'data:image/png;base64,' . $settings->org_logo 
+            : asset('img/OwlQuery.png');
 
         // Message-driven copy (formal + emojis)
         $this->msg = array_replace([
-            'brand_name'      => 'BPS Library Management System',
-            'brand_logo_alt'  => 'BPS Logo',
+            'org_initial'     => $settings->org_initial ?? '',
+            'brand_name'      => ($settings->org_initial ?? '') . ' Library Management System',
+            'brand_logo'      => $logo,
+            'brand_logo_alt'  => ($settings->org_initial ?? '') . ' Logo',
             'subject'         => '🔐 Password Change Confirmation',
             'title'           => 'Password Updated Successfully ✅',
             'greeting'        => "Dear {$displayName},",
-            'intro'           => 'This is to confirm that the password for your BPS Library account has been updated successfully.',
+            'intro'           => 'This is to confirm that the password for your ' . ($settings->org_initial ?? '') . ' Library account has been updated successfully.',
             'details_title'   => 'Change details',
             'email_label'     => 'Account email',
             'security_note'   => 'If you did not make this change, please reset your password immediately and contact support. 🛡️',
@@ -53,7 +62,7 @@ class ChangePasswordMail extends Mailable
     {
         return new Envelope(
             subject: $this->msg['subject'],
-            from: new Address('bps@gmail.com', 'BPS Admin'),
+            from: new Address(env('MAIL_FROM_ADDRESS', 'bps@gmail.com'), ($this->msg['org_initial'] ?? '') . ' Admin'),
         );
     }
 

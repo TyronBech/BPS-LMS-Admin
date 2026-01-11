@@ -209,10 +209,10 @@
                   <tr>
                     <td align="left" class="font"
                       style="color:#ffffff; font-weight:600; font-size:16px;">
-                      {{ config('app.name', 'BPS Library Management System') }}
+                      {{ $msg['brand_name'] ?? config('app.name', 'Library Management System') }}
                     </td>
                     <td align="right">
-                      <img src="{{ asset('img/BPSLogo.png') }}" alt="BPS Logo" class="logo"
+                      <img src="{{ $msg['brand_logo'] ?? asset('img/OwlQuery.png') }}" alt="{{ $msg['brand_logo_alt'] ?? 'Logo' }}" class="logo"
                         style="height:48px; width:48px;">
                     </td>
                   </tr>
@@ -233,24 +233,24 @@
                 </div>
 
                 <h1 style="margin:0 0 8px; font-size:24px; font-weight:700; color:<?php echo $primaryColor; ?>;">
-                  Extension Request {{ $transactionType === 'extended' ? 'Approved' : 'Rejected' }}
+                  {{ $msg['title'] ?? ($transactionType === 'extended' ? 'Extension Request Approved' : 'Extension Request Rejected') }}
                 </h1>
 
                 <p class="muted" style="margin:0 0 16px;">
-                  Dear {{ $user->first_name }} {{ $user->last_name }},
+                  {{ $msg['greeting'] ?? 'Dear ' . $user->first_name . ' ' . $user->last_name . ',' }}
                 </p>
 
                 <!-- Alert Box -->
                 @if($transactionType === 'extended')
                 <div class="alert-success">
                   <p style="margin:0; color:#166534; font-weight:600;">
-                    Good news! Your extension request has been approved.
+                    {{ $msg['approved_msg'] ?? 'Good news! Your extension request has been approved.' }}
                   </p>
                 </div>
                 @else
                 <div class="alert-danger">
                   <p style="margin:0; color:#991b1b; font-weight:600;">
-                    Your extension request has been rejected.
+                    {{ $msg['rejected_msg'] ?? 'Your extension request has been rejected.' }}
                   </p>
                 </div>
                 @endif
@@ -266,7 +266,7 @@
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="panel"
                   style="margin:0 0 16px;">
                   <tr>
-                    <td class="panel-td muted" width="180" style="font-weight:600;">Book Title:</td>
+                    <td class="panel-td muted" width="180" style="font-weight:600;">{{ $msg['book_title_label'] ?? 'Book Title' }}:</td>
                     <td class="panel-td" style="font-weight:600; color:<?php echo $primaryColor; ?>;">{{ $book->title }}</td>
                   </tr>
                   @if(isset($book->author))
@@ -283,7 +283,7 @@
                   @endif
                   @if($transactionType === 'extended')
                   <tr>
-                    <td class="panel-td muted" width="180" style="font-weight:600;">New Due Date:</td>
+                    <td class="panel-td muted" width="180" style="font-weight:600;">{{ $msg['new_due_date_label'] ?? 'New Due Date' }}:</td>
                     <td class="panel-td" style="font-weight:600; color:#16a34a;">
                       {{ \Carbon\Carbon::parse($dueDate)->format('F j, Y') }}
                     </td>
@@ -335,15 +335,15 @@
                   <tr>
                     <td align="left">
                       <!--[if mso]>
-                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ env('E_LIBRARY_URL') }}" style="height:44px; v-text-anchor:middle; width:220px;" arcsize="10%" strokecolor="<?php echo $primaryColor; ?>" fillcolor="<?php echo $primaryColor; ?>">
+                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ $msg['cta_url'] ?? env('E_LIBRARY_URL') }}" style="height:44px; v-text-anchor:middle; width:220px;" arcsize="10%" strokecolor="<?php echo $primaryColor; ?>" fillcolor="<?php echo $primaryColor; ?>">
                           <w:anchorlock/>
                           <center style="color:#ffffff; font-family:Segoe UI, Arial, sans-serif; font-size:16px; font-weight:600;">
-                            View My Borrowings
+                            {{ $msg['cta_label'] ?? 'View My Borrowings' }}
                           </center>
                         </v:roundrect>
                       <![endif]-->
                       <!--[if !mso]><!-- -->
-                      <a href="{{ env('E_LIBRARY_URL') }}">View My Borrowings</a>
+                      <a href="{{ $msg['cta_url'] ?? env('E_LIBRARY_URL') }}">{{ $msg['cta_label'] ?? 'View My Borrowings' }}</a>
                       <!--<![endif]-->
                     </td>
                   </tr>
@@ -361,8 +361,8 @@
                   🕐 Hours: Monday-Friday, 8:00 AM - 5:00 PM
                 </p>
 
-                <p class="muted" style="margin:12px 0 0;">Thank you for using the BPS Library Management System.</p>
-                <p class="small" style="margin:8px 0 0;">This is an automated message. Please do not reply to this email.</p>
+                <p class="muted" style="margin:12px 0 0;">{{ $msg['thanks'] ?? 'Thank you for using our Library Management System.' }}</p>
+                <p class="small" style="margin:8px 0 0;">{{ $msg['footer'] ?? 'This is an automated message. Please do not reply to this email.' }}</p>
               </td>
             </tr>
           </table>

@@ -157,10 +157,10 @@
                   <tr>
                     <td align="left" class="font"
                       style="color:#ffffff; font-weight:600; font-size:16px;">
-                      {{ config('app.name', 'BPS Library Management System') }}
+                      {{ $msg['brand_name'] ?? config('app.name', 'Library Management System') }}
                     </td>
                     <td align="right">
-                      <img src="{{ asset('img/BPSLogo.png') }}" alt="BPS Logo" class="logo"
+                      <img src="{{ $msg['brand_logo'] ?? asset('img/OwlQuery.png') }}" alt="{{ $msg['brand_logo_alt'] ?? 'Logo' }}" class="logo"
                         style="height:48px; width:48px;">
                     </td>
                   </tr>
@@ -172,11 +172,11 @@
             <tr>
               <td class="content font">
                 <h1 style="margin:0 0 8px; font-size:24px; font-weight:700; color:<?php echo $primaryColor; ?>;">
-                  Backup Completed
+                  {{ $msg['title'] ?? 'Backup Completed' }}
                 </h1>
 
                 <p class="muted" style="margin:0 0 16px;">
-                  Dear {{ $userName }},
+                  {{ $msg['greeting'] ?? 'Dear ' . $userName . ',' }}
                 </p>
 
                 <p class="muted" style="margin:0 0 20px;">
@@ -186,20 +186,20 @@
 
                 <!-- Details panel -->
                 <h2 style="margin:0 0 10px; font-size:18px; color:<?php echo $primaryColor; ?>; font-weight:700;">
-                  Backup details
+                  {{ $msg['details_title'] ?? 'Backup details' }}
                 </h2>
                 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" class="panel"
                   style="margin:0 0 16px;">
                   <tr>
-                    <td class="panel-td muted" width="180" style="font-weight:600;">Application:</td>
+                    <td class="panel-td muted" width="180" style="font-weight:600;">{{ $msg['app_label'] ?? 'Application' }}:</td>
                     <td class="panel-td" style="font-weight:600; color:<?php echo $primaryColor; ?>;">{{ $app }}</td>
                   </tr>
                   <tr>
-                    <td class="panel-td muted" width="180" style="font-weight:600;">Disk:</td>
+                    <td class="panel-td muted" width="180" style="font-weight:600;">{{ $msg['disk_label'] ?? 'Disk' }}:</td>
                     <td class="panel-td" style="font-weight:600; color:<?php echo $primaryColor; ?>;">{{ $disk }}</td>
                   </tr>
                   <tr>
-                    <td class="panel-td muted" width="180" style="font-weight:600;">Generated at:</td>
+                    <td class="panel-td muted" width="180" style="font-weight:600;">{{ $msg['date_label'] ?? 'Generated at' }}:</td>
                     <td class="panel-td" style="font-weight:600; color:<?php echo $primaryColor; ?>;">
                       {{ $date->timezone(config('app.timezone'))->format('F j, Y g:i A (T)') }}
                     </td>
@@ -212,15 +212,15 @@
                   <tr>
                     <td align="left">
                       <!--[if mso]>
-                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ $url ?? env('APP_URL') }}" style="height:44px; v-text-anchor:middle; width:220px;" arcsize="10%" strokecolor="<?php echo $primaryColor; ?>" fillcolor="<?php echo $primaryColor; ?>">
+                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ $msg['cta_url'] ?? $url ?? env('APP_URL') }}" style="height:44px; v-text-anchor:middle; width:220px;" arcsize="10%" strokecolor="<?php echo $primaryColor; ?>" fillcolor="<?php echo $primaryColor; ?>">
                           <w:anchorlock/>
                           <center style="color:#ffffff; font-family:Segoe UI, Arial, sans-serif; font-size:16px; font-weight:600;">
-                            Open {{ $app }}
+                            {{ $msg['cta_label'] ?? 'Open ' . $app }}
                           </center>
                         </v:roundrect>
                       <![endif]-->
                       <!--[if !mso]><!-- -->
-                      <a href="{{ $url ?? env('APP_URL') }}">Open {{ $app }}</a>
+                      <a href="{{ $msg['cta_url'] ?? $url ?? env('APP_URL') }}">{{ $msg['cta_label'] ?? 'Open ' . $app }}</a>
                       <!--<![endif]-->
                     </td>
                   </tr>
@@ -228,8 +228,8 @@
 
                 <div class="divider" style="margin:24px 0;"></div>
 
-                <p class="muted" style="margin:0 0 12px;">Thank you.</p>
-                <p class="small" style="margin:0;">This is an automated message. Please do not reply.</p>
+                <p class="muted" style="margin:0 0 12px;">{{ $msg['thanks'] ?? 'Thank you.' }}</p>
+                <p class="small" style="margin:0;">{{ $msg['footer'] ?? 'This is an automated message. Please do not reply.' }}</p>
               </td>
             </tr>
           </table>

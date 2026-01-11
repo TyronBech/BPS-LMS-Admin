@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Models\UISetting;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -27,13 +28,39 @@ class BackupPasswordMail extends Mailable
      */
     private $password;
 
+    private array $msg;
+
     /**
      * Create a new message instance.
      */
-    public function __construct($username, $password)
+    public function __construct($username, $password, array $msg = [])
     {
         $this->username = $username;
         $this->password = $password;
+
+        $settings = UISetting::first() ?? new UISetting();
+
+        // Get logo from settings or fallback to default
+        $logo = $settings->org_logo 
+            ? 'data:image/png;base64,' . $settings->org_logo 
+            : asset('img/OwlQuery.png');
+
+        $this->msg = array_replace([
+            'brand_name'      => ($settings->org_initial ?? '') . ' Library Management System',
+            'brand_logo'      => $logo,
+            'brand_logo_alt'  => ($settings->org_initial ?? '') . ' Logo',
+            'subject'         => ($settings->org_initial ?? '') . ' Library Management System - Your Backup Password',
+            'title'           => 'Database Backup Password 🔒',
+            'greeting'        => "Dear {$username},",
+            'intro'           => 'A new database backup has been created and secured with encryption. Use the password below to open the backup archive when restoring or reviewing the backup.',
+            'details_title'   => 'Backup details',
+            'username_label'  => 'Requested by',
+            'password_label'  => 'Backup password',
+            'cta_label'       => 'Open the System',
+            'cta_url'         => env('APP_URL'),
+            'security_note'   => 'Keep this password secure. Do not share it over chat or with untrusted parties. ' . ($settings->org_initial ?? '') . ' staff will never ask you to disclose this password.',
+            'footer'          => 'This is an automated message. Please do not reply.',
+        ], $msg);
     }
 
     /**
@@ -42,7 +69,7 @@ class BackupPasswordMail extends Mailable
     public function envelope(): Envelope
     {
         return new Envelope(
-            subject: 'BPS Library Management System - Your Backup Password',
+            subject: $this->msg['subject'],
         );
     }
 
@@ -56,6 +83,7 @@ class BackupPasswordMail extends Mailable
             with: [
                 'username' => $this->username,
                 'password' => $this->password,
+                'msg'      => $this->msg,
             ]
         );
     }
