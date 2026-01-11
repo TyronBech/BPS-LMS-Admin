@@ -11,6 +11,8 @@ class Transaction extends Model
 {
     use HasFactory, SoftDeletes;
     protected $table = 'tr_transactions';
+    protected $primaryKey = 'id';
+    public $timestamps = true;
     protected $fillable = [
         'user_id',
         'book_id',

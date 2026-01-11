@@ -15,6 +15,7 @@ class User extends Authenticatable
     use HasFactory, HasRoles, SoftDeletes, Notifiable;
     protected $table = 'usr_users';
     protected $guarded = 'admin';
+    public $timestamps = true;
     /**
      * The attributes that are mass assignable.
      *

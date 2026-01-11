@@ -10,6 +10,7 @@ class UISetting extends Model
     use SoftDeletes;
     protected $table = 'ui_settings';
     protected $primaryKey = 'id';
+    public $timestamps = true;
     protected $fillable = [
         'org_name',
         'org_address',

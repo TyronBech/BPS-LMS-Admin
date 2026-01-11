@@ -11,6 +11,8 @@ class Log extends Model
 {
     use HasFactory, SoftDeletes;
     protected $table = 'log_user_logs';
+    protected $primaryKey = 'id';
+    public $timestamps = true;
     protected $fillable = [
         'user_id',
         'computer_use',

@@ -11,6 +11,8 @@ class StudentDetail extends Model
 {
     use HasFactory, SoftDeletes;
     protected $table = 'usr_student_details';
+    protected $primaryKey = 'id';
+    public $timestamps = true;
     protected $fillable = [
         'user_id',
         'id_number',

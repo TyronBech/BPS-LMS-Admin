@@ -10,6 +10,8 @@ class UserGroup extends Model
 {
     use SoftDeletes;
     protected $table = 'privileges';
+    protected $primaryKey = 'id';
+    public $timestamps = true;
     protected $fillable = [
         'user_type',
         'category',

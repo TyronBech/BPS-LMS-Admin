@@ -10,6 +10,8 @@ class Penalty extends Model
 {
     use HasFactory, SoftDeletes;
     protected $table = 'tr_penalties';
+    protected $primaryKey = 'id';
+    public $timestamps = true;
     protected $fillable = [
         'transaction_id',
         'penalty_rule_id',

@@ -12,6 +12,7 @@ class Inventory extends Model
     use SoftDeletes, HasFactory;
     protected $primaryKey = 'id';
     protected $table = 'bk_inventories';
+    public $timestamps = true;
     protected $fillable = [
         'book_id',
         'checked_at',

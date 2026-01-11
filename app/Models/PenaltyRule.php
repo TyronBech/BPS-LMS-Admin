@@ -10,6 +10,8 @@ class PenaltyRule extends Model
     use SoftDeletes;
 
     protected $table = 'penalty_rules';
+    protected $primaryKey = 'id';
+    public $timestamps = true;
     protected $fillable = [
         'type',
         'description',

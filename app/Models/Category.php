@@ -11,6 +11,8 @@ class Category extends Model
 {
     use HasFactory, SoftDeletes;
     protected $table = 'bk_categories';
+    protected $primaryKey = 'id';
+    public $timestamps = true;
     protected $fillable = [
         'legend',
         'name',

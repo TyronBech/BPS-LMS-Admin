@@ -11,6 +11,8 @@ class VisitorDetail extends Model
 {
     use HasFactory, SoftDeletes;
     protected $table = 'usr_visitor_details';
+    protected $primaryKey = 'id';
+    public $timestamps = true;
     protected $fillable = [
         'user_id',
         'visitor_id',

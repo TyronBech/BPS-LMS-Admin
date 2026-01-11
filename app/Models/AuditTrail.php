@@ -9,7 +9,7 @@ class AuditTrail extends Model
 {
     protected $table = 'audit_trail';
     protected $primaryKey = 'id';
-
+    public $timestamps = true;
     public function changedBy() : BelongsTo
     {
         return $this->belongsTo(User::class, 'changed_by', 'id');

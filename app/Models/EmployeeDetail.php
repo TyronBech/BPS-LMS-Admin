@@ -11,7 +11,8 @@ class EmployeeDetail extends Model
 {
     use HasFactory, SoftDeletes;
     protected $table = 'usr_employee_details';
-
+    protected $primaryKey = 'id';
+    public $timestamps = true;
     protected $fillable = [
         'user_id',
         'employee_id',
