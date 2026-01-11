@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Models\Log;
+use App\Models\UISetting;
 use Illuminate\Support\Facades\Validator;
 use Dompdf\Dompdf;
 use Dompdf\Options;
@@ -464,12 +465,13 @@ class UserLogsController extends Controller
                 // current month + year
                 $range = Carbon::now()->format('F Y');
             }
-
+            
+            $settings = UISetting::first() ?? new UISetting();
             $items = [
                 'title'   => 'Attendance Monitoring Report Graph',
                 'school'  => "Bicutan Parochial School, Inc.",
                 'address' => "Manuel L. Quezon St., Lower Bicutan, Taguig City",
-                'logo'    => base64_encode(file_get_contents(public_path('img/BPSLogoFull.png'))),
+                'logo'    => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/OwlQueryFull.png')))),
                 'user'    => Auth::user()->first_name . ' ' . Auth::user()->last_name,
                 'date'    => now()->format('F d, Y'),
                 'chart'   => $chart,
@@ -509,11 +511,12 @@ class UserLogsController extends Controller
      */
     private function generatePDF(Collection $data)
     {
+        $settings = UISetting::first() ?? new UISetting();
         $items = [
             'title'         => 'Attendance Monitoring Report',
             'school'        => "Bicutan Parochial School, Inc.",
             'address'       => "Manuel L. Quezon St., Lower Bicutan, Taguig City",
-            'logo'          => base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
+            'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents(public_path('img/OwlQueryFull.png'))),
             'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
             'date'          => date('F j, Y'),
             'data'          => $data,
@@ -541,11 +544,16 @@ class UserLogsController extends Controller
     {
         $spreadsheet    = new Spreadsheet();
         $logo           = new Drawing();
+        $settings      = UISetting::first() ?? new UISetting();
         $sheet          = $spreadsheet->getActiveSheet();
+
+        $tempLogoPath = public_path('img/orgLogoFull.png');
+        $decodedLogo = base64_decode($settings->org_logo_full);
+        file_put_contents($tempLogoPath, $decodedLogo);
 
         $logo->setName('BPS Logo');
         $logo->setDescription('BPS Logo');
-        $logo->setPath(public_path('img/BPSLogoFull.png'));
+        $logo->setPath($tempLogoPath ?? public_path('img/OwlQueryFull.png'));
         $logo->setHeight(80);
         $logo->setCoordinates('A1');
         $logo->setOffsetX(70);
@@ -592,6 +600,10 @@ class UserLogsController extends Controller
         header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         header("Content-Disposition: attachment;filename=\"$fileName\"");
         $writer->save("php://output");
+
+        if (file_exists($tempLogoPath)) {
+            unlink($tempLogoPath);
+        }
         exit;
     }
     /**

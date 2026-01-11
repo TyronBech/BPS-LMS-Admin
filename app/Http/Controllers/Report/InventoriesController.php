@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Report;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Inventory;
+use App\Models\UISetting;
 use Illuminate\Support\Facades\DB;
 use DateTime;
 use Dompdf\Dompdf;
@@ -122,11 +123,15 @@ class InventoriesController extends Controller
      */
     private function generatePDF(Collection $data)
     {
+        ini_set('memory_limit', '2048M');
+        ini_set('max_execution_time', 300);
+
+        $settings = UISetting::first() ?? new UISetting();
         $items = [
             'title'         => 'Inventory Report',
             'school'        => "Bicutan Parochial School, Inc.",
             'address'       => "Manuel L. Quezon St., Lower Bicutan, Taguig City",
-            'logo'          => base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
+            'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
             'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
             'date'          => date('F j, Y'),
             'data'          => $data,
@@ -154,11 +159,16 @@ class InventoriesController extends Controller
     {
         $spreadsheet    = new Spreadsheet();
         $logo           = new Drawing();
+        $settings       = UISetting::first() ?? new UISetting();
         $sheet          = $spreadsheet->getActiveSheet();
+
+        $tempLogoPath = public_path('img/orgLogoFull.png');
+        $decodedLogo = base64_decode($settings->org_logo_full);
+        file_put_contents($tempLogoPath, $decodedLogo);
         
         $logo->setName('BPS Logo');
         $logo->setDescription('BPS Logo');
-        $logo->setPath(public_path('img/BPSLogoFull.png'));
+        $logo->setPath($tempLogoPath ?? public_path('img/BPSLogoFull.png'));
         $logo->setHeight(80);
         $logo->setCoordinates('C1');
         $logo->setOffsetX(10);
@@ -201,6 +211,10 @@ class InventoriesController extends Controller
         header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
         header("Content-Disposition: attachment;filename=\"$fileName\"");
         $writer->save("php://output");
+
+        if (file_exists($tempLogoPath)) {
+            unlink($tempLogoPath);
+        }
         exit;
     }
     /**
