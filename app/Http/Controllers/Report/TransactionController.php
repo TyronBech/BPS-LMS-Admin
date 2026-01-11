@@ -139,10 +139,10 @@ class TransactionController extends Controller
         $settings = UISetting::first() ?? new UISetting();
         $items = [
             'title'         => 'Book Circulation Report',
-            'school'        => "Bicutan Parochial School, Inc.",
+            'school'        => $settings->org_name ?? "Bicutan Parochial School, Inc.",
             'type'          => $type,
             'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
-            'address'       => "Manuel L. Quezon St., Lower Bicutan, Taguig City",
+            'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
             'date'          => date('F j, Y'),
             'data'          => $data,
@@ -178,8 +178,8 @@ class TransactionController extends Controller
         $decodedLogo = base64_decode($settings->org_logo_full);
         file_put_contents($tempLogoPath, $decodedLogo);
 
-        $logo->setName('BPS Logo');
-        $logo->setDescription('BPS Logo');
+        $logo->setName(($settings->org_initial ?? 'BPS') . ' Logo');
+        $logo->setDescription(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setPath($tempLogoPath ?? public_path('img/BPSLogoFull.png'));
         $logo->setHeight(80);
         $logo->setCoordinates('B1');

@@ -127,8 +127,8 @@ class PenaltiesController extends Controller
         $settings = UISetting::first() ?? new UISetting();
         $items = [
             'title'         => 'Overdue Fines Report',
-            'school'        => "Bicutan Parochial School, Inc.",
-            'address'       => "Manuel L. Quezon St., Lower Bicutan, Taguig City",
+            'school'        => $settings->org_name ?? "Bicutan Parochial School, Inc.",
+            'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
             'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
             'date'          => date('F j, Y'),
@@ -164,8 +164,8 @@ class PenaltiesController extends Controller
         $decodedLogo = base64_decode($settings->org_logo_full);
         file_put_contents($tempLogoPath, $decodedLogo);
 
-        $logo->setName('BPS Logo');
-        $logo->setDescription('BPS Logo');
+        $logo->setName(($settings->org_initial ?? 'BPS') . ' Logo');
+        $logo->setDescription(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setPath($tempLogoPath ?? public_path('img/BPSLogoFull.png'));
         $logo->setHeight(80);
         $logo->setCoordinates('C1');

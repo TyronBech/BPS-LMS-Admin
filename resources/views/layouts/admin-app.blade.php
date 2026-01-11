@@ -5,12 +5,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="csrf-token" content="{{ csrf_token() }}">
-  <meta name="description" content="BPS Library Management System - Bicutan Parochial School's digital library platform for managing books, users, and resources with an easy-to-use online dashboard.">
-  <meta name="keywords" content="BPS, Library, Management, System, Books Management, User Management, Admin Dashboard">
+  <meta name="description" content="{{ $settings->org_initial }} Library Management System - {{ $settings->org_name }}'s digital library platform for managing books, users, and resources with an easy-to-use online dashboard.">
+  <meta name="keywords" content="{{ $settings->org_initial }}, Library, Management, System, Books Management, User Management, Admin Dashboard">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="author" content="OwlQuery">
-  <link rel="icon" href="{{ asset('img/BPSLogo.png') }}">
-  <title>BPS Library Management System</title>
+  <link rel="icon" href="{{ $settings->getOrgLogoBase64Attribute() }}">
+  <title>{{ $settings->org_initial }} Library Management System</title>
   @vite(['resources/css/app.css', 'resources/js/app.js'])
   <style>
     :root {

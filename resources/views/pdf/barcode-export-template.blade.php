@@ -56,14 +56,14 @@
       <tr>
       <td>
         <div class="barcode-container">
-          <p>BPS LIBRARY</p>
+          <p>{{ $settings->org_initial }} LIBRARY</p>
           <img class="barcode-image" src="data:image/jpg;base64,{{ $books[$i]->barcode }}">
           <p class="barcode-text">{{ $books[$i]->accession }}</p>
         </div>
       </td>
       <td>
         <div class="barcode-container">
-          <p>BPS LIBRARY</p>
+          <p>{{ $settings->org_initial }} LIBRARY</p>
           <img class="barcode-image" src="data:image/jpg;base64,{{ $books[$i]->barcode }}">
           <p class="barcode-text">{{ $books[$i]->accession }}</p>
         </div>
@@ -71,14 +71,14 @@
       @if(isset($books[$i + 1]))
       <td>
         <div class="barcode-container">
-          <p>BPS LIBRARY</p>
+          <p>{{ $settings->org_initial }} LIBRARY</p>
           <img class="barcode-image" src="data:image/jpg;base64,{{ $books[$i + 1]->barcode }}">
           <p class="barcode-text">{{ $books[$i + 1]->accession }}</p>
         </div>
       </td>
       <td>
         <div class="barcode-container">
-          <p>BPS LIBRARY</p>
+          <p>{{ $settings->org_initial }} LIBRARY</p>
           <img class="barcode-image" src="data:image/jpg;base64,{{ $books[$i + 1]->barcode }}">
           <p class="barcode-text">{{ $books[$i + 1]->accession }}</p>
         </div>

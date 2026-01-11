@@ -104,7 +104,7 @@
 <body>
   <header>
     <div class="logo">
-      <img src="data:image/png;base64,{{ $logo }}" alt="Logo">
+      <img src="data:image/png;base64,{{ $logo }}" alt="{{ $settings->org_initial }} Logo">
     </div>
     <hr>
   </header>

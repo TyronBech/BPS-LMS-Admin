@@ -583,6 +583,7 @@ class BookMaintenanceController extends Controller
     public function export_barcode(Request $request)
     {
         ini_set('memory_limit', '1024M');
+        set_time_limit(300);
 
         $search   = $request->input('search', '');
         $category = $request->input('category', '');
@@ -662,6 +663,7 @@ class BookMaintenanceController extends Controller
     public function export_call_numbers(Request $request)
     {
         ini_set('memory_limit', '1024M');
+        set_time_limit(300);
 
         $search   = $request->input('search', '');
         $category = $request->input('category', '');

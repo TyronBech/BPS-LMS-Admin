@@ -86,7 +86,7 @@
             @endphp
             <td>
               <div class="label">
-                <p class="library-name">BPS Library</p>
+                <p class="library-name">{{ $settings->org_initial }} Library</p>
                 @forelse ($segments as $segment)
                   <p>{{ $segment }}</p>
                 @empty
