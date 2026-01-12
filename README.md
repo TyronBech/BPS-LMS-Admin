@@ -17,7 +17,7 @@ A comprehensive web-based library management system built with Laravel, designed
 
 ## 🔍 Overview
 
-The BPS Library Management System (LMS) Admin Portal is a capstone project developed to modernize and streamline library operations at Bulacan Polytechnic School. The system provides a centralized platform for:
+The BPS Library Management System (LMS) Admin Portal is a capstone project developed to modernize and streamline library operations at Bicutan Parochial School, Inc. The system provides a centralized platform for:
 
 - **Library Staff**: To manage daily operations including book lending, returns, and user management
 - **Administrators**: To monitor library usage, generate reports, and configure system settings
@@ -46,9 +46,9 @@ The system supports three primary user types:
 - Category-based organization
 - Inventory tracking with quantity management
 - Barcode generation and scanning support
-- ISBN lookup and validation
+- Details lookup and validation
 - Digital resource uploads
-- Bulk import/export via Excel
+- Bulk import via Excel
 
 ### 👥 User Management
 - **Student Management**: Track grade level, section, and academic details
@@ -84,11 +84,10 @@ The system supports three primary user types:
   - Backup completion alerts
   - Role assignment notifications
 
-### 📥 Import/Export
+### 📥 Import and Reports
 - Excel import for bulk book additions
 - Excel import for user registrations
-- PDF report generation
-- Data export functionality
+- PDF & Excel report generation
 
 ### ⚙️ System Configuration
 - Customizable UI settings
@@ -144,7 +143,6 @@ BPS-LMS-Admin/
 | `Category` | Book categories |
 | `Inventory` | Book inventory tracking |
 | `Transaction` | Borrowing/returning records |
-| `Reservation` | Book reservations |
 | `Penalty` | User penalties |
 | `PenaltyRule` | Penalty configuration |
 | `Log` | Library visit logs (time-in/out) |
@@ -206,7 +204,7 @@ BPS-LMS-Admin/
 
 1. Navigate to **Books** in the sidebar
 2. Click **Add Book** to create a new record
-3. Fill in book details (title, author, ISBN, category, quantity)
+3. Fill in book details (title, author, category, quantity)
 4. Use **Import** for bulk additions via Excel
 
 ### Processing Transactions
@@ -233,11 +231,12 @@ This project is developed as a capstone project for educational purposes.
 
 ## 👨‍💻 Authors
 
-- **BPS Development Team** - Capstone Project
+- **OwlQuery Team** - Capstone Project
 
 ---
 
 ## 🙏 Acknowledgments
 
-- Polytechnic University of the Philippines for the opportunity
+- Polytechnic University of the Philippines for the opportunity of this capstone
+- Bicutan Parochial School, Inc. for the support in this project
 - Laravel community for excellent documentation
