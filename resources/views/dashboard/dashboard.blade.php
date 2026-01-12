@@ -42,7 +42,17 @@
     </div>
   </div>
   <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
-    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Registered Users</h5>
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+      <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">User Registration Growth</h5>
+      <div class="inline-flex rounded-lg border border-gray-200 dark:border-gray-600 p-1 bg-gray-100 dark:bg-gray-700">
+        <button type="button" id="period-monthly" class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-200 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+          Monthly
+        </button>
+        <button type="button" id="period-yearly" class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-200 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+          Yearly
+        </button>
+      </div>
+    </div>
     <div class="relative h-full mb-5">
       <canvas id="registered-users"></canvas>
     </div>
@@ -207,19 +217,57 @@
       console.error('Error fetching yearly acquired books:', error);
     }
   }
-  // Fetch the registered users
-  async function fetchRegisteredUsers() {
+  // Track current period for registered users chart
+  let currentRegisteredUsersPeriod = 'monthly';
+
+  // Fetch the registered users growth (monthly or yearly)
+  async function fetchRegisteredUsers(period = 'monthly') {
     try {
-      const response = await fetch("{{ route('fetch-registered-users') }}");
+      currentRegisteredUsersPeriod = period;
+      const url = `{{ route('fetch-registered-users') }}?period=${period}`;
+      const response = await fetch(url);
       const data = await response.json();
-      const student = data.students || 0;
-      const employees = data.employees || 0;
-      const visitors = data.visitors || 0;
-      const labels = ['Students', 'Faculty & Staff', 'Visitors'];
-      const counts = [student, employees, visitors];
-      RegisteredUsersPieGraph(labels, counts);
+      const labels = data.labels || [];
+      const students = data.students || [];
+      const employees = data.employees || [];
+      const visitors = data.visitors || [];
+      RegisteredUsersLineGraph(labels, students, employees, visitors);
     } catch (error) {
       console.error('Error fetching registered users:', error);
+    }
+  }
+
+  // Toggle button handlers for registered users period
+  function setupRegisteredUsersPeriodToggle() {
+    const monthlyBtn = document.getElementById('period-monthly');
+    const yearlyBtn = document.getElementById('period-yearly');
+
+    const activeClasses = ['bg-white', 'dark:bg-gray-800', 'text-primary-600', 'dark:text-gray-50', 'shadow-sm'];
+    const inactiveClasses = ['text-gray-500', 'dark:text-gray-400', 'hover:text-gray-700', 'dark:hover:text-gray-300'];
+
+    function setActiveButton(activeBtn, inactiveBtn) {
+      // Remove all toggle classes first
+      activeBtn.classList.remove(...inactiveClasses);
+      inactiveBtn.classList.remove(...activeClasses);
+      // Add appropriate classes
+      activeBtn.classList.add(...activeClasses);
+      inactiveBtn.classList.add(...inactiveClasses);
+    }
+
+    if (monthlyBtn && yearlyBtn) {
+      monthlyBtn.addEventListener('click', () => {
+        if (currentRegisteredUsersPeriod !== 'monthly') {
+          setActiveButton(monthlyBtn, yearlyBtn);
+          fetchRegisteredUsers('monthly');
+        }
+      });
+
+      yearlyBtn.addEventListener('click', () => {
+        if (currentRegisteredUsersPeriod !== 'yearly') {
+          setActiveButton(yearlyBtn, monthlyBtn);
+          fetchRegisteredUsers('yearly');
+        }
+      });
     }
   }
   async function topVisitedStudents(start, end) {
@@ -618,54 +666,77 @@
       }
     });
   }
-  // Create a pie graph for registered users
-  function RegisteredUsersPieGraph(labels, counts) {
+  // Create a line graph for registered users monthly growth
+  function RegisteredUsersLineGraph(labels, students, employees, visitors) {
     const ctx = document.getElementById('registered-users').getContext('2d');
     // Check if the chart already exists
     if (registeredUsersChart) {
       registeredUsersChart.destroy(); // 👈 Destroy old chart if exists
     }
-    const colors = generateRandomColors(labels.length);
     registeredUsersChart = new Chart(ctx, {
-      type: 'pie',
+      type: 'line',
       data: {
         labels: labels,
-        datasets: [{
-          label: 'Registered Users',
-          data: counts,
-          backgroundColor: [
-            "rgba(75, 192, 192, 1)",
-            "rgba(54, 162, 235, 1)",
-            "rgba(255, 182, 115, 1)",
-          ],
-          hoverOffset: 25,
-        }]
+        datasets: [
+          {
+            label: 'Students',
+            data: students,
+            borderColor: 'rgba(75, 192, 192, 1)',
+            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+            fill: false,
+            tension: 0.3,
+            borderWidth: 2,
+          },
+          {
+            label: 'Faculty & Staff',
+            data: employees,
+            borderColor: 'rgba(54, 162, 235, 1)',
+            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+            fill: false,
+            tension: 0.3,
+            borderWidth: 2,
+          },
+          {
+            label: 'Visitors',
+            data: visitors,
+            borderColor: 'rgba(255, 182, 115, 1)',
+            backgroundColor: 'rgba(255, 182, 115, 0.2)',
+            fill: false,
+            tension: 0.3,
+            borderWidth: 2,
+          }
+        ]
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         plugins: {
+          datalabels: false,
           legend: {
             labels: {
               color: chartColors.fontColor,
             },
           },
-          tooltip: {
-            enabled: false,
-          },
-          datalabels: {
-            color: '#fff',
-            font: {
-              weight: 'bold',
-              size: 13,
+        },
+        scales: {
+          x: {
+            ticks: {
+              color: chartColors.fontColor,
             },
-            align: 'center',
-            formatter: (value) => value,
-            textAlign: 'center',
-            textShadowBlur: 10,
-            textShadowColor: 'rgba(0,0,0,0.8)',
-          }
-        }
+            grid: {
+              color: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+            },
+          },
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: chartColors.fontColor,
+            },
+            grid: {
+              color: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
+            },
+          },
+        },
       },
     });
   }
@@ -775,7 +846,7 @@
     fetchBookCount();
     fetchTransactionHistory();
     fetchYearlyAquiredBooks();
-    fetchRegisteredUsers();
+    fetchRegisteredUsers(currentRegisteredUsersPeriod);
     topVisitedStudents();
     topBorrowedStudents();
     fetchTopBorrowedBooks();
@@ -830,7 +901,8 @@
   document.addEventListener('DOMContentLoaded', fetchBookCount);
   document.addEventListener('DOMContentLoaded', fetchTransactionHistory);
   document.addEventListener('DOMContentLoaded', fetchYearlyAquiredBooks);
-  document.addEventListener('DOMContentLoaded', fetchRegisteredUsers);
+  document.addEventListener('DOMContentLoaded', () => fetchRegisteredUsers('monthly'));
+  document.addEventListener('DOMContentLoaded', setupRegisteredUsersPeriodToggle);
   document.addEventListener('DOMContentLoaded', () => topVisitedStudents());
   document.addEventListener('DOMContentLoaded', () => topBorrowedStudents());
   document.addEventListener('DOMContentLoaded', fetchTopBorrowedBooks);

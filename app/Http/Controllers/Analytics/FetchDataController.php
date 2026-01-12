@@ -317,42 +317,273 @@ class FetchDataController extends Controller
     }
 
     /**
-     * Fetches the count of registered users.
+     * Fetches the growth of registered users (monthly or yearly).
      *
-     * This function fetches the count of students, employees, and visitors and returns the count in a JSON response.
+     * This function fetches the count of students, employees, and visitors registered
+     * per month (past 12 months) or per year and returns the data in a JSON response for a line graph.
      *
+     * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\JsonResponse
      */
-    public function fetchRegisteredUsers()
+    public function fetchRegisteredUsers(Request $request)
     {
-        LogFacade::info('Analytics: Fetching registered users count', [
+        $period = $request->query('period', 'monthly'); // 'monthly' or 'yearly'
+
+        LogFacade::info('Analytics: Fetching registered users growth', [
             'user_id' => Auth::id(),
             'user_name' => Auth::user()->full_name ?? 'N/A',
+            'period' => $period,
             'timestamp' => now(),
         ]);
 
-        $students = User::whereHas('privileges', function ($query) {
+        if ($period === 'yearly') {
+            return $this->fetchRegisteredUsersYearly();
+        }
+
+        return $this->fetchRegisteredUsersMonthly();
+    }
+
+    /**
+     * Fetches the monthly growth of registered users.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    private function fetchRegisteredUsersMonthly()
+    {
+        $now = Carbon::now();
+        $startDT = $now->copy()->subMonths(11)->startOfMonth();
+        $endDT = $now->copy()->endOfMonth();
+
+        // Build months list between startDT and endDT (inclusive)
+        $months = collect();
+        $cursor = $startDT->copy()->startOfMonth();
+        while ($cursor->lte($endDT)) {
+            $months->push([
+                'key' => $cursor->format('Y-m'),
+                'label' => $cursor->format('Y F'),
+            ]);
+            $cursor->addMonth();
+        }
+
+        // Fetch students monthly count
+        $studentsData = User::whereHas('privileges', function ($query) {
             $query->where('user_type', 'student');
-        })->count();
+        })
+            ->select(
+                DB::raw("DATE_FORMAT(created_at, '%Y-%m') as ym"),
+                DB::raw('COUNT(*) as count')
+            )
+            ->whereBetween('created_at', [$startDT, $endDT])
+            ->groupBy('ym')
+            ->orderBy('ym')
+            ->get()
+            ->keyBy('ym');
 
-        $employees = User::whereHas('privileges', function ($query) {
+        // Fetch employees monthly count
+        $employeesData = User::whereHas('privileges', function ($query) {
             $query->where('user_type', 'employee');
-        })->count();
+        })
+            ->select(
+                DB::raw("DATE_FORMAT(created_at, '%Y-%m') as ym"),
+                DB::raw('COUNT(*) as count')
+            )
+            ->whereBetween('created_at', [$startDT, $endDT])
+            ->groupBy('ym')
+            ->orderBy('ym')
+            ->get()
+            ->keyBy('ym');
 
-        $visitors = User::whereHas('privileges', function ($query) {
+        // Fetch visitors monthly count
+        $visitorsData = User::whereHas('privileges', function ($query) {
             $query->where('user_type', 'visitor');
-        })->count();
+        })
+            ->select(
+                DB::raw("DATE_FORMAT(created_at, '%Y-%m') as ym"),
+                DB::raw('COUNT(*) as count')
+            )
+            ->whereBetween('created_at', [$startDT, $endDT])
+            ->groupBy('ym')
+            ->orderBy('ym')
+            ->get()
+            ->keyBy('ym');
 
-        LogFacade::info('Analytics: Registered users count fetched successfully', [
-            'students' => $students,
-            'employees' => $employees,
-            'visitors' => $visitors,
-            'total' => $students + $employees + $visitors,
+        // Get total users registered BEFORE the start date (base counts)
+        $baseStudents = User::whereHas('privileges', function ($query) {
+            $query->where('user_type', 'student');
+        })->where('created_at', '<', $startDT)->count();
+
+        $baseEmployees = User::whereHas('privileges', function ($query) {
+            $query->where('user_type', 'employee');
+        })->where('created_at', '<', $startDT)->count();
+
+        $baseVisitors = User::whereHas('privileges', function ($query) {
+            $query->where('user_type', 'visitor');
+        })->where('created_at', '<', $startDT)->count();
+
+        $labels = [];
+        $students = [];
+        $employees = [];
+        $visitors = [];
+
+        // Running totals starting from base counts
+        $runningStudents = $baseStudents;
+        $runningEmployees = $baseEmployees;
+        $runningVisitors = $baseVisitors;
+
+        foreach ($months as $m) {
+            $labels[] = $m['label'];
+            
+            // Add this month's registrations to the running total
+            $runningStudents += isset($studentsData[$m['key']]) ? (int) $studentsData[$m['key']]->count : 0;
+            $runningEmployees += isset($employeesData[$m['key']]) ? (int) $employeesData[$m['key']]->count : 0;
+            $runningVisitors += isset($visitorsData[$m['key']]) ? (int) $visitorsData[$m['key']]->count : 0;
+            
+            $students[] = $runningStudents;
+            $employees[] = $runningEmployees;
+            $visitors[] = $runningVisitors;
+        }
+
+        // Trim leading months where all cumulative values are zero
+        $firstNonZeroIndex = null;
+        foreach ($labels as $i => $label) {
+            if ($students[$i] > 0 || $employees[$i] > 0 || $visitors[$i] > 0) {
+                $firstNonZeroIndex = $i;
+                break;
+            }
+        }
+        if (!is_null($firstNonZeroIndex)) {
+            $labels = array_slice($labels, $firstNonZeroIndex);
+            $students = array_slice($students, $firstNonZeroIndex);
+            $employees = array_slice($employees, $firstNonZeroIndex);
+            $visitors = array_slice($visitors, $firstNonZeroIndex);
+        }
+
+        LogFacade::info('Analytics: Registered users monthly growth fetched successfully', [
+            'months_count' => count($labels),
+            'total_students' => end($students) ?: 0,
+            'total_employees' => end($employees) ?: 0,
+            'total_visitors' => end($visitors) ?: 0,
             'user_id' => Auth::id(),
             'timestamp' => now(),
         ]);
 
         return response()->json([
+            'labels' => $labels,
+            'students' => $students,
+            'employees' => $employees,
+            'visitors' => $visitors
+        ]);
+    }
+
+    /**
+     * Fetches the yearly growth of registered users.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    private function fetchRegisteredUsersYearly()
+    {
+        // Get the year range from the earliest user to current year
+        $earliestUser = User::orderBy('created_at', 'asc')->first();
+        $startYear = $earliestUser ? Carbon::parse($earliestUser->created_at)->year : Carbon::now()->year;
+        $endYear = Carbon::now()->year;
+
+        // Build years list
+        $years = collect();
+        for ($year = $startYear; $year <= $endYear; $year++) {
+            $years->push([
+                'key' => (string) $year,
+                'label' => (string) $year,
+            ]);
+        }
+
+        // Fetch students yearly count
+        $studentsData = User::whereHas('privileges', function ($query) {
+            $query->where('user_type', 'student');
+        })
+            ->select(
+                DB::raw("DATE_FORMAT(created_at, '%Y') as year"),
+                DB::raw('COUNT(*) as count')
+            )
+            ->groupBy('year')
+            ->orderBy('year')
+            ->get()
+            ->keyBy('year');
+
+        // Fetch employees yearly count
+        $employeesData = User::whereHas('privileges', function ($query) {
+            $query->where('user_type', 'employee');
+        })
+            ->select(
+                DB::raw("DATE_FORMAT(created_at, '%Y') as year"),
+                DB::raw('COUNT(*) as count')
+            )
+            ->groupBy('year')
+            ->orderBy('year')
+            ->get()
+            ->keyBy('year');
+
+        // Fetch visitors yearly count
+        $visitorsData = User::whereHas('privileges', function ($query) {
+            $query->where('user_type', 'visitor');
+        })
+            ->select(
+                DB::raw("DATE_FORMAT(created_at, '%Y') as year"),
+                DB::raw('COUNT(*) as count')
+            )
+            ->groupBy('year')
+            ->orderBy('year')
+            ->get()
+            ->keyBy('year');
+
+        $labels = [];
+        $students = [];
+        $employees = [];
+        $visitors = [];
+
+        // Running totals for cumulative growth
+        $runningStudents = 0;
+        $runningEmployees = 0;
+        $runningVisitors = 0;
+
+        foreach ($years as $y) {
+            $labels[] = $y['label'];
+            
+            // Add this year's registrations to the running total
+            $runningStudents += isset($studentsData[$y['key']]) ? (int) $studentsData[$y['key']]->count : 0;
+            $runningEmployees += isset($employeesData[$y['key']]) ? (int) $employeesData[$y['key']]->count : 0;
+            $runningVisitors += isset($visitorsData[$y['key']]) ? (int) $visitorsData[$y['key']]->count : 0;
+            
+            $students[] = $runningStudents;
+            $employees[] = $runningEmployees;
+            $visitors[] = $runningVisitors;
+        }
+
+        // Trim leading years where all cumulative values are zero
+        $firstNonZeroIndex = null;
+        foreach ($labels as $i => $label) {
+            if ($students[$i] > 0 || $employees[$i] > 0 || $visitors[$i] > 0) {
+                $firstNonZeroIndex = $i;
+                break;
+            }
+        }
+        if (!is_null($firstNonZeroIndex)) {
+            $labels = array_slice($labels, $firstNonZeroIndex);
+            $students = array_slice($students, $firstNonZeroIndex);
+            $employees = array_slice($employees, $firstNonZeroIndex);
+            $visitors = array_slice($visitors, $firstNonZeroIndex);
+        }
+
+        LogFacade::info('Analytics: Registered users yearly growth fetched successfully', [
+            'years_count' => count($labels),
+            'total_students' => end($students) ?: 0,
+            'total_employees' => end($employees) ?: 0,
+            'total_visitors' => end($visitors) ?: 0,
+            'user_id' => Auth::id(),
+            'timestamp' => now(),
+        ]);
+
+        return response()->json([
+            'labels' => $labels,
             'students' => $students,
             'employees' => $employees,
             'visitors' => $visitors
