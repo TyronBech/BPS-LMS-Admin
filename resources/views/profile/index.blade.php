@@ -5,7 +5,7 @@
 
   {{-- Profile Information Card --}}
   <div class="max-w-5xl mx-auto p-4 sm:p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700 mb-8">
-    <form action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
+    <form id="profileForm" action="{{ route('profile.update') }}" method="POST" enctype="multipart/form-data">
       @csrf
       @method('PATCH')
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -13,7 +13,8 @@
         {{-- Left Column: Profile Image and Basic Info --}}
         <div class="lg:col-span-1 flex flex-col items-center text-center lg:border-r lg:border-gray-200 dark:lg:border-gray-700 lg:pr-8">
 
-          <div class="relative mb-6">
+          <div class="relative mb-6 group">
+            {{-- Image Preview --}}
             @if($user->profile_image === null)
             <img id="preview-image-dark" class="hidden rounded-full w-40 h-40 md:w-48 md:h-48 object-cover shadow-md dark:block" src="{{ asset('img/User-dark.png') }}" alt="Profile Image">
             <img id="preview-image-light" class="rounded-full w-40 h-40 md:w-48 md:h-48 object-cover shadow-md dark:hidden" src="{{ asset('img/User-light.png') }}" alt="Profile Image">
@@ -21,7 +22,8 @@
             <img id="preview-image-custom" class="rounded-full w-40 h-40 md:w-48 md:h-48 object-cover shadow-md" src="data:image/jpeg;base64, {{ $user->profile_image }}" alt="Profile Image">
             @endif
 
-            <label for="profile_image" class="absolute bottom-2 right-2 bg-primary-500 hover:bg-primary-400 text-white p-2.5 rounded-full cursor-pointer shadow-lg border-4 border-white dark:border-gray-800 dark:bg-primary-400 dark:hover:bg-background-500 transition-transform hover:scale-110" title="Upload new photo">
+            {{-- Upload Label (Hidden by default, shown in Edit Mode) --}}
+            <label id="image_upload_label" for="profile_image" class="hidden absolute bottom-2 right-2 bg-primary-500 hover:bg-primary-400 text-white p-2.5 rounded-full cursor-pointer shadow-lg border-4 border-white dark:border-gray-800 dark:bg-primary-400 dark:hover:bg-background-500 transition-transform hover:scale-110" title="Upload new photo">
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
               </svg>
@@ -61,115 +63,134 @@
 
         {{-- Right Column: Form --}}
         <div class="lg:col-span-2">
-          <h6 class="mb-6 text-lg font-bold tracking-tight text-gray-900 dark:text-white">Personal Information</h6>
+            <div class="flex justify-between items-center mb-6">
+                <h6 class="text-lg font-bold tracking-tight text-gray-900 dark:text-white">Personal Information</h6>
+                
+                {{-- Edit Button (Visible initially) --}}
+                <button type="button" id="btn-edit-profile" onclick="toggleEditMode(true)" class="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline flex items-center">
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                    Edit Profile
+                </button>
+            </div>
 
           @if($user->privileges->user_type === 'student')
           <input type="hidden" name="user_id" value="{{ $user->students->student_id }}">
           @elseif($user->privileges->user_type === 'employee')
           <input type="hidden" name="user_id" value="{{ $user->employees->employee_id }}">
           @endif
+
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            
             {{-- First Name --}}
             <div class="relative z-0 w-full group">
-              <input type="text" name="first_name" id="first_name" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer" placeholder=" " value="{{ old('first_name', $user->first_name) }}" required />
-              <label for="first_name" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">First Name</label>
-              @error('first_name')
-              <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
-              @enderror
+                <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">First Name</label>
+                {{-- View Mode --}}
+                <p class="view-field text-base font-medium text-gray-900 dark:text-white py-2 border-b border-transparent">{{ $user->first_name }}</p>
+                {{-- Edit Mode --}}
+                <input type="text" name="first_name" id="first_name" class="edit-field hidden py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400" placeholder=" " value="{{ old('first_name', $user->first_name) }}" required />
+                @error('first_name') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
 
             {{-- Middle Name --}}
             <div class="relative z-0 w-full group">
-              <input type="text" name="middle_name" id="middle_name" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer" placeholder=" " value="{{ old('middle_name', $user->middle_name) }}" />
-              <label for="middle_name" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Middle Name</label>
-              @error('middle_name')
-              <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
-              @enderror
+                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Middle Name</label>
+                 {{-- View Mode --}}
+                 <p class="view-field text-base font-medium text-gray-900 dark:text-white py-2 border-b border-transparent">{{ $user->middle_name ?? '-' }}</p>
+                 {{-- Edit Mode --}}
+                 <input type="text" name="middle_name" id="middle_name" class="edit-field hidden py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400" placeholder=" " value="{{ old('middle_name', $user->middle_name) }}" />
+                 @error('middle_name') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
 
             {{-- Last Name --}}
             <div class="relative z-0 w-full group">
-              <input type="text" name="last_name" id="last_name" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer" placeholder=" " value="{{ old('last_name', $user->last_name) }}" required />
-              <label for="last_name" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Last Name</label>
-              @error('last_name')
-              <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
-              @enderror
+                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Last Name</label>
+                 {{-- View Mode --}}
+                 <p class="view-field text-base font-medium text-gray-900 dark:text-white py-2 border-b border-transparent">{{ $user->last_name }}</p>
+                 {{-- Edit Mode --}}
+                 <input type="text" name="last_name" id="last_name" class="edit-field hidden py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400" placeholder=" " value="{{ old('last_name', $user->last_name) }}" required />
+                 @error('last_name') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
 
             {{-- Suffix --}}
             <div class="relative z-0 w-full group">
-              <input type="text" name="suffix" id="suffix" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer" placeholder=" " value="{{ old('suffix', $user->suffix) }}" />
-              <label for="suffix" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Suffix</label>
-              @error('suffix')
-              <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
-              @enderror
+                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Suffix</label>
+                 {{-- View Mode --}}
+                 <p class="view-field text-base font-medium text-gray-900 dark:text-white py-2 border-b border-transparent">{{ $user->suffix ?? '-' }}</p>
+                 {{-- Edit Mode --}}
+                 <input type="text" name="suffix" id="suffix" class="edit-field hidden py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400" placeholder=" " value="{{ old('suffix', $user->suffix) }}" />
+                 @error('suffix') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
 
             {{-- Email --}}
             <div class="relative z-0 w-full sm:col-span-2 group">
-              <input type="email" name="email" id="email" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer" placeholder=" " value="{{ old('email', $user->email) }}" required />
-              <label for="email" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Email address</label>
-              @error('email')
-              <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
-              @enderror
+                 <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Email Address</label>
+                 {{-- View Mode --}}
+                 <p class="view-field text-base font-medium text-gray-900 dark:text-white py-2 border-b border-transparent">{{ $user->email }}</p>
+                 {{-- Edit Mode --}}
+                 <input type="email" name="email" id="email" class="edit-field hidden py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400" placeholder=" " value="{{ old('email', $user->email) }}" required />
+                 @error('email') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
 
-            {{-- Current Password --}}
-            <div class="relative z-0 w-full sm:col-span-2 group">
-              <input type="password" name="current_password" id="current_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer pr-10" placeholder=" " autocomplete="current-password" />
-              <label for="current_password" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Current Password</label>
-              
-              <button type="button" id="toggleCurrentPassword" class="absolute right-0 top-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none" aria-label="Toggle password visibility">
-                  <span id="currentOpenEye" class="hidden">
-                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z" /><path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
-                  </span>
-                  <span id="currentClosedEye">
-                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
-                  </span>
-              </button>
+            {{-- Password SECTION --}}
+            <div class="relative z-0 w-full sm:col-span-2 group pt-4 border-t border-gray-100 dark:border-gray-700">
+                <h6 class="mb-4 text-sm font-bold uppercase tracking-wide text-gray-500 dark:text-gray-400">Security</h6>
 
-              @error('current_password')
-              <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
-              @enderror
+                {{-- View Mode: Hidden Password --}}
+                <div id="password-view" class="view-field">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <label class="block text-xs text-gray-500 dark:text-gray-400 mb-1">Password</label>
+                            <p class="text-xl font-bold text-gray-900 dark:text-white tracking-widest">••••••••</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Edit Mode: Inputs --}}
+                <div id="password-edit" class="hidden space-y-6">
+                    {{-- Current Password --}}
+                    <div class="relative z-0 w-full group">
+                        <input type="password" name="current_password" id="current_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer pr-10" placeholder=" " autocomplete="current-password" />
+                        <label for="current_password" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Current Password</label>
+                        <button type="button" id="toggleCurrentPassword" class="absolute right-0 top-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none">
+                            <span id="currentOpenEye" class="hidden"><svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z" /><path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg></span>
+                            <span id="currentClosedEye"><svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg></span>
+                        </button>
+                        @error('current_password') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
+                    </div>
+
+                    {{-- New Password --}}
+                    <div class="relative z-0 w-full group">
+                        <input type="password" name="new_password" id="new_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer pr-10" placeholder=" " autocomplete="new-password" />
+                        <label for="new_password" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">New Password</label>
+                        <button type="button" id="toggleNewPassword" class="absolute right-0 top-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none">
+                            <span id="newOpenEye" class="hidden"><svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z" /><path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg></span>
+                            <span id="newClosedEye"><svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg></span>
+                        </button>
+                        @error('new_password') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
+                    </div>
+
+                    {{-- Confirm New Password --}}
+                    <div class="relative z-0 w-full group">
+                        <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer pr-10" placeholder=" " autocomplete="new-password" />
+                        <label for="new_password_confirmation" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Confirm password</label>
+                        <button type="button" id="toggleConfirmPassword" class="absolute right-0 top-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none">
+                            <span id="confirmOpenEye" class="hidden"><svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z" /><path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg></span>
+                            <span id="confirmClosedEye"><svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg></span>
+                        </button>
+                    </div>
+                </div>
             </div>
 
-            {{-- New Password --}}
-            <div class="relative z-0 w-full group">
-              <input type="password" name="new_password" id="new_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer pr-10" placeholder=" " autocomplete="new-password" />
-              <label for="new_password" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">New Password</label>
-              
-              <button type="button" id="toggleNewPassword" class="absolute right-0 top-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none" aria-label="Toggle password visibility">
-                  <span id="newOpenEye" class="hidden">
-                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z" /><path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
-                  </span>
-                  <span id="newClosedEye">
-                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
-                  </span>
-              </button>
-
-              @error('new_password')
-              <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
-              @enderror
-            </div>
-
-            {{-- Confirm New Password --}}
-            <div class="relative z-0 w-full group">
-              <input type="password" name="new_password_confirmation" id="new_password_confirmation" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer pr-10" placeholder=" " autocomplete="new-password" />
-              <label for="new_password_confirmation" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Confirm password</label>
-              
-              <button type="button" id="toggleConfirmPassword" class="absolute right-0 top-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none" aria-label="Toggle password visibility">
-                  <span id="confirmOpenEye" class="hidden">
-                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z" /><path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
-                  </span>
-                  <span id="confirmClosedEye">
-                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" /></svg>
-                  </span>
-              </button>
-            </div>
           </div>
 
-          <div class="flex justify-end mt-8">
-            <button type="submit" class="text-white bg-primary-500 hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">Save Changes</button>
+          {{-- Action Buttons --}}
+          <div class="flex justify-end gap-3 mt-8">
+            <button type="button" id="btn-cancel" onclick="toggleEditMode(false)" class="hidden text-gray-900 bg-white border border-gray-300 focus:outline-none hover:bg-gray-100 focus:ring-4 focus:ring-gray-100 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-gray-800 dark:text-white dark:border-gray-600 dark:hover:bg-gray-700 dark:hover:border-gray-600 dark:focus:ring-gray-700">
+                Cancel
+            </button>
+            <button type="submit" id="btn-save" class="hidden text-white bg-primary-500 hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 font-medium rounded-lg text-sm w-full sm:w-auto px-5 py-2.5 text-center dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">
+                Save Changes
+            </button>
           </div>
         </div>
       </div>
@@ -288,16 +309,13 @@
             <input type="password" name="password" id="modal_password" class="block py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400 peer pr-10" placeholder=" " required autocomplete="current-password" />
             <label for="modal_password" class="peer-focus:font-medium absolute text-sm text-gray-500 dark:text-gray-400 duration-300 transform -translate-y-6 scale-75 top-3 -z-10 origin-[0] peer-focus:start-0 rtl:peer-focus:translate-x-1/4 peer-focus:text-primary-600 peer-focus:dark:text-primary-500 peer-placeholder-shown:scale-100 peer-placeholder-shown:translate-y-0 peer-focus:scale-75 peer-focus:-translate-y-6">Password</label>
             
-            <!-- Toggle Password Visibility Button -->
             <button type="button" id="toggleModalPassword" class="absolute right-0 top-2.5 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 focus:outline-none" aria-label="Toggle password visibility">
-                <!-- Closed Eye Icon (Hidden Initially) -->
                 <span id="modalOpenEye" class="hidden">
                   <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-width="2" d="M21 12c0 1.2-4.03 6-9 6s-9-4.8-9-6c0-1.2 4.03-6 9-6s9 4.8 9 6Z" />
                     <path stroke="currentColor" stroke-width="2" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
                   </svg>
                 </span>
-                <!-- Open Eye Icon (Default Visible) -->
                 <span id="modalClosedEye">
                   <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.933 13.909A4.357 4.357 0 0 1 3 12c0-1 4-6 9-6m7.6 3.8A5.068 5.068 0 0 1 21 12c0 1-3 6-9 6-.314 0-.62-.014-.918-.04M5 19 19 5m-4 7a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
@@ -324,6 +342,47 @@
 </div>
 
 <script>
+  // Toggle View/Edit Mode
+  function toggleEditMode(enable) {
+      const viewFields = document.querySelectorAll('.view-field');
+      const editFields = document.querySelectorAll('.edit-field');
+      const passwordView = document.getElementById('password-view');
+      const passwordEdit = document.getElementById('password-edit');
+      const btnEdit = document.getElementById('btn-edit-profile');
+      const btnSave = document.getElementById('btn-save');
+      const btnCancel = document.getElementById('btn-cancel');
+      const imageUploadLabel = document.getElementById('image_upload_label');
+
+      if (enable) {
+          // Switch to Edit Mode
+          viewFields.forEach(el => el.classList.add('hidden'));
+          editFields.forEach(el => el.classList.remove('hidden'));
+          
+          passwordView.classList.add('hidden');
+          passwordEdit.classList.remove('hidden');
+
+          btnEdit.classList.add('hidden');
+          btnSave.classList.remove('hidden');
+          btnCancel.classList.remove('hidden');
+          imageUploadLabel.classList.remove('hidden');
+      } else {
+          // Switch to View Mode
+          viewFields.forEach(el => el.classList.remove('hidden'));
+          editFields.forEach(el => el.classList.add('hidden'));
+
+          passwordView.classList.remove('hidden');
+          passwordEdit.classList.add('hidden');
+
+          btnEdit.classList.remove('hidden');
+          btnSave.classList.add('hidden');
+          btnCancel.classList.add('hidden');
+          imageUploadLabel.classList.add('hidden');
+
+          // Optional: Reset form values on Cancel
+          document.getElementById('profileForm').reset();
+      }
+  }
+
   function previewFile() {
     const previewDark = document.getElementById('preview-image-dark');
     const previewLight = document.getElementById('preview-image-light');
