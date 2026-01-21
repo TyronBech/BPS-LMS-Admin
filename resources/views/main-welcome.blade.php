@@ -4,11 +4,11 @@
   <div class="flex flex-col md:flex-row items-center justify-between gap-8 md:gap-10 lg:gap-12">
     <img
       class="order-1 rounded-full w-32 h-32 sm:w-40 sm:h-40 md:w-56 md:h-56 lg:w-72 lg:h-72 object-cover transition-transform duration-300 ease-in-out hover:scale-105"
-      src="{{ asset('img/BPSLogo.png') }}"
-      alt="Bicutan Parochial School Logo">
+      src="{{ $settings->getOrgLogoBase64Attribute() }}"
+      alt="{{ $settings->org_name ?? 'School Name' }} Logo">
     <div class="order-2 flex flex-col items-center text-center">
       <h1 class="text-xl sm:text-2xl md:text-2xl lg:text-3xl font-semibold text-black dark:text-white">
-        Bicutan Parochial School
+        {{ $settings->org_name ?? 'School Name' }}
       </h1>
       <hr class="w-full max-w-xs h-px bg-gray-500 border-0 my-2 dark:bg-white">
       <h2 class="text-lg sm:text-xl md:text-xl lg:text-2xl font-semibold text-black dark:text-white">

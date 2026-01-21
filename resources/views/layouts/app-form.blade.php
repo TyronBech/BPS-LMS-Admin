@@ -7,7 +7,7 @@
   <meta name="csrf-token" content="{{ csrf_token() }}">
   <title>BPS Library Management System</title>
   @vite(['resources/css/app.css', 'resources/js/app.js'])
-  <link rel="icon" href="{{ asset('img/BPSLogo.png') }}">
+  <link rel="icon" href="{{ $settings->getOrgLogoBase64Attribute() }}">
   <style>
     :root {
       --loader-dot-default: {{ ($settings->theme_colors ?? [])['tertiary'] ?? '#C27803' }};
@@ -35,9 +35,9 @@
     <div class="bg-primary-500 border-gray-200 dark:bg-primary-500 min-h-20 sm:min-h-24 md:min-h-28 lg:min-h-30 py-3 sm:py-4 md:py-5">
       <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto px-4 sm:px-6">
         <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 rtl:space-x-reverse">
-          <img class="rounded-full w-16 h-16 md:w-20 md:h-20" src="{{ asset('img/BPSLogo.png') }}" alt="School Logo">
+          <img class="rounded-full w-16 h-16 md:w-20 md:h-20" src="{{ $settings->getOrgLogoBase64Attribute() }}" alt="School Logo">
           <div class="flex flex-col justify-center">
-            <h1 class="text-sm md:text-lg lg:text-xl text-white font-semibold text-start">Bicutan Parochial School, Inc.</h1>
+            <h1 class="text-sm md:text-lg lg:text-xl text-white font-semibold text-start">{{ $settings->org_name ?? 'School Name' }}</h1>
             <hr class="h-px bg-gray-200 border-0 my-1">
             <h1 class="text-sm md:text-lg lg:text-xl text-white font-semibold text-start">Library Management System</h1>
           </div>
