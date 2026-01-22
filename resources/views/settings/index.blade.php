@@ -255,7 +255,8 @@
                           <p class="text-xs text-white dark:text-gray-100">PNG only (MAX. 5MB)</p>
                           <p class="text-xs text-white dark:text-gray-100 mt-1 text-center px-2">This image should only contain the organization's logo itself.</p>
                           <p class="text-xs text-yellow-300 dark:text-yellow-200 mt-1 text-center px-2 font-semibold">⚠️ Please use a PNG with transparent background</p>
-                          <p class="text-xs text-primary-300 dark:text-primary-200 mt-1 text-center px-2 font-semibold">📐 Recommended: 1:1 aspect ratio (square image)</p>
+                          <p class="text-xs text-primary-100 dark:text-primary-100 mt-1 text-center px-2 font-semibold">📐 Recommended: 1:1 aspect ratio (square image)</p>
+                          <p class="text-xs text-primary-100 dark:text-primary-100 mt-1 text-center px-2 font-semibold">🖥️ Usage: This image is used for the website header and favicon.</p>
                         </div>
                         <input id="org_logo" name="org_logo" type="file" class="hidden" accept="image/png" onchange="handleFileSelect(this, 'preview_org_logo', 'text_org_logo')" />
                       </label>
@@ -279,7 +280,8 @@
                           <p class="text-xs text-white dark:text-gray-100">PNG only (MAX. 5MB)</p>
                           <p class="text-xs text-white dark:text-gray-100 mt-1 text-center px-2">This image should contain the full organization logo including text.</p>
                           <p class="text-xs text-yellow-300 dark:text-yellow-200 mt-1 text-center px-2 font-semibold">⚠️ Please use a PNG with transparent background</p>
-                          <p class="text-xs text-primary-300 dark:text-primary-200 mt-1 text-center px-2 font-semibold">📐 Recommended: Banner-style (wide, horizontal image)</p>
+                          <p class="text-xs text-primary-100 dark:text-primary-100 mt-1 text-center px-2 font-semibold">📐 Recommended: Banner-style (wide, horizontal image)</p>
+                          <p class="text-xs text-primary-100 dark:text-primary-100 mt-1 text-center px-2 font-semibold">📃 Usage: This image is used for reports' headers and other official documents.</p>
                         </div>
                         <input id="org_logo_full" name="org_logo_full" type="file" class="hidden" accept="image/png" onchange="handleFileSelect(this, 'preview_org_logo_full', 'text_org_logo_full')" />
                       </label>
