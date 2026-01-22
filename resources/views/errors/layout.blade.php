@@ -6,10 +6,10 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="icon" href="{{ asset('img/BPSLogo.png') }}">
+    <link rel="icon" href="{{ $settings->getOrgLogoBase64Attribute() }}">
     <meta name="robots" content="noindex, nofollow" />
     <meta name="theme-color" content="{{ ($settings->theme_colors ?? [])['primary'] ?? '#20246b' }}" />
-    <title>@yield('code') • @yield('message') | BPS LMS</title>
+    <title>@yield('code') • @yield('message') | {{ $settings->org_initial }} LMS</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

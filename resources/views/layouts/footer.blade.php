@@ -21,7 +21,7 @@
               <a href="{{ $settings->social_links['website'] ?? '#' }}" target="_blank" rel="noopener noreferrer" class="hover:underline skip-loader">Official Website</a>
             </li>
             <li>
-              <a href="https://e-library.bps.edu.ph/" target="_blank" rel="noopener noreferrer" class="hover:underline skip-loader">E-Library</a>
+              <a href="{{ env('ELIBRARY_URL') }}" target="_blank" rel="noopener noreferrer" class="hover:underline skip-loader">E-Library</a>
             </li>
           </ul>
         </div>
