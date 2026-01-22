@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Transaction;
 use App\Models\UISetting;
+use Carbon\Carbon;
 use DateTime;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -52,7 +53,7 @@ class TransactionController extends Controller
             'timestamp' => now(),
         ]);
 
-        $data           = $this->generateData($request, false);
+        $data = $this->generateData($request, new Transaction(), false);
         return view('report.transactions.transactions', compact('data', 'search', 'fromInputDate', 'toInputDate', 'type', 'perPage', 'availability'));
     }
     /**
@@ -106,7 +107,7 @@ class TransactionController extends Controller
                 'user_id' => Auth::guard('admin')->id(),
                 'timestamp' => now()
             ]);
-            $data = $this->generateData($request, true);
+            $data = $this->generateData($request, new Transaction(), true);
             $this->generatePDF($data, $type);
             return redirect()->route('report.circulation')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {
@@ -114,11 +115,11 @@ class TransactionController extends Controller
                 'user_id' => Auth::guard('admin')->id(),
                 'timestamp' => now()
             ]);
-            $data = $this->generateData($request, true);
+            $data = $this->generateData($request, new Transaction(), true);
             $this->exportExcel($data, $type);
             return redirect()->route('report.circulation')->with('toast-success', 'Successfully exported to Excel');
         }
-        $data = $this->generateData($request, false);
+        $data = $this->generateData($request, new Transaction(), false);
         return view('report.transactions.transactions', compact('data', 'search', 'fromInputDate', 'toInputDate', 'type', 'perPage', 'availability'));
     }
     /**
@@ -200,11 +201,11 @@ class TransactionController extends Controller
         $sheet->getColumnDimension('E')->setWidth(20);
         $sheet->getColumnDimension('F')->setWidth(20);
         $sheet->getColumnDimension('G')->setWidth(20);
-        
+
         // Default values for cells
         $cells1 = 'A7:J8';
         $cells2 = 'A10:J10';
-        
+
         if ($type && $type == 'Borrowed') {
             $cells1 = 'A7:H8';
             $cells2 = 'A10:H10';
@@ -241,7 +242,7 @@ class TransactionController extends Controller
             $sheet->setCellValue('I10', 'Transaction Type');
             $sheet->setCellValue('J10', 'Status');
         }
-        
+
         $sheet->getStyle($cells1)->getFont()->setBold(true);
         $sheet->getStyle($cells1)->getFont()->setSize(10);
         $sheet->getStyle($cells1)->getAlignment()->setHorizontal('left');
@@ -294,72 +295,91 @@ class TransactionController extends Controller
      * Generates data for the transaction report.
      *
      * @param Request $request
+     * @param Transaction $model
      * @param bool $isExport
      * @return Collection|\Illuminate\Pagination\LengthAwarePaginator
      */
-    private function generateData(Request $request, bool $isExport = false)
+    private function generateData(Request $request, Transaction $model, bool $isExport = false)
     {
-        $fromInputDate  = $request->input('start', '');
-        $toInputDate    = $request->input('end', '');
-        $search         = strtolower($request->input('search', ''));
-        $type           = $request->input('type', 'All');
-        $perPage        = $request->input('perPage', 10);
+        $startStr = $request->input('start');
+        $endStr   = $request->input('end');
+        $search   = strtolower($request->input('search'));
+        $type     = $request->input('type', 'All');
+        $perPage  = $request->input('perPage', 10);
 
-        $query = Transaction::with(
-            'book:title,accession,id', 
-            'user:first_name,middle_name,last_name,id')
+        $query = $model->newQuery()
+            ->with([
+                'book:id,title,accession',
+                'user:id,first_name,middle_name,last_name'
+            ])
+            ->select([
+                'id',
+                'book_id',
+                'user_id',
+                'transaction_type as type',
+                'date_borrowed as borrowed',
+                'return_date as returned',
+                'due_date as due',
+                'pickup_deadline as deadline',
+                'reserved_date as reserved',
+                'status'
+            ])
             ->whereHas('book')
             ->whereHas('user')
-            ->whereNotNull('date_borrowed')
-            ->select('book_id', 'user_id', 'transaction_type', 'reserved_date', 'pickup_deadline', 'date_borrowed', 'due_date', 'return_date', 'status');
-        if (!empty($fromInputDate) && !empty($toInputDate)) {
-            $start = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
-            $end = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
-            $query->whereBetween(DB::raw('DATE(date_borrowed)'), [$start, $end]);
-        }
+            ->whereNotNull('date_borrowed');
 
         if (strlen($search) > 0) {
-            $query->whereHas('user', function ($q) use ($search) {
-                $q->where('first_name', 'like', '%' . $search . '%');
-                $q->orWhere('middle_name', 'like', '%' . $search . '%');
-                $q->orWhere('last_name', 'like', '%' . $search . '%');
-                $q->orWhere(DB::raw('lower(concat(first_name, " ", middle_name, " ", last_name))'), 'like', '%' . $search . '%');
-                $q->orWhere(DB::raw('lower(concat(middle_name, " ", last_name, ", ", first_name))'), 'like', '%' . $search . '%');
-                $q->orWhere(DB::raw('lower(concat(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $search . '%');
-                $q->orWhere(DB::raw('lower(concat(last_name, ", ", first_name))'), 'like', '%' . $search . '%');
-                $q->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $search . '%');
-            })->whereHas('book', function ($q) use ($search) {
-                $q->where('title', 'like', '%' . $search . '%')
-                    ->orWhere('accession', 'like', '%' . $search . '%');
-            })->where('transaction_type', 'like', '%' . $search . '%');
+            $query->where(function ($group) use ($search) {
+
+                $group->whereHas('user', function ($q) use ($search) {
+                    $q->whereRaw('LOWER(first_name) LIKE ?', ["%{$search}%"])
+                        ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$search}%"])
+                        ->orWhereRaw('LOWER(CONCAT(first_name, " ", last_name)) LIKE ?', ["%{$search}%"])
+                        ->orWhereRaw('LOWER(CONCAT(last_name, ", ", first_name)) LIKE ?', ["%{$search}%"]);
+                });
+
+                $group->orWhereHas('book', function ($q) use ($search) {
+                    $q->where('title', 'like', "%{$search}%")
+                        ->orWhere('accession', 'like', "%{$search}%");
+                });
+
+                $group->orWhere('transaction_type', 'like', "%{$search}%");
+            });
+        }
+
+        if ($startStr && $endStr) {
+            $startDate = Carbon::createFromFormat('m/d/Y', $startStr)->startOfDay();
+            $endDate   = Carbon::createFromFormat('m/d/Y', $endStr)->endOfDay();
+            $query->whereBetween('date_borrowed', [$startDate, $endDate]);
         }
 
         if ($type && $type !== 'All') {
             $query->where('transaction_type', $type);
         }
+
+        $query->orderBy('date_borrowed', 'desc')->orderBy('id', 'desc');
         if ($isExport) {
-            $data = $query->orderBy('date_borrowed', 'desc')
-            ->orderBy('id', 'desc')
-            ->get();
-            $minDate = $data->min(fn($item) => \Carbon\Carbon::parse($item->created_at));
-            $maxDate = $data->max(fn($item) => \Carbon\Carbon::parse($item->created_at));
-            if ($minDate && $maxDate) {
-                $data->reporting_period = $minDate->format('F j, Y') . ' to ' . $maxDate->format('F j, Y');
+            $data = $query->get();
+
+            if ($data->isNotEmpty()) {
+                $max = $data->first()->borrowed;
+                $min = $data->last()->borrowed;
+
+                $data->reporting_period = Carbon::parse($min)->format('F j, Y') . ' to ' . Carbon::parse($max)->format('F j, Y');
             } else {
                 $data->reporting_period = 'N/A';
             }
-        } else {
-            $data = $query->orderBy('date_borrowed', 'desc')
-                ->paginate($request->input('perPage', 10))
-                ->appends([
-                    'perPage' => $perPage,
-                    'start' => $fromInputDate,
-                    'end' => $toInputDate,
-                    'search' => $search,
-                    'type' => $type,
-                ]);
+
+            $data->makeHidden(['id', 'book_id', 'user_id']);
+            return $data;
         }
-        return $data;
+
+        $result = $query->paginate($perPage)->appends($request->all());
+        $result->getCollection()->transform(function ($item) {
+            return $item->makeHidden(['id', 'book_id', 'user_id']);
+        });
+
+        return $result;
     }
     /**
      * Extracts enum values from a database table column.

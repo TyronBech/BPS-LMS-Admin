@@ -103,19 +103,19 @@ class AuditTrailController extends Controller
      * Generates data for the audit trail report based on the given request inputs.
      *
      * @param \Illuminate\Http\Request $request
-     * @param \App\Models\AuditTrail $tableName
+     * @param \App\Models\AuditTrail $model
      * @param bool $isExport
      *
      * @return \Illuminate\Contracts\Pagination\LengthAwarePaginator|\Illuminate\Database\Eloquent\Collection
      */
-    private function generateData(Request $request, AuditTrail $tableName, $isExport = false)
+    private function generateData(Request $request, AuditTrail $model, $isExport = false)
     {
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
         $types          = strtoupper($request->input('types', 'ALL'));
         $tableType      = $request->input('tableType', 'All');
         $perPage        = $request->input('perPage', 10);
-        $data           = $tableName::with([
+        $data           = $model::with([
             'user' => function ($query) {
                 $query->withTrashed();
             },
@@ -159,36 +159,36 @@ class AuditTrailController extends Controller
         if (!empty($fromInputDate) && !empty($toInputDate)) {
             $start = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
             $end = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
-            $data->whereBetween(DB::raw('DATE(' . $tableName->getTable() . '.created_at)'), [$start, $end]);
+            $data->whereBetween(DB::raw('DATE(' . $model->getTable() . '.created_at)'), [$start, $end]);
         }
         if ($types != 'ALL') {
-            $data->where($tableName->getTable() . '.action_type', $types);
+            $data->where($model->getTable() . '.action_type', $types);
         }
         if ($tableType != 'All') {
             if ($tableType == 'Users') {
-                $data->whereIn($tableName->getTable() . '.source_table', [
+                $data->whereIn($model->getTable() . '.source_table', [
                     (new User())->getTable(),
                     (new EmployeeDetail())->getTable(),
                     (new StudentDetail())->getTable(),
                     (new VisitorDetail())->getTable()
                 ]);
             } elseif ($tableType == 'Books') {
-                $data->whereIn($tableName->getTable() . '.source_table', [
+                $data->whereIn($model->getTable() . '.source_table', [
                     (new Book())->getTable(),
                     (new Category())->getTable()
                 ]);
             } elseif ($tableType == 'Transactions') {
-                $data->whereIn($tableName->getTable() . '.source_table', [
+                $data->whereIn($model->getTable() . '.source_table', [
                     (new Transaction())->getTable(),
                 ]);
             } elseif ($tableType == 'Sessions') {
-                $data->whereIn($tableName->getTable() . '.source_table', [
+                $data->whereIn($model->getTable() . '.source_table', [
                     'sessions',
                 ]);
             }
         }
-        $data->orderBy($tableName->getTable() . '.created_at', 'desc')
-            ->orderBy($tableName->getTable() . '.id', 'desc');
+        $data->orderBy($model->getTable() . '.created_at', 'desc')
+            ->orderBy($model->getTable() . '.id', 'desc');
         if ($isExport) {
             $data = $data->get();
         } else {

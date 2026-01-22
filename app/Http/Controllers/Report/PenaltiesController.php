@@ -44,7 +44,7 @@ class PenaltiesController extends Controller
             'timestamp' => now(),
         ]);
 
-        $data           = $this->generateData($request);
+        $data = $this->generateData($request, new Transaction(), false);
         return view('report.penalties.index', compact('data', 'fromInputDate', 'toInputDate', 'search', 'perPage'));
     }
     /**
@@ -95,7 +95,7 @@ class PenaltiesController extends Controller
                 'user_id' => Auth::guard('admin')->id(),
                 'timestamp' => now()
             ]);
-            $data = $this->generateData($request, true);
+            $data = $this->generateData($request, new Transaction(), true);
             $this->generatePDF($data);
             return redirect()->route('report.penalties')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {
@@ -103,11 +103,11 @@ class PenaltiesController extends Controller
                 'user_id' => Auth::guard('admin')->id(),
                 'timestamp' => now()
             ]);
-            $data = $this->generateData($request, true);
+            $data = $this->generateData($request, new Transaction(), true);
             $this->exportExcel($data);
             return redirect()->route('report.penalties')->with('toast-success', 'Successfully exported to Excel');
         }
-        $data = $this->generateData($request, false);
+        $data = $this->generateData($request, new Transaction(), false);
         return view('report.penalties.index', compact('data', 'search', 'fromInputDate', 'toInputDate', 'perPage'));
     }
     /**
@@ -232,94 +232,107 @@ class PenaltiesController extends Controller
      * Generates data for the penalties report.
      *
      * @param Request $request
+     * @param Transaction $model
      * @param bool $isExport
      * @return Collection|\Illuminate\Pagination\LengthAwarePaginator
      */
-    private function generateData(Request $request, bool $isExport = false)
+    private function generateData(Request $request, Transaction $model, bool $isExport = false)
     {
-        $fromInputDate = $request->input('start');
-        $toInputDate   = $request->input('end');
-        $search        = strtolower($request->input('search'));
-        $perPage       = $request->input('perPage', 10);
+        $startStr = $request->input('start');
+        $endStr   = $request->input('end');
+        $search   = strtolower($request->input('search'));
+        $perPage  = $request->input('perPage', 10);
 
-        // Eager load penalties and their rule
-        $query = Transaction::with(['user', 'book', 'penalties.penaltyRule'])
+        $query = $model->newQuery()
+            ->with([
+                'user:id,first_name,middle_name,last_name',
+                'book:id,title,accession',
+                'penalties.penaltyRule'
+            ])
+            ->select([
+                'id',
+                'user_id',
+                'book_id',
+                'date_borrowed as borrowed',
+                'due_date as due',
+                'return_date as returned',
+                'penalty_total as total',
+                'penalty_status as status',
+                'remarks'
+            ])
             ->whereHas('penalties')
             ->whereHas('user')
             ->whereHas('book')
             ->whereHas('penalties.penaltyRule')
-            ->where('penalty_total', '>', 0)
-            ->orderBy('updated_at', 'desc');
+            ->where('penalty_total', '>', 0);
 
-        if (!empty($fromInputDate) && !empty($toInputDate)) {
-            $start = Carbon::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
-            $end   = Carbon::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
-            $query->whereBetween(DB::raw('DATE(created_at)'), [$start, $end]);
+        if ($startStr && $endStr) {
+            $startDate = Carbon::createFromFormat('m/d/Y', $startStr)->startOfDay();
+            $endDate   = Carbon::createFromFormat('m/d/Y', $endStr)->endOfDay();
+            $query->whereBetween('created_at', [$startDate, $endDate]);
         }
 
-        if (!empty($search)) {
+        if ($search) {
             $query->whereHas('user', function ($q) use ($search) {
-                $q->where(DB::raw('LOWER(first_name)'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('LOWER(last_name)'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('LOWER(middle_name)'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('LOWER(CONCAT(first_name, " ", middle_name, " ", last_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('LOWER(CONCAT(middle_name, " ", last_name, ", ", first_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('LOWER(CONCAT(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('LOWER(CONCAT(last_name, ", ", first_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('LOWER(CONCAT(first_name, " ", last_name))'), 'like', '%' . $search . '%');
+                $q->where(function ($sub) use ($search) {
+                    $sub->whereRaw('LOWER(first_name) LIKE ?', ["%{$search}%"])
+                        ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$search}%"])
+                        ->orWhereRaw('LOWER(CONCAT(first_name, " ", last_name)) LIKE ?', ["%{$search}%"])
+                        ->orWhereRaw('LOWER(CONCAT(last_name, ", ", first_name)) LIKE ?', ["%{$search}%"]);
+                });
             });
         }
 
+        $query->orderBy('created_at', 'desc')->orderBy('id', 'desc');
         if ($isExport) {
-            $transactions = $query->orderBy('created_at', 'desc')
-            ->orderBy('id', 'desc')
-            ->get();
+            $data = $query->get();
 
-            $transactions = $transactions->map(function ($transaction) {
-                $violations = $transaction->penalties
-                    ->pluck('penaltyRule.type')   // <- correct field name: type
-                    ->filter()                   // drop null/empty
-                    ->unique()
-                    ->values()
-                    ->implode(', ');
+            if ($data->isNotEmpty()) {
+                $max = $data->first()->date;
+                $min = $data->last()->date;
+                $data->reporting_period = Carbon::parse($min)->format('F j, Y') . ' to ' . Carbon::parse($max)->format('F j, Y');
+            } else {
+                $data->reporting_period = 'N/A';
+            }
 
-                $transaction->violation = $violations ?: '-';
-                return $transaction;
+            $data->transform(function ($item) {
+                return $this->formatPenaltyRow($item);
             });
-
-            $minDate = $transactions->min(fn($item) => Carbon::parse($item->created_at));
-            $maxDate = $transactions->max(fn($item) => Carbon::parse($item->created_at));
-
-            $transactions->reporting_period = $minDate && $maxDate
-                ? $minDate->format('F j, Y') . ' to ' . $maxDate->format('F j, Y')
-                : 'N/A';
-
-            return $transactions;
-        } else {
-            $paginated = $query->orderBy('created_at', 'asc')
-                ->orderBy('id', 'asc')
-                ->paginate($perPage)
-                ->appends([
-                    'start' => $fromInputDate,
-                    'end' => $toInputDate,
-                    'search' => $search,
-                    'perPage' => $perPage
-                ]);
-
-            // compute violation on each item in the current page
-            $paginated->getCollection()->transform(function ($transaction) {
-                $violations = $transaction->penalties
-                    ->pluck('penaltyRule.type')
-                    ->filter()
-                    ->unique()
-                    ->values()
-                    ->implode(', ');
-
-                $transaction->violation = $violations ?: '-';
-                return $transaction;
-            });
-
-            return $paginated;
+            $data->makeHidden(['id', 'user_id', 'book_id', 'penalties']);
+            return $data;
         }
+
+        $result = $query->paginate($perPage)->appends($request->all());
+        $result->getCollection()->transform(function ($item) {
+            return $this->formatPenaltyRow($item);
+        });
+        $result->getCollection()->each(function ($item) {
+            $item->makeHidden(['id', 'user_id', 'book_id', 'penalties']);
+        });
+
+        return $result;
+    }
+
+    /**
+     * Helper to process the penalty string and clean up the object.
+     * This prevents code duplication between Export and Pagination logic.
+     * 
+     * @param Transaction $transaction
+     * @return Transaction
+     */
+    private function formatPenaltyRow(Transaction $transaction)
+    {
+        // Extract violation types (e.g., "Overdue, Damaged")
+        $violations = $transaction->penalties
+            ->pluck('penaltyRule.type')
+            ->filter()
+            ->unique()
+            ->values()
+            ->implode(', ');
+
+        // Append the new custom attribute
+        $transaction->violation = $violations ?: '-';
+
+        return $transaction;
     }
 }

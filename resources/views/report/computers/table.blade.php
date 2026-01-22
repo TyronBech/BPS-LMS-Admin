@@ -41,10 +41,11 @@
             <td class="px-6 py-4">{{ $item->user->students->level }}</td>
             <td class="px-6 py-4">{{ $item->user->students->section }}</td>
             @elseif($userType == 'employees')
-            <td class="px-6 py-4">{{ $item->user->employees->employee_role }}</td>
+            <td class="px-6 py-4">{{ ucwords($item->user->employees->employee_role) }}</td>
             @endif
-            <td class="px-6 py-4">{{ \Carbon\Carbon::parse($item->time_in)->format('Y-m-d') }}</td>
-            <td class="px-6 py-4">{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
+            @php $start = \Carbon\Carbon::parse($item->start); @endphp
+            <td class="px-6 py-4">{{ $start->format('Y-m-d') }}</td>
+            <td class="px-6 py-4">{{ $start->format('g:i A') }}</td>
           </tr>
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">

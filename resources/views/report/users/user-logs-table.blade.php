@@ -31,20 +31,21 @@
         <tbody>
           @forelse($data as $item)
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-            <td class="px-6 py-4">{{ $item->user->privileges->category }}</td>
+            <td class="px-6 py-4">{{ ucwords($item->user->privileges->category) ?? 'N/A' }}</td>
             <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
               {{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}
             </th>
-            <td class="px-6 py-4">{{ \Carbon\Carbon::parse($item->time_in)->format('Y-m-d') }}</td>
-            <td class="px-6 py-4">{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
+            @php $start = \Carbon\Carbon::parse($item->start); @endphp
+            <td class="px-6 py-4">{{ $start->format('Y-m-d') }}</td>
+            <td class="px-6 py-4">{{ $start->format('g:i A') }}</td>
             <td class="px-6 py-4">
-              @if($item->time_out)
-              {{ \Carbon\Carbon::parse($item->time_out)->format('g:i A') }}
+              @if($item->end)
+              {{ \Carbon\Carbon::parse($item->end)->format('g:i A') }}
               @else
               -
               @endif
             </td>
-            <td class="px-6 py-4">{{ $item->remarks ?? '-' }}</td>
+            <td class="px-6 py-4">{{ ucwords($item->remarks) ?? '-' }}</td>
           </tr>
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">

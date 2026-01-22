@@ -31,7 +31,8 @@ class InventoriesController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Contracts\View\View
      */
-    public function index(Request $request){
+    public function index(Request $request)
+    {
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
         $perPage        = $request->input('perPage', 10);
@@ -47,7 +48,7 @@ class InventoriesController extends Controller
             'timestamp' => now(),
         ]);
 
-        $data           = $this->generateData($request, new Inventory(), false);
+        $data = $this->generateData($request, new Inventory(), false);
         return view('report.inventories.index', compact('fromInputDate', 'toInputDate', 'data', 'perPage'));
     }
     /**
@@ -62,7 +63,8 @@ class InventoriesController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Contracts\View\View
      */
-    public function search(Request $request){
+    public function search(Request $request)
+    {
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
         $perPage        = $request->input('perPage', 10);
@@ -93,7 +95,7 @@ class InventoriesController extends Controller
             ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
-        if($request->input('submit') == 'pdf'){
+        if ($request->input('submit') == 'pdf') {
             Log::info('Inventory Report: Generating PDF export', [
                 'user_id' => Auth::guard('admin')->id(),
                 'timestamp' => now()
@@ -102,7 +104,7 @@ class InventoriesController extends Controller
             $this->generatePDF($data);
             return redirect()->back()->with('toast-success', 'PDF generated successfully');
         }
-        if($request->input('submit') == 'excel'){
+        if ($request->input('submit') == 'excel') {
             Log::info('Inventory Report: Generating Excel export', [
                 'user_id' => Auth::guard('admin')->id(),
                 'timestamp' => now()
@@ -165,7 +167,7 @@ class InventoriesController extends Controller
         $tempLogoPath = public_path('img/orgLogoFull.png');
         $decodedLogo = base64_decode($settings->org_logo_full);
         file_put_contents($tempLogoPath, $decodedLogo);
-        
+
         $logo->setName(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setDescription(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setPath($tempLogoPath ?? public_path('img/BPSLogoFull.png'));
@@ -174,7 +176,7 @@ class InventoriesController extends Controller
         $logo->setOffsetX(10);
         $logo->setOffsetY(5);
         $logo->setWorksheet($sheet);
-        
+
         $sheet->setTitle('Book Circulation Report');
         $sheet->getColumnDimension('A')->setWidth(20);
         $sheet->getColumnDimension('B')->setWidth(30);
@@ -221,44 +223,56 @@ class InventoriesController extends Controller
      * Generates data for the inventory report.
      *
      * @param Request $request
-     * @param Inventory $tableName
+     * @param Inventory $model
      * @param bool $isExport
      * @return Collection|\Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
-    private function generateData(Request $request, Inventory $tableName, bool $isExport = false){
-        $fromInputDate  = $request->input('start', '');
-        $toInputDate    = $request->input('end', '');
-        $perPage        = $request->input('perPage', 10);
-        $start          = null;
-        $end            = null;
-        $query          = Inventory::with('book:id,accession,call_number,title,author')
-                        ->whereHas('book')
-                        ->where('checked_at', '!=', null)
-                        ->select('book_id', 'checked_at');
-        if(strlen($fromInputDate) > 0) $start = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
-        if(strlen($toInputDate) > 0) $end = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
-        if(strlen($fromInputDate) > 0 || strlen($toInputDate) > 0){
-            $query = $query->whereBetween(DB::raw('DATE(' . $tableName->getTable() . '.checked_at)'), [$start, $end]);
+    private function generateData(Request $request, Inventory $model, bool $isExport = false)
+    {
+        $startStr = $request->input('start');
+        $endStr   = $request->input('end');
+        $perPage  = $request->input('perPage', 10);
+
+        $query = $model->newQuery()
+            ->with('book:id,accession,call_number,title,author')
+            ->select([
+                'id',
+                'book_id',
+                'checked_at as date'
+            ])
+            ->whereHas('book')
+            ->whereNotNull('checked_at');
+
+        if ($startStr && $endStr) {
+            $startDate = \Carbon\Carbon::createFromFormat('m/d/Y', $startStr)->startOfDay();
+            $endDate   = \Carbon\Carbon::createFromFormat('m/d/Y', $endStr)->endOfDay();
+
+            $query->whereBetween('checked_at', [$startDate, $endDate]);
         }
-        if($isExport){
-            $data = $query->orderBy($tableName->getTable() . '.checked_at', 'desc')
-            ->orderBy($tableName->getTable() . '.id', 'desc')
-            ->get();
-            $minDate = $data->min(fn($item) => \Carbon\Carbon::parse($item->checked_at));
-            $maxDate = $data->max(fn($item) => \Carbon\Carbon::parse($item->checked_at));
-            if ($minDate && $maxDate) {
-                $data->reporting_period = $minDate->format('F j, Y') . ' to ' . $maxDate->format('F j, Y');
+
+        $query->orderBy('checked_at', 'desc')->orderBy('id', 'desc');
+
+        if ($isExport) {
+            $data = $query->get();
+
+            if ($data->isNotEmpty()) {
+
+                $max = $data->first()->date;
+                $min = $data->last()->date;
+
+                $data->reporting_period = \Carbon\Carbon::parse($min)->format('F j, Y') . ' to ' . \Carbon\Carbon::parse($max)->format('F j, Y');
             } else {
                 $data->reporting_period = 'N/A';
             }
+            $data->makeHidden(['id', 'book_id']);
             return $data;
         }
-        return $query->orderBy($tableName->getTable() . '.checked_at', 'desc')
-            ->orderBy($tableName->getTable() . '.id', 'desc')
-            ->paginate($perPage)->appends([
-                'start' => $fromInputDate,
-                'end' => $toInputDate,
-                'perPage' => $perPage,
-            ]);
+
+        $result = $query->paginate($perPage)->appends($request->all());
+        $result->getCollection()->transform(function ($item) {
+            return $item->makeHidden(['id', 'book_id']);
+        });
+
+        return $result;
     }
 }

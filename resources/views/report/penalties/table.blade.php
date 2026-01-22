@@ -38,12 +38,12 @@
             </th>
             <td class="px-6 py-4">{{ $item->book->accession }}</td>
             <td class="px-6 py-4 whitespace-nowrap">{{ $item->book->title }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->date_borrowed }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->due_date ?? '-' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->return_date ?? '-' }}</td>
-            <td class="px-6 py-4">{{ $item->violation ?? '-' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">₱ {{ number_format($item->penalty_total, 2) }}</td>
-            <td class="px-6 py-4">{{ $item->penalty_status }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->borrowed }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->due ?? '-' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->returned ?? '-' }}</td>
+            <td class="px-6 py-4">{{ ucwords($item->violation) ?? '-' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">₱ {{ number_format($item->total, 2) }}</td>
+            <td class="px-6 py-4">{{ ucwords($item->status) }}</td>
           </tr>
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">

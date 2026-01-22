@@ -13,11 +13,10 @@ use Dompdf\Options;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
-use DateTime;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Log as Logger; // Alias to avoid conflict with App\Models\Log
+use Illuminate\Support\Facades\Log as Logger;
 
 class UserLogsController extends Controller
 {
@@ -465,7 +464,7 @@ class UserLogsController extends Controller
                 // current month + year
                 $range = Carbon::now()->format('F Y');
             }
-            
+
             $settings = UISetting::first() ?? new UISetting();
             $items = [
                 'title'   => 'Attendance Monitoring Report Graph',
@@ -610,78 +609,77 @@ class UserLogsController extends Controller
      * Generates the data for the user logs report based on the request parameters.
      *
      * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Log $tableName
+     * @param \App\Models\Log $model
      * @param bool $isExport
      * @return Collection|\Illuminate\Contracts\Pagination\LengthAwarePaginator
      */
-    private function generateData(Request $request, Log $tableName, bool $isExport = false)
+    private function generateData(Request $request, Log $model, bool $isExport = false)
     {
-        $fromInputDate  = $request->input('start', '');
-        $toInputDate    = $request->input('end', '');
-        $search         = strtolower($request->input('search', ''));
-        $userType       = $request->input('user_type', 'all');
-        $perPage        = $request->input('perPage', 10);
+        $startStr   = $request->input('start');
+        $endStr     = $request->input('end');
+        $search     = strtolower($request->input('search'));
+        $userType   = $request->input('user_type', 'all');
+        $perPage    = $request->input('perPage', 10);
 
-        $query = Log::with('user:id,privilege_id,first_name,middle_name,last_name')
-            ->select('user_id', 'time_in', 'computer_use', 'remarks')
+        $query = $model->newQuery()
+            ->with([
+                'user:id,privilege_id,first_name,middle_name,last_name',
+                'user.privileges'
+            ])
+            ->select([
+                'id',
+                'user_id',
+                'time_in as start',
+                'time_out as end',
+                'computer_use as computer',
+                'remarks'
+            ])
             ->whereHas('user')
-            ->where("computer_use", "No")
+            ->where('computer_use', 'No')
             ->whereNotNull('time_in');
 
-        if (!empty($fromInputDate) && !empty($toInputDate)) {
-            $start = DateTime::createFromFormat('m/d/Y', $fromInputDate)->format('Y-m-d');
-            $end = DateTime::createFromFormat('m/d/Y', $toInputDate)->format('Y-m-d');
-            $query->whereBetween(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), [$start, $end]);
+        if ($startStr && $endStr) {
+            $startDate = Carbon::createFromFormat('m/d/Y', $startStr)->startOfDay();
+            $endDate   = Carbon::createFromFormat('m/d/Y', $endStr)->endOfDay();
+            $query->whereBetween('time_in', [$startDate, $endDate]);
         }
 
         if (strlen($search) > 0) {
             $query->whereHas('user', function ($q) use ($search) {
-                $q->where(DB::raw('lower(first_name)'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(last_name)'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(middle_name)'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(first_name, " ", middle_name, " ", last_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(middle_name, " ", last_name, ", ", first_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name, " ", middle_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', '%' . $search . '%');
-            });
-        }
-        if ($userType != 'all') {
-            $query->whereHas('user', function ($q) use ($userType) {
-                $q->whereHas('privileges', function ($q2) use ($userType) {
-                    if ($userType == 'student') {
-                        $q2->where('user_type', 'student');
-                    } else if ($userType == 'employee') {
-                        $q2->where('user_type', 'employee');
-                    } else if ($userType == 'visitor') {
-                        $q2->where('user_type', 'visitor');
-                    }
+                $q->where(function ($sub) use ($search) {
+                    $sub->whereRaw('LOWER(first_name) LIKE ?', ["%{$search}%"])
+                        ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$search}%"])
+                        ->orWhereRaw('LOWER(CONCAT(first_name, " ", last_name)) LIKE ?', ["%{$search}%"])
+                        ->orWhereRaw('LOWER(CONCAT(last_name, ", ", first_name)) LIKE ?', ["%{$search}%"]);
                 });
             });
         }
+
+        if ($userType !== 'all') {
+            $query->whereHas('user.privileges', function ($q) use ($userType) {
+                $q->where('user_type', $userType);
+            });
+        }
+        $query->orderBy('time_in', 'desc')->orderBy('id', 'desc');
         if ($isExport) {
-            $data = $query->orderBy(DB::raw('DATE(' . $tableName->getTable() . '.time_in)'), 'asc')
-                ->orderBy(DB::raw('TIME(' . $tableName->getTable() . '.time_in)'), 'asc')
-                ->get();
-            $minDate = $data->min(fn($item) => \Carbon\Carbon::parse($item->time_in));
-            $maxDate = $data->max(fn($item) => \Carbon\Carbon::parse($item->time_in));
-            if ($minDate && $maxDate) {
-                $data->reporting_period = $minDate->format('F j, Y') . ' to ' . $maxDate->format('F j, Y');
+            $data = $query->get();
+            if ($data->isNotEmpty()) {
+                $min = $data->first()->start;
+                $max = $data->last()->start;
+                $data->reporting_period = Carbon::parse($max)->format('F j, Y') . ' to ' . Carbon::parse($min)->format('F j, Y');
             } else {
                 $data->reporting_period = 'N/A';
             }
-        } else {
-            $data = $query->orderBy($tableName->getTable() . '.time_in', 'desc')
-                ->orderBy($tableName->getTable() . '.id', 'desc')
-                ->paginate($perPage)
-                ->appends([
-                    'perPage' => $perPage,
-                    'search' => $search,
-                    'start' => $fromInputDate,
-                    'end' => $toInputDate,
-                    'user_type' => $userType,
-                ]);
+
+            return $data->makeHidden(['id', 'user_id']);
         }
-        return $data;
+
+        $result = $query->paginate($perPage)
+            ->appends($request->all());
+
+        $result->getCollection()->transform(function ($item) {
+            return $item->makeHidden(['id', 'user_id']);
+        });
+        return $result;
     }
 }

@@ -36,8 +36,8 @@
               {{ $item->title }}
             </th>
             <td class="px-6 py-4">{{ $item->category->name }}</td>
-            <td class="px-6 py-4">{{ $item->availability_status }}</td>
-            <td class="px-6 py-4">{{ $item->condition_status }}</td>
+            <td class="px-6 py-4">{{ ucwords($item->availability) }}</td>
+            <td class="px-6 py-4">{{ ucwords($item->condition) }}</td>
           </tr>
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">

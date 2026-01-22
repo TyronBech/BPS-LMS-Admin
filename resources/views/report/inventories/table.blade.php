@@ -34,7 +34,8 @@
               {{ $item->book->title ?? '-' }}
             </th>
             <td class="px-6 py-4">{{ $item->book->author ?? '-' }}</td>
-            <td class="px-6 py-4">{{ $item->checked_at ? \Carbon\Carbon::parse($item->checked_at)->format('Y-m-d') : 'Pending' }}</td>
+            @php $item->date = \Carbon\Carbon::parse($item->date); @endphp
+            <td class="px-6 py-4">{{ $item->date ? $item->date->format('Y-m-d') : 'Pending' }}</td>
           </tr>
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">

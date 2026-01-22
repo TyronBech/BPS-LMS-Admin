@@ -43,7 +43,7 @@ class BookCirculationController extends Controller
         $categories     = Category::all();
         $books          = new Book();
         $availability   = $this->extract_enums($books->getTable(), 'availability_status');
-        $data           = $this->generateData($request, false);
+        $data           = $this->generateData($request, $books, false);
         return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability', 'perPage', 'categories', 'category'));
     }
     /**
@@ -77,14 +77,14 @@ class BookCirculationController extends Controller
             'timestamp' => now(),
         ]);
 
-        $books          = new Book();
+        $books = new Book();
         $validator = Validator::make($request->all(), [
             'availability'  => 'nullable|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
             'title'         => 'nullable',
             'barcode'       => 'nullable',
             'perPage'       => 'nullable|numeric|in:10,25,50',
         ]);
-        if($validator->fails()){
+        if ($validator->fails()) {
             Log::warning('Book Circulation Report: Validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
@@ -93,27 +93,27 @@ class BookCirculationController extends Controller
             ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
-        if($request->input('submit') == 'pdf'){
+        if ($request->input('submit') == 'pdf') {
             Log::info('Book Circulation Report: Generating PDF export', [
                 'user_id' => Auth::guard('admin')->id(),
                 'timestamp' => now()
             ]);
-            $data = $this->generateData($request, true);
+            $data = $this->generateData($request, $books, true);
             $this->generatePDF($data);
             return redirect()->route('report.accession-list')->with('toast-success', 'Successfully exported to PDF');
-        } else if($request->input('submit') == 'excel'){
+        } else if ($request->input('submit') == 'excel') {
             Log::info('Book Circulation Report: Generating Excel export', [
                 'user_id' => Auth::guard('admin')->id(),
                 'timestamp' => now()
             ]);
-            $data = $this->generateData($request, true);
+            $data = $this->generateData($request, $books, true);
             $this->exportExcel($data);
             return redirect()->route('report.accession-list')->with('toast-success', 'Successfully exported to Excel');
         }
-        $data = $this->generateData($request, false);
+        $data = $this->generateData($request, $books, false);
         $categories = Category::all();
         $availability = $this->extract_enums($books->getTable(), 'availability_status');
-        if(!count($data)) {
+        if (!count($data)) {
             Log::info('Book Circulation Report: No data found for search', [
                 'user_id' => Auth::guard('admin')->id(),
                 'timestamp' => now()
@@ -173,7 +173,7 @@ class BookCirculationController extends Controller
         $tempLogoPath = public_path('img/orgLogoFull.png');
         $decodedLogo = base64_decode($settings->org_logo_full);
         file_put_contents($tempLogoPath, $decodedLogo);
-        
+
         $logo->setName(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setDescription(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setPath($tempLogoPath ?? public_path('img/OwlQueryFull.png'));
@@ -232,45 +232,62 @@ class BookCirculationController extends Controller
      * Generates data for the book report.
      *
      * @param Request $request
+     * @param Book $model
      * @param bool $isExport
      * @return Collection|\Illuminate\Pagination\LengthAwarePaginator
      */
-    private function generateData(Request $request, bool $isExport = false)
+    private function generateData(Request $request, Book $model, bool $isExport = false)
     {
-        $barcode        = strtolower($request->input('barcode', ''));
-        $title          = strtolower($request->input('title', ''));
-        $category       = $request->input('category', 'All');
-        $availability   = strtolower($request->input('availability', 'All'));
-        $perPage        = $request->input('perPage', 10);
-        $query          = Book::with('category:id,name')
-                        ->whereHas('category')
-                        ->select('id', 'accession', 'call_number', 'title', 'barcode', 'availability_status', 'condition_status', 'category_id');
-        if (strlen($barcode) > 0) {
-            $query->where('barcode', 'like', '%' . $barcode . '%');
+        $barcode      = $request->input('barcode');
+        $title        = $request->input('title');
+        $category     = $request->input('category', 'All');
+        $availability = $request->input('availability', 'All');
+        $perPage      = $request->input('perPage', 10);
+
+        $query = $model->newQuery()
+            ->with('category:id,name')
+            ->whereHas('category')
+            ->select([
+                'id',
+                'category_id',
+                'accession',
+                'call_number',
+                'title',
+                'barcode',
+                'availability_status as availability',
+                'condition_status as condition'
+            ]);
+
+        if ($barcode) {
+            $query->where('barcode', 'like', "%{$barcode}%");
         }
-        if (strlen($title) > 0) {
-            $query->where(DB::raw('lower(title)'), 'like', '%' . $title . '%');
+
+        if ($title) {
+            $query->where('title', 'like', "%{$title}%");
         }
-        if (strlen($availability) > 0 && $availability != 'all') {
-            $query->where(DB::raw('lower(availability_status)'), $availability);
+
+        if ($availability && $availability !== 'All' && $availability !== 'all') {
+            $query->where('availability_status', $availability);
         }
-        if(strlen($category) > 0 && $category != 'All') {
+
+        if ($category && $category !== 'All') {
             $query->where('category_id', $category);
         }
+
         $query->orderBy('accession', 'asc')->orderBy('id', 'asc');
 
         if ($isExport) {
             $data = $query->get();
-        } else {
-            $data = $query->paginate($perPage)->appends([
-                'barcode'       => $barcode,
-                'title'         => $title,
-                'availability'  => $availability,
-                'category'      => $category,
-                'perPage'       => $perPage,
-            ]);
+            $data->makeHidden(['id', 'category_id']);
+            return $data;
         }
-        return $data;
+
+        $result = $query->paginate($perPage)->appends($request->all());
+        $result->getCollection()->transform(function ($item) {
+            return $item->makeHidden(['id', 'category_id']);
+        });
+
+        return $result;
     }
     /**
      * Extracts the enum values from a given table and column name.
@@ -279,7 +296,8 @@ class BookCirculationController extends Controller
      * @param string $columnName The name of the column to extract the enum values from.
      * @return array An array of enum values. If no enum values are found, returns ['N/A'].
      */
-    private function extract_enums($table, $columnName){
+    private function extract_enums($table, $columnName)
+    {
         $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";
         $column = DB::select($query);
         if (empty($column)) {
