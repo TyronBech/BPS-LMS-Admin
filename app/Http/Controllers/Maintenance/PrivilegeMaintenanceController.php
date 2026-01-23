@@ -30,6 +30,19 @@ class PrivilegeMaintenanceController extends Controller
             'timestamp' => now(),
         ]);
 
+        $validator = Validator::make($request->all(), [
+            'perPage' => 'sometimes|integer|min:1|max:500',
+        ]);
+        if ($validator->fails()) {
+            Log::warning('Privilege Maintenance: Invalid perPage parameter', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+        }
+
         $privileges = UserGroup::orderBy('created_at', 'desc')
             ->paginate($perPage)
             ->appends([

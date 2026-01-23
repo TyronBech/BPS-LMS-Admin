@@ -51,6 +51,12 @@ class UsersMaintenanceController extends Controller
         ]);
 
         if ($validator->fails()) {
+            Log::warning('Users Maintenance: Invalid perPage parameter', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', $validator->errors()->first())->withInput();
         }
 
@@ -226,6 +232,12 @@ class UsersMaintenanceController extends Controller
         ]);
 
         if ($validator->fails()) {
+            Log::warning('Users Maintenance: Invalid search parameters', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', $validator->errors()->first())->withInput();
         }
 

@@ -47,6 +47,12 @@ class BookMaintenanceController extends Controller
         ]);
 
         if ($validator->fails()) {
+            Log::warning('Book Maintenance: Invalid perPage parameter', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', $validator->errors()->first())->withInput();
         }
 
@@ -275,6 +281,12 @@ class BookMaintenanceController extends Controller
         ]);
 
         if ($validator->fails()) {
+            Log::warning('Book Maintenance: Invalid perPage parameter', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
             return redirect()->back()->with('toast-error', $validator->errors()->first())->withInput();
         }
 
