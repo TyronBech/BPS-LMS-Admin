@@ -43,6 +43,17 @@ class UsersMaintenanceController extends Controller
             'timestamp' => now(),
         ]);
 
+        $validator = Validator::make($request->all(), [
+            'perStudentPage'    => 'nullable|integer|min:1|max:500',
+            'perEmployeePage'   => 'nullable|integer|min:1|max:500',
+            'perVisitorPage'    => 'nullable|integer|min:1|max:500',
+            'search-users'      => 'nullable|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('toast-error', $validator->errors()->first())->withInput();
+        }
+
         $students = User::whereHas('students')
             ->with('students')
             ->orderBy('created_at', 'desc')
@@ -206,6 +217,17 @@ class UsersMaintenanceController extends Controller
             'ip_address' => $request->ip(),
             'timestamp' => now(),
         ]);
+
+        $validator = Validator::make($request->all(), [
+            'perStudentPage'    => 'nullable|integer|min:1|max:500',
+            'perEmployeePage'   => 'nullable|integer|min:1|max:500',
+            'perVisitorPage'    => 'nullable|integer|min:1|max:500',
+            'search-users'      => 'nullable|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('toast-error', $validator->errors()->first())->withInput();
+        }
 
         // Common search filter closure
         $searchFilter = function ($query) use ($search) {

@@ -40,13 +40,13 @@
     <!-- Toggle buttons -->
     <div class="mb-4" role="tablist" aria-label="Choose table">
       <div class="inline-flex rounded-md shadow-sm border border-gray-200 dark:border-gray-700" role="group">
-        <button type="button" id="toggle-students" data-table="students" class="js-user-toggle px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 border-r border-gray-200 dark:border-gray-700" aria-selected="true" role="tab">
+        <button type="button" id="toggle-students" data-table="students" class="js-user-toggle px-4 py-2 text-sm font-medium rounded-l-md focus:outline-none bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 border-r border-gray-200 dark:border-gray-700" aria-selected="true" role="tab">
           Students
         </button>
-        <button type="button" id="toggle-employees" data-table="employees" class="js-user-toggle px-4 py-2 text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 border-r border-gray-200 dark:border-gray-700" aria-selected="false" role="tab">
+        <button type="button" id="toggle-employees" data-table="employees" class="js-user-toggle px-4 py-2 text-sm font-medium focus:outline-none bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600 border-r border-gray-200 dark:border-gray-700" aria-selected="false" role="tab">
           Faculties & Staffs
         </button>
-        <button type="button" id="toggle-visitors" data-table="visitors" class="js-user-toggle px-4 py-2 text-sm font-medium rounded-r-md focus:outline-none focus:ring-2 focus:ring-primary-500 bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600" aria-selected="false" role="tab">
+        <button type="button" id="toggle-visitors" data-table="visitors" class="js-user-toggle px-4 py-2 text-sm font-medium rounded-r-md focus:outline-none bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600" aria-selected="false" role="tab">
           Visitors
         </button>
       </div>
@@ -79,7 +79,7 @@
     const buttons = document.querySelectorAll('.js-user-toggle');
     const sections = document.querySelectorAll('[data-content]');
     const hiddenTabInput = document.getElementById('users-tab-input');
-    const activeBtnClasses = ['bg-primary-500', 'text-white'];
+    const activeBtnClasses = ['bg-primary-400', 'text-white'];
     const inactiveBtnClasses = ['bg-white', 'text-gray-700', 'hover:bg-gray-50', 'dark:bg-gray-700', 'dark:text-gray-200', 'dark:hover:bg-gray-600'];
 
     function setActive(tab) {

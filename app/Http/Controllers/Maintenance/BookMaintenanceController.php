@@ -47,7 +47,7 @@ class BookMaintenanceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()->with('toast-error', $validator->errors()->first());
+            return redirect()->back()->with('toast-error', $validator->errors()->first())->withInput();
         }
 
         $categories = Category::select('id', 'name')->get();

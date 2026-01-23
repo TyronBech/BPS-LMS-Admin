@@ -20,11 +20,7 @@ $increment = 0;
       <input type="hidden" name="search" value="{{ request('search', '') }}">
       <input type="hidden" name="tab" value="visitors">
       <label for="perPage" class="mr-2 text-sm font-medium text-gray-700">Show</label>
-      <select name="perVisitorPage" id="perPage" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-primary-400 focus:border-primary-400 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-        <option value="10" {{ $perVisitorPage == 10 ? 'selected' : '' }}>10</option>
-        <option value="25" {{ $perVisitorPage == 25 ? 'selected' : '' }}>25</option>
-        <option value="50" {{ $perVisitorPage == 50 ? 'selected' : '' }}>50</option>
-      </select>
+      <input type="number" name="perVisitorPage" id="perPage" min="1" max="500" value="{{ request('perVisitorPage', $perVisitorPage) }}" onchange="this.form.submit()" class="border border-gray-300 text-xs rounded-lg focus:ring-primary-400 focus:border-primary-400 p-2 my-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" />
       <span class="ml-2 text-sm text-gray-600">entries per page</span>
     </form>
   </div>
