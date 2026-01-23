@@ -11,6 +11,7 @@ use App\Models\user;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 
 class RolesController extends Controller
 {
@@ -22,12 +23,20 @@ class RolesController extends Controller
      */
     public function index(Request $request)
     {
+        $perPage = $request->input('perPage', 10);
         Log::info('Roles & Permissions: Page accessed', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
             'ip_address' => $request->ip(),
             'timestamp' => now(),
         ]);
+
+        $validator = Validator::make($request->all(), [
+            'perPage' => 'nullable|integer|min:1|max:500',
+        ]);
+        if ($validator->fails()) {
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+        }
 
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
         $perPage                = request('perPage', 10);

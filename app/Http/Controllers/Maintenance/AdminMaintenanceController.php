@@ -12,7 +12,7 @@ use App\Mail\RoleEmailMessage;
 use App\Models\User;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Log;
-
+use Illuminate\Support\Facades\Validator;
 
 class AdminMaintenanceController extends Controller
 {   
@@ -35,6 +35,14 @@ class AdminMaintenanceController extends Controller
             'ip_address' => $request->ip(),
             'timestamp' => now(),
         ]);
+
+        $validator = Validator::make($request->all(), [
+            'search' => 'nullable|string|max:255',
+            'perPage' => 'nullable|integer|min:1|max:500',
+        ]);
+        if ($validator->fails()) {
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+        }
 
         $admins = User::join('model_has_roles', 'usr_users.id', '=', 'model_has_roles.model_id')
             ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
@@ -76,6 +84,7 @@ class AdminMaintenanceController extends Controller
     public function search_user(Request $request)
     {
         $search = strtolower($request->input('user-info'));
+        $perPage = $request->input('perPage', 10);
 
         Log::info('Admin Maintenance: Searching for user to promote', [
             'user_id' => Auth::guard('admin')->id(),
@@ -84,6 +93,14 @@ class AdminMaintenanceController extends Controller
             'ip_address' => $request->ip(),
             'timestamp' => now(),
         ]);
+
+        $validator = Validator::make($request->all(), [
+            'user-info' => 'required|string|max:255',
+            'perPage' => 'nullable|integer|min:1|max:500',
+        ]);
+        if ($validator->fails()) {
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+        }
 
         $searched = User::join('privileges', 'usr_users.privilege_id', '=', 'privileges.id')
             ->select('usr_users.id', 'first_name', 'middle_name', 'last_name', 'email', 'rfid')
@@ -103,7 +120,7 @@ class AdminMaintenanceController extends Controller
             ->doesntHave('roles')
             ->first();
         $roles = Role::where('guard_name', 'admin')->get();
-        return view('maintenance.admins.create', compact('searched', 'roles'));
+        return view('maintenance.admins.create', compact('searched', 'roles', 'perPage'));
     }
     /**
      * Search for an admin user in the system.

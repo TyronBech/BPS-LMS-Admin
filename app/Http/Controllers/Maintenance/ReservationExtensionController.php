@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
 
 class ReservationExtensionController extends Controller
 {
@@ -29,6 +30,13 @@ class ReservationExtensionController extends Controller
             'ip_address' => $request->ip(),
             'timestamp' => now(),
         ]);
+
+        $validator = Validator::make($request->all(), [
+            'perPage' => 'sometimes|integer|min:1|max:500',
+        ]);
+        if ($validator->fails()) {
+            return redirect()->route('maintenance.reservations')->with('toast-warning', $validator->errors()->first())->withInput();
+        }
 
         $pendingRequests = Transaction::where('transaction_type', 'Borrowed')
             ->where('status', 'Pending')
@@ -301,12 +309,21 @@ class ReservationExtensionController extends Controller
      */
     public function search(Request $request)
     {
+        $perPage = $request->input('perPage', 10);
         Log::info('Reservation Extension: Search performed', [
             'user_id' => Auth::guard('admin')->id(),
             'search_term' => $request->search,
             'ip_address' => $request->ip(),
             'timestamp' => now(),
         ]);
+
+        $validator = Validator::make($request->all(), [
+            'search' => 'required|string|max:255',
+            'perPage' => 'sometimes|integer|min:1|max:500',
+        ]);
+        if ($validator->fails()) {
+            return redirect()->route('maintenance.reservations')->with('toast-warning', $validator->errors()->first())->withInput();
+        }
 
         $query = Transaction::where('transaction_type', 'Borrowed')
             ->where('status', 'Pending');

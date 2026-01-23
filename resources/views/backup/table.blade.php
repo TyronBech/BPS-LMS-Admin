@@ -11,11 +11,7 @@
       @endforeach
       <input type="hidden" name="page" value="1">
       <label for="perPage" class="ml-2 text-sm text-gray-600 dark:text-gray-400">Show</label>
-      <select id="perPage" name="perPage" class="border border-gray-300 rounded-md px-2 py-1 text-sm bg-gray-50 focus:ring-primary-400 focus:border-primary-400 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200 dark:focus:ring-primary-500 dark:focus:border-primary-500" onchange="this.form.submit()">
-        <option value="10" {{ (int)request('perPage', 10) === 10 ? 'selected' : '' }}>10</option>
-        <option value="25" {{ (int)request('perPage') === 25 ? 'selected' : '' }}>25</option>
-        <option value="50" {{ (int)request('perPage') === 50 ? 'selected' : '' }}>50</option>
-      </select>
+      <input type="number" name="perPage" id="perPage" min="1" max="500" onchange="this.form.submit()" value="{{ old('perPage', request('perPage', 10)) }}" class="border border-gray-300 text-xs rounded-lg focus:ring-primary-400 focus:border-primary-400 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
       <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">entries per page</span>
     </form>
   </div>

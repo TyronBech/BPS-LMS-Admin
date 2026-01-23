@@ -24,6 +24,7 @@ class BackupController extends Controller
      */
     public function index(Request $request)
     {
+        $perPage = $request->input('perPage', 10);
         Log::info('Backup: Index page accessed', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name,
@@ -32,11 +33,16 @@ class BackupController extends Controller
             'timestamp' => now(),
         ]);
 
-        // Pagination parameters
-        $allowedPerPage = [10, 25, 50];
-        $perPage = (int) $request->input('perPage', 10);
-        if (!in_array($perPage, $allowedPerPage, true)) {
-            $perPage = 10;
+        $validator = Validator::make($request->all(), [
+            'perPage' => 'nullable|integer|min:1|max:500',
+        ]);
+        if ($validator->fails()) {
+            Log::warning('Backup: Invalid pagination parameters', [
+                'errors' => $validator->errors()->toArray(),
+                'user_id' => Auth::guard('admin')->id(),
+                'timestamp' => now(),
+            ]);
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         $currentPage = (int) $request->input('page', 1);
 

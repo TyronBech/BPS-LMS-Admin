@@ -35,6 +35,19 @@ class TransactionMaintenanceController extends Controller
             'timestamp' => now(),
         ]);
 
+        $validator = Validator::make($request->all(), [
+            'perPage' => 'nullable|integer|min:1|max:500',
+        ]);
+        if ($validator->fails()) {
+            Log::warning('Transaction Maintenance: Invalid perPage parameter', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
+            return redirect()->back()->with('toast-warning', 'Invalid per page parameter')->withInput();
+        }
+
         $transactions = Transaction::with('user', 'book')
             ->orderBy('created_at', 'desc')
             ->paginate($perPage)
