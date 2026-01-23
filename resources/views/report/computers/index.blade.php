@@ -2,7 +2,7 @@
 @section('content')
 @use('App\Enum\PermissionsEnum')
 <div class="container mx-auto px-4">
-  <h1 class="font-semibold text-center text-4xl p-5">Report Document</h1>
+  <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Report Document</h1>
   <form action="{{ route('report.computer-use-search') }}" method="POST">
     @csrf
     <div class="flex flex-col lg:flex-row lg:items-end lg:justify-center gap-3 mb-4">

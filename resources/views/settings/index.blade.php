@@ -1,8 +1,8 @@
 @extends('layouts.admin-app')
 
 @section('content')
-<div class="container mx-auto px-4 py-8">
-  <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mb-6">System Settings</h1>
+<div class="container mx-auto px-4">
+  <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">System Settings</h1>
 
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 relative">
     <!-- Edit Button -->

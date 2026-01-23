@@ -1,9 +1,9 @@
 @extends('layouts.admin-app')
 @section('content')
-<div class="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8 py-4 md:py-8">
+<div class="container mx-auto px-3 sm:px-4 md:px-6 lg:px-8">
   <!-- Page Header -->
   <div class="text-center mb-6 md:mb-8">
-    <h1 class="font-bold text-2xl sm:text-3xl md:text-4xl lg:text-5xl text-gray-800 dark:text-white mb-2">Pending Extension Requests</h1>
+    <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Pending Extension Requests</h1>
     <p class="text-gray-600 dark:text-gray-400 text-sm md:text-base lg:text-lg px-4">Review and approve book extension requests from students</p>
   </div>
 

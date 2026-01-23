@@ -2,7 +2,7 @@
 @section('content')
 @use('App\Enum\PermissionsEnum')
 <div class="container mx-auto px-4">
-  <h1 class="font-semibold text-center text-4xl p-5">Book Accession List</h1>
+  <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Book Accession List</h1>
   <form action="{{ route('report.accession-list-search') }}" method="POST">
     @csrf
     <div class="flex flex-col lg:flex-row lg:items-end lg:justify-center gap-3 mb-4">

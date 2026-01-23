@@ -1,7 +1,7 @@
 @extends('layouts.admin-app')
 @section('content')
 <div class="container mx-auto px-4">
-  <h1 class="font-semibold text-center text-2xl md:text-4xl p-5">Summary of BPS Collections</h1>
+  <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Summary of BPS Collections</h1>
 
   @include('report.categories.table')
 

@@ -1,7 +1,7 @@
 @extends('layouts.admin-app')
 @section('content')
-<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <h1 class="font-semibold text-center text-3xl md:text-4xl mb-8">Student Information</h1>
+<div class="container mx-auto px-4 sm:px-6 lg:px-8">
+  <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Student Information</h1>
 
   <div class="max-w-md mx-auto bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 p-6">
     <div class="flex flex-col items-center">

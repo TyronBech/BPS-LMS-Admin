@@ -1,8 +1,8 @@
 @use('App\Enum\PermissionsEnum')
 @extends('layouts.admin-app')
 @section('content')
-<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <h1 class="font-semibold text-center text-3xl md:text-4xl mb-8">Maintenance</h1>
+<div class="container mx-auto px-4 sm:px-6 lg:px-8">
+  <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Maintenance</h1>
   <div class="max-w-4xl mx-auto bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center p-6">
 
