@@ -53,7 +53,7 @@ class BookMaintenanceController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', $validator->errors()->first())->withInput();
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
 
         $categories = Category::select('id', 'name')->get();
@@ -287,7 +287,7 @@ class BookMaintenanceController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', $validator->errors()->first())->withInput();
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
 
         if ($request->input('barcodeBtn') === 'barcode') {

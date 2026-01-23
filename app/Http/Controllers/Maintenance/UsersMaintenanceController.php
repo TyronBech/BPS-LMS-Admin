@@ -57,7 +57,7 @@ class UsersMaintenanceController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', $validator->errors()->first())->withInput();
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
 
         $students = User::whereHas('students')
@@ -238,7 +238,7 @@ class UsersMaintenanceController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', $validator->errors()->first())->withInput();
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
 
         // Common search filter closure

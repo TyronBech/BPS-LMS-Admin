@@ -30,6 +30,19 @@ class PenaltyRuleController extends Controller
             'timestamp' => now(),
         ]);
 
+        $validator = Validator::make($request->all(), [
+            'perPage' => 'nullable|integer|min:1|max:500',
+        ]);
+        if($validator->fails()) {
+            Log::warning('Penalty Rules: List page validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+        }
+
         $rules = PenaltyRule::orderBy('created_at', 'desc')
             ->paginate($perPage)
             ->appends([
