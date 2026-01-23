@@ -40,6 +40,16 @@ class BookMaintenanceController extends Controller
             'timestamp' => now(),
         ]);
 
+        $validator = Validator::make($request->all(), [
+            'category' => 'nullable|integer|in:' . implode(',', Category::pluck('id')->toArray()),
+            'perPage' => 'nullable|integer|min:1|max:500',
+            'search' => 'nullable|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('toast-error', $validator->errors()->first());
+        }
+
         $categories = Category::select('id', 'name')->get();
         $books      = Book::with('category')
             ->orderBy('created_at', 'desc')
@@ -48,6 +58,7 @@ class BookMaintenanceController extends Controller
             ->appends([
                 'perPage' => $perPage,
                 'search' => $search,
+                'category' => $category,
             ]);
         return view('maintenance.books.books', compact('books', 'perPage', 'search', 'categories', 'category'));
     }
@@ -256,6 +267,16 @@ class BookMaintenanceController extends Controller
             'ip_address' => $request->ip(),
             'timestamp' => now(),
         ]);
+
+        $validator = Validator::make($request->all(), [
+            'category' => 'nullable|integer|in:' . implode(',', Category::pluck('id')->toArray()),
+            'perPage' => 'nullable|integer|min:1|max:500',
+            'search' => 'nullable|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('toast-error', $validator->errors()->first());
+        }
 
         if ($request->input('barcodeBtn') === 'barcode') {
             $this->export_barcode($request);
