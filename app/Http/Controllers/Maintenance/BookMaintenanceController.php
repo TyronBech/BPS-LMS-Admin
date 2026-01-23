@@ -239,7 +239,7 @@ class BookMaintenanceController extends Controller
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Something went wrong!');
+            return redirect()->back()->with('toast-error', 'Something went wrong!')->withInput();
         }
         return view('maintenance.books.edit', compact('book', 'categories', 'condition', 'availability', 'remarks', 'book_types'));
     }
@@ -275,7 +275,7 @@ class BookMaintenanceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            return redirect()->back()->with('toast-error', $validator->errors()->first());
+            return redirect()->back()->with('toast-error', $validator->errors()->first())->withInput();
         }
 
         if ($request->input('barcodeBtn') === 'barcode') {
@@ -293,7 +293,7 @@ class BookMaintenanceController extends Controller
             ]);
 
             if ($validator->fails()) {
-                return redirect()->back()->with('toast-error', $validator->errors()->first());
+                return redirect()->back()->with('toast-error', $validator->errors()->first())->withInput();
             }
         }
         // Check if the search if multiple accession
@@ -380,7 +380,7 @@ class BookMaintenanceController extends Controller
             $cover = null;
         }
         if (!$book) {
-            return redirect()->back()->with('toast-error', 'Book not found!');
+            return redirect()->back()->with('toast-error', 'Book not found!')->withInput();
         }
         return view('maintenance.books.view', compact('book', 'cover', 'mimeType'));
     }
@@ -636,7 +636,7 @@ class BookMaintenanceController extends Controller
                 ]);
 
                 if ($validator->fails()) {
-                    return redirect()->back()->with('toast-error', $validator->errors()->first());
+                    return redirect()->back()->with('toast-error', $validator->errors()->first())->withInput();
                 }
 
                 $booksQuery->where('category_id', $category);
@@ -667,7 +667,7 @@ class BookMaintenanceController extends Controller
         $books = $booksQuery->orderBy('accession', 'asc')->get();
 
         if ($books->isEmpty()) {
-            return redirect()->back()->with('toast-warning', 'No books found for barcode export!');
+            return redirect()->back()->with('toast-warning', 'No books found for barcode export!')->withInput();
         }
 
         // Generate barcodes
@@ -716,7 +716,7 @@ class BookMaintenanceController extends Controller
                 ]);
 
                 if ($validator->fails()) {
-                    return redirect()->back()->with('toast-error', $validator->errors()->first());
+                    return redirect()->back()->with('toast-error', $validator->errors()->first())->withInput();
                 }
 
                 $booksQuery->where('category_id', $category);
@@ -746,10 +746,10 @@ class BookMaintenanceController extends Controller
         // Get books
         $books = $booksQuery->select('call_number')->orderBy('accession', 'asc')->get();
         if ($books->isEmpty()) {
-            return redirect()->back()->with('toast-warning', 'No books found for call number export!');
+            return redirect()->back()->with('toast-warning', 'No books found for call number export!')->withInput();
         }
         if($books->every(fn($book) => is_null($book->call_number))) {
-            return redirect()->back()->with('toast-warning', 'No call numbers found for the selected books!');
+            return redirect()->back()->with('toast-warning', 'No call numbers found for the selected books!')->withInput();
         }
         $dompdf = new Dompdf();
 
@@ -828,7 +828,7 @@ class BookMaintenanceController extends Controller
             return is_numeric($id) && $id > 0;
         });
         if (empty($ids)) {
-            return redirect()->back()->with('toast-warning', 'No books selected for deletion!');
+            return redirect()->back()->with('toast-warning', 'No books selected for deletion!')->withInput();
         }
 
         Log::warning('Book Maintenance: Attempting bulk delete', [
@@ -852,7 +852,7 @@ class BookMaintenanceController extends Controller
                 'error_trace' => $e->getTraceAsString(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Something went wrong!');
+            return redirect()->back()->with('toast-error', 'Something went wrong!')->withInput();
         }
         DB::commit();
         Log::info('Book Maintenance: Bulk delete successful', [

@@ -110,7 +110,7 @@ class UsersMaintenanceController extends Controller
             ->first();
         if(!$student) {
             Log::warning('Users Maintenance: Student not found', ['student_id_number' => $studentID]);
-            return redirect()->back()->with('toast-error', 'Student not found.');
+            return redirect()->back()->with('toast-error', 'Student not found.')->withInput();
         }
         $base64Image = $student->profile_image;
         if (!empty($base64Image)) {
@@ -149,7 +149,7 @@ class UsersMaintenanceController extends Controller
             ->first();
         if(!$employee) {
             Log::warning('Users Maintenance: Employee not found', ['employee_id' => $employeeID]);
-            return redirect()->back()->with('toast-error', 'Employee not found.');
+            return redirect()->back()->with('toast-error', 'Employee not found.')->withInput();
         }
         $base64Image = $employee->profile_image;
         if (!empty($base64Image)) {
@@ -497,7 +497,7 @@ class UsersMaintenanceController extends Controller
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Something went wrong!');
+            return redirect()->back()->with('toast-error', 'Something went wrong!')->withInput();
         }
         return view('maintenance.users.edit-student', compact('user'));
     }
@@ -528,7 +528,7 @@ class UsersMaintenanceController extends Controller
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Something went wrong!');
+            return redirect()->back()->with('toast-error', 'Something went wrong!')->withInput();
         }
         return view('maintenance.users.edit-employee', compact('user', 'privileges'));
     }
@@ -556,7 +556,7 @@ class UsersMaintenanceController extends Controller
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Something went wrong!');
+            return redirect()->back()->with('toast-error', 'Something went wrong!')->withInput();
         }
         return view('maintenance.users.edit-visitor', compact('user'));
     }
@@ -913,7 +913,7 @@ class UsersMaintenanceController extends Controller
             return is_numeric($id) && $id > 0;
         });
         if (empty($ids)) {
-            return redirect()->back()->with('toast-warning', 'No students selected for deletion!');
+            return redirect()->back()->with('toast-warning', 'No students selected for deletion!')->withInput();
         }
 
         Log::warning('Users Maintenance: Attempting bulk delete students', [
@@ -935,7 +935,7 @@ class UsersMaintenanceController extends Controller
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Something went wrong!');
+            return redirect()->back()->with('toast-error', 'Something went wrong!')->withInput();
         }
         DB::commit();
         Log::info('Users Maintenance: Bulk delete students successful', [
@@ -966,7 +966,7 @@ class UsersMaintenanceController extends Controller
             return is_numeric($id) && $id > 0;
         });
         if (empty($ids)) {
-            return redirect()->back()->with('toast-warning', 'No employees selected for deletion!');
+            return redirect()->back()->with('toast-warning', 'No employees selected for deletion!')->withInput();
         }
 
         Log::warning('Users Maintenance: Attempting bulk delete employees', [
@@ -986,7 +986,7 @@ class UsersMaintenanceController extends Controller
                 'user_id' => Auth::guard('admin')->id(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-warning', 'Cannot delete a super admin user');
+            return redirect()->back()->with('toast-warning', 'Cannot delete a super admin user')->withInput();
         }
         DB::beginTransaction();
         try {
@@ -1005,7 +1005,7 @@ class UsersMaintenanceController extends Controller
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Something went wrong!');
+            return redirect()->back()->with('toast-error', 'Something went wrong!')->withInput();
         }
         DB::commit();
         Log::info('Users Maintenance: Bulk delete employees successful', [
@@ -1035,7 +1035,7 @@ class UsersMaintenanceController extends Controller
             return is_numeric($id) && $id > 0;
         });
         if (empty($ids)) {
-            return redirect()->back()->with('toast-warning', 'No visitors selected for deletion!');
+            return redirect()->back()->with('toast-warning', 'No visitors selected for deletion!')->withInput();
         }
 
         Log::warning('Users Maintenance: Attempting bulk delete visitors', [
@@ -1057,7 +1057,7 @@ class UsersMaintenanceController extends Controller
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Something went wrong!');
+            return redirect()->back()->with('toast-error', 'Something went wrong!')->withInput();
         }
         DB::commit();
         Log::info('Users Maintenance: Bulk delete visitors successful', [

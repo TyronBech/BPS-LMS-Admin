@@ -32,6 +32,14 @@ class CategoryMaintenanceController extends Controller
             'timestamp' => now(),
         ]);
 
+        $validator = Validator::make($request->all(), [
+            'perPage' => 'nullable|integer|min:1|max:500',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('toast-error', $validator->errors()->first())->withInput();
+        }
+
         $categories = Category::orderBy('created_at', 'desc')
             ->paginate($perPage)
             ->appends([
@@ -75,7 +83,7 @@ class CategoryMaintenanceController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         if(Category::where('name', $request->name)->exists()) {
             Log::warning('Category Maintenance: Creation failed - Category already exists', [
@@ -84,7 +92,7 @@ class CategoryMaintenanceController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            return redirect()->route('maintenance.categories')->with('toast-warning', 'Category already exists.');
+            return redirect()->route('maintenance.categories')->with('toast-warning', 'Category already exists.')->withInput();
         }
         DB::beginTransaction();
         try{
@@ -102,7 +110,7 @@ class CategoryMaintenanceController extends Controller
                 'error_trace' => $e->getTraceAsString(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Error occurred while creating category.');
+            return redirect()->back()->with('toast-error', 'Error occurred while creating category.')->withInput();
         }
         DB::commit();
         Log::info('Category Maintenance: Category created successfully', [
@@ -147,7 +155,7 @@ class CategoryMaintenanceController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         DB::beginTransaction();
         try{
@@ -166,9 +174,9 @@ class CategoryMaintenanceController extends Controller
                 'timestamp' => now(),
             ]);
             if($e->getCode() == 23000){
-                return redirect()->back()->with('toast-warning', 'Category legend or name already exists.');
+                return redirect()->back()->with('toast-warning', 'Category legend or name already exists.')->withInput();
             }
-            return redirect()->back()->with('toast-error', 'Error occurred while updating category.');
+            return redirect()->back()->with('toast-error', 'Error occurred while updating category.')->withInput();
         }
         DB::commit();
         Log::info('Category Maintenance: Category updated successfully', [
@@ -213,7 +221,7 @@ class CategoryMaintenanceController extends Controller
                 'error_trace' => $e->getTraceAsString(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Error occurred while deleting category.');
+            return redirect()->back()->with('toast-error', 'Error occurred while deleting category.')->withInput();
         }
         DB::commit();
         Log::info('Category Maintenance: Category deleted successfully', [
