@@ -51,6 +51,25 @@ class ComputerUseController extends Controller
             'timestamp' => now(),
         ]);
 
+        $validator = Validator::make($request->all(), [
+            'search'        => 'nullable|string|max:255',
+            'user_type'     => 'nullable|string|max:255',
+            'start'         => 'nullable|date',
+            'end'           => 'nullable|date|after_or_equal:start',
+            'perPage'       => 'nullable|integer|min:1|max:500',
+        ]);
+
+        if ($validator->fails()) {
+            Log::warning('Computer Use Report: Validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+        }
+
         $data           = $this->generateData($request, new AppLog(), false);
         $hours          = $data->map(function ($item) {
             $item = Carbon::parse($item->time_in)->format('H:i:s');
@@ -98,9 +117,10 @@ class ComputerUseController extends Controller
 
         $validator = Validator::make($request->all(), [
             'start'         => 'nullable|date',
-            'end'           => 'nullable|date',
-            'search'        => 'nullable',
-            'perPage'       => 'nullable|numeric|in:10,25,50'
+            'end'           => 'nullable|date|after_or_equal:start',
+            'search'        => 'nullable|string|max:255',
+            'user_type'     => 'nullable|string|max:255',
+            'perPage'       => 'nullable|integer|min:1|max:500'
         ]);
         if ($validator->fails()) {
             Log::warning('Computer Use Report: Validation failed', [
@@ -109,7 +129,7 @@ class ComputerUseController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         if ($request->input('submit') == 'pdf') {
             Log::info('Computer Use Report: Generating PDF export', [

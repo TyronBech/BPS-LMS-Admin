@@ -48,6 +48,21 @@ class InventoriesController extends Controller
             'timestamp' => now(),
         ]);
 
+        $validator = Validator::make($request->all(), [
+            'start'         => 'nullable|date',
+            'end'           => 'nullable|date|after_or_equal:start',
+            'perPage'       => 'nullable|numeric|min:1|max:500',
+        ]);
+        if ($validator->fails()) {
+            Log::warning('Inventory Report: Validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+        }
+
         $data = $this->generateData($request, new Inventory(), false);
         return view('report.inventories.index', compact('fromInputDate', 'toInputDate', 'data', 'perPage'));
     }
@@ -83,8 +98,8 @@ class InventoriesController extends Controller
         $data           = Inventory::with('book')->where('checked_at', '!=', null);
         $validator = Validator::make($request->all(), [
             'start'         => 'nullable|date',
-            'end'           => 'nullable|date',
-            'perPage'       => 'nullable|numeric|in:10,25,50',
+            'end'           => 'nullable|date|after_or_equal:start',
+            'perPage'       => 'nullable|numeric|min:1|max:500',
         ]);
         if ($validator->fails()) {
             Log::warning('Inventory Report: Validation failed', [
@@ -93,7 +108,7 @@ class InventoriesController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         if ($request->input('submit') == 'pdf') {
             Log::info('Inventory Report: Generating PDF export', [

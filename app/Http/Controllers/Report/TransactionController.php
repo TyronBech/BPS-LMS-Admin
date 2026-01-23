@@ -53,6 +53,23 @@ class TransactionController extends Controller
             'timestamp' => now(),
         ]);
 
+        $validator = Validator::make($request->all(), [
+            'start'         => 'nullable|date',
+            'end'           => 'nullable|date|after_or_equal:start',
+            'search'        => 'nullable|string|max:255',
+            'type'          => 'nullable|in:' . implode(',', $this->extract_enums((new Transaction())->getTable(), 'transaction_type')),
+            'perPage'       => 'nullable|numeric|min:1|max:500',
+        ]);
+        if ($validator->fails()) {
+            Log::warning('Transaction Report: Validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
+            return redirect()->route('report.circulation')->with('toast-warning', $validator->errors()->first())->withInput();
+        }
+
         $data = $this->generateData($request, new Transaction(), false);
         return view('report.transactions.transactions', compact('data', 'search', 'fromInputDate', 'toInputDate', 'type', 'perPage', 'availability'));
     }
@@ -89,9 +106,9 @@ class TransactionController extends Controller
 
         $validator = Validator::make($request->all(), [
             'start'         => 'nullable|date',
-            'end'           => 'nullable|date',
+            'end'           => 'nullable|date|after_or_equal:start',
             'type'          => 'nullable|in:' . implode(',', $this->extract_enums((new Transaction())->getTable(), 'transaction_type')),
-            'perPage'       => 'nullable|numeric|in:10,25,50'
+            'perPage'       => 'nullable|numeric|min:1|max:500',
         ]);
         if ($validator->fails()) {
             Log::warning('Transaction Report: Validation failed', [
@@ -100,7 +117,7 @@ class TransactionController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         if ($request->input('submit') == 'pdf') {
             Log::info('Transaction Report: Generating PDF export', [

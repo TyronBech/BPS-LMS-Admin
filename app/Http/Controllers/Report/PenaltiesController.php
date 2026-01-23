@@ -12,7 +12,6 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
 use App\Models\Transaction;
 use App\Models\UISetting;
 use Illuminate\Database\Eloquent\Collection;
@@ -43,6 +42,22 @@ class PenaltiesController extends Controller
             'ip_address' => $request->ip(),
             'timestamp' => now(),
         ]);
+
+        $validator = Validator::make($request->all(), [
+            'start'         => 'nullable|date',
+            'end'           => 'nullable|date|after_or_equal:start',
+            'search'        => 'nullable|string|max:255',
+            'perPage'       => 'nullable|numeric|min:1|max:500',
+        ]);
+        if ($validator->fails()) {
+            Log::warning('Penalties Report: Validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+        }
 
         $data = $this->generateData($request, new Transaction(), false);
         return view('report.penalties.index', compact('data', 'fromInputDate', 'toInputDate', 'search', 'perPage'));
@@ -77,9 +92,9 @@ class PenaltiesController extends Controller
 
         $validator = Validator::make($request->all(), [
             'start'         => 'nullable|date',
-            'end'           => 'nullable|date',
-            'search'        => 'nullable',
-            'perPage'       => 'nullable|numeric|in:10,25,50'
+            'end'           => 'nullable|date|after_or_equal:start',
+            'search'        => 'nullable|string|max:255',
+            'perPage'       => 'nullable|numeric|min:1|max:500',
         ]);
         if ($validator->fails()) {
             Log::warning('Penalties Report: Validation failed', [
@@ -88,7 +103,7 @@ class PenaltiesController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         if ($request->input('submit') == 'pdf') {
             Log::info('Penalties Report: Generating PDF export', [

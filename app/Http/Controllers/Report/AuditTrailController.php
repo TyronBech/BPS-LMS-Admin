@@ -50,7 +50,18 @@ class AuditTrailController extends Controller
             'timestamp' => now(),
         ]);
 
-        $data           = $this->generateData($request, new AuditTrail(), false);
+        $validator = Validator::make($request->all(), [
+            'types'     => 'nullable|string|in:ALL,INSERT,UPDATE,DELETE,LOGIN,LOGOUT',
+            'tableType' => 'nullable|string|in:All,Users,Books,Transactions,Sessions',
+            'start'     => 'nullable|date',
+            'end'       => 'nullable|date|after_or_equal:start',
+            'perPage'   => 'nullable|integer|min:1|max:500',
+        ]);
+        if ($validator->fails()) {
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+        }
+
+        $data = $this->generateData($request, new AuditTrail(), false);
         return view('report.audits.index', compact('data', 'types', 'fromInputDate', 'toInputDate', 'tableType', 'perPage'));
     }
     /**
@@ -82,10 +93,10 @@ class AuditTrailController extends Controller
         $tableName      = new AuditTrail();
         $validator = Validator::make($request->all(), [
             'start'         => 'nullable|date',
-            'end'           => 'nullable|date',
+            'end'           => 'nullable|date|after_or_equal:start',
             'types'         => 'in:ALL,INSERT,UPDATE,DELETE,LOGIN,LOGOUT',
             'tableType'     => 'in:All,Users,Books,Transactions,Sessions',
-            'perPage'       => 'nullable|numeric|in:10,25,50,100,250,500,1000',
+            'perPage'       => 'nullable|numeric|min:1|max:500',
         ]);
         if ($validator->fails()) {
             Log::warning('Audit Trail: Search validation failed', [
@@ -94,7 +105,7 @@ class AuditTrailController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         $data = $this->generateData($request, $tableName, false);
         return view('report.audits.index', compact('data', 'types', 'fromInputDate', 'toInputDate', 'tableType', 'perPage'));

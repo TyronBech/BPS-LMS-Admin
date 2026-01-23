@@ -40,6 +40,22 @@ class BookCirculationController extends Controller
             'timestamp' => now(),
         ]);
 
+        $validator = Validator::make($request->all(), [
+            'barcode'       => 'nullable|string|max:255',
+            'title'         => 'nullable|string|max:255',
+            'perPage'       => 'nullable|integer|min:1|max:500',
+        ]);
+
+        if ($validator->fails()) {
+            Log::warning('Book Circulation Report: Validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+        }
+
         $categories     = Category::all();
         $books          = new Book();
         $availability   = $this->extract_enums($books->getTable(), 'availability_status');
@@ -80,9 +96,9 @@ class BookCirculationController extends Controller
         $books = new Book();
         $validator = Validator::make($request->all(), [
             'availability'  => 'nullable|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
-            'title'         => 'nullable',
-            'barcode'       => 'nullable',
-            'perPage'       => 'nullable|numeric|in:10,25,50',
+            'title'         => 'nullable|string|max:255',
+            'barcode'       => 'nullable|string|max:255',
+            'perPage'       => 'nullable|numeric|min:1|max:500',
         ]);
         if ($validator->fails()) {
             Log::warning('Book Circulation Report: Validation failed', [
@@ -91,7 +107,7 @@ class BookCirculationController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         if ($request->input('submit') == 'pdf') {
             Log::info('Book Circulation Report: Generating PDF export', [

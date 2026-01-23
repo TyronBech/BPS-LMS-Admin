@@ -51,7 +51,24 @@ class UserLogsController extends Controller
             'timestamp' => now(),
         ]);
 
-        $data           = $this->generateData($request, new Log(), false);
+        $validator = Validator::make($request->all(), [
+            'start'         => 'nullable|date',
+            'end'           => 'nullable|date|after_or_equal:start',
+            'search'        => 'nullable|string|max:255',
+            'user_type'     => 'nullable|in:all,student,employee,visitor',
+            'perPage'       => 'nullable|numeric|min:1|max:500',
+        ]);
+        if ($validator->fails()) {
+            Logger::warning('User Logs Report: Validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
+            return redirect()->route('report.user')->with('toast-warning', $validator->errors()->first())->withInput();
+        }
+
+        $data  = $this->generateData($request, new Log(), false);
         $hours = $data->map(function ($item) {
             $item = Carbon::parse($item->time_in)->format('H:i:s');
             return $item;
@@ -100,9 +117,9 @@ class UserLogsController extends Controller
 
         $validator = Validator::make($request->all(), [
             'start'         => 'nullable|date',
-            'end'           => 'nullable|date',
-            'search'        => 'nullable',
-            'perPage'       => 'nullable|numeric|in:10,25,50',
+            'end'           => 'nullable|date|after_or_equal:start',
+            'search'        => 'nullable|string|max:255',
+            'perPage'       => 'nullable|numeric|min:1|max:500',
             'user_type'     => 'in:all,student,employee,visitor',
         ]);
         if ($validator->fails()) {
@@ -112,7 +129,7 @@ class UserLogsController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         if ($request->input('submit') == 'pdf') {
             Logger::info('User Logs Report: Generating PDF export', [
