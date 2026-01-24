@@ -715,7 +715,7 @@ class BookMaintenanceController extends Controller
         ]);
 
         // Start query
-        $booksQuery = Book::select('barcode', 'accession');
+        $booksQuery = Book::query();
 
         // ✅ If $ids provided, prioritize specific books
         if (!empty($ids)) {
