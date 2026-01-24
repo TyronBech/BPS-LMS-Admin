@@ -521,14 +521,14 @@ class FacultyStaffImportController extends Controller
                     }
 
                     $temp = [
-                        'rfid' => $rows[$i][1],
-                        'first_name' => $fullName['first_name'],
-                        'middle_name' => $fullName['middle_name'],
-                        'last_name' => $fullName['last_name'],
-                        'suffix' => $fullName['suffix'],
-                        'gender' => $rows[$i][4],
-                        'email' => $rows[$i][5],
-                        'employee_id' => $rows[$i][6],
+                        'rfid'          => $rows[$i][1],
+                        'first_name'    => $fullName['first_name'],
+                        'middle_name'   => $fullName['middle_name'],
+                        'last_name'     => $fullName['last_name'],
+                        'suffix'        => $rows[$i][3],
+                        'gender'        => $rows[$i][4],
+                        'email'         => $rows[$i][5],
+                        'employee_id'   => $rows[$i][6],
                         'employee_role' => $rows[$i][7],
                     ];
 
