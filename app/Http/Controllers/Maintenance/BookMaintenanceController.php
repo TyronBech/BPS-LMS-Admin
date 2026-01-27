@@ -47,7 +47,7 @@ class BookMaintenanceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::error('Book Maintenance: Invalid perPage parameter', [
+            Log::warning('Book Maintenance: Invalid perPage parameter', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
@@ -138,7 +138,7 @@ class BookMaintenanceController extends Controller
             'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
         ]);
         if ($validator->fails()) {
-            Log::error('Book Maintenance: Creation validation failed', [
+            Log::warning('Book Maintenance: Creation validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
@@ -281,7 +281,7 @@ class BookMaintenanceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::error('Book Maintenance: Invalid perPage parameter', [
+            Log::warning('Book Maintenance: Invalid perPage parameter', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
@@ -453,7 +453,7 @@ class BookMaintenanceController extends Controller
             'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
         ]);
         if ($validator->fails()) {
-            Log::error('Book Maintenance: Update validation failed', [
+            Log::warning('Book Maintenance: Update validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
@@ -555,7 +555,7 @@ class BookMaintenanceController extends Controller
             'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
         ]);
         if ($validator->fails()) {
-            Log::error('Book Maintenance: Copy validation failed', [
+            Log::warning('Book Maintenance: Copy validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),

@@ -34,7 +34,7 @@ class PrivilegeMaintenanceController extends Controller
             'perPage' => 'sometimes|integer|min:1|max:500',
         ]);
         if ($validator->fails()) {
-            Log::error('Privilege Maintenance: Invalid perPage parameter', [
+            Log::warning('Privilege Maintenance: Invalid perPage parameter', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
@@ -77,7 +77,7 @@ class PrivilegeMaintenanceController extends Controller
             'duration_type'             => 'required|string|max:50|in:'.implode(',', $this->extract_enums((new UserGroup)->getTable(), 'duration_type')),
         ]);
         if ($validator->fails()) {
-            Log::error('Privilege Maintenance: Creation validation failed', [
+            Log::warning('Privilege Maintenance: Creation validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
@@ -141,7 +141,7 @@ class PrivilegeMaintenanceController extends Controller
             'duration_type'                 => 'required|string|max:50|in:'.implode(',', $this->extract_enums((new UserGroup)->getTable(), 'duration_type')),
         ]);
         if ($validator->fails()) {
-            Log::error('Privilege Maintenance: Update validation failed', [
+            Log::warning('Privilege Maintenance: Update validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),

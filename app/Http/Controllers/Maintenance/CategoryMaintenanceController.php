@@ -37,7 +37,7 @@ class CategoryMaintenanceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::error('Category Maintenance: Invalid perPage parameter', [
+            Log::warning('Category Maintenance: Invalid perPage parameter', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),

@@ -51,7 +51,7 @@ class UsersMaintenanceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::error('Users Maintenance: Invalid perPage parameter', [
+            Log::warning('Users Maintenance: Invalid perPage parameter', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
@@ -232,7 +232,7 @@ class UsersMaintenanceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::error('Users Maintenance: Invalid search parameters', [
+            Log::warning('Users Maintenance: Invalid search parameters', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
@@ -335,7 +335,7 @@ class UsersMaintenanceController extends Controller
             'email.unique' => 'The email has already been registered.',
         ]);
         if ($validator->fails()) {
-            Log::error('Users Maintenance: Student creation validation failed', [
+            Log::warning('Users Maintenance: Student creation validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
@@ -430,7 +430,7 @@ class UsersMaintenanceController extends Controller
             'email.unique' => 'The email has already been registered.',
         ]);
         if ($validator->fails()) {
-            Log::error('Users Maintenance: Employee creation validation failed', [
+            Log::warning('Users Maintenance: Employee creation validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
@@ -612,7 +612,7 @@ class UsersMaintenanceController extends Controller
             'email'         => 'required|string|email',
         ]);
         if ($validator->fails()) {
-            Log::error('Users Maintenance: Student update validation failed', [
+            Log::warning('Users Maintenance: Student update validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
@@ -700,7 +700,7 @@ class UsersMaintenanceController extends Controller
             'email'         => 'required|string|email',
         ]);
         if ($validator->fails()) {
-            Log::error('Users Maintenance: Employee update validation failed', [
+            Log::warning('Users Maintenance: Employee update validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
@@ -788,7 +788,7 @@ class UsersMaintenanceController extends Controller
             'school_org'   => 'required|string|max:100',
         ]);
         if ($validator->fails()) {
-            Log::error('Users Maintenance: Visitor update validation failed', [
+            Log::warning('Users Maintenance: Visitor update validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),

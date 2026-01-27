@@ -39,7 +39,7 @@ class TransactionMaintenanceController extends Controller
             'perPage' => 'nullable|integer|min:1|max:500',
         ]);
         if ($validator->fails()) {
-            Log::error('Transaction Maintenance: Invalid perPage parameter', [
+            Log::warning('Transaction Maintenance: Invalid perPage parameter', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
@@ -152,7 +152,7 @@ class TransactionMaintenanceController extends Controller
             'remarks'           => 'nullable|string|max:2048',
         ]);
         if ($validator->fails()) {
-            Log::error('Transaction Maintenance: Update validation failed', [
+            Log::warning('Transaction Maintenance: Update validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),

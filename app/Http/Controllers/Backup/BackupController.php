@@ -37,7 +37,7 @@ class BackupController extends Controller
             'perPage' => 'nullable|integer|min:1|max:500',
         ]);
         if ($validator->fails()) {
-            Log::error('Backup: Invalid pagination parameters', [
+            Log::warning('Backup: Invalid pagination parameters', [
                 'errors' => $validator->errors()->toArray(),
                 'user_id' => Auth::guard('admin')->id(),
                 'timestamp' => now(),
@@ -113,7 +113,7 @@ class BackupController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::error('Backup: Invalid request token', [
+            Log::warning('Backup: Invalid request token', [
                 'error_message' => $validator->errors()->first(),
                 'user_id' => Auth::guard('admin')->id(),
                 'ip_address' => $request->ip(),
@@ -204,7 +204,7 @@ class BackupController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::error('Backup: Download validation failed', [
+            Log::warning('Backup: Download validation failed', [
                 'errors' => $validator->errors()->toArray(),
                 'filename' => $request->input('filename'),
                 'user_id' => Auth::guard('admin')->id(),
@@ -493,7 +493,7 @@ class BackupController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::error('Backup: Delete validation failed', [
+            Log::warning('Backup: Delete validation failed', [
                 'error_message' => $validator->errors()->first(),
                 'filename' => $request->input('filename'),
                 'user_id' => Auth::guard('admin')->id(),

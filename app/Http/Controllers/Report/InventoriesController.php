@@ -54,7 +54,7 @@ class InventoriesController extends Controller
             'perPage'       => 'nullable|integer|min:1|max:500',
         ]);
         if ($validator->fails()) {
-            Log::error('Inventory Report: Validation failed', [
+            Log::warning('Inventory Report: Validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
@@ -102,7 +102,7 @@ class InventoriesController extends Controller
             'perPage'       => 'nullable|integer|min:1|max:500',
         ]);
         if ($validator->fails()) {
-            Log::error('Inventory Report: Validation failed', [
+            Log::warning('Inventory Report: Validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
