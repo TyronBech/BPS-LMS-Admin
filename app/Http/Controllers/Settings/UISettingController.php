@@ -53,7 +53,7 @@ class UISettingController extends Controller
             'tertiary'          => 'required|string',
         ]);
         if ($validator->fails()) {
-            Log::warning('UI Settings: Update failed - Validation error', [
+            Log::error('UI Settings: Update failed - Validation error', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors()->toArray(),
                 'timestamp' => now(),

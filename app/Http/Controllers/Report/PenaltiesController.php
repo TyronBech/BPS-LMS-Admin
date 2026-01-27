@@ -50,7 +50,7 @@ class PenaltiesController extends Controller
             'perPage'       => 'nullable|integer|min:1|max:500',
         ]);
         if ($validator->fails()) {
-            Log::warning('Penalties Report: Validation failed', [
+            Log::error('Penalties Report: Validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
@@ -97,7 +97,7 @@ class PenaltiesController extends Controller
             'perPage'       => 'nullable|integer|min:1|max:500',
         ]);
         if ($validator->fails()) {
-            Log::warning('Penalties Report: Validation failed', [
+            Log::error('Penalties Report: Validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),

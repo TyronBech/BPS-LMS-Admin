@@ -80,7 +80,7 @@ class InventoryController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::warning('Inventory: Search validation failed - No barcode provided', [
+            Log::error('Inventory: Search validation failed - No barcode provided', [
                 'user_id' => auth()->guard('admin')->id(),
                 'timestamp' => now(),
             ]);

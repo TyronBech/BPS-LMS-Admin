@@ -69,7 +69,7 @@ class ProfileController extends Controller
         }
         $validator = Validator::make($request->all(), $rules);
         if ($validator->fails()) {
-            Log::warning('Profile: Validation failed', [
+            Log::error('Profile: Validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'timestamp' => now(),

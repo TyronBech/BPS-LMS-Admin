@@ -60,7 +60,7 @@ class ComputerUseController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::warning('Computer Use Report: Validation failed', [
+            Log::error('Computer Use Report: Validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
                 'errors' => $validator->errors(),
@@ -123,7 +123,7 @@ class ComputerUseController extends Controller
             'perPage'       => 'nullable|integer|min:1|max:500'
         ]);
         if ($validator->fails()) {
-            Log::warning('Computer Use Report: Validation failed', [
+            Log::error('Computer Use Report: Validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),

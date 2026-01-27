@@ -47,7 +47,7 @@ class BookCirculationController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::warning('Book Circulation Report: Validation failed', [
+            Log::error('Book Circulation Report: Validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
@@ -101,7 +101,7 @@ class BookCirculationController extends Controller
             'perPage'       => 'nullable|integer|min:1|max:500',
         ]);
         if ($validator->fails()) {
-            Log::warning('Book Circulation Report: Validation failed', [
+            Log::error('Book Circulation Report: Validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
