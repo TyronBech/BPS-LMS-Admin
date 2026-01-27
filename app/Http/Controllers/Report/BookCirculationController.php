@@ -98,7 +98,7 @@ class BookCirculationController extends Controller
             'availability'  => 'nullable|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
             'title'         => 'nullable|string|max:255',
             'barcode'       => 'nullable|string|max:255',
-            'perPage'       => 'nullable|numeric|min:1|max:500',
+            'perPage'       => 'nullable|integer|min:1|max:500',
         ]);
         if ($validator->fails()) {
             Log::warning('Book Circulation Report: Validation failed', [

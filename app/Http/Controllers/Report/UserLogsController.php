@@ -56,7 +56,7 @@ class UserLogsController extends Controller
             'end'           => 'nullable|date|after_or_equal:start',
             'search'        => 'nullable|string|max:255',
             'user_type'     => 'nullable|in:all,student,employee,visitor',
-            'perPage'       => 'nullable|numeric|min:1|max:500',
+            'perPage'       => 'nullable|integer|min:1|max:500',
         ]);
         if ($validator->fails()) {
             Logger::warning('User Logs Report: Validation failed', [
@@ -119,7 +119,7 @@ class UserLogsController extends Controller
             'start'         => 'nullable|date',
             'end'           => 'nullable|date|after_or_equal:start',
             'search'        => 'nullable|string|max:255',
-            'perPage'       => 'nullable|numeric|min:1|max:500',
+            'perPage'       => 'nullable|integer|min:1|max:500',
             'user_type'     => 'in:all,student,employee,visitor',
         ]);
         if ($validator->fails()) {

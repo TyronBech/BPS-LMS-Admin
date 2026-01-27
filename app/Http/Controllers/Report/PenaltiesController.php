@@ -47,7 +47,7 @@ class PenaltiesController extends Controller
             'start'         => 'nullable|date',
             'end'           => 'nullable|date|after_or_equal:start',
             'search'        => 'nullable|string|max:255',
-            'perPage'       => 'nullable|numeric|min:1|max:500',
+            'perPage'       => 'nullable|integer|min:1|max:500',
         ]);
         if ($validator->fails()) {
             Log::warning('Penalties Report: Validation failed', [
@@ -94,7 +94,7 @@ class PenaltiesController extends Controller
             'start'         => 'nullable|date',
             'end'           => 'nullable|date|after_or_equal:start',
             'search'        => 'nullable|string|max:255',
-            'perPage'       => 'nullable|numeric|min:1|max:500',
+            'perPage'       => 'nullable|integer|min:1|max:500',
         ]);
         if ($validator->fails()) {
             Log::warning('Penalties Report: Validation failed', [

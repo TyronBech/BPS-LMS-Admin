@@ -51,7 +51,7 @@ class InventoriesController extends Controller
         $validator = Validator::make($request->all(), [
             'start'         => 'nullable|date',
             'end'           => 'nullable|date|after_or_equal:start',
-            'perPage'       => 'nullable|numeric|min:1|max:500',
+            'perPage'       => 'nullable|integer|min:1|max:500',
         ]);
         if ($validator->fails()) {
             Log::warning('Inventory Report: Validation failed', [
@@ -99,7 +99,7 @@ class InventoriesController extends Controller
         $validator = Validator::make($request->all(), [
             'start'         => 'nullable|date',
             'end'           => 'nullable|date|after_or_equal:start',
-            'perPage'       => 'nullable|numeric|min:1|max:500',
+            'perPage'       => 'nullable|integer|min:1|max:500',
         ]);
         if ($validator->fails()) {
             Log::warning('Inventory Report: Validation failed', [

@@ -58,7 +58,7 @@ class TransactionController extends Controller
             'end'           => 'nullable|date|after_or_equal:start',
             'search'        => 'nullable|string|max:255',
             'type'          => 'nullable|in:' . implode(',', $this->extract_enums((new Transaction())->getTable(), 'transaction_type')),
-            'perPage'       => 'nullable|numeric|min:1|max:500',
+            'perPage'       => 'nullable|integer|min:1|max:500',
         ]);
         if ($validator->fails()) {
             Log::warning('Transaction Report: Validation failed', [
@@ -108,7 +108,7 @@ class TransactionController extends Controller
             'start'         => 'nullable|date',
             'end'           => 'nullable|date|after_or_equal:start',
             'type'          => 'nullable|in:' . implode(',', $this->extract_enums((new Transaction())->getTable(), 'transaction_type')),
-            'perPage'       => 'nullable|numeric|min:1|max:500',
+            'perPage'       => 'nullable|integer|min:1|max:500',
         ]);
         if ($validator->fails()) {
             Log::warning('Transaction Report: Validation failed', [

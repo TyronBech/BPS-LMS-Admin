@@ -96,7 +96,7 @@ class AuditTrailController extends Controller
             'end'           => 'nullable|date|after_or_equal:start',
             'types'         => 'in:ALL,INSERT,UPDATE,DELETE,LOGIN,LOGOUT',
             'tableType'     => 'in:All,Users,Books,Transactions,Sessions',
-            'perPage'       => 'nullable|numeric|min:1|max:500',
+            'perPage'       => 'nullable|integer|min:1|max:500',
         ]);
         if ($validator->fails()) {
             Log::warning('Audit Trail: Search validation failed', [
