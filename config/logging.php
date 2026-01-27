@@ -52,10 +52,27 @@ return [
 
     'channels' => [
 
+        // 1. The Stack: Combines both channels below
         'stack' => [
             'driver' => 'stack',
-            'channels' => explode(',', env('LOG_STACK', 'single')),
+            'channels' => ['main_retention', 'debug_retention'],
             'ignore_exceptions' => false,
+        ],
+
+        // 2. Main Channel: Keeps Info/Warning+ for 60 Days (2 months)
+        'main_retention' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/laravel.log'),
+            'level' => 'info',
+            'days' => 60,
+        ],
+
+        // 3. Debug Channel: Keeps Debug logs for 7 Days
+        'debug_retention' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/debug.log'),
+            'level' => 'debug',
+            'days' => 7,
         ],
 
         'single' => [
@@ -89,7 +106,7 @@ return [
             'handler_with' => [
                 'host' => env('PAPERTRAIL_URL'),
                 'port' => env('PAPERTRAIL_PORT'),
-                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
+                'connectionString' => 'tls://' . env('PAPERTRAIL_URL') . ':' . env('PAPERTRAIL_PORT'),
             ],
             'processors' => [PsrLogMessageProcessor::class],
         ],
