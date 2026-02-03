@@ -373,7 +373,7 @@ class BookMaintenanceController extends Controller
     {
         $mimeType = null;
         $accession = $request->input('accession');
-        
+
         Log::info('Book Maintenance: Viewing book details', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name,
@@ -810,7 +810,7 @@ class BookMaintenanceController extends Controller
      */
     public function destroy(Request $request)
     {
-        Log::info('Book Maintenance: Attempting to delete book', [
+        Log::warning('Book Maintenance: Attempting to delete book', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name,
             'book_id' => $request->input('id'),
@@ -821,7 +821,7 @@ class BookMaintenanceController extends Controller
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $id = $request->input('id');
-            
+
             $book = Book::findOrFail($id);
             $book->delete();
         } catch (\Illuminate\Database\QueryException $e) {
@@ -860,7 +860,7 @@ class BookMaintenanceController extends Controller
      */
     public function bulkDelete(Request $request)
     {
-        Log::info('Book Maintenance: Attempting bulk delete', [
+        Log::warning('Book Maintenance: Attempting bulk delete', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name,
             'ip_address' => $request->ip(),
@@ -910,7 +910,7 @@ class BookMaintenanceController extends Controller
     private function getBookImage($title = null, $author = null, $isbn = null)
     {
         $apiKey = env('GOOGLE_BOOKS_API_KEY');
-        
+
         // Check if API key exists
         if (empty($apiKey)) {
             Log::warning('Google Books API key is not set in .env file', ['timestamp' => now()]);
@@ -924,16 +924,16 @@ class BookMaintenanceController extends Controller
 
         // Build query parts
         $queryParts = [];
-        
+
         if (!empty($isbn)) {
             // ISBN is the most accurate, prioritize it
             $queryParts[] = "isbn:" . urlencode(trim($isbn));
         }
-        
+
         if (!empty($title)) {
             $queryParts[] = "intitle:" . urlencode(trim($title));
         }
-        
+
         if (!empty($author)) {
             $queryParts[] = "inauthor:" . urlencode(trim($author));
         }
@@ -949,7 +949,7 @@ class BookMaintenanceController extends Controller
             $options = [
                 'timeout' => 10, // 10 second timeout
             ];
-            
+
             if (file_exists($caPath)) {
                 $options['verify'] = $caPath;
             }
@@ -981,7 +981,7 @@ class BookMaintenanceController extends Controller
 
             // Extract thumbnail URL
             $thumbnail = $data['items'][0]['volumeInfo']['imageLinks']['thumbnail'] ?? null;
-            
+
             if (empty($thumbnail)) {
                 Log::info('Book found but no thumbnail available', [
                     'title' => $title,

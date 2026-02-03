@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Maintenance;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use App\Models\Book;
 use App\Models\Category;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
@@ -14,10 +15,10 @@ class CategoryMaintenanceController extends Controller
 {
     /**
      * Index of categories
-     * 
+     *
      * This function is used to fetch all categories from the database and
      * pass it to the view.
-     * 
+     *
      * @return \Illuminate\View\View
      */
     public function index(Request $request)
@@ -216,6 +217,16 @@ class CategoryMaintenanceController extends Controller
         DB::beginTransaction();
         try{
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
+            $hasChildren = Book::where('category_id', $request->input('delete_category_id'))->exists();
+            if($hasChildren){
+                DB::rollBack();
+                Log::warning('Category Maintenance: Deletion failed - Category has associated books', [
+                    'user_id' => Auth::guard('admin')->id(),
+                    'category_id' => $request->input('delete_category_id'),
+                    'timestamp' => now(),
+                ]);
+                return redirect()->back()->with('toast-warning', 'Cannot delete category with associated books.')->withInput();
+            }
             $category = Category::findOrFail($request->input('delete_category_id'));
             $category->delete();
         } catch(\Illuminate\Database\QueryException $e){
