@@ -22,28 +22,37 @@ class FetchDataController extends Controller
      */
     public function fetchCurrentTimeInUsers()
     {
-        $today = Carbon::today();
+        try {
+            $today = Carbon::today();
 
-        LogFacade::info('Analytics: Fetching current time in users', [
-            'user_id' => Auth::id(),
-            'user_name' => Auth::user()->full_name ?? 'N/A',
-            'date' => $today->toDateString(),
-            'timestamp' => now(),
-        ]);
+            LogFacade::info('Analytics: Fetching current time in users', [
+                'user_id' => Auth::id(),
+                'user_name' => Auth::user()->full_name ?? 'N/A',
+                'date' => $today->toDateString(),
+                'timestamp' => now(),
+            ]);
 
-        $activeCount = Log::where('time_in', '!=', null)
-            ->where('time_out', null)
-            ->whereDate('time_in', $today)
-            ->count();
+            $activeCount = Log::where('time_in', '!=', null)
+                ->where('time_out', null)
+                ->whereDate('time_in', $today)
+                ->count();
 
-        LogFacade::info('Analytics: Current time in users fetched successfully', [
-            'active_count' => $activeCount,
-            'date' => $today->toDateString(),
-            'user_id' => Auth::id(),
-            'timestamp' => now(),
-        ]);
+            LogFacade::info('Analytics: Current time in users fetched successfully', [
+                'active_count' => $activeCount,
+                'date' => $today->toDateString(),
+                'user_id' => Auth::id(),
+                'timestamp' => now(),
+            ]);
 
-        return response()->json(['active_count' => $activeCount]);
+            return response()->json(['active_count' => $activeCount]);
+        } catch (\Exception $e) {
+            LogFacade::error('Analytics: Error fetching current time in users', [
+                'error' => $e->getMessage(),
+                'user_id' => Auth::id(),
+                'timestamp' => now(),
+            ]);
+            return response()->json(['error' => 'Unable to fetch current user count'], 500);
+        }
     }
 
     /**
@@ -109,34 +118,44 @@ class FetchDataController extends Controller
      */
     public function fetchMonthlyUsers(Request $request)
     {
-        LogFacade::info('Analytics: Fetching monthly users data', [
-            'user_id' => Auth::id(),
-            'user_name' => Auth::user()->full_name ?? 'N/A',
-            'timestamp' => now(),
-        ]);
+        try {
+            LogFacade::info('Analytics: Fetching monthly users data', [
+                'user_id' => Auth::id(),
+                'user_name' => Auth::user()->full_name ?? 'N/A',
+                'timestamp' => now(),
+            ]);
 
-        $monthlyRecord = Log::select(
-            DB::raw("DATE_FORMAT(time_in, '%Y %M') as month"),
-            DB::raw('COUNT(*) as count')
-        )
-            ->where('time_in', '!=', null)
-            ->groupBy(DB::raw("DATE_FORMAT(time_in, '%Y %M')"))
-            ->orderBy(DB::raw("MIN(time_in)"))
-            ->limit(12)
-            ->get();
+            $monthlyRecord = Log::select(
+                DB::raw("DATE_FORMAT(time_in, '%Y %M') as month"),
+                DB::raw('COUNT(*) as count')
+            )
+                ->where('time_in', '!=', null)
+                ->groupBy(DB::raw("DATE_FORMAT(time_in, '%Y %M')"))
+                ->orderBy(DB::raw("MIN(time_in)"))
+                ->limit(12)
+                ->get();
 
-        LogFacade::info('Analytics: Monthly users data fetched successfully', [
-            'records_count' => $monthlyRecord->count(),
-            'user_id' => Auth::id(),
-            'timestamp' => now(),
-        ]);
+            LogFacade::info('Analytics: Monthly users data fetched successfully', [
+                'records_count' => $monthlyRecord->count(),
+                'user_id' => Auth::id(),
+                'timestamp' => now(),
+            ]);
 
-        LogFacade::debug('Analytics: Monthly users data details', [
-            'data' => $monthlyRecord->toArray(),
-            'user_id' => Auth::id(),
-        ]);
+            LogFacade::debug('Analytics: Monthly users data details', [
+                'data' => $monthlyRecord->toArray(),
+                'user_id' => Auth::id(),
+            ]);
 
-        return response()->json($monthlyRecord);
+            return response()->json($monthlyRecord);
+        } catch (\Exception $e) {
+            LogFacade::error('Analytics: Error fetching monthly users', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => Auth::id(),
+                'timestamp' => now(),
+            ]);
+            return response()->json(['error' => 'Unable to fetch monthly users data'], 500);
+        }
     }
 
     /**
@@ -148,21 +167,30 @@ class FetchDataController extends Controller
      */
     public function totalBooks()
     {
-        LogFacade::info('Analytics: Fetching total books count', [
-            'user_id' => Auth::id(),
-            'user_name' => Auth::user()->full_name ?? 'N/A',
-            'timestamp' => now(),
-        ]);
+        try {
+            LogFacade::info('Analytics: Fetching total books count', [
+                'user_id' => Auth::id(),
+                'user_name' => Auth::user()->full_name ?? 'N/A',
+                'timestamp' => now(),
+            ]);
 
-        $totalBooks = Book::count();
+            $totalBooks = Book::count();
 
-        LogFacade::info('Analytics: Total books count fetched successfully', [
-            'total_books' => $totalBooks,
-            'user_id' => Auth::id(),
-            'timestamp' => now(),
-        ]);
+            LogFacade::info('Analytics: Total books count fetched successfully', [
+                'total_books' => $totalBooks,
+                'user_id' => Auth::id(),
+                'timestamp' => now(),
+            ]);
 
-        return response()->json(['total_books' => $totalBooks]);
+            return response()->json(['total_books' => $totalBooks]);
+        } catch (\Exception $e) {
+            LogFacade::error('Analytics: Error fetching total books', [
+                'error' => $e->getMessage(),
+                'user_id' => Auth::id(),
+                'timestamp' => now(),
+            ]);
+            return response()->json(['error' => 'Unable to fetch total books count'], 500);
+        }
     }
 
     /**
@@ -432,12 +460,12 @@ class FetchDataController extends Controller
 
         foreach ($months as $m) {
             $labels[] = $m['label'];
-            
+
             // Add this month's registrations to the running total
             $runningStudents += isset($studentsData[$m['key']]) ? (int) $studentsData[$m['key']]->count : 0;
             $runningEmployees += isset($employeesData[$m['key']]) ? (int) $employeesData[$m['key']]->count : 0;
             $runningVisitors += isset($visitorsData[$m['key']]) ? (int) $visitorsData[$m['key']]->count : 0;
-            
+
             $students[] = $runningStudents;
             $employees[] = $runningEmployees;
             $visitors[] = $runningVisitors;
@@ -547,12 +575,12 @@ class FetchDataController extends Controller
 
         foreach ($years as $y) {
             $labels[] = $y['label'];
-            
+
             // Add this year's registrations to the running total
             $runningStudents += isset($studentsData[$y['key']]) ? (int) $studentsData[$y['key']]->count : 0;
             $runningEmployees += isset($employeesData[$y['key']]) ? (int) $employeesData[$y['key']]->count : 0;
             $runningVisitors += isset($visitorsData[$y['key']]) ? (int) $visitorsData[$y['key']]->count : 0;
-            
+
             $students[] = $runningStudents;
             $employees[] = $runningEmployees;
             $visitors[] = $runningVisitors;

@@ -1,6 +1,21 @@
 @use('App\Enum\PermissionsEnum')
 @extends('layouts.admin-app')
 @section('content')
+<style>
+  @keyframes slide-in {
+    from {
+      transform: translateX(100%);
+      opacity: 0;
+    }
+    to {
+      transform: translateX(0);
+      opacity: 1;
+    }
+  }
+  .animate-slide-in {
+    animation: slide-in 0.3s ease-out;
+  }
+</style>
 <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Home</h1>
 @if(auth()->user()->can(PermissionsEnum::VIEW_DASHBOARD))
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -127,7 +142,7 @@
       <canvas id="top-borrowed-categories"></canvas>
     </div>
   </div>
-  
+
   <!-- Fixed Refresh Button (Bottom Right) -->
   <div class="fixed bottom-6 left-6 z-50">
     <button type="button" id="refresh" class="flex items-center gap-2 text-white bg-primary-500 hover:bg-primary-600 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-full text-sm px-6 py-3 text-center shadow-lg transition-transform hover:scale-105 dark:bg-primary-500 dark:hover:bg-primary-400 dark:focus:ring-primary-500">
@@ -139,18 +154,76 @@
   </div>
 </div>
 <script>
+  // Toast notification system for user-friendly error messages
+  function showToast(message, type = 'error') {
+    const toastId = `toast-${type}-${Date.now()}`;
+    const icons = {
+      success: `<svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"><path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z" /></svg>`,
+      error: `<svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"><path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z" /></svg>`,
+      warning: `<svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20"><path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM10 15a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm1-4a1 1 0 0 1-2 0V6a1 1 0 0 1 2 0v5Z" /></svg>`
+    };
+
+    const colors = {
+      success: { bg: 'bg-green-100 dark:bg-green-800', text: 'text-green-500 dark:text-green-200' },
+      error: { bg: 'bg-red-100 dark:bg-red-800', text: 'text-red-500 dark:text-red-200' },
+      warning: { bg: 'bg-orange-100 dark:bg-orange-700', text: 'text-orange-500 dark:text-orange-200' }
+    };
+
+    const toast = document.createElement('div');
+    toast.id = toastId;
+    toast.className = 'flex items-center fixed top-4 right-5 w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg shadow-lg dark:text-gray-400 dark:bg-gray-800 z-50 animate-slide-in';
+    toast.setAttribute('role', 'alert');
+    toast.innerHTML = `
+      <div class="inline-flex items-center justify-center shrink-0 w-8 h-8 ${colors[type].text} ${colors[type].bg} rounded-lg">
+        ${icons[type]}
+        <span class="sr-only">${type} icon</span>
+      </div>
+      <div class="ms-3 text-sm font-normal">${message}</div>
+      <button type="button" class="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700" onclick="this.parentElement.remove()">
+        <span class="sr-only">Close</span>
+        <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+        </svg>
+      </button>
+    `;
+
+    document.body.appendChild(toast);
+    setTimeout(() => toast.remove(), 5000);
+  }
+
+  // Handle API errors gracefully
+  async function handleApiResponse(response, errorContext = '') {
+    if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('The requested resource was not found.');
+      } else if (response.status === 500) {
+        throw new Error('Server error. Please try again later.');
+      } else if (response.status === 403) {
+        throw new Error('You do not have permission to access this resource.');
+      } else {
+        throw new Error(`Unable to load ${errorContext}. Please try again.`);
+      }
+    }
+    return response.json();
+  }
+
   // Fetch the current count of active users
   async function fetchActiveCount() {
     try {
       const response = await fetch("{{ route('fetch-current-count') }}");
-      const data = await response.json();
+      const data = await handleApiResponse(response, 'current user count');
       document.getElementById('timed-in-count').textContent = data.active_count;
     } catch (error) {
       document.getElementById('timed-in-count').textContent = '...';
+      showToast('Unable to load current user count. Please refresh the page.', 'error');
     }
   }
   // Timeout all users
   document.getElementById('timeout-all-users').addEventListener('click', async () => {
+    if (!confirm('Are you sure you want to timeout all currently logged-in users?')) {
+      return;
+    }
+
     try {
       const response = await fetch("{{ route('timeout-all-users') }}", {
         method: 'POST',
@@ -159,41 +232,41 @@
           'X-CSRF-TOKEN': '{{ csrf_token() }}',
         },
       });
-      const data = await response.json();
-      location.reload();
+      await handleApiResponse(response, 'timeout operation');
+      showToast('All users have been timed out successfully.', 'success');
+      setTimeout(() => location.reload(), 1500);
     } catch (error) {
-      console.error('Error timing out users:', error);
+      showToast('Failed to timeout users. Please try again.', 'error');
     }
   });
   // Fetch the monthly count of logs
   async function fetchMonthlyCount() {
     try {
-      let url = "{{ route('fetch-monthly-count') }}";
-      const response = await fetch(url);
-      const data = await response.json();
+      const response = await fetch("{{ route('fetch-monthly-count') }}");
+      const data = await handleApiResponse(response, 'monthly logs');
       const labels = data.map(item => item.month);
       const counts = data.map(item => item.count);
       monthlyLogsLineGraph(labels, counts);
     } catch (error) {
-      console.error('Error fetching monthly count:', error);
+      showToast('Unable to load monthly logs chart.', 'warning');
     }
   }
   // Fetch the total count of books
   async function fetchBookCount() {
     try {
       const response = await fetch("{{ route('fetch-book-count') }}");
-      const data = await response.json();
+      const data = await handleApiResponse(response, 'book count');
       document.getElementById('book-count').textContent = data.total_books;
     } catch (error) {
-      console.error('Error fetching book count:', error);
       document.getElementById('book-count').textContent = '...';
+      showToast('Unable to load book count.', 'warning');
     }
   }
   // Fetch the transaction history
   async function fetchTransactionHistory() {
     try {
       const response = await fetch("{{ route('fetch-transaction-history') }}");
-      const data = await response.json();
+      const data = await handleApiResponse(response, 'transaction history');
       const labels = data.labels;
       const counts = data.total;
       const borrowed = data.borrowed;
@@ -202,19 +275,19 @@
 
       transactionHistoryBarGraph(labels, counts, borrowed, reserved, returned);
     } catch (error) {
-      console.error('Error fetching transaction history:', error);
+      showToast('Unable to load transaction history chart.', 'warning');
     }
   }
   // Fetch the yearly acquired books
   async function fetchYearlyAquiredBooks() {
     try {
       const response = await fetch("{{ route('fetch-yearly-aquired-books') }}");
-      const data = await response.json();
+      const data = await handleApiResponse(response, 'yearly acquired books');
       const labels = data.map(item => item.year);
       const counts = data.map(item => item.count);
       YearlyBooksDoughnutGraph(labels, counts);
     } catch (error) {
-      console.error('Error fetching yearly acquired books:', error);
+      showToast('Unable to load yearly acquired books chart.', 'warning');
     }
   }
   // Track current period for registered users chart
@@ -226,14 +299,14 @@
       currentRegisteredUsersPeriod = period;
       const url = `{{ route('fetch-registered-users') }}?period=${period}`;
       const response = await fetch(url);
-      const data = await response.json();
+      const data = await handleApiResponse(response, 'registered users data');
       const labels = data.labels || [];
       const students = data.students || [];
       const employees = data.employees || [];
       const visitors = data.visitors || [];
       RegisteredUsersLineGraph(labels, students, employees, visitors);
     } catch (error) {
-      console.error('Error fetching registered users:', error);
+      showToast('Unable to load registered users chart.', 'warning');
     }
   }
 
@@ -275,8 +348,7 @@
       let url = "{{ route('fetch-most-visited-students') }}";
       url = buildUrl(url, start, end);
       const response = await fetch(url);
-      const data = await response.json();
-
+      const data = await handleApiResponse(response, 'top visited students');
       const container = document.getElementById('top-students-container');
       container.innerHTML = ''; // clear old content
 
@@ -362,9 +434,14 @@
         container.innerHTML = `<div class="col-span-full text-center py-8 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">No students with visits found for this period.</div>`;
       }
     } catch (error) {
-      console.error('Error fetching top visited students:', error);
       document.getElementById('top-students-container').innerHTML =
-        `<p class="text-center text-red-500">Error loading data.</p>`;
+        `<div class="col-span-full text-center py-8 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
+          <svg class="w-12 h-12 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p>Unable to load data. Please try refreshing.</p>
+        </div>`;
+      showToast('Unable to load top visited students data.', 'warning');
     }
   }
   async function topBorrowedStudents(start, end) {
@@ -372,7 +449,7 @@
       let url = "{{ route('fetch-most-borrowed-students') }}";
       url = buildUrl(url, start, end);
       const response = await fetch(url);
-      const data = await response.json();
+      const data = await handleApiResponse(response, 'top borrowed students');
 
       const container = document.getElementById('top-borrowed-container');
       container.innerHTML = ''; // Clear previous content
@@ -456,31 +533,36 @@
         container.innerHTML = `<div class="col-span-full text-center py-8 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">No borrowed book data found for this period.</div>`;
       }
     } catch (error) {
-      console.error('Error fetching top borrowed students:', error);
       document.getElementById('top-borrowed-container').innerHTML =
-        `<p class="text-center text-red-500">Error loading data.</p>`;
+        `<div class="col-span-full text-center py-8 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">
+          <svg class="w-12 h-12 mx-auto mb-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <p>Unable to load data. Please try refreshing.</p>
+        </div>`;
+      showToast('Unable to load top borrowed students data.', 'warning');
     }
   }
   async function fetchTopBorrowedBooks() {
     try {
       const response = await fetch("{{ route('fetch-top-books-borrowed') }}");
-      const data = await response.json();
+      const data = await handleApiResponse(response, 'top borrowed books');
       const labels = data.labels;
       const counts = data.counts;
       topBorrowedBooks(labels, counts);
     } catch (error) {
-      console.error('Error fetching top borrowed books:', error);
+      showToast('Unable to load top borrowed books chart.', 'warning');
     }
   }
   async function fetchTopBorrowedCategories() {
     try {
       const response = await fetch("{{ route('fetch-top-categories-borrowed') }}");
-      const data = await response.json();
+      const data = await handleApiResponse(response, 'top borrowed categories');
       const labels = data.labels;
       const counts = data.counts;
       topBorrowedCategories(labels, counts);
     } catch (error) {
-      console.error('Error fetching top borrowed books:', error);
+      showToast('Unable to load top borrowed categories chart.', 'warning');
     }
   }
   // Initialize the chart variable
@@ -840,19 +922,23 @@
 
   const refreshButton = document.getElementById('refresh');
   // Add event listener to the refresh button
-  refreshButton.addEventListener('click', () => {
-    fetchActiveCount();
-    fetchMonthlyCount();
-    fetchBookCount();
-    fetchTransactionHistory();
-    fetchYearlyAquiredBooks();
-    fetchRegisteredUsers(currentRegisteredUsersPeriod);
-    topVisitedStudents();
-    topBorrowedStudents();
-    fetchTopBorrowedBooks();
-    fetchTopBorrowedCategories();
-    sessionStorage.setItem('toast-success', 'Data refreshed successfully.');
-    location.reload();
+  refreshButton.addEventListener('click', async () => {
+    showToast('Refreshing dashboard data...', 'success');
+
+    await Promise.allSettled([
+      fetchActiveCount(),
+      fetchMonthlyCount(),
+      fetchBookCount(),
+      fetchTransactionHistory(),
+      fetchYearlyAquiredBooks(),
+      fetchRegisteredUsers(currentRegisteredUsersPeriod),
+      topVisitedStudents(),
+      topBorrowedStudents(),
+      fetchTopBorrowedBooks(),
+      fetchTopBorrowedCategories()
+    ]);
+
+    showToast('Dashboard data refreshed successfully!', 'success');
   });
 
   // listen for changes on the top-students date pickers
