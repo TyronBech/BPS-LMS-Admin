@@ -50,7 +50,7 @@
         <div>
           <label for="gender" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Select gender:</label>
           <select id="gender" name="gender" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
-            <option disabled>Choose an option</option>
+            <option value="" disabled>Choose an option</option>
             <option value="Male" {{ ($user->gender ?? old('gender')) == 'Male' ? 'selected' : '' }}>Male</option>
             <option value="Female" {{ ($user->gender ?? old('gender')) == 'Female' ? 'selected' : '' }}>Female</option>
             <option value="Prefer not to say" {{ ($user->gender ?? old('gender')) == 'Prefer not to say' ? 'selected' : '' }}>Prefer not to say</option>

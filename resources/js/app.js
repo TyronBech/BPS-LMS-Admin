@@ -159,4 +159,94 @@ document.addEventListener('DOMContentLoaded', () => {
 
     return originalXHR.apply(this, args);
   };
+
+  // --- 6️⃣ Maintenance Forms Standard Validation ---
+  if (window.location.pathname.includes('/maintenance/') || window.location.pathname.includes('/maintenance')) {
+    const requiredInputs = document.querySelectorAll('input[required], select[required], textarea[required]');
+
+    requiredInputs.forEach(input => {
+      // 1. Add Asterisk to Label
+      if (input.id) {
+        const label = document.querySelector(`label[for="${input.id}"]`);
+        if (label && !label.innerHTML.includes('*')) {
+          // Check if it already has text-red-500 span to avoid duplicates
+          if (!label.querySelector('.text-red-500')) {
+             const asterisk = document.createElement('span');
+             asterisk.className = 'text-red-600 dark:text-red-500 ml-1';
+             asterisk.innerText = '*';
+             label.appendChild(asterisk);
+          }
+        }
+      }
+
+      // 2. Add Blur Event for Validation
+      input.addEventListener('blur', () => {
+        validateInput(input);
+      });
+
+      // 3. Remove error on input/change
+      const clearHandler = () => {
+        // We only clear if the "required" condition is met.
+        // We use checkValidity() but strictly check if we have a value.
+         if (input.value.trim() !== '') {
+             clearValidationError(input);
+         }
+      };
+      input.addEventListener('input', clearHandler);
+      input.addEventListener('change', clearHandler);
+    });
+  }
+
+const validClasses = [
+    'border-gray-300',
+    'focus:ring-primary-400',
+    'focus:border-primary-400',
+    'dark:border-gray-600',
+    'dark:focus:ring-primary-500',
+    'dark:focus:border-primary-500'
+  ];
+  const errorClasses = [
+    'border-red-500',
+    'focus:ring-red-500',
+    'focus:border-red-500',
+    'dark:border-red-500',
+    'dark:focus:ring-red-500',
+    'dark:focus:border-red-500'
+  ];
+
+  function validateInput(input) {
+     if (input.validity.valueMissing) {
+        showValidationError(input);
+     } else {
+        clearValidationError(input);
+     }
+  }
+
+  function showValidationError(input) {
+      if(!input.classList.contains('border-red-500')) {
+          validClasses.forEach(cls => input.classList.remove(cls));
+          errorClasses.forEach(cls => input.classList.add(cls));
+
+          // Add message
+          let errorMsg = input.parentNode.querySelector('.client-required-error');
+          if (!errorMsg) {
+              errorMsg = document.createElement('p');
+              errorMsg.className = 'mt-2 text-sm text-red-600 dark:text-red-500 client-required-error';
+              errorMsg.innerText = 'This field is required.';
+              input.parentNode.appendChild(errorMsg);
+          }
+      }
+  }
+
+  function clearValidationError(input) {
+      if(input.classList.contains('border-red-500')) {
+          errorClasses.forEach(cls => input.classList.remove(cls));
+          validClasses.forEach(cls => input.classList.add(cls));
+
+          const errorMsg = input.parentNode.querySelector('.client-required-error');
+          if (errorMsg) {
+              errorMsg.remove();
+          }
+      }
+  }
 });

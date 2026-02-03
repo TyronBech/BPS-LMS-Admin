@@ -38,7 +38,7 @@
             <div>
               <label for="user_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">User Type:</label>
               <select id="user_type" name="user_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
-                <option selected disabled>Choose a type</option>
+                <option value="" selected disabled>Choose a type</option>
                 <option value="employee" {{ old('user_type') == 'employee' ? 'selected' : '' }}>Employee</option>
                 <option value="student" {{ old('user_type') == 'student' ? 'selected' : '' }}>Student</option>
                 <option value="visitor" {{ old('user_type') == 'visitor' ? 'selected' : '' }}>Visitor</option>
