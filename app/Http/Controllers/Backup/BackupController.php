@@ -136,12 +136,12 @@ class BackupController extends Controller
         }
 
         try {
-            Log::info('Backup: Starting database backup process', [
+            Log::info('Backup: Starting system backup process (DB + Logs)', [
                 'user_id' => Auth::guard('admin')->id(),
                 'timestamp' => now(),
             ]);
 
-            Artisan::call('backup:run --only-db');
+            Artisan::call('backup:run');
             $output = Artisan::output();
 
             Log::debug('Backup: Artisan backup command output', [
@@ -150,7 +150,7 @@ class BackupController extends Controller
             ]);
 
             if (str_contains($output, 'Backup failed')) {
-                Log::error('Backup: Database backup failed', [
+                Log::error('Backup: System backup failed', [
                     'output' => $output,
                     'user_id' => Auth::guard('admin')->id(),
                     'timestamp' => now(),
@@ -163,17 +163,17 @@ class BackupController extends Controller
             Notification::route('mail', $admin->email)
                 ->notify(new \App\Notifications\BackupSucceeded($admin->first_name . ' ' . $admin->last_name));
 
-            Log::info('Backup: Database backup completed successfully', [
+            Log::info('Backup: System backup completed successfully', [
                 'user_id' => $admin->id,
                 'user_name' => $admin->full_name,
                 'notification_sent' => true,
                 'timestamp' => now(),
             ]);
 
-            return back()->with('toast-success', 'Database backup created successfully!');
+            return back()->with('toast-success', 'System backup created successfully!');
 
         } catch (Exception $e) {
-            Log::error('Backup: Database backup failed with exception', [
+            Log::error('Backup: System backup failed with exception', [
                 'error_message' => $e->getMessage(),
                 'error_trace' => $e->getTraceAsString(),
                 'user_id' => Auth::guard('admin')->id(),

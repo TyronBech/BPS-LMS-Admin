@@ -18,7 +18,7 @@ return [
         'source' => [
             'files' => [
                 'include' => [
-
+                    storage_path('logs'),
                 ],
 
                 'exclude' => [
@@ -28,7 +28,7 @@ return [
 
                 'follow_links' => false,
                 'ignore_unreadable_directories' => false,
-                'relative_path' => null,
+                'relative_path' => base_path(),
             ],
 
             'databases' => [
