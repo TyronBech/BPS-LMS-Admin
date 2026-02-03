@@ -28,8 +28,8 @@ class BackupSucceeded extends Notification
         $settings = UISetting::first() ?? new UISetting();
 
         // Get logo from settings or fallback to default
-        $logo = $settings->org_logo 
-            ? 'data:image/png;base64,' . $settings->org_logo 
+        $logo = $settings->org_logo
+            ? 'data:image/png;base64,' . $settings->org_logo
             : asset('img/OwlQuery.png');
 
         $msg = [
@@ -59,6 +59,7 @@ class BackupSucceeded extends Notification
                 'userName' => $this->userName,
                 'url' => config('app.url'),
                 'msg' => $msg,
+                'settings' => $settings,
             ]);
     }
 }

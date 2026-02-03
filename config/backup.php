@@ -18,7 +18,7 @@ return [
         'source' => [
             'files' => [
                 'include' => [
-                    
+
                 ],
 
                 'exclude' => [
@@ -43,7 +43,19 @@ return [
     ],
 
     'notifications' => [
-        'notifications' => [],
+        /*
+         * Notifications are disabled here because we use a custom listener
+         * (SendBackupSucceededNotification) to handle backup notifications
+         * with our own email template design.
+         */
+        'notifications' => [
+            \Spatie\Backup\Events\BackupHasFailed::class => [],
+            \Spatie\Backup\Events\UnhealthyBackupWasFound::class => [],
+            \Spatie\Backup\Events\CleanupHasFailed::class => [],
+            \Spatie\Backup\Events\BackupWasSuccessful::class => [],
+            \Spatie\Backup\Events\HealthyBackupWasFound::class => [],
+            \Spatie\Backup\Events\CleanupWasSuccessful::class => [],
+        ],
         'notifiable' => \Spatie\Backup\Notifications\Notifiable::class,
 
         'mail' => [
