@@ -32,9 +32,7 @@ class AccountEmailMessage extends Mailable
         $displayName = trim($first . ' ' . ($middle ? $middle . ' ' : '') . $last);
 
         // Get logo from settings or fallback to default
-        $logo = $settings->org_logo 
-            ? 'data:image/png;base64,' . $settings->org_logo 
-            : asset('img/OwlQuery.png');
+        $logo = $settings->getOrgLogoBase64Attribute() ?? asset('img/OwlQuery.png');
 
         $this->msg = array_replace([
             // UI/brand text now message-driven

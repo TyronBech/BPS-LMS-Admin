@@ -31,9 +31,7 @@ class ChangePasswordMail extends Mailable
         $settings = UISetting::first() ?? new UISetting();
 
         // Get logo from settings or fallback to default
-        $logo = $settings->org_logo 
-            ? 'data:image/png;base64,' . $settings->org_logo 
-            : asset('img/OwlQuery.png');
+        $logo = $settings->getOrgLogoBase64Attribute() ?? asset('img/OwlQuery.png');
 
         // Message-driven copy (formal + emojis)
         $this->msg = array_replace([
