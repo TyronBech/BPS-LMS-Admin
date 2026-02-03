@@ -14,6 +14,8 @@ class AccountEmailMessage extends Mailable
     use Queueable, SerializesModels;
 
     private array $msg;
+    public $logoData;
+    public $defaultLogoPath;
 
     /**
      * Create a new message instance.
@@ -32,12 +34,13 @@ class AccountEmailMessage extends Mailable
         $displayName = trim($first . ' ' . ($middle ? $middle . ' ' : '') . $last);
 
         // Get logo from settings or fallback to default
-        $logo = $settings->getOrgLogoBase64Attribute() ?? asset('img/OwlQuery.png');
+        $this->logoData = $settings->org_logo ? base64_decode($settings->org_logo) : null;
+        $this->defaultLogoPath = public_path('img/OwlQuery.png');
 
         $this->msg = array_replace([
             // UI/brand text now message-driven
             'brand_name'     => ($settings->org_initial ?? '') . ' Library Management System',
-            'brand_logo'     => $logo,
+            // 'brand_logo' removed to prevent clipping
             'brand_logo_alt' => ($settings->org_initial ?? '') . ' Logo',
 
             // Formal copy with emojis
@@ -78,6 +81,8 @@ class AccountEmailMessage extends Mailable
                 'user'     => $this->user,
                 'password' => $this->password,
                 'msg'      => $this->msg,
+                'logoData' => $this->logoData,
+                'defaultLogoPath' => $this->defaultLogoPath,
             ],
         );
     }

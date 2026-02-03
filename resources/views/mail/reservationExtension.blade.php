@@ -212,8 +212,11 @@
                       {{ $msg['brand_name'] ?? config('app.name', 'Library Management System') }}
                     </td>
                     <td align="right">
-                      <img src="{{ $msg['brand_logo'] ?? asset('img/OwlQuery.png') }}" alt="{{ $msg['brand_logo_alt'] ?? 'Logo' }}" class="logo"
-                        style="height:48px; width:48px;">
+                      @if(isset($logoData) && $logoData)
+                          <img src="{{ $message->embedData($logoData, 'logo.png', 'image/png') }}" alt="{{ $msg['brand_logo_alt'] ?? 'Logo' }}" class="logo" style="height:48px; width:48px;">
+                      @else
+                          <img src="{{ $message->embed($defaultLogoPath ?? public_path('img/OwlQuery.png')) }}" alt="{{ $msg['brand_logo_alt'] ?? 'Logo' }}" class="logo" style="height:48px; width:48px;">
+                      @endif
                     </td>
                   </tr>
                 </table>

@@ -15,6 +15,8 @@ class ChangePasswordMail extends Mailable
     use Queueable, SerializesModels;
 
     private array $msg;
+    public $logoData;
+    public $defaultLogoPath;
 
     /**
      * Create a new message instance.
@@ -31,13 +33,14 @@ class ChangePasswordMail extends Mailable
         $settings = UISetting::first() ?? new UISetting();
 
         // Get logo from settings or fallback to default
-        $logo = $settings->getOrgLogoBase64Attribute() ?? asset('img/OwlQuery.png');
+        $this->logoData = $settings->org_logo ? base64_decode($settings->org_logo) : null;
+        $this->defaultLogoPath = public_path('img/OwlQuery.png');
 
         // Message-driven copy (formal + emojis)
         $this->msg = array_replace([
             'org_initial'     => $settings->org_initial ?? '',
             'brand_name'      => ($settings->org_initial ?? '') . ' Library Management System',
-            'brand_logo'      => $logo,
+            // 'brand_logo' removed
             'brand_logo_alt'  => ($settings->org_initial ?? '') . ' Logo',
             'subject'         => '🔐 Password Change Confirmation',
             'title'           => 'Password Updated Successfully ✅',
@@ -74,6 +77,8 @@ class ChangePasswordMail extends Mailable
             with: [
                 'user' => $this->user,
                 'msg'  => $this->msg,
+                'logoData' => $this->logoData,
+                'defaultLogoPath' => $this->defaultLogoPath,
             ],
         );
     }

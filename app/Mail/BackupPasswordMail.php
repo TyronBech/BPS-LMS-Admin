@@ -30,6 +30,9 @@ class BackupPasswordMail extends Mailable
 
     private array $msg;
 
+    public $logoData;
+    public $defaultLogoPath;
+
     /**
      * Create a new message instance.
      */
@@ -41,11 +44,12 @@ class BackupPasswordMail extends Mailable
         $settings = UISetting::first() ?? new UISetting();
 
         // Get logo from settings or fallback to default
-        $logo = $settings->getOrgLogoBase64Attribute() ?? asset('img/OwlQuery.png');
+        $this->logoData = $settings->org_logo ? base64_decode($settings->org_logo) : null;
+        $this->defaultLogoPath = public_path('img/OwlQuery.png');
 
         $this->msg = array_replace([
             'brand_name'      => ($settings->org_initial ?? '') . ' Library Management System',
-            'brand_logo'      => $logo,
+            // 'brand_logo' removed to prevent clipping
             'brand_logo_alt'  => ($settings->org_initial ?? '') . ' Logo',
             'subject'         => ($settings->org_initial ?? '') . ' Library Management System - Your Backup Password',
             'title'           => 'Database Backup Password 🔒',
@@ -82,6 +86,8 @@ class BackupPasswordMail extends Mailable
                 'username' => $this->username,
                 'password' => $this->password,
                 'msg'      => $this->msg,
+                'logoData' => $this->logoData,
+                'defaultLogoPath' => $this->defaultLogoPath,
             ]
         );
     }
