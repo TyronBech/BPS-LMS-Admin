@@ -193,6 +193,13 @@ class InventoriesController extends Controller
         $logo->setWorksheet($sheet);
 
         $sheet->setTitle('Book Circulation Report');
+        $sheet->mergeCells('A6:E6');
+        $sheet->setCellValue('A6', 'Inventory Report');
+        $sheet->getStyle('A6:E6')->getFont()->setBold(true);
+        $sheet->getStyle('A6:E6')->getFont()->setSize(14);
+        $sheet->getStyle('A6:E6')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A6:E6')->getAlignment()->setVertical('center');
+
         $sheet->getColumnDimension('A')->setWidth(20);
         $sheet->getColumnDimension('B')->setWidth(30);
         $sheet->getColumnDimension('C')->setWidth(60);
@@ -205,8 +212,11 @@ class InventoriesController extends Controller
         $sheet->getStyle('A7:E8')->getAlignment()->setHorizontal('left');
         $sheet->getStyle('A7:E8')->getAlignment()->setVertical('left');
         $sheet->getStyle('A7:E8')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A10:E10')->getFont()->setSize(12);
+        $sheet->getStyle('A10:E10')->getFont()->setSize(10);
         $sheet->getStyle('A10:E10')->getFont()->setBold(true);
+        $sheet->getStyle('A10:E10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A10:E10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+
         $sheet->setCellValue('A10', 'Accession Number');
         $sheet->setCellValue('B10', 'Call Number');
         $sheet->setCellValue('C10', 'Title');
@@ -221,6 +231,15 @@ class InventoriesController extends Controller
             $sheet->setCellValue('E' . $row, Carbon::parse($item->checked_at)->format('m/d/Y'));
             $row++;
         }
+
+        $styleArray = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+            ],
+        ];
+        $sheet->getStyle('A10:E' . ($row - 1))->applyFromArray($styleArray);
 
         $row += 2;
         $sheet->mergeCells('A' . $row . ':E' . $row);

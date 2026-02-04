@@ -189,6 +189,13 @@ class PenaltiesController extends Controller
         $logo->setWorksheet($sheet);
 
         $sheet->setTitle('Overdue Fines Report');
+        $sheet->mergeCells('A6:I6');
+        $sheet->setCellValue('A6', 'Overdue Fines Report');
+        $sheet->getStyle('A6:I6')->getFont()->setBold(true);
+        $sheet->getStyle('A6:I6')->getFont()->setSize(14);
+        $sheet->getStyle('A6:I6')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A6:I6')->getAlignment()->setVertical('center');
+
         $sheet->getColumnDimension('A')->setWidth(30);
         $sheet->getColumnDimension('B')->setWidth(20);
         $sheet->getColumnDimension('C')->setWidth(60);
@@ -205,8 +212,11 @@ class PenaltiesController extends Controller
         $sheet->getStyle('A7:I8')->getAlignment()->setHorizontal('left');
         $sheet->getStyle('A7:I8')->getAlignment()->setVertical('left');
         $sheet->getStyle('A7:I8')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A10:I10')->getFont()->setSize(12);
+        $sheet->getStyle('A10:I10')->getFont()->setSize(10);
         $sheet->getStyle('A10:I10')->getFont()->setBold(true);
+        $sheet->getStyle('A10:I10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A10:I10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+
         $sheet->setCellValue('A10', 'Name');
         $sheet->setCellValue('B10', 'Accession');
         $sheet->setCellValue('C10', 'Book');
@@ -230,6 +240,15 @@ class PenaltiesController extends Controller
 
             $row++;
         }
+
+        $styleArray = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+            ],
+        ];
+        $sheet->getStyle('A10:I' . ($row - 1))->applyFromArray($styleArray);
 
         $row += 2;
         $sheet->mergeCells('A' . $row . ':I' . $row);

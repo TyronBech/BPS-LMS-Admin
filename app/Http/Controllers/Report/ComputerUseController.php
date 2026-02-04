@@ -255,6 +255,27 @@ class ComputerUseController extends Controller
         $logo->setWorksheet($sheet);
 
         $sheet->setTitle('Computer Use Report');
+        if ($data->first() && $data->first()->user->students) {
+            $sheet->mergeCells('A6:E6');
+            $sheet->getStyle('A6:E6')->getFont()->setBold(true);
+            $sheet->getStyle('A6:E6')->getFont()->setSize(14);
+            $sheet->getStyle('A6:E6')->getAlignment()->setHorizontal('center');
+            $sheet->getStyle('A6:E6')->getAlignment()->setVertical('center');
+        } elseif ($data->first() && $data->first()->user->employees) {
+            $sheet->mergeCells('A6:D6');
+            $sheet->getStyle('A6:D6')->getFont()->setBold(true);
+            $sheet->getStyle('A6:D6')->getFont()->setSize(14);
+            $sheet->getStyle('A6:D6')->getAlignment()->setHorizontal('center');
+            $sheet->getStyle('A6:D6')->getAlignment()->setVertical('center');
+        } else {
+             $sheet->mergeCells('A6:C6');
+            $sheet->getStyle('A6:C6')->getFont()->setBold(true);
+            $sheet->getStyle('A6:C6')->getFont()->setSize(14);
+            $sheet->getStyle('A6:C6')->getAlignment()->setHorizontal('center');
+            $sheet->getStyle('A6:C6')->getAlignment()->setVertical('center');
+        }
+        $sheet->setCellValue('A6', 'Online Research Report');
+
         $sheet->getColumnDimension('A')->setWidth(30);
         $sheet->getColumnDimension('B')->setWidth(20);
         $sheet->getColumnDimension('C')->setWidth(20);
@@ -274,16 +295,20 @@ class ComputerUseController extends Controller
             $sheet->getStyle('A7:E8')->getAlignment()->setHorizontal('left');
             $sheet->getStyle('A7:E8')->getAlignment()->setVertical('left');
             $sheet->getStyle('A7:E8')->getAlignment()->setWrapText(true);
-            $sheet->getStyle('A10:E10')->getFont()->setSize(12);
+            $sheet->getStyle('A10:E10')->getFont()->setSize(10);
             $sheet->getStyle('A10:E10')->getFont()->setBold(true);
+            $sheet->getStyle('A10:E10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('A10:E10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
         } elseif ($data->first() && $data->first()->user->employees) {
             $sheet->getStyle('A7:D8')->getFont()->setBold(true);
             $sheet->getStyle('A7:D8')->getFont()->setSize(10);
             $sheet->getStyle('A7:D8')->getAlignment()->setHorizontal('left');
             $sheet->getStyle('A7:D8')->getAlignment()->setVertical('left');
             $sheet->getStyle('A7:D8')->getAlignment()->setWrapText(true);
-            $sheet->getStyle('A10:D10')->getFont()->setSize(12);
+            $sheet->getStyle('A10:D10')->getFont()->setSize(10);
             $sheet->getStyle('A10:D10')->getFont()->setBold(true);
+            $sheet->getStyle('A10:D10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('A10:D10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
         }
         $sheet->setCellValue('A10', 'Name');
         if ($data->first() && $data->first()->user->students) {
@@ -321,6 +346,15 @@ class ComputerUseController extends Controller
             $sheet->setCellValue($colE . $row, Carbon::parse($item->time_in)->format('g:i A'));
             $row++;
         }
+
+        $styleArray = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+            ],
+        ];
+        $sheet->getStyle('A10:' . $colE . ($row - 1))->applyFromArray($styleArray);
 
         $row += 2;
         $sheet->mergeCells('A' . $row . ':D' . $row);

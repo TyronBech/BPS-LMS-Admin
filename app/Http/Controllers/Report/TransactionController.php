@@ -207,6 +207,19 @@ class TransactionController extends Controller
 
         $sheet->setTitle('Book Circulation Report');
 
+        $endCol = 'J';
+        if ($type && $type == 'Borrowed') {
+            $endCol = 'H';
+        } else if ($type && $type == 'Reserved') {
+            $endCol = 'G';
+        }
+        $sheet->mergeCells('A6:' . $endCol . '6');
+        $sheet->setCellValue('A6', 'Book Circulation Report');
+        $sheet->getStyle('A6:' . $endCol . '6')->getFont()->setBold(true);
+        $sheet->getStyle('A6:' . $endCol . '6')->getFont()->setSize(14);
+        $sheet->getStyle('A6:' . $endCol . '6')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A6:' . $endCol . '6')->getAlignment()->setVertical('center');
+
         $sheet->setCellValue('A8', 'Report Generated On: ' . date('F j, Y'));
         $sheet->setCellValue('A10', 'Accession');
         $sheet->setCellValue('B10', 'Title');
@@ -265,8 +278,10 @@ class TransactionController extends Controller
         $sheet->getStyle($cells1)->getAlignment()->setHorizontal('left');
         $sheet->getStyle($cells1)->getAlignment()->setVertical('left');
         $sheet->getStyle($cells1)->getAlignment()->setWrapText(true);
-        $sheet->getStyle($cells2)->getFont()->setSize(12);
+        $sheet->getStyle($cells2)->getFont()->setSize(10);
         $sheet->getStyle($cells2)->getFont()->setBold(true);
+        $sheet->getStyle($cells2)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle($cells2)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
         $row = 11;
         foreach ($data as $item) {
             if (!$item->book || !$item->user) {
@@ -304,6 +319,15 @@ class TransactionController extends Controller
         } else if ($type && $type == 'Reserved') {
             $endCol = 'G';
         }
+
+        $styleArray = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+            ],
+        ];
+        $sheet->getStyle('A10:' . $endCol . ($row - 1))->applyFromArray($styleArray);
 
         $row += 2;
         $sheet->mergeCells('A' . $row . ':' . $endCol . $row);

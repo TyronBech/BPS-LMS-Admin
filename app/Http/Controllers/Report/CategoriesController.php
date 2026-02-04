@@ -136,6 +136,13 @@ class CategoriesController extends Controller
         $logo->setWorksheet($sheet);
 
         $sheet->setTitle(($settings->org_initial ?? 'BPS') . ' Collection Report');
+        $sheet->mergeCells('A6:F6');
+        $sheet->setCellValue('A6', 'Summary of ' . ($settings->org_initial ?? 'BPS') . ' Collections Report');
+        $sheet->getStyle('A6:F6')->getFont()->setBold(true);
+        $sheet->getStyle('A6:F6')->getFont()->setSize(14);
+        $sheet->getStyle('A6:F6')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A6:F6')->getAlignment()->setVertical('center');
+
         $sheet->getColumnDimension('A')->setWidth(30);
         $sheet->getColumnDimension('B')->setWidth(30);
         $sheet->getColumnDimension('C')->setWidth(30);
@@ -149,8 +156,11 @@ class CategoriesController extends Controller
         $sheet->getStyle('A7:F8')->getAlignment()->setHorizontal('left');
         $sheet->getStyle('A7:F8')->getAlignment()->setVertical('left');
         $sheet->getStyle('A7:F8')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A10:F10')->getFont()->setSize(12);
+        $sheet->getStyle('A10:F10')->getFont()->setSize(10);
         $sheet->getStyle('A10:F10')->getFont()->setBold(true);
+        $sheet->getStyle('A10:F10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A10:F10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+
         $sheet->setCellValue('A10', 'Legend');
         $sheet->setCellValue('B10', 'Description');
         $sheet->setCellValue('C10', 'Previous Inventory');
@@ -179,6 +189,15 @@ class CategoriesController extends Controller
         $sheet->setCellValue('D' . $row, $data->sum('newly_acquired'));
         $sheet->setCellValue('E' . $row, $data->sum('discarded'));
         $sheet->setCellValue('F' . $row, $data->sum('present_inventory'));
+
+        $styleArray = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+            ],
+        ];
+        $sheet->getStyle('A10:F' . $row)->applyFromArray($styleArray);
 
         $row += 2;
         $sheet->mergeCells('A' . $row . ':F' . $row);

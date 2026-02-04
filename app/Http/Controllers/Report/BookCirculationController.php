@@ -200,6 +200,13 @@ class BookCirculationController extends Controller
         $logo->setWorksheet($sheet);
 
         $sheet->setTitle('Accession List Report');
+        $sheet->mergeCells('A6:F6');
+        $sheet->setCellValue('A6', 'Book Records');
+        $sheet->getStyle('A6:F6')->getFont()->setBold(true);
+        $sheet->getStyle('A6:F6')->getFont()->setSize(14);
+        $sheet->getStyle('A6:F6')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A6:F6')->getAlignment()->setVertical('center');
+
         $sheet->getColumnDimension('A')->setWidth(20);
         $sheet->getColumnDimension('B')->setWidth(20);
         $sheet->getColumnDimension('C')->setWidth(60);
@@ -213,8 +220,11 @@ class BookCirculationController extends Controller
         $sheet->getStyle('A7:F8')->getAlignment()->setHorizontal('left');
         $sheet->getStyle('A7:F8')->getAlignment()->setVertical('left');
         $sheet->getStyle('A7:F8')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A10:F10')->getFont()->setSize(12);
+        $sheet->getStyle('A10:F10')->getFont()->setSize(10);
         $sheet->getStyle('A10:F10')->getFont()->setBold(true);
+        $sheet->getStyle('A10:F10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A10:F10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+
         $sheet->setCellValue('A10', 'Accession');
         $sheet->setCellValue('B10', 'Call Number');
         $sheet->setCellValue('C10', 'Title');
@@ -231,6 +241,15 @@ class BookCirculationController extends Controller
             $sheet->setCellValue('F' . $row, $item->condition_status);
             $row++;
         }
+
+        $styleArray = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+            ],
+        ];
+        $sheet->getStyle('A10:F' . ($row - 1))->applyFromArray($styleArray);
 
         $row += 2;
         $sheet->mergeCells('A' . $row . ':F' . $row);
