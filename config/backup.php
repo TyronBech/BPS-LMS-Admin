@@ -28,13 +28,17 @@ return [
 
                 'follow_links' => false,
                 'ignore_unreadable_directories' => false,
-                'relative_path' => base_path(),
+                'relative_path' => null,
             ],
 
             'databases' => [
                 env('DB_CONNECTION', 'mysql'),
             ],
         ],
+
+        'database_dump_file_extension' => '',
+
+        'temporary_directory' => storage_path('app/backup-temp'),
 
         'destination' => [
             'filename_prefix' => '',

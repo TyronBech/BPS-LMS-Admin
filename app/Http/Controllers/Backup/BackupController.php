@@ -141,7 +141,7 @@ class BackupController extends Controller
                 'timestamp' => now(),
             ]);
 
-            Artisan::call('backup:run');
+            Artisan::call('backup:custom');
             $output = Artisan::output();
 
             Log::debug('Backup: Artisan backup command output', [
@@ -149,7 +149,7 @@ class BackupController extends Controller
                 'user_id' => Auth::guard('admin')->id(),
             ]);
 
-            if (str_contains($output, 'Backup failed')) {
+            if (str_contains($output, 'Backup failed') || str_contains($output, 'failed')) {
                 Log::error('Backup: System backup failed', [
                     'output' => $output,
                     'user_id' => Auth::guard('admin')->id(),
