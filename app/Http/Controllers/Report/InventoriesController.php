@@ -133,9 +133,9 @@ class InventoriesController extends Controller
     }
     /**
      * Generates a PDF report for the inventory report.
-     * 
+     *
      * @param  \Illuminate\Database\Eloquent\Collection $data The data to be included in the report.
-     * 
+     *
      * @return void
      */
     private function generatePDF(Collection $data)
@@ -150,7 +150,7 @@ class InventoriesController extends Controller
             'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
             'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
-            'date'          => date('F j, Y'),
+            'date'          => "as of " . date('F j, Y'),
             'data'          => $data,
             'totalCount'    => $data->count(),
         ];
@@ -167,9 +167,9 @@ class InventoriesController extends Controller
     }
     /**
      * Exports the inventory report to an Excel file.
-     * 
+     *
      * @param  \Illuminate\Database\Eloquent\Collection $data The data to be included in the report.
-     * 
+     *
      * @return void
      */
     private function exportExcel(Collection $data)

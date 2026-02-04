@@ -162,7 +162,7 @@ class TransactionController extends Controller
             'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
             'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
-            'date'          => date('F j, Y'),
+            'date'          => "as of " . date('F j, Y'),
             'data'          => $data,
             'totalCount'    => $data->count(),
         ];
@@ -179,10 +179,10 @@ class TransactionController extends Controller
     }
     /**
      * Exports the transaction report to an Excel file.
-     * 
+     *
      * @param  Illuminate\Database\Eloquent\Collection  $data  The data to be included in the report.
      * @param  string  $type  The type of report to be generated.
-     * 
+     *
      * @return void
      */
     private function exportExcel(Collection $data, string $type)

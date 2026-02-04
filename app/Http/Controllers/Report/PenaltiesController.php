@@ -131,7 +131,7 @@ class PenaltiesController extends Controller
      * It takes in the data to be included in the report and generates a PDF report.
      * The report includes the title, school name, school address, logo, user name, date, data and total count.
      * The PDF report is then streamed to the browser with the filename 'overdue-fines-report <date>.pdf'.
-     * 
+     *
      * @param \Illuminate\Database\Eloquent\Collection $data The data to be included in the report.
      */
     private function generatePDF(Collection $data)
@@ -146,7 +146,7 @@ class PenaltiesController extends Controller
             'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
             'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
-            'date'          => date('F j, Y'),
+            'date'          => "as of " . date('F j, Y'),
             'data'          => $data,
             'totalCount'    => $data->count(),
         ];
@@ -163,9 +163,9 @@ class PenaltiesController extends Controller
     }
     /**
      * Exports the penalties report to an Excel file.
-     * 
+     *
      * @param  \Illuminate\Database\Eloquent\Collection  $data  The data to be included in the report.
-     * 
+     *
      * @return void
      */
     private function exportExcel(Collection $data)
@@ -331,7 +331,7 @@ class PenaltiesController extends Controller
     /**
      * Helper to process the penalty string and clean up the object.
      * This prevents code duplication between Export and Pagination logic.
-     * 
+     *
      * @param Transaction $transaction
      * @return Transaction
      */

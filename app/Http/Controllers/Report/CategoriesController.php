@@ -77,9 +77,9 @@ class CategoriesController extends Controller
     }
     /**
      * Generates a PDF report for the summary of BPS collections report.
-     * 
+     *
      * @param Illuminate\Database\Eloquent\Collection $data The data to be included in the report.
-     * 
+     *
      * @return void
      */
     private function generatePDF(Collection $data)
@@ -94,7 +94,7 @@ class CategoriesController extends Controller
             'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
             'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
-            'date'          => date('F j, Y'),
+            'date'          => "as of " . date('F j, Y'),
             'data'          => $data,
             'totalCount'    => $data->count(),
         ];
@@ -125,7 +125,7 @@ class CategoriesController extends Controller
         $tempLogoPath = public_path('img/orgLogoFull.png');
         $decodedLogo = base64_decode($settings->org_logo_full);
         file_put_contents($tempLogoPath, $decodedLogo);
-        
+
         $logo->setName(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setDescription(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setPath($tempLogoPath ?? public_path('img/BPSLogoFull.png'));

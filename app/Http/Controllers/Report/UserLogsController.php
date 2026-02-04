@@ -400,13 +400,13 @@ class UserLogsController extends Controller
     }
     /**
      * Finds the peak hour from an array of times.
-     * 
+     *
      * The peak hour is the hour with the highest count of occurrences in the array.
      * If there are no times, it returns "00".
      * It goes through each time in the array, extracts the hour from it, and counts how many times the hour occurs.
      * It then compares each hour's count with the max count and updates the max count and peak hour if necessary.
      * Finally, it returns the peak hour in the format "HH".
-     * 
+     *
      * @param array $times an array of times in the format "HH:MM:SS"
      * @return string the peak hour in the format "HH"
      */
@@ -534,7 +534,7 @@ class UserLogsController extends Controller
             'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents(public_path('img/BPSLogoFull.png'))),
             'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
-            'date'          => date('F j, Y'),
+            'date'          => "as of " . date('F j, Y'),
             'data'          => $data,
             'totalCount'    => $data->count(),
         ];
