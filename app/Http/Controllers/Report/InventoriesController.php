@@ -228,7 +228,7 @@ class InventoriesController extends Controller
             $sheet->setCellValue('B' . $row, $item->book->call_number);
             $sheet->setCellValue('C' . $row, $item->book->title);
             $sheet->setCellValue('D' . $row, $item->book->author);
-            $sheet->setCellValue('E' . $row, Carbon::parse($item->checked_at)->format('m/d/Y'));
+            $sheet->setCellValue('E' . $row, Carbon::parse($item->checked_at)->format('M j, Y'));
             $row++;
         }
 
@@ -288,8 +288,8 @@ class InventoriesController extends Controller
             ->whereNotNull('checked_at');
 
         if ($startStr && $endStr) {
-            $startDate = \Carbon\Carbon::createFromFormat('m/d/Y', $startStr)->startOfDay();
-            $endDate   = \Carbon\Carbon::createFromFormat('m/d/Y', $endStr)->endOfDay();
+            $startDate = Carbon::createFromFormat('m/d/Y', $startStr)->startOfDay();
+            $endDate   = Carbon::createFromFormat('m/d/Y', $endStr)->endOfDay();
 
             $query->whereBetween('checked_at', [$startDate, $endDate]);
         }
@@ -304,7 +304,7 @@ class InventoriesController extends Controller
                 $max = $data->first()->date;
                 $min = $data->last()->date;
 
-                $data->reporting_period = \Carbon\Carbon::parse($min)->format('F j, Y') . ' to ' . \Carbon\Carbon::parse($max)->format('F j, Y');
+                $data->reporting_period = 'From ' . Carbon::parse($min)->format('F j, Y') . ' to ' . Carbon::parse($max)->format('F j, Y');
             } else {
                 $data->reporting_period = 'N/A';
             }

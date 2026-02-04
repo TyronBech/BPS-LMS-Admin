@@ -86,7 +86,9 @@
     }
 
     th {
-      background-color: #f2f2f2;
+      background-color: #cccccc;
+      font-weight: bold;
+      text-align: center;
     }
 
     @media print {
@@ -135,13 +137,13 @@
           @if($item->user)
           <tr>
             <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
-            @if($item->user->students) 
+            @if($item->user->students)
             <td>{{ $item->user->students->level }}</td>
             <td>{{ $item->user->students->section }}</td>
             @elseif($item->user->employees)
             <td>{{ $item->user->employees->employee_role }}</td>
             @endif
-            <td>{{ \Carbon\Carbon::parse($item->time_in)->format('Y-m-d') }}</td>
+            <td>{{ \Carbon\Carbon::parse($item->time_in)->format('M j, Y') }}</td>
             <td>{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
           </tr>
           @endif

@@ -88,7 +88,9 @@
     }
 
     th {
-      background-color: #f2f2f2;
+      background-color: #cccccc;
+      font-weight: bold;
+      text-align: center;
     }
 
     @media print {
@@ -136,7 +138,7 @@
             <td>{{ $item->book->call_number }}</td>
             <td>{{ $item->book->title }}</td>
             <td>{{ $item->book->author }}</td>
-            <td>{{ \Carbon\Carbon::parse($item->checked_at)->format('m/d/Y') }}</td>
+            <td>{{ \Carbon\Carbon::parse($item->checked_at)->format('M j, Y') }}</td>
           </tr>
           @endif
         @empty

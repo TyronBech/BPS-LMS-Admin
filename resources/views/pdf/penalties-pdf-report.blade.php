@@ -88,7 +88,9 @@
     }
 
     th {
-      background-color: #f2f2f2;
+      background-color: #cccccc;
+      font-weight: bold;
+      text-align: center;
     }
 
     @media print {
@@ -138,9 +140,9 @@
           <td>{{ $item->user->first_name }} {{ $item->user->last_name }}</td>
           <td>{{ $item->book->accession }}</td>
           <td>{{ $item->book->title }}</td>
-          <td>{{ $item->date_borrowed ?? 'Not Borrowed' }}</td>
-          <td>{{ $item->due_date ?? 'No Due Date' }}</td>
-          <td>{{ $item->return_date ?? 'Unreturned' }}</td>
+          <td>{{ $item->date_borrowed ? \Carbon\Carbon::parse($item->date_borrowed)->format('M j, Y') : 'Not Borrowed' }}</td>
+          <td>{{ $item->due_date ? \Carbon\Carbon::parse($item->due_date)->format('M j, Y') : 'No Due Date' }}</td>
+          <td>{{ $item->return_date ? \Carbon\Carbon::parse($item->return_date)->format('M j, Y') : 'Unreturned' }}</td>
           <td>{{ $item->violation ?? 'No Violation' }}</td>
           <td>{{ number_format($item->penalty_total ?? 0, 2) }}</td>
           <td>{{ $item->penalty_status }}</td>

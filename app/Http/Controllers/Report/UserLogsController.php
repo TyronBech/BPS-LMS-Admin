@@ -712,7 +712,7 @@ class UserLogsController extends Controller
             if ($data->isNotEmpty()) {
                 $min = $data->first()->start;
                 $max = $data->last()->start;
-                $data->reporting_period = Carbon::parse($max)->format('F j, Y') . ' to ' . Carbon::parse($min)->format('F j, Y');
+                $data->reporting_period = 'From ' . Carbon::parse($max)->format('F j, Y') . ' to ' . Carbon::parse($min)->format('F j, Y');
             } else {
                 $data->reporting_period = 'N/A';
             }

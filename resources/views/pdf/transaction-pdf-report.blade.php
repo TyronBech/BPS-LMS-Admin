@@ -91,7 +91,9 @@
     }
 
     th {
-      background-color: #f2f2f2;
+      background-color: #cccccc;
+      font-weight: bold;
+      text-align: center;
     }
 
     @media print {
@@ -148,13 +150,13 @@
           <td>{{ $item->book->title }}</td>
           <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
           @if($type === 'Reserved' || $type === 'All')
-          <td>{{ $item->reserved_date ?? 'Not Reserved' }}</td>
-          <td>{{ $item->pickup_deadline ?? 'No Pickup Deadline' }}</td>
+          <td>{{ $item->reserved_date ? \Carbon\Carbon::parse($item->reserved_date)->format('M j, Y') : 'Not Reserved' }}</td>
+          <td>{{ $item->pickup_deadline ? \Carbon\Carbon::parse($item->pickup_deadline)->format('M j, Y') : 'No Pickup Deadline' }}</td>
           @endif
           @if($type === 'Borrowed' || $type === 'All')
-          <td>{{ $item->date_borrowed ?? 'Not Borrowed' }}</td>
-          <td>{{ $item->due_date ?? 'No Due Date' }}</td>
-          <td>{{ $item->return_date ?? 'Unreturned' }}</td>
+          <td>{{ $item->date_borrowed ? \Carbon\Carbon::parse($item->date_borrowed)->format('M j, Y') : 'Not Borrowed' }}</td>
+          <td>{{ $item->due_date ? \Carbon\Carbon::parse($item->due_date)->format('M j, Y') : 'No Due Date' }}</td>
+          <td>{{ $item->return_date ? \Carbon\Carbon::parse($item->return_date)->format('M j, Y') : 'Unreturned' }}</td>
           @endif
           <td>{{ $item->transaction_type }}</td>
           <td>{{ $item->status }}</td>

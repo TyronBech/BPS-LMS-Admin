@@ -342,7 +342,7 @@ class ComputerUseController extends Controller
                 $colD = 'C';
                 $colE = 'D';
             }
-            $sheet->setCellValue($colD . $row, Carbon::parse($item->time_in)->format('Y-m-d'));
+            $sheet->setCellValue($colD . $row, Carbon::parse($item->time_in)->format('M j, Y'));
             $sheet->setCellValue($colE . $row, Carbon::parse($item->time_in)->format('g:i A'));
             $row++;
         }
@@ -432,7 +432,7 @@ class ComputerUseController extends Controller
             if ($data->isNotEmpty()) {
                 $min = $data->last()->time_in;
                 $max = $data->first()->time_in;
-                $data->reporting_period = \Carbon\Carbon::parse($min)->format('F j, Y') . ' to ' . \Carbon\Carbon::parse($max)->format('F j, Y');
+                $data->reporting_period = 'From ' . Carbon::parse($min)->format('M j, Y') . ' to ' . Carbon::parse($max)->format('M j, Y');
             } else {
                 $data->reporting_period = 'N/A';
             }

@@ -26,7 +26,7 @@
       align-items: center;
       justify-content: center;
       margin-bottom: 10px;
-    } 
+    }
 
     .logo img {
       max-width: 420px;
@@ -83,7 +83,9 @@
     }
 
     th {
-      background-color: #f2f2f2;
+      background-color: #cccccc;
+      font-weight: bold;
+      text-align: center;
     }
 
     /* Optional print adjustments */
@@ -128,7 +130,7 @@
           @if($item->user)
             <tr>
               <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
-              <td>{{ \Carbon\Carbon::parse($item->time_in)->format('F j, Y') }}</td>
+              <td>{{ \Carbon\Carbon::parse($item->time_in)->format('M j, Y') }}</td>
               <td>{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
               <td>{{ \Carbon\Carbon::parse($item->time_out)->format('g:i A') }}</td>
             </tr>

@@ -231,9 +231,9 @@ class PenaltiesController extends Controller
             $sheet->setCellValue('A' . $row, $item->user->first_name . ' ' . $item->user->last_name);
             $sheet->setCellValue('B' . $row, $item->book->accession);
             $sheet->setCellValue('C' . $row, $item->book->title);
-            $sheet->setCellValue('D' . $row, $item->date_borrowed);
-            $sheet->setCellValue('E' . $row, $item->due_date ?? 'Not Returned');
-            $sheet->setCellValue('F' . $row, $item->return_date ?? 'Not Returned');
+            $sheet->setCellValue('D' . $row, Carbon::parse($item->date_borrowed)->format('M j, Y'));
+            $sheet->setCellValue('E' . $row, $item->due_date ? Carbon::parse($item->due_date)->format('M j, Y') : 'Not Returned');
+            $sheet->setCellValue('F' . $row, $item->return_date ? Carbon::parse($item->return_date)->format('M j, Y') : 'Not Returned');
             $sheet->setCellValue('G' . $row, $item->violation);
             $sheet->setCellValue('H' . $row, number_format($item->penalty_total, 2));
             $sheet->setCellValue('I' . $row, $item->penalty_status);
@@ -334,7 +334,7 @@ class PenaltiesController extends Controller
             if ($data->isNotEmpty()) {
                 $max = $data->first()->date;
                 $min = $data->last()->date;
-                $data->reporting_period = Carbon::parse($min)->format('F j, Y') . ' to ' . Carbon::parse($max)->format('F j, Y');
+                $data->reporting_period = 'From ' . Carbon::parse($min)->format('F j, Y') . ' to ' . Carbon::parse($max)->format('F j, Y');
             } else {
                 $data->reporting_period = 'N/A';
             }

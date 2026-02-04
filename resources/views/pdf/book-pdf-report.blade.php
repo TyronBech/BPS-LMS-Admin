@@ -72,16 +72,10 @@
       table-layout: fixed;
     }
 
-    th, td {
-      border: 1px solid #ddd;
-      padding: 4px;
-      font-size: 10px;
-      word-break: break-word;
-      text-align: left;
-    }
-
     th {
-      background-color: #f2f2f2;
+      background-color: #cccccc;
+      font-weight: bold;
+      text-align: center;
     }
 
     /* Optional print adjustments */

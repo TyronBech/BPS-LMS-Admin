@@ -291,22 +291,22 @@ class TransactionController extends Controller
             $sheet->setCellValue('B' . $row, $item->book->title);
             $sheet->setCellValue('C' . $row, $item->user->first_name . ' ' . $item->user->last_name);
             if ($type && $type == 'All') {
-                $sheet->setCellValue('D' . $row, $item->reserved_date ? $item->reserved_date : 'Not Reserved');
-                $sheet->setCellValue('E' . $row, $item->pickup_deadline ? $item->pickup_deadline : 'Not Set');
-                $sheet->setCellValue('F' . $row, $item->date_borrowed ? $item->date_borrowed : 'Not Borrowed');
-                $sheet->setCellValue('G' . $row, $item->due_date ? $item->due_date : 'Not Set');
-                $sheet->setCellValue('H' . $row, $item->return_date ? $item->return_date : 'Not Returned');
+                $sheet->setCellValue('D' . $row, $item->reserved_date ? Carbon::parse($item->reserved_date)->format('M j, Y') : 'Not Reserved');
+                $sheet->setCellValue('E' . $row, $item->pickup_deadline ? Carbon::parse($item->pickup_deadline)->format('M j, Y') : 'Not Set');
+                $sheet->setCellValue('F' . $row, $item->date_borrowed ? Carbon::parse($item->date_borrowed)->format('M j, Y') : 'Not Borrowed');
+                $sheet->setCellValue('G' . $row, $item->due_date ? Carbon::parse($item->due_date)->format('M j, Y') : 'Not Set');
+                $sheet->setCellValue('H' . $row, $item->return_date ? Carbon::parse($item->return_date)->format('M j, Y') : 'Not Returned');
                 $sheet->setCellValue('I' . $row, $item->transaction_type);
                 $sheet->setCellValue('J' . $row, $item->status);
             } else if ($type && $type == 'Borrowed') {
-                $sheet->setCellValue('D' . $row, $item->date_borrowed ? $item->date_borrowed : 'Not Borrowed');
-                $sheet->setCellValue('E' . $row, $item->due_date ? $item->due_date : 'Not Set');
-                $sheet->setCellValue('F' . $row, $item->return_date ? $item->return_date : 'Not Returned');
+                $sheet->setCellValue('D' . $row, $item->date_borrowed ? Carbon::parse($item->date_borrowed)->format('M j, Y') : 'Not Borrowed');
+                $sheet->setCellValue('E' . $row, $item->due_date ? Carbon::parse($item->due_date)->format('M j, Y') : 'Not Set');
+                $sheet->setCellValue('F' . $row, $item->return_date ? Carbon::parse($item->return_date)->format('M j, Y') : 'Not Returned');
                 $sheet->setCellValue('G' . $row, $item->transaction_type);
                 $sheet->setCellValue('H' . $row, $item->status);
             } else if ($type && $type == 'Reserved') {
-                $sheet->setCellValue('D' . $row, $item->reserved_date ? $item->reserved_date : 'Not Reserved');
-                $sheet->setCellValue('E' . $row, $item->pickup_deadline ? $item->pickup_deadline : 'Not Set');
+                $sheet->setCellValue('D' . $row, $item->reserved_date ? Carbon::parse($item->reserved_date)->format('M j, Y') : 'Not Reserved');
+                $sheet->setCellValue('E' . $row, $item->pickup_deadline ? Carbon::parse($item->pickup_deadline)->format('M j, Y') : 'Not Set');
                 $sheet->setCellValue('F' . $row, $item->transaction_type);
                 $sheet->setCellValue('G' . $row, $item->status);
             }
@@ -425,7 +425,7 @@ class TransactionController extends Controller
                 $max = $data->first()->borrowed;
                 $min = $data->last()->borrowed;
 
-                $data->reporting_period = Carbon::parse($min)->format('F j, Y') . ' to ' . Carbon::parse($max)->format('F j, Y');
+                $data->reporting_period = 'From ' . Carbon::parse($min)->format('F j, Y') . ' to ' . Carbon::parse($max)->format('F j, Y');
             } else {
                 $data->reporting_period = 'N/A';
             }
