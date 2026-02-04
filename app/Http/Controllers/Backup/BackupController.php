@@ -160,8 +160,7 @@ class BackupController extends Controller
             }
 
             $admin = Auth::guard('admin')->user();
-            Notification::route('mail', $admin->email)
-                ->notify(new \App\Notifications\BackupSucceeded($admin->first_name . ' ' . $admin->last_name));
+            Notification::send($admin, new \App\Notifications\BackupSucceeded($admin->first_name . ' ' . $admin->last_name));
 
             Log::info('Backup: System backup completed successfully', [
                 'user_id' => $admin->id,

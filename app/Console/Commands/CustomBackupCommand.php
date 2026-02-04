@@ -4,7 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Process;
 use Illuminate\Support\Str;
 use ZipArchive;
 
@@ -30,58 +30,96 @@ class CustomBackupCommand extends Command
 
             // 1. Backup Database
             $this->info('Backing up database...');
-            $dbName = config('database.connections.' . config('database.default') . '.database');
-            $dbUser = config('database.connections.' . config('database.default') . '.username');
-            $dbPass = config('database.connections.' . config('database.default') . '.password');
-            $dbHost = config('database.connections.' . config('database.default') . '.host');
-            $dbPort = config('database.connections.' . config('database.default') . '.port', 3306);
-            
+            $connection = config('database.default');
+            $dbConfig = config("database.connections.{$connection}");
+
+            $dbName = $dbConfig['database'];
+            $dbUser = $dbConfig['username'];
+            $dbPass = $dbConfig['password'];
+            $dbHost = $dbConfig['host'];
+            $dbPort = $dbConfig['port'] ?? 3306;
+
             $dumpPath = $dbDir . '/' . $dbName . '_' . date('Y-m-d_His') . '.sql';
-            
+
+            // Create a temporary MySQL config file for credentials (more secure)
+            $mysqlConfigPath = $tempDir . '/.my.cnf';
+            $mysqlConfig = "[client]\n";
+            $mysqlConfig .= "user={$dbUser}\n";
+            $mysqlConfig .= "password=\"{$dbPass}\"\n";
+            $mysqlConfig .= "host={$dbHost}\n";
+            $mysqlConfig .= "port={$dbPort}\n";
+            File::put($mysqlConfigPath, $mysqlConfig);
+            chmod($mysqlConfigPath, 0600);
+
             // Get the dump binary path from config or use default
-            $dumpBinary = config('backup.backup.dump.mysql.dump_binary_path', 'mysqldump');
-            
-            $command = sprintf(
-                '%s --user=%s --password=%s --host=%s --port=%d %s > %s 2>&1',
-                escapeshellarg($dumpBinary),
-                escapeshellarg($dbUser),
-                escapeshellarg($dbPass),
-                escapeshellarg($dbHost),
-                $dbPort,
-                escapeshellarg($dbName),
-                escapeshellarg($dumpPath)
-            );
+            $dumpBinary = config('backup.backup.dump.mysql.dump_binary_path');
 
-            exec($command, $output, $returnVar);
-
-            if ($returnVar !== 0 || !file_exists($dumpPath)) {
-                throw new \Exception('Database backup failed: ' . implode("\n", $output));
+            // If binary path is a directory, append mysqldump to it
+            if ($dumpBinary && is_dir($dumpBinary)) {
+                $dumpBinary = rtrim($dumpBinary, '/\\') . '/mysqldump';
             }
 
-            $this->info('Database backup completed: ' . basename($dumpPath));
+            // Default to mysqldump if not set
+            if (!$dumpBinary) {
+                $dumpBinary = 'mysqldump';
+            }
+
+            // Build the command using the config file
+            $command = sprintf(
+                '%s --defaults-extra-file=%s --single-transaction --quick --lock-tables=false %s',
+                escapeshellarg($dumpBinary),
+                escapeshellarg($mysqlConfigPath),
+                escapeshellarg($dbName)
+            );
+
+            // Execute the command
+            $result = Process::run($command);
+
+            // Clean up the config file
+            if (File::exists($mysqlConfigPath)) {
+                File::delete($mysqlConfigPath);
+            }
+
+            if ($result->failed()) {
+                $errorMsg = 'Database backup failed';
+                if ($result->errorOutput()) {
+                    $errorMsg .= ': ' . $result->errorOutput();
+                }
+
+                throw new \Exception($errorMsg);
+            }
+
+            // Save the output to file
+            File::put($dumpPath, $result->output());
+
+            if (!file_exists($dumpPath) || filesize($dumpPath) === 0) {
+                throw new \Exception('Database backup failed: dump file is empty or was not created');
+            }
+
+            $this->info('Database backup completed: ' . basename($dumpPath) . ' (' . round(filesize($dumpPath) / 1024 / 1024, 2) . ' MB)');
 
             // 2. Copy Logs
             $this->info('Copying logs...');
             $logsPath = storage_path('logs');
-            
+
             if (File::exists($logsPath)) {
                 $logFiles = File::allFiles($logsPath);
                 $copiedCount = 0;
-                
+
                 foreach ($logFiles as $file) {
                     $relativePath = str_replace($logsPath . DIRECTORY_SEPARATOR, '', $file->getPathname());
                     $destinationPath = $logsDir . DIRECTORY_SEPARATOR . $relativePath;
-                    
+
                     // Create subdirectories if needed
                     $destinationDir = dirname($destinationPath);
                     if (!File::exists($destinationDir)) {
                         File::makeDirectory($destinationDir, 0755, true);
                     }
-                    
+
                     File::copy($file->getPathname(), $destinationPath);
                     $copiedCount++;
                 }
-                
+
                 $this->info("Copied {$copiedCount} log file(s)");
             } else {
                 $this->warn('Logs directory not found');
@@ -90,7 +128,7 @@ class CustomBackupCommand extends Command
             // 3. Create ZIP archive
             $this->info('Creating ZIP archive...');
             $backupDir = storage_path('app/backups/BPS Library Management System');
-            
+
             if (!File::exists($backupDir)) {
                 File::makeDirectory($backupDir, 0755, true);
             }
@@ -105,7 +143,7 @@ class CustomBackupCommand extends Command
 
             // Add database files
             $this->addDirectoryToZip($zip, $dbDir, 'db');
-            
+
             // Add log files
             $this->addDirectoryToZip($zip, $logsDir, 'logs');
 
@@ -122,12 +160,12 @@ class CustomBackupCommand extends Command
 
         } catch (\Exception $e) {
             $this->error('Backup failed: ' . $e->getMessage());
-            
+
             // Cleanup on failure
             if (isset($tempDir) && File::exists($tempDir)) {
                 File::deleteDirectory($tempDir);
             }
-            
+
             throw $e;
         }
     }
@@ -139,7 +177,7 @@ class CustomBackupCommand extends Command
         }
 
         $files = File::allFiles($directory);
-        
+
         foreach ($files as $file) {
             $relativePath = str_replace($directory . DIRECTORY_SEPARATOR, '', $file->getPathname());
             $zip->addFile($file->getPathname(), $zipPath . '/' . $relativePath);

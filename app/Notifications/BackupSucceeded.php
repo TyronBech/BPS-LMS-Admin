@@ -24,6 +24,15 @@ class BackupSucceeded extends Notification
     public function toMail($notifiable)
     {
         $disk = $this->event?->backupDestination?->diskName() ?? 'backups';
-        return (new BackupSuccessMail($this->userName, $disk))->to($notifiable);
+        $mail = new BackupSuccessMail($this->userName, $disk);
+
+        // Handle both Admin model and AnonymousNotifiable
+        if (method_exists($notifiable, 'routeNotificationFor')) {
+            $email = $notifiable->routeNotificationFor('mail');
+        } else {
+            $email = $notifiable->email ?? $notifiable;
+        }
+
+        return $mail->to($email);
     }
 }

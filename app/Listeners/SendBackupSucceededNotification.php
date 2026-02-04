@@ -6,14 +6,21 @@ use Illuminate\Support\Facades\Notification;
 use Spatie\Backup\Events\BackupWasSuccessful;
 use App\Notifications\BackupSucceeded;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Admin;
 
 class SendBackupSucceededNotification
 {
     public function handle(BackupWasSuccessful $event): void
     {
-        $userName = Auth::guard('admin')->user()->first_name . ' ' . Auth::guard('admin')->user()->last_name ?? 'Admin';
+        $admin = Auth::guard('admin')->user();
 
-        $to = config('backup.notifications.mail.to', config('mail.from.address'));
-        Notification::route('mail', $to)->notify(new BackupSucceeded($userName, $event));
+        if (!$admin || !($admin instanceof Admin)) {
+            return;
+        }
+
+        $userName = $admin->first_name . ' ' . $admin->last_name;
+
+        // Send notification directly to the admin user
+        Notification::send($admin, new BackupSucceeded($userName, $event));
     }
 }
