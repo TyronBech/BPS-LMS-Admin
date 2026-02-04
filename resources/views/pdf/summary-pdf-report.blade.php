@@ -38,16 +38,24 @@
       text-align: center;
     }
 
-    h2, p {
+    h2,
+    p {
       margin: 0;
       padding: 0;
     }
+
     .title {
       text-align: center;
       font-size: 14px;
       font-weight: bold;
-      margin-top: 10px;
       margin-bottom: 2px;
+    }
+
+    .semi-title {
+      text-align: center;
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: 10px;
     }
 
     h4 {
@@ -79,7 +87,8 @@
       table-layout: fixed;
     }
 
-    th, td {
+    th,
+    td {
       border: 1px solid #ddd;
       padding: 4px;
       font-size: 10px;
@@ -117,7 +126,7 @@
     </div>
     <hr>
   </header>
-
+  <p class="semi-title">The Library</p>
   <h4 class="title">{{ $title }}</h4>
   <div class="generated-date">{{ $date }}</div>
 
