@@ -20,17 +20,35 @@ class DatabaseBackup extends Command
      *
      * @var string
      */
-    protected $description = 'Create a database backup automatically';
+    protected $description = 'Create a database and logs backup automatically';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-        $this->info('Starting database backup...');
-        Log::info('Database backup started.');
-        Artisan::call('backup:run --only-db');
-        Log::info('Database backup completed.');
-        $this->info('Database backup completed.');
+        $this->info('Starting database and logs backup...');
+        Log::info('Automated backup started (DB + Logs).');
+
+        try {
+            Artisan::call('backup:custom');
+            $output = Artisan::output();
+
+            Log::info('Automated backup completed successfully.', [
+                'output' => $output,
+                'timestamp' => now(),
+            ]);
+
+            $this->info('Database and logs backup completed successfully.');
+            return 0;
+        } catch (\Exception $e) {
+            Log::error('Automated backup failed.', [
+                'error' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
+
+            $this->error('Backup failed: ' . $e->getMessage());
+            return 1;
+        }
     }
 }
