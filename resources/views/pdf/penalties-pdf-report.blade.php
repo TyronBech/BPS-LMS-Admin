@@ -138,11 +138,11 @@
           <td>{{ $item->user->first_name }} {{ $item->user->last_name }}</td>
           <td>{{ $item->book->accession }}</td>
           <td>{{ $item->book->title }}</td>
-          <td>{{ $item->date_borrowed }}</td>
-          <td>{{ $item->due_date ?? 'N/A' }}</td>
-          <td>{{ $item->return_date ?? 'N/A' }}</td>
-          <td>{{ $item->violation }}</td>
-          <td>{{ number_format($item->penalty_total, 2) }}</td>
+          <td>{{ $item->date_borrowed ?? 'Not Borrowed' }}</td>
+          <td>{{ $item->due_date ?? 'No Due Date' }}</td>
+          <td>{{ $item->return_date ?? 'Unreturned' }}</td>
+          <td>{{ $item->violation ?? 'No Violation' }}</td>
+          <td>{{ number_format($item->penalty_total ?? 0, 2) }}</td>
           <td>{{ $item->penalty_status }}</td>
         </tr>
         @empty

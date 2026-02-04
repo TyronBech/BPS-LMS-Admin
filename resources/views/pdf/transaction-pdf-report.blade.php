@@ -148,13 +148,13 @@
           <td>{{ $item->book->title }}</td>
           <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
           @if($type === 'Reserved' || $type === 'All')
-          <td>{{ $item->reserved_date ?? 'N/A' }}</td>
-          <td>{{ $item->pickup_deadline ?? 'N/A' }}</td>
+          <td>{{ $item->reserved_date ?? 'Not Reserved' }}</td>
+          <td>{{ $item->pickup_deadline ?? 'No Pickup Deadline' }}</td>
           @endif
           @if($type === 'Borrowed' || $type === 'All')
-          <td>{{ $item->date_borrowed ?? 'N/A' }}</td>
-          <td>{{ $item->due_date ?? 'N/A' }}</td>
-          <td>{{ $item->return_date ?? 'N/A' }}</td>
+          <td>{{ $item->date_borrowed ?? 'Not Borrowed' }}</td>
+          <td>{{ $item->due_date ?? 'No Due Date' }}</td>
+          <td>{{ $item->return_date ?? 'Unreturned' }}</td>
           @endif
           <td>{{ $item->transaction_type }}</td>
           <td>{{ $item->status }}</td>
@@ -162,7 +162,7 @@
         @endif
         @empty
         <tr>
-          <td colspan="7" style="text-align: center;">No data found.</td>
+          <td colspan="11" style="text-align: center;">No data found.</td>
         </tr>
         @endforelse
       </tbody>
