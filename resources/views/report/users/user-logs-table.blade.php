@@ -41,7 +41,7 @@
               -
               @endif
             </td>
-            <td class="px-6 py-4">{{ ucwords($item->remarks) ?? '-' }}</td>
+            <td class="px-6 py-4">{{ ucwords($item->remarks) ?? 'No Remarks' }}</td>
           </tr>
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">

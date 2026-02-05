@@ -35,11 +35,11 @@
             <td class="px-6 py-4">{{ $item->book->accession }}</td>
             <td class="px-6 py-4 whitespace-nowrap">{{ $item->book->title }}</td>
             <td class="px-6 py-4 whitespace-nowrap">{{ $item->borrowed }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->due ?? '-' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->returned ?? '-' }}</td>
-            <td class="px-6 py-4">{{ ucwords($item->violation) ?? '-' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">₱ {{ number_format($item->total, 2) }}</td>
-            <td class="px-6 py-4">{{ ucwords($item->status) }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->due ?? 'No Due Date' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->returned ?? 'Unreturned' }}</td>
+            <td class="px-6 py-4">{{ ucwords($item->violation) ?? 'No Violation' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">₱ {{ number_format($item->total, 2) ?? '0.00' }}</td>
+            <td class="px-6 py-4">{{ ucwords($item->status) ?? 'No Status' }}</td>
           </tr>
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
