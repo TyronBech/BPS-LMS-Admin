@@ -20,9 +20,18 @@ class UISettingController extends Controller
             'timestamp' => now(),
         ]);
         $settings = UISetting::first() ?? new UISetting();
+
+        $settingsLog = $settings->toArray();
+        if (!empty($settingsLog['org_logo'])) {
+            $settingsLog['org_logo'] = 'Organization Logo';
+        }
+        if (!empty($settingsLog['org_logo_full'])) {
+            $settingsLog['org_logo_full'] = 'Organization Logo Full';
+        }
+
         Log::info('UI Settings: Current settings fetched', [
             'user_id' => Auth::guard('admin')->id(),
-            'settings' => json_decode($settings, true),
+            'settings' => $settingsLog,
             'timestamp' => now(),
         ]);
         return view('settings.index', compact('settings'));
