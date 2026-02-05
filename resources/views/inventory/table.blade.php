@@ -46,7 +46,8 @@
                 <span class="float-left font-bold md:hidden">Remarks</span>
                 <select name="remarks[{{ $item->book->accession }}]" id="remarks" class="w-1/2 md:w-full p-2 border border-gray-200 rounded-lg shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300">
                   @foreach($remarks as $remark)
-                  <option value="{{ $remark }}" @if($remark == $item->book->remarks) selected @endif>{{ $remark }}</option>
+<!-- make this option select "On Shelf" -->
+                  <option value="{{ $remark }}" @if($remark == "On Shelf") selected @endif>{{ $remark }}</option>
                   @endforeach
                 </select>
               </td>

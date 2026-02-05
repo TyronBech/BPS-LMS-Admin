@@ -18,6 +18,7 @@
             <th scope="col" class="px-6 py-3">Call Number</th>
             <th scope="col" class="px-6 py-3">Title</th>
             <th scope="col" class="px-6 py-3">Author</th>
+            <th scope="col" class="px-6 py-3">Remarks</th>
             <th scope="col" class="px-6 py-3">Last Inventory</th>
           </tr>
         </thead>
@@ -30,6 +31,7 @@
               {{ $item->book->title ?? 'No Title' }}
             </th>
             <td class="px-6 py-4">{{ $item->book->author ?? 'No Author' }}</td>
+            <td class="px-6 py-4">{{ $item->book->remarks ?? 'No Remarks' }}</td>
             @php $item->date = \Carbon\Carbon::parse($item->date); @endphp
             <td class="px-6 py-4">{{ $item->date ? $item->date->format('Y-m-d') : 'Pending' }}</td>
           </tr>

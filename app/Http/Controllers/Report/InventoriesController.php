@@ -278,7 +278,7 @@ class InventoriesController extends Controller
         $perPage  = $request->input('perPage', 10);
 
         $query = $model->newQuery()
-            ->with('book:id,accession,call_number,title,author')
+            ->with('book:id,accession,call_number,title,author,remarks')
             ->select([
                 'id',
                 'book_id',

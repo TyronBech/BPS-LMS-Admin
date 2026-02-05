@@ -127,6 +127,7 @@
           <th>Call Number</th>
           <th>Title</th>
           <th>Author</th>
+          <th>Remarks</th>
           <th>Last Inventory</th>
         </tr>
       </thead>
@@ -138,6 +139,7 @@
             <td>{{ $item->book->call_number }}</td>
             <td>{{ $item->book->title }}</td>
             <td>{{ $item->book->author }}</td>
+            <td>{{ $item->book->remarks }}</td>
             <td>{{ \Carbon\Carbon::parse($item->checked_at)->format('M j, Y') }}</td>
           </tr>
           @endif
