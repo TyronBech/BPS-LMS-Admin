@@ -41,7 +41,7 @@
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <p class="font-semibold text-gray-900 dark:text-white">Borrowed Date:</p>
-          <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">{{ $transaction->borrowed_date ? \Carbon\Carbon::parse($transaction->borrowed_date)->format('F j, Y') : '-' }}</p>
+          <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">{{ $transaction->date_borrowed ? \Carbon\Carbon::parse($transaction->date_borrowed)->format('F j, Y') : '-' }}</p>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <p class="font-semibold text-gray-900 dark:text-white">Due Date:</p>

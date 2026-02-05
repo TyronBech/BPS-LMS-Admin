@@ -36,13 +36,13 @@
               {{ $item->book->title }}
             </th>
             <td class="px-6 py-4 whitespace-nowrap">{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->reserved ?? '-' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->deadline ?? '-' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->borrowed ?? '-' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->due ?? '-' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->returned ?? '-' }}</td>
-            <td class="px-6 py-4">{{ ucwords($item->type) ?? '-' }}</td>
-            <td class="px-6 py-4">{{ ucwords($item->status) ?? '-' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->reserved ?? 'Not Reserved' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->deadline ?? 'No Pickup Deadline' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->borrowed ?? 'Not Borrowed' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->due ?? 'No Due Date' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->returned ?? 'Unreturned' }}</td>
+            <td class="px-6 py-4">{{ ucwords($item->type) ?? 'No Type' }}</td>
+            <td class="px-6 py-4">{{ ucwords($item->status) ?? 'No Status' }}</td>
           </tr>
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">

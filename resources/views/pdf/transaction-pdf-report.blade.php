@@ -150,16 +150,16 @@
           <td>{{ $item->book->title }}</td>
           <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
           @if($type === 'Reserved' || $type === 'All')
-          <td>{{ $item->reserved_date ? \Carbon\Carbon::parse($item->reserved_date)->format('M j, Y') : 'Not Reserved' }}</td>
-          <td>{{ $item->pickup_deadline ? \Carbon\Carbon::parse($item->pickup_deadline)->format('M j, Y') : 'No Pickup Deadline' }}</td>
+          <td>{{ $item->reserved ? \Carbon\Carbon::parse($item->reserved)->format('M j, Y') : 'Not Reserved' }}</td>
+          <td>{{ $item->deadline ? \Carbon\Carbon::parse($item->deadline)->format('M j, Y') : 'No Pickup Deadline' }}</td>
           @endif
           @if($type === 'Borrowed' || $type === 'All')
-          <td>{{ $item->date_borrowed ? \Carbon\Carbon::parse($item->date_borrowed)->format('M j, Y') : 'Not Borrowed' }}</td>
-          <td>{{ $item->due_date ? \Carbon\Carbon::parse($item->due_date)->format('M j, Y') : 'No Due Date' }}</td>
-          <td>{{ $item->return_date ? \Carbon\Carbon::parse($item->return_date)->format('M j, Y') : 'Unreturned' }}</td>
+          <td>{{ $item->borrowed ? \Carbon\Carbon::parse($item->borrowed)->format('M j, Y') : 'Not Borrowed' }}</td>
+          <td>{{ $item->due ? \Carbon\Carbon::parse($item->due)->format('M j, Y') : 'No Due Date' }}</td>
+          <td>{{ $item->returned ? \Carbon\Carbon::parse($item->returned)->format('M j, Y') : 'Unreturned' }}</td>
           @endif
-          <td>{{ $item->transaction_type }}</td>
-          <td>{{ $item->status }}</td>
+          <td>{{ $item->type ?? 'No Type' }}</td>
+          <td>{{ $item->status ?? 'No Status' }}</td>
         </tr>
         @endif
         @empty
