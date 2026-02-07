@@ -20,6 +20,8 @@ return new class extends Migration
             $table->date('date_borrowed')->nullable();
             $table->date('due_date')->nullable();
             $table->date('return_date')->nullable();
+            $table->date('requested_due_date')->nullable();
+            $table->integer('renewal_count')->nullable();
             $table->enum('transaction_type', ['Borrowed', 'Returned', 'Reserved'])->nullable();
             $table->enum('status', ['Borrowed', 'Pending', 'Available for pick up', 'Completed', 'Overdue', 'Cancelled', 'Lost', 'Missing', 'Renew'])->default('Pending');
             $table->string('book_condition', 20)->nullable()->default('Good');

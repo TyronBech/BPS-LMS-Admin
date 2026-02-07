@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('system_settings', function (Blueprint $table) {
-            $table->bigInteger('id', true);
-            $table->string('key')->unique('key');
+            $table->bigIncrements('id');
+            $table->string('key')->unique();
             $table->text('value')->nullable();
             $table->string('description')->nullable();
             $table->timestamps();

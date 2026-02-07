@@ -28,11 +28,13 @@ return new class extends Migration
             $table->binary('cover_image')->nullable();
             $table->string('digital_copy_url')->nullable();
             $table->binary('barcode')->nullable();
-            $table->enum('availability_status', ['Available', 'Borrowed', 'In Use', 'Reserved'])->nullable()->default('Available');
+            $table->unsignedTinyInteger('is_printed')->default(0);
+            $table->enum('availability_status', ['Available', 'Unavailable', 'Borrowed', 'In Use', 'Reserved'])->nullable()->default('Unavailable');
             $table->enum('condition_status', ['New', 'Good', 'Fair', 'Poor'])->nullable()->default('Good');
             $table->timestamp('created_at')->nullable()->useCurrent();
             $table->timestamp('updated_at')->useCurrentOnUpdate()->nullable()->useCurrent();
             $table->softDeletes();
+            $table->string('accession_active')->nullable()->unique('unique_accession_not_deleted');
 
             $table->unique(['accession', 'deleted_at'], 'uniq_book_accession');
         });
