@@ -110,7 +110,7 @@
           <label for="remarks" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Remarks:</label>
           <select id="remarks" name="remarks" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
             @foreach($remarks as $value)
-            <option value="{{ $value }}" {{ old('remarks') == $value ? 'selected' : '' }}>{{ $value }}</option>
+            <option value="{{ $value }}" {{ "Missing" == $value ? 'selected' : '' }}>{{ $value }}</option>
             @endforeach
           </select>
           @error('remarks')
@@ -132,9 +132,10 @@
           <label for="availability" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Availability:</label>
           <select id="availability" name="availability" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
             @foreach($availability as $value)
-            <option value="{{ $value }}" {{ old('availability') == $value ? 'selected' : '' }}>{{ $value }}</option>
+            <option value="{{ $value }}" {{ "Available" == $value ? 'selected' : '' }}>{{ $value }}</option>
             @endforeach
           </select>
+          <input type="hidden" id="availability_hidden" name="availability" disabled>
           @error('availability')
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
           @enderror
@@ -143,7 +144,7 @@
           <label for="condition" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Condition:</label>
           <select id="condition" name="condition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
             @foreach($condition as $value)
-            <option value="{{ $value }}" {{ old('condition') == $value ? 'selected' : '' }}>{{ $value }}</option>
+            <option value="{{ $value }}" {{ "New" == $value ? 'selected' : '' }}>{{ $value }}</option>
             @endforeach
           </select>
           @error('condition')
@@ -163,6 +164,9 @@
   document.addEventListener('DOMContentLoaded', function() {
     const categorySelect = document.getElementById('category');
     const accessionInput = document.getElementById('accession');
+    const remarksSelect = document.getElementById('remarks');
+    const availabilitySelect = document.getElementById('availability');
+    const availabilityHidden = document.getElementById('availability_hidden');
 
     // from PHP: an array of category objects (id, name, legend, books, ...)
     const categoriesArray = <?php echo json_encode($categories); ?> || [];
@@ -219,6 +223,25 @@
         accessionInput.value = prefix + '000001';
       }
     });
+
+    function applyAvailabilityRule() {
+      if (!availabilitySelect || !availabilityHidden || !remarksSelect) return;
+      const rv = remarksSelect.value;
+      if (rv && rv !== 'On Shelf') {
+        availabilitySelect.value = 'Unavailable';
+        availabilitySelect.setAttribute('disabled', 'disabled');
+        availabilityHidden.value = 'Unavailable';
+        availabilityHidden.removeAttribute('disabled');
+      } else {
+        availabilitySelect.removeAttribute('disabled');
+        availabilityHidden.setAttribute('disabled', 'disabled');
+      }
+    }
+
+    if (remarksSelect) {
+      remarksSelect.addEventListener('change', applyAvailabilityRule);
+    }
+    applyAvailabilityRule();
   });
 </script>
 @endsection

@@ -135,6 +135,7 @@
             <option value="{{ $value }}" {{ $value == $book->availability_status ? 'selected' : '' }}>{{ $value }}</option>
             @endforeach
           </select>
+          <input type="hidden" id="availability_hidden" name="availability" disabled>
           @error('availability')
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
           @enderror
@@ -216,6 +217,7 @@
                 <option value="{{ $value }}" {{ $value == $book->availability_status ? 'selected' : '' }}>{{ $value }}</option>
                 @endforeach
               </select>
+              <input type="hidden" id="copy_availability_hidden" name="availability" disabled>
             </div>
             <div>
               <label for="copy_condition" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Condition:</label>
@@ -245,4 +247,57 @@
     </div>
   </div>
 </div>
+@endsection
+@section('scripts')
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const remarksSelect = document.getElementById('remarks');
+    const availabilitySelect = document.getElementById('availability');
+    const availabilityHidden = document.getElementById('availability_hidden');
+
+    function applyAvailabilityRule() {
+      if (!availabilitySelect || !availabilityHidden || !remarksSelect) return;
+      const rv = remarksSelect.value;
+      if (rv && rv !== 'On Shelf') {
+        availabilitySelect.value = 'Unavailable';
+        availabilitySelect.setAttribute('disabled', 'disabled');
+        availabilityHidden.value = 'Unavailable';
+        availabilityHidden.removeAttribute('disabled');
+      } else {
+        availabilitySelect.value = 'Available';
+        availabilitySelect.removeAttribute('disabled');
+        availabilityHidden.setAttribute('disabled', 'disabled');
+      }
+    }
+
+    if (remarksSelect) {
+      remarksSelect.addEventListener('change', applyAvailabilityRule);
+      applyAvailabilityRule();
+    }
+
+    // Copy modal logic
+    const copyRemarks = document.getElementById('copy_remarks');
+    const copyAvailability = document.getElementById('copy_availability');
+    const copyAvailabilityHidden = document.getElementById('copy_availability_hidden');
+
+    function applyAvailabilityRuleCopy() {
+      if (!copyAvailability || !copyAvailabilityHidden || !copyRemarks) return;
+      const rv = copyRemarks.value;
+      if (rv && rv !== 'On Shelf') {
+        copyAvailability.value = 'Unavailable';
+        copyAvailability.setAttribute('disabled', 'disabled');
+        copyAvailabilityHidden.value = 'Unavailable';
+        copyAvailabilityHidden.removeAttribute('disabled');
+      } else {
+        copyAvailability.removeAttribute('disabled');
+        copyAvailabilityHidden.setAttribute('disabled', 'disabled');
+      }
+    }
+
+    if (copyRemarks) {
+      copyRemarks.addEventListener('change', applyAvailabilityRuleCopy);
+      applyAvailabilityRuleCopy();
+    }
+  });
+</script>
 @endsection

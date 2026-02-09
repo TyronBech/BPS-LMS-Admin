@@ -8,6 +8,7 @@ use PhpOffice\PhpSpreadsheet\Reader\Xlsx as ReaderXlsx;
 use Illuminate\Support\Facades\DB;
 use App\Models\Book;
 use App\Models\Category;
+use App\Models\Inventory;
 use Milon\Barcode\DNS1D;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
@@ -373,7 +374,7 @@ class BookImportController extends Controller
                     'timestamp' => now(),
                 ]);
 
-                Book::create([
+                $newBook = Book::create([
                     'accession'             => $item['accession'],
                     'call_number'           => $item['call_number'] ?? null,
                     'title'                 => $item['title'],
@@ -387,9 +388,23 @@ class BookImportController extends Controller
                     'category_id'           => $category->id,
                     'barcode'               => $barcode->getBarcodeJPG($item['accession'], 'C39', 2, 80, array(0, 0, 0, 0), false),
                     'digital_copy_url'      => $item['digital_copy_url'] ?? null,
-                    'remarks'               => 'On Shelf',
-                    'availability_status'   => 'Available',
+                    'remarks'               => 'Missing',
+                    'availability_status'   => 'Unavailable',
                     'condition_status'      => 'New',
+                ]);
+
+                // Create inventory entry for the new book
+                Inventory::create([
+                    'book_id'    => $newBook->id,
+                    'checked_at' => now(),
+                ]);
+
+                Log::info('Book Import: Inventory entry created for new book', [
+                    'book_id' => $newBook->id,
+                    'accession' => $newBook->accession,
+                    'checked_at' => now(),
+                    'user_id' => Auth::id(),
+                    'timestamp' => now(),
                 ]);
 
                 Log::info('Book Import: Book created successfully', [

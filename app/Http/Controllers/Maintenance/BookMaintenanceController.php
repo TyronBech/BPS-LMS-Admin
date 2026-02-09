@@ -137,6 +137,13 @@ class BookMaintenanceController extends Controller
             'condition'         => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'condition_status')),
             'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
         ]);
+        $validator->after(function ($validator) use ($request) {
+            $remarks = $request->input('remarks');
+            $availability = $request->input('availability');
+            if ($remarks !== 'On Shelf' && $availability !== 'Unavailable') {
+                $validator->errors()->add('availability', 'Availability must be Unavailable when remarks is not On Shelf.');
+            }
+        });
         if ($validator->fails()) {
             Log::warning('Book Maintenance: Creation validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
@@ -452,6 +459,13 @@ class BookMaintenanceController extends Controller
             'condition'         => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'condition_status')),
             'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
         ]);
+        $validator->after(function ($validator) use ($request) {
+            $remarks = $request->input('remarks');
+            $availability = $request->input('availability');
+            if ($remarks !== 'On Shelf' && $availability !== 'Unavailable') {
+                $validator->errors()->add('availability', 'Availability must be Unavailable when remarks is not On Shelf.');
+            }
+        });
         if ($validator->fails()) {
             Log::warning('Book Maintenance: Update validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
@@ -554,6 +568,13 @@ class BookMaintenanceController extends Controller
             'condition'         => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'condition_status')),
             'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
         ]);
+        $validator->after(function ($validator) use ($request) {
+            $remarks = $request->input('remarks');
+            $availability = $request->input('availability');
+            if ($remarks !== 'On Shelf' && $availability !== 'Unavailable') {
+                $validator->errors()->add('availability', 'Availability must be Unavailable when remarks is not On Shelf.');
+            }
+        });
         if ($validator->fails()) {
             Log::warning('Book Maintenance: Copy validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
