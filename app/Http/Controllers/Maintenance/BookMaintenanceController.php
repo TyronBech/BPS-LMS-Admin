@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Milon\Barcode\DNS1D;
+use App\Models\Inventory;
 
 class BookMaintenanceController extends Controller
 {
@@ -187,12 +188,23 @@ class BookMaintenanceController extends Controller
                     'copyrights'            => $request->input('copyright') ?? null,
                     'cover_image'           => $request->input('cover_image') ?? null,
                     'digital_copy_url'      => $request->input('digital_copy_url') ?? null,
-                    'remarks'               => $request->input('remarks'),
+                    'remarks'               => "Missing",
                     'category_id'           => $request->input('category'),
                     'book_type'             => $request->input('book_type'),
                     'condition_status'      => $request->input('condition'),
-                    'availability_status'   => $request->input('availability'),
+                    'availability_status'   => "Unavailable",
                 ]);
+            }
+            // After creating books, update remarks/availability and create inventory entries within the same transaction
+            $importedAccessions = array_map('trim', explode(',', $request->input('accession')));
+            foreach ($importedAccessions as $acc) {
+                $book = Book::where('accession', $acc)->first();
+                if ($book) {
+                    Inventory::create([
+                        'book_id'    => $book->id,
+                        'checked_at' => now(),
+                    ]);
+                }
             }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
@@ -609,12 +621,23 @@ class BookMaintenanceController extends Controller
                     'copyrights'            => $request->input('copyright') ?? null,
                     'cover_image'           => $request->input('cover_image') ?? null,
                     'digital_copy_url'      => $request->input('digital_copy_url') ?? null,
-                    'remarks'               => $request->input('remarks'),
+                    'remarks'               => "Missing",
                     'category_id'           => $request->input('category'),
                     'book_type'             => $request->input('book_type'),
                     'condition_status'      => $request->input('condition'),
-                    'availability_status'   => $request->input('availability'),
+                    'availability_status'   => "Unavailable",
                 ]);
+            }
+            // After copying books, update remarks/availability and create inventory entries within the same transaction
+            $copiedAccessions = array_map('trim', explode(',', $request->input('accession')));
+            foreach ($copiedAccessions as $acc) {
+                $book = Book::where('accession', $acc)->first();
+                if ($book) {
+                    Inventory::create([
+                        'book_id'    => $book->id,
+                        'checked_at' => now(),
+                    ]);
+                }
             }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
