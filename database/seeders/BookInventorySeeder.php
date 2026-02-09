@@ -54,6 +54,8 @@ class BookInventorySeeder extends Seeder
             Log::info('Changing the remarks of all books into "Missing" except to the books which availability_status is "Borrowed"');
             Book::whereNot('availability_status', 'Available')->update(['remarks' => 'On Shelf']);
             Book::where('availability_status', 'Available')->update(['remarks' => 'Missing']);
+            // Changing the availability status of books where the remarks are not on shelf
+            Book::whereNot('remarks', 'On Shelf')->update(['availability_status' => 'Unavailable']);
             Log::info('Book inventory seeding completed successfully.');
         } catch (\Exception $e) {
             DB::rollBack();
