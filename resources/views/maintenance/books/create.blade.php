@@ -109,7 +109,7 @@
         <div>
           <label for="remarks" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Remarks:</label>
           <p class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">Missing</p>
-          <input type="hidden" name="remarks" value="Missing" disabled readonly>
+          <input type="hidden" id="remarks" name="remarks" value="Missing" readonly>
           @error('remarks')
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
           @enderror
@@ -128,7 +128,7 @@
         <div>
           <label for="availability" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Availability:</label>
           <p class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">Unavailable</p>
-          <input type="hidden" name="availability" value="Unavailable" disabled readonly>
+          <input type="hidden" id="availability" name="availability" value="Unavailable" readonly>
           @error('availability')
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
           @enderror
