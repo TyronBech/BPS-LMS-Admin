@@ -771,7 +771,7 @@ class BookMaintenanceController extends Controller
         ]);
 
         // Start query
-        $booksQuery = Book::query();
+        $booksQuery = Book::with('category');
 
         // ✅ If $ids provided, prioritize specific books
         if (!empty($ids)) {
@@ -812,7 +812,7 @@ class BookMaintenanceController extends Controller
         }
 
         // Get books
-        $books = $booksQuery->select('call_number')->orderBy('accession', 'asc')->get();
+        $books = $booksQuery->select('call_number', 'category_id')->orderBy('accession', 'asc')->get();
         if ($books->isEmpty()) {
             Log::warning('Book Maintenance: No books found for call number export', [
                 'user_id' => Auth::guard('admin')->id(),
