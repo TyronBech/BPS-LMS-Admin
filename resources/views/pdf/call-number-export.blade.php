@@ -22,8 +22,8 @@
       box-sizing: border-box;
       text-align: center;
       vertical-align: top;
-      padding-top: 15px;
-      padding-bottom: 10px;
+      padding-top: 8px;
+      padding-bottom: 6px;
       height: 100px;
       width: 14.28%;
     }
@@ -36,7 +36,7 @@
     }
     .label p {
       margin: 0;
-      font-size: 15px;
+      font-size: 17px;
       line-height: 1.2;
       padding-left: 2px;
       padding-right: 2px;
@@ -44,7 +44,8 @@
     .label .library-name {
       font-weight: 700;
       letter-spacing: 0.04em;
-      font-size: 16px;
+      font-size: 17px;
+      margin-bottom: 2px;
     }
   </style>
 </head>

@@ -17,6 +17,7 @@
 		<form action="{{ route('maintenance.update-book') }}" method="POST" enctype="multipart/form-data" class="mt-2">
 			@csrf
 			@method('PUT')
+            <input type="hidden" name="id" value="{{ $book->id }}">
 			<div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
 				<div class="md:col-span-2">
 					<label for="title" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Title:</label>

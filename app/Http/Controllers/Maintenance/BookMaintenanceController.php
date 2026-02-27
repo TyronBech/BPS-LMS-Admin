@@ -133,7 +133,7 @@ class BookMaintenanceController extends Controller
             'cover_image'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'digital_copy_url'  => 'nullable|string',
             'remarks'           => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'remarks')),
-            'category'          => 'required|in:' . implode(',', Category::all()->pluck('id')->toArray()),
+            'category'          => 'required|in:' . implode(',', Category::pluck('id')->toArray()),
             'book_type'         => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'book_type')),
             'condition'         => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'condition_status')),
             'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
@@ -141,8 +141,11 @@ class BookMaintenanceController extends Controller
         $validator->after(function ($validator) use ($request) {
             $remarks = $request->input('remarks');
             $availability = $request->input('availability');
+            if ($remarks === 'On Shelf' && $availability !== 'Available') {
+                $validator->errors()->add('availability', 'Availability must be "Available" when the book is On Shelf.');
+            }
             if ($remarks !== 'On Shelf' && $availability !== 'Unavailable') {
-                $validator->errors()->add('availability', 'Availability must be Unavailable when remarks is not On Shelf.');
+                $validator->errors()->add('availability', 'Availability must be "Unavailable" when the book is not On Shelf.');
             }
         });
         if ($validator->fails()) {
@@ -466,7 +469,7 @@ class BookMaintenanceController extends Controller
             'cover_image'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'digital_copy_url'  => 'nullable|string|url',
             'remarks'           => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'remarks')),
-            'category'          => 'required|in:' . implode(',', Category::all()->pluck('id')->toArray()),
+            'category'          => 'required|in:' . implode(',', Category::pluck('id')->toArray()),
             'book_type'         => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'book_type')),
             'condition'         => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'condition_status')),
             'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
@@ -474,8 +477,11 @@ class BookMaintenanceController extends Controller
         $validator->after(function ($validator) use ($request) {
             $remarks = $request->input('remarks');
             $availability = $request->input('availability');
+            if ($remarks === 'On Shelf' && $availability !== 'Available') {
+                $validator->errors()->add('availability', 'Availability must be "Available" when the book is On Shelf.');
+            }
             if ($remarks !== 'On Shelf' && $availability !== 'Unavailable') {
-                $validator->errors()->add('availability', 'Availability must be Unavailable when remarks is not On Shelf.');
+                $validator->errors()->add('availability', 'Availability must be "Unavailable" when the book is not On Shelf.');
             }
         });
         if ($validator->fails()) {
@@ -575,7 +581,7 @@ class BookMaintenanceController extends Controller
             'cover_image'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'digital_copy_url'  => 'nullable|string|url',
             'remarks'           => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'remarks')),
-            'category'          => 'required|in:' . implode(',', Category::all()->pluck('id')->toArray()),
+            'category'          => 'required|in:' . implode(',', Category::pluck('id')->toArray()),
             'book_type'         => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'book_type')),
             'condition'         => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'condition_status')),
             'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
@@ -583,8 +589,11 @@ class BookMaintenanceController extends Controller
         $validator->after(function ($validator) use ($request) {
             $remarks = $request->input('remarks');
             $availability = $request->input('availability');
+            if ($remarks === 'On Shelf' && $availability !== 'Available') {
+                $validator->errors()->add('availability', 'Availability must be "Available" when the book is On Shelf.');
+            }
             if ($remarks !== 'On Shelf' && $availability !== 'Unavailable') {
-                $validator->errors()->add('availability', 'Availability must be Unavailable when remarks is not On Shelf.');
+                $validator->errors()->add('availability', 'Availability must be "Unavailable" when the book is not On Shelf.');
             }
         });
         if ($validator->fails()) {
