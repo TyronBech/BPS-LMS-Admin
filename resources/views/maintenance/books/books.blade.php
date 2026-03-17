@@ -35,12 +35,23 @@
       </div>
 
       <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
-        <select id="category" name="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" onchange="this.form.submit()">
+        <select id="category" name="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" onchange="resetSortAndSubmit(this.form)">
           <option value="" {{ !$category ? 'selected' : '' }}>All Categories</option>
           @foreach ($categories as $item)
           <option value="{{ $item->id }}" {{ $item->id == $category ? 'selected' : '' }}>{{ $item->name }}</option>
           @endforeach
         </select>
+
+        <select id="sort_dropdown" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" onchange="updateSortAndSubmit(this.form)">
+          <option value="">Default Sorting</option>
+          <option value="title-asc" {{ ($sortBy == 'title' && $sortOrder == 'asc') ? 'selected' : '' }}>Title (Ascending)</option>
+          <option value="title-desc" {{ ($sortBy == 'title' && $sortOrder == 'desc') ? 'selected' : '' }}>Title (Descending)</option>
+          <option value="accession-asc" {{ ($sortBy == 'accession' && $sortOrder == 'asc') ? 'selected' : '' }}>Accession (Ascending)</option>
+          <option value="accession-desc" {{ ($sortBy == 'accession' && $sortOrder == 'desc') ? 'selected' : '' }}>Accession (Descending)</option>
+        </select>
+
+        <input type="hidden" name="sort_by" id="sort_by" value="{{ $sortBy }}">
+        <input type="hidden" name="sort_order" id="sort_order" value="{{ $sortOrder }}">
 
         <div class="flex gap-2">
           <button type="submit" name="searchBtn" value="search" class="flex-grow justify-center p-2.5 text-sm font-medium text-white bg-primary-500 rounded-lg border border-primary-500 hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">
@@ -70,9 +81,29 @@
     @include('maintenance.books.table')
   </div>
 </div>
+@endsection
 
-@push('scripts')
+@section('scripts')
 <script>
+  function resetSortAndSubmit(form) {
+    document.getElementById('sort_by').value = '';
+    document.getElementById('sort_order').value = '';
+    form.submit();
+  }
+
+  function updateSortAndSubmit(form) {
+    const sortDropdown = document.getElementById('sort_dropdown').value;
+    if (sortDropdown) {
+      const parts = sortDropdown.split('-');
+      document.getElementById('sort_by').value = parts[0];
+      document.getElementById('sort_order').value = parts[1];
+    } else {
+      document.getElementById('sort_by').value = '';
+      document.getElementById('sort_order').value = '';
+    }
+    form.submit();
+  }
+
   document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('search');
     const suggestionsContainer = document.getElementById('suggestions-container');
@@ -125,5 +156,4 @@
     });
   });
 </script>
-@endpush
 @endsection
