@@ -56,19 +56,19 @@ class RolePermissionSeeder extends Seeder
         // Permission::create(['name' => 'View Book Circulations Maintenance',  'guard_name' => 'admin']);
         // Permission::create(['name' => 'View Dashboard',                      'guard_name' => 'admin']);
         // Permission::create(['name' => 'Create Backups',                      'guard_name' => 'admin']);
-        // Permission::create(['name' => 'View Audit Reports',                  'guard_name' => 'admin']);
+        Permission::create(['name' => 'View Audit Reports',                  'guard_name' => 'admin']);
         // Permission::create(['name' => 'Reservation Approvals',               'guard_name' => 'admin']);
         // Permission::create(['name' => 'Modify UI Settings',                  'guard_name' => 'admin']);
 
 
-        // $permission = Permission::findByName('View User Audit Reports', 'admin');
-        // $permission->delete();
-        // $permission = Permission::findByName('View Book Audit Reports', 'admin');
-        // $permission->delete();
-        // $permission = Permission::findByName('View Transaction Audit Reports', 'admin');
-        // $permission->delete();
+        $permission = Permission::findByName('View User Audit Reports', 'admin');
+        $permission->delete();
+        $permission = Permission::findByName('View Book Audit Reports', 'admin');
+        $permission->delete();
+        $permission = Permission::findByName('View Transaction Audit Reports', 'admin');
+        $permission->delete();
 
-        
+
         // $role1 = Role::create(['name' => 'Super Admin',  'guard_name' => 'admin']);
         // $role2 = Role::create(['name' => 'Admin',        'guard_name' => 'admin']);
         // $role3 = Role::create(['name' => 'Librarian',    'guard_name' => 'admin']);
@@ -77,7 +77,7 @@ class RolePermissionSeeder extends Seeder
         // $admin1->assignRole('Super Admin');
         // $admin2 = User::find(6);
         // $admin2->assignRole('Admin');
-        
+
         // $role1->givePermissionTo('Modify Admins', 'Add Users', 'Edit Users', 'Delete Users', 'Add Books', 'Edit Books', 'Delete Books', 'Create Reports', 'View User Reports', 'View Summary Reports', 'View Inventory Reports', 'View Transaction Reports', 'View Book Circulation Reports', 'Book Inventory', 'Import Users', 'Import Books');
         // $role2->givePermissionTo('Add Users', 'Edit Users', 'Delete Users', 'Add Books', 'Edit Books', 'Delete Books', 'Create Reports', 'View User Reports', 'View Summary Reports', 'View Inventory Reports', 'View Transaction Reports', 'View Book Circulation Reports', 'Book Inventory', 'Import Users', 'Import Books');
         // $role3->givePermissionTo('Add Books', 'Edit Books', 'Delete Books', 'Create Reports', 'View User Reports', 'View Summary Reports', 'View Inventory Reports', 'View Transaction Reports', 'View Book Circulation Reports', 'Book Inventory', 'Import Users', 'Import Books');
@@ -94,5 +94,6 @@ class RolePermissionSeeder extends Seeder
         // $role1 = Role::findById(1, 'admin');
         // $role2 = Role::findById(2, 'admin');
         // $role3 = Role::findById(3, 'admin');
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
     }
 }
