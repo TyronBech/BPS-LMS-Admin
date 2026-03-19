@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 
 class AdminMaintenanceController extends Controller
-{   
+{
     /**
      * Displays a list of all administrators in the system.
      *
@@ -223,7 +223,7 @@ class AdminMaintenanceController extends Controller
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $role = $request->input('role');
             $admin = User::with('privileges')->where('rfid', $request->input('adminID'))->first();
-            if($admin->privileges->user_type === 'student' && $role === 'Super Admin'){
+            if ($admin->privileges->user_type === 'student' && $role === 'Super Admin') {
                 Log::warning('Admin Maintenance: Creation failed - Attempted to assign Student as Super Admin', [
                     'user_id' => Auth::guard('admin')->id(),
                     'target_user_id' => $admin->id,
@@ -236,7 +236,7 @@ class AdminMaintenanceController extends Controller
             }
             $admin->assignRole($role);
             $this->notification($admin, $role);
-            
+
             Log::info('Admin Maintenance: Admin role assigned successfully', [
                 'user_id' => Auth::guard('admin')->id(),
                 'user_name' => Auth::guard('admin')->user()->full_name,
@@ -245,7 +245,6 @@ class AdminMaintenanceController extends Controller
                 'role_assigned' => $role,
                 'timestamp' => now(),
             ]);
-
         } catch (\Illuminate\Database\QueryException $e) {
             Log::error('Admin Maintenance: Database error during creation', [
                 'user_id' => Auth::guard('admin')->id(),
@@ -332,12 +331,12 @@ class AdminMaintenanceController extends Controller
                 'required',
                 function ($attribute, $value, $fail) {
                     $role = Role::where('guard_name', 'admin')
-                        ->where(function($query) use ($value) {
+                        ->where(function ($query) use ($value) {
                             $query->where('id', $value)
-                                  ->orWhere('name', $value);
+                                ->orWhere('name', $value);
                         })
                         ->first();
-                    
+
                     if (!$role) {
                         $fail('Selected role is invalid.');
                     }
@@ -351,24 +350,24 @@ class AdminMaintenanceController extends Controller
             'email.unique'           => 'Email has already been taken',
             'role.required'          => 'Role is required',
         ]);
-        
+
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $authAdmin = User::findOrFail(Auth::guard('admin')->user()->id);
-            
+
             if ($authAdmin->hasAnyRole(RolesEnum::SUPER_ADMIN, RolesEnum::ADMIN)) {
                 // Find role by name or ID
                 $role = Role::where('guard_name', 'admin')
-                    ->where(function($query) use ($request) {
+                    ->where(function ($query) use ($request) {
                         $query->where('id', $request->input('role'))
-                              ->orWhere('name', $request->input('role'));
+                            ->orWhere('name', $request->input('role'));
                     })
                     ->first();
-                
+
                 $admin = User::with('privileges')->findOrFail($request->input('id'));
-                
-                if($admin->privileges->user_type == 'student' && $role->name == 'Super Admin'){
+
+                if ($admin->privileges->user_type == 'student' && $role->name == 'Super Admin') {
                     Log::warning('Admin Maintenance: Update failed - Attempted to assign Student as Super Admin', [
                         'user_id' => Auth::guard('admin')->id(),
                         'target_user_id' => $admin->id,
@@ -377,14 +376,14 @@ class AdminMaintenanceController extends Controller
                     DB::rollBack();
                     return redirect()->back()->with('toast-warning', 'A student cannot be assigned as Super Admin');
                 }
-                
+
                 $admin->update([
                     'first_name'    => $request->input('first-name'),
                     'middle_name'   => $request->input('middle-name'),
                     'last_name'     => $request->input('last-name'),
                     'email'         => $request->input('email'),
                 ]);
-                
+
                 $admin->syncRoles($role);
                 $this->notification($admin, $role->name);
 
@@ -395,7 +394,6 @@ class AdminMaintenanceController extends Controller
                     'new_role' => $role->name,
                     'timestamp' => now(),
                 ]);
-
             } else {
                 Log::warning('Admin Maintenance: Update failed - Insufficient permissions', [
                     'user_id' => Auth::guard('admin')->id(),
@@ -414,7 +412,7 @@ class AdminMaintenanceController extends Controller
             DB::rollBack();
             return redirect()->back()->with('toast-error', $e->getMessage());
         }
-        
+
         DB::commit();
         return redirect()->route('maintenance.admins')->with('toast-success', 'Admin updated successfully');
     }
@@ -461,7 +459,7 @@ class AdminMaintenanceController extends Controller
         }
         DB::beginTransaction();
         try {
-            $userToDelete->syncRoles([]);  
+            $userToDelete->syncRoles([]);
             Log::info('Admin Maintenance: Admin rights removed successfully', [
                 'user_id' => $authenticatedUser->id,
                 'user_name' => $authenticatedUser->full_name,
