@@ -396,6 +396,7 @@ class BookImportController extends Controller
                 // Create inventory entry for the new book
                 Inventory::create([
                     'book_id'    => $newBook->id,
+                    'is_scanned' => 1,
                     'checked_at' => now(),
                 ]);
 

@@ -224,6 +224,7 @@ class BookMaintenanceController extends Controller
                 if ($book) {
                     Inventory::create([
                         'book_id'    => $book->id,
+                        'is_scanned' => 1,
                         'checked_at' => now(),
                     ]);
                 }
@@ -681,6 +682,7 @@ class BookMaintenanceController extends Controller
                 if ($book) {
                     Inventory::create([
                         'book_id'    => $book->id,
+                        'is_scanned' => 1,
                         'checked_at' => now(),
                     ]);
                 }

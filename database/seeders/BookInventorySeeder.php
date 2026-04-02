@@ -51,6 +51,7 @@ class BookInventorySeeder extends Seeder
             foreach ($books as $book) {
                 Inventory::create([
                     'book_id'    => $book->id,
+                    'is_scanned' => 1,
                     'checked_at' => $book->created_at,
                 ]);
             }
@@ -100,6 +101,7 @@ class BookInventorySeeder extends Seeder
             foreach ($books as $book) {
                 Inventory::create([
                     'book_id'    => $book->id,
+                    'is_scanned' => 1,
                     'checked_at' => $book->created_at,
                 ]);
             }

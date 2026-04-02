@@ -21,6 +21,7 @@ class InventoryFactory extends Factory
 
         return [
             'book_id' => $book->id,
+            'is_scanned' => true,
             'checked_at' => $this->faker->dateTimeThisYear(),
         ];
     }

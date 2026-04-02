@@ -13,12 +13,20 @@ class Inventory extends Model
     protected $primaryKey = 'id';
     protected $table = 'bk_inventories';
     public $timestamps = true;
+    protected $attributes = [
+        'is_scanned' => 0,
+    ];
     protected $fillable = [
         'book_id',
+        'is_scanned',
         'checked_at',
+    ];
+    protected $casts = [
+        'is_scanned' => 'boolean',
+        'checked_at' => 'datetime',
     ];
     public function book() : BelongsTo
     {
-        return $this->belongsTo(Book::class, 'book_id', 'id');
+        return $this->belongsTo(Book::class, 'book_id', 'id')->withTrashed();
     }
 }

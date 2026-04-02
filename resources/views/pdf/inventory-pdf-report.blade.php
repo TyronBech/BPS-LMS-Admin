@@ -110,7 +110,7 @@
 <body>
   <header>
     <div class="logo">
-      <img src="data:image/png;base64,{{ $logo }}" alt="{{ $settings->org_initial }} Logo">
+      <img src="data:image/png;base64,{{ $logo }}" alt="Organization Logo">
     </div>
     <hr>
   </header>
@@ -124,28 +124,22 @@
       <thead>
         <tr>
           <th>Accession Number</th>
-          <th>Call Number</th>
-          <th>Title</th>
           <th>Author</th>
+          <th>Title</th>
           <th>Remarks</th>
-          <th>Last Inventory</th>
         </tr>
       </thead>
       <tbody>
         @forelse($data as $item)
-          @if($item->book)
-          <tr>
-            <td>{{ $item->book->accession }}</td>
-            <td>{{ $item->book->call_number }}</td>
-            <td>{{ $item->book->title }}</td>
-            <td>{{ $item->book->author }}</td>
-            <td>{{ $item->book->remarks }}</td>
-            <td>{{ \Carbon\Carbon::parse($item->checked_at)->format('M j, Y') }}</td>
-          </tr>
-          @endif
+        <tr>
+          <td>{{ $item->accession }}</td>
+          <td>{{ $item->author }}</td>
+          <td>{{ $item->title }}</td>
+          <td>{{ $item->remarks }}</td>
+        </tr>
         @empty
         <tr>
-          <td colspan="5" style="text-align: center;">No data found.</td>
+          <td colspan="4" style="text-align: center;">No data found.</td>
         </tr>
         @endforelse
       </tbody>

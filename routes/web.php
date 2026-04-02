@@ -182,10 +182,12 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
     });
 
     Route::prefix('inventory')->middleware(InventoryAuthentication::class)->controller(InventoryController::class)->group(function () {
-        Route::match(['get', 'post'], 'dashboard', 'index') ->name('inventory.dashboard');
-        Route::post('search', 'search')                     ->name('inventory.search');
-        Route::post('update', 'update')                     ->name('inventory.update');
-        Route::delete('delete', 'destroy')                  ->name('inventory.delete');
+        Route::get('dashboard', 'index')        ->name('inventory.dashboard');
+        Route::post('start', 'start')           ->name('inventory.start');
+        Route::post('search', 'search')         ->name('inventory.search');
+        Route::post('update', 'update')         ->name('inventory.update');
+        Route::post('finish', 'finish')         ->name('inventory.finish');
+        Route::delete('delete', 'destroy')      ->name('inventory.delete');
     });
 
     Route::prefix('maintenance')->middleware(MaintenanceAuthentication::class)->group(function () {

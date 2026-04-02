@@ -15,29 +15,24 @@
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
             <th scope="col" class="px-6 py-3">Accession</th>
-            <th scope="col" class="px-6 py-3">Call Number</th>
-            <th scope="col" class="px-6 py-3">Title</th>
             <th scope="col" class="px-6 py-3">Author</th>
+            <th scope="col" class="px-6 py-3">Title</th>
             <th scope="col" class="px-6 py-3">Remarks</th>
-            <th scope="col" class="px-6 py-3">Last Inventory</th>
           </tr>
         </thead>
         <tbody>
           @forelse($data as $item)
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-            <td class="px-6 py-4">{{ $item->book->accession ?? 'No Accession' }}</td>
-            <td class="px-6 py-4">{{ $item->book->call_number ?? 'No Call Number' }}</td>
+            <td class="px-6 py-4">{{ $item->accession ?? 'No Accession' }}</td>
+            <td class="px-6 py-4">{{ $item->author ?? 'No Author' }}</td>
             <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
-              {{ $item->book->title ?? 'No Title' }}
+              {{ $item->title ?? 'No Title' }}
             </th>
-            <td class="px-6 py-4">{{ $item->book->author ?? 'No Author' }}</td>
-            <td class="px-6 py-4">{{ $item->book->remarks ?? 'No Remarks' }}</td>
-            @php $item->date = \Carbon\Carbon::parse($item->date); @endphp
-            <td class="px-6 py-4">{{ $item->date ? $item->date->format('Y-m-d') : 'Pending' }}</td>
+            <td class="px-6 py-4">{{ $item->remarks ?? 'No Remarks' }}</td>
           </tr>
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-            <td colspan="5" class="px-6 py-4 text-center">No data found.</td>
+            <td colspan="4" class="px-6 py-4 text-center">No data found.</td>
           </tr>
           @endforelse
         </tbody>
