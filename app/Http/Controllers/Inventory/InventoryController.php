@@ -38,8 +38,8 @@ class InventoryController extends Controller
             ->whereHas('book')
             ->when(
                 $inventoryActive,
-                fn ($query) => $query->where('is_scanned', true),
-                fn ($query) => $query->whereNotNull('checked_at')
+                fn($query) => $query->where('is_scanned', true),
+                fn($query) => $query->whereNotNull('checked_at')
             )
             ->orderByRaw('CASE WHEN checked_at IS NULL THEN 0 ELSE 1 END')
             ->orderBy('updated_at', 'desc')
@@ -260,6 +260,46 @@ class InventoryController extends Controller
         }
     }
 
+    public function cancel(Request $request)
+    {
+        if (!$this->isInventoryActive()) {
+            return redirect()->route('inventory.dashboard')->with('toast-warning', 'There is no active inventory to cancel.');
+        }
+
+        try {
+            $restoredCount = 0;
+
+            DB::transaction(function () use (&$restoredCount) {
+                $restoredCount = $this->restoreLatestArchivedInventory();
+
+                if ($restoredCount === 0) {
+                    throw new \RuntimeException('No archived inventory snapshot found to restore.');
+                }
+
+                $this->setInventoryActive(false);
+            });
+
+            Log::info('Inventory: Cycle cancelled and previous snapshot restored', [
+                'user_id' => Auth::guard('admin')->id(),
+                'user_name' => Auth::guard('admin')->user()->full_name,
+                'restored_count' => $restoredCount,
+                'timestamp' => now(),
+            ]);
+
+            return redirect()->route('inventory.dashboard')->with('toast-success', "Inventory cancelled. Previous snapshot restored ({$restoredCount} books).");
+        } catch (\RuntimeException $e) {
+            return redirect()->route('inventory.dashboard')->with('toast-warning', $e->getMessage());
+        } catch (\Throwable $e) {
+            Log::error('Inventory: Cancel failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
+
+            return redirect()->route('inventory.dashboard')->with('toast-error', 'Failed to cancel inventory.');
+        }
+    }
+
     public function destroy(Request $request)
     {
         if (!$this->isInventoryActive()) {
@@ -373,6 +413,82 @@ class InventoryController extends Controller
         return $seededCount;
     }
 
+    private function restoreLatestArchivedInventory(): int
+    {
+        $latestArchivedAt = ArchiveInventory::query()->max('archived_at');
+
+        if (!$latestArchivedAt) {
+            return 0;
+        }
+
+        $records = ArchiveInventory::query()
+            ->where('archived_at', $latestArchivedAt)
+            ->orderBy('id')
+            ->get(['book_id', 'remarks', 'checked_at']);
+
+        if ($records->isEmpty()) {
+            return 0;
+        }
+
+        $bookIds = $records->pluck('book_id')->unique()->values()->all();
+        $existingBookIds = Book::query()
+            ->whereIn('id', $bookIds)
+            ->pluck('id')
+            ->all();
+
+        $existingBookLookup = array_fill_keys($existingBookIds, true);
+        $timestamp = now();
+        $payload = [];
+        $bookRollbackPayload = [];
+
+        foreach ($records as $record) {
+            if (!isset($existingBookLookup[$record->book_id])) {
+                continue;
+            }
+
+            $payload[] = [
+                'book_id' => $record->book_id,
+                'is_scanned' => $record->checked_at !== null,
+                'checked_at' => $record->checked_at,
+                'created_at' => $timestamp,
+                'updated_at' => $timestamp,
+            ];
+
+            if ($record->remarks !== null) {
+                $bookRollbackPayload[] = [
+                    'id' => $record->book_id,
+                    'remarks' => $record->remarks,
+                    'availability_status' => $record->remarks === 'On Shelf' ? 'Available' : 'Unavailable',
+                    'updated_at' => $timestamp,
+                ];
+            }
+        }
+
+        if (empty($payload)) {
+            return 0;
+        }
+
+        Inventory::withTrashed()->forceDelete();
+
+        foreach (array_chunk($payload, 500) as $chunk) {
+            Inventory::insert($chunk);
+        }
+
+        if (!empty($bookRollbackPayload)) {
+            foreach ($bookRollbackPayload as $bookRollback) {
+                Book::query()
+                    ->where('id', $bookRollback['id'])
+                    ->update([
+                        'remarks' => $bookRollback['remarks'],
+                        'availability_status' => $bookRollback['availability_status'],
+                        'updated_at' => $bookRollback['updated_at'],
+                    ]);
+            }
+        }
+
+        return count($payload);
+    }
+
     private function validateSelections(Request $request)
     {
         return Validator::make($request->all(), [
@@ -387,15 +503,13 @@ class InventoryController extends Controller
     {
         $conditions = $request->input('condition', []);
         $remarks = $request->input('remarks', []);
-        $accessions = array_unique(array_merge(array_keys($conditions), array_keys($remarks)));
+        $bookIds = array_unique(array_merge(array_keys($conditions), array_keys($remarks)));
         $updatedCount = 0;
 
-        foreach ($accessions as $accession) {
+        foreach ($bookIds as $bookId) {
             $inventory = Inventory::with('book')
                 ->where('is_scanned', true)
-                ->whereHas('book', function ($query) use ($accession) {
-                    $query->where('accession', $accession);
-                })
+                ->where('book_id', (int) $bookId)
                 ->first();
 
             if (!$inventory || !$inventory->book) {
@@ -403,8 +517,8 @@ class InventoryController extends Controller
             }
 
             $book = $inventory->book;
-            $newCondition = $conditions[$accession] ?? $book->condition_status;
-            $newRemarks = $remarks[$accession] ?? $book->remarks;
+            $newCondition = $conditions[$bookId] ?? $book->condition_status;
+            $newRemarks = $remarks[$bookId] ?? $book->remarks;
             $newAvailability = $newRemarks === 'On Shelf' ? 'Available' : 'Unavailable';
 
             if (

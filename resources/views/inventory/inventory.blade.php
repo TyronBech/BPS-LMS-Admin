@@ -19,9 +19,14 @@
           </div>
 
           @if($inventoryActive)
-          <button type="button" data-modal-target="finish-modal" data-modal-toggle="finish-modal" class="inline-flex items-center justify-center rounded-lg bg-amber-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-amber-600 focus:outline-none focus:ring-4 focus:ring-amber-300 dark:focus:ring-amber-800">
-            Finish Inventory
-          </button>
+          <div class="flex items-center gap-2">
+            <button type="button" data-modal-target="cancel-modal" data-modal-toggle="cancel-modal" class="inline-flex items-center justify-center rounded-lg bg-red-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-300 dark:focus:ring-red-800">
+              Cancel Inventory
+            </button>
+            <button type="button" data-modal-target="finish-modal" data-modal-toggle="finish-modal" class="inline-flex items-center justify-center rounded-lg bg-amber-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-amber-600 focus:outline-none focus:ring-4 focus:ring-amber-300 dark:focus:ring-amber-800">
+              Finish Inventory
+            </button>
+          </div>
           @else
           <form action="{{ route('inventory.start') }}" method="POST">
             @csrf
@@ -99,6 +104,35 @@
           </button>
           <button data-modal-hide="reset-modal" type="button" class="skip-loader ms-3 rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-primary-700 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700">
             No, keep it
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="cancel-modal" tabindex="-1" class="hidden fixed left-0 right-0 top-0 z-50 h-[calc(100%-1rem)] w-full items-center justify-center overflow-y-auto overflow-x-hidden md:inset-0">
+  <div class="relative max-h-full w-full max-w-md p-4">
+    <div class="relative rounded-lg bg-white shadow-sm dark:bg-gray-700">
+      <button type="button" class="absolute end-2.5 top-3 inline-flex h-8 w-8 items-center justify-center rounded-lg bg-transparent text-sm text-gray-400 hover:bg-gray-200 hover:text-gray-900 dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="cancel-modal">
+        <svg class="h-3 w-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+        </svg>
+        <span class="sr-only">Close modal</span>
+      </button>
+      <div class="p-4 text-center md:p-5">
+        <svg class="mx-auto mb-4 h-12 w-12 text-red-500" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 3 2 17h16L10 3Zm0 5v3m0 3h.01" />
+        </svg>
+        <h3 class="mb-3 text-lg font-normal text-gray-500 dark:text-gray-400">Cancel this active inventory cycle?</h3>
+        <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">This will discard current scans and restore the previous inventory snapshot from archive.</p>
+        <form id="cancel-inventory-form" action="{{ route('inventory.cancel') }}" method="POST">
+          @csrf
+          <button data-modal-hide="cancel-modal" type="submit" class="inline-flex items-center rounded-lg bg-red-600 px-5 py-2.5 text-sm font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-4 focus:ring-red-300 dark:focus:ring-red-800">
+            Yes, cancel inventory
+          </button>
+          <button data-modal-hide="cancel-modal" type="button" class="skip-loader ms-3 rounded-lg border border-gray-200 bg-white px-5 py-2.5 text-sm font-medium text-gray-900 hover:bg-gray-100 hover:text-primary-700 focus:outline-none focus:ring-4 focus:ring-gray-100 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700 dark:hover:text-white dark:focus:ring-gray-700">
+            No, keep inventory
           </button>
         </form>
       </div>
