@@ -214,14 +214,13 @@ class InventoryController extends Controller
             ->count();
 
         try {
-            $onShelfCount = 0;
+            $finalizedCount = 0;
             $missingCount = 0;
 
-            DB::transaction(function () use (&$onShelfCount, &$missingCount) {
-                $onShelfCount = Book::whereIn('id', Inventory::whereNotNull('checked_at')->select('book_id'))
+            DB::transaction(function () use (&$finalizedCount, &$missingCount) {
+                $finalizedCount = Book::whereIn('id', Inventory::whereNotNull('checked_at')->select('book_id'))
                     ->update([
-                        'remarks' => 'On Shelf',
-                        'availability_status' => 'Available',
+                        'availability_status' => DB::raw("CASE WHEN remarks = 'On Shelf' THEN 'Available' ELSE 'Unavailable' END"),
                     ]);
 
                 $missingCount = Book::whereIn('id', Inventory::whereNull('checked_at')->select('book_id'))
@@ -237,13 +236,13 @@ class InventoryController extends Controller
             Log::info('Inventory: Cycle finished', [
                 'user_id' => Auth::guard('admin')->id(),
                 'user_name' => Auth::guard('admin')->user()->full_name,
-                'on_shelf_count' => $onShelfCount,
+                'finalized_count' => $finalizedCount,
                 'missing_count' => $missingCount,
                 'pending_save_count' => $pendingSaveCount,
                 'timestamp' => now(),
             ]);
 
-            $message = "Inventory finished successfully. {$onShelfCount} books marked On Shelf and {$missingCount} books marked Missing.";
+            $message = "Inventory finished successfully. {$finalizedCount} saved books kept their selected remarks and {$missingCount} unsaved On Shelf books were marked Missing.";
             if ($pendingSaveCount > 0) {
                 $message .= " {$pendingSaveCount} scanned books were not saved and were not counted.";
             }

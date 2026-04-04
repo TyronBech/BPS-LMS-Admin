@@ -154,7 +154,7 @@
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 3 2 17h16L10 3Zm0 5v3m0 3h.01" />
         </svg>
         <h3 class="mb-3 text-lg font-normal text-gray-500 dark:text-gray-400">Finish this inventory cycle?</h3>
-        <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">Saved books will be marked as <span class="font-semibold">On Shelf</span>. Books without a saved timestamp and currently marked <span class="font-semibold">On Shelf</span> will be marked as <span class="font-semibold">Missing</span>.</p>
+        <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">Saved books will keep the selected remarks and condition you saved. Books without a saved timestamp and currently marked <span class="font-semibold">On Shelf</span> will be marked as <span class="font-semibold">Missing</span>.</p>
         @if($stats['pending_save'] > 0)
         <p class="mb-5 text-sm font-medium text-amber-600 dark:text-amber-300">{{ number_format($stats['pending_save']) }} scanned books are still pending save and will not be counted if you finish now.</p>
         @else
