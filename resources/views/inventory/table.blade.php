@@ -38,9 +38,9 @@
                     <thead class="hidden bg-gray-50 text-center text-xs uppercase text-gray-700 dark:bg-gray-700 dark:text-gray-400 md:table-header-group">
                         <tr>
                             <th scope="col" class="px-6 py-3">Accession</th>
-                            <th scope="col" class="px-6 py-3">Call Number</th>
-                            <th scope="col" class="px-6 py-3">Title</th>
                             <th scope="col" class="px-6 py-3">Author</th>
+                            <th scope="col" class="px-6 py-3">Title</th>
+                            <th scope="col" class="px-6 py-3">Call Number</th>
                             <th scope="col" class="px-6 py-3">Status</th>
                             <th scope="col" class="px-6 py-3">Remarks</th>
                             <th scope="col" class="px-6 py-3">Condition</th>
@@ -56,7 +56,10 @@
                                 <span class="float-left font-bold md:hidden">Accession</span>{{ $item->book->accession }}
                             </td>
                             <td class="block px-6 py-4 text-right md:table-cell md:text-center">
-                                <span class="float-left font-bold md:hidden">Call Number</span>{{ $item->book->call_number ?? 'N/A' }}
+                                <span class="float-left font-bold md:hidden">Author</span>
+                                <div class="inline-block break-words md:block md:max-w-[12rem] md:mx-auto lg:max-w-xs">
+                                    {{ $item->book->author ?? 'N/A' }}
+                                </div>
                             </td>
                             <td class="block px-6 py-4 text-right md:table-cell md:text-center">
                                 <span class="float-left font-bold md:hidden">Title</span>
@@ -65,10 +68,7 @@
                                 </div>
                             </td>
                             <td class="block px-6 py-4 text-right md:table-cell md:text-center">
-                                <span class="float-left font-bold md:hidden">Author</span>
-                                <div class="inline-block break-words md:block md:max-w-[12rem] md:mx-auto lg:max-w-xs">
-                                    {{ $item->book->author ?? 'N/A' }}
-                                </div>
+                                <span class="float-left font-bold md:hidden">Call Number</span>{{ $item->book->call_number ?? 'N/A' }}
                             </td>
                             <td class="block px-6 py-4 text-right md:table-cell md:text-center">
                                 <span class="float-left font-bold md:hidden">Status</span>
@@ -87,7 +87,7 @@
                                 @if($inventoryActive)
                                 <select name="remarks[{{ $item->book->id }}]" class="w-1/2 rounded-lg border border-gray-200 p-2 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 md:w-full" @disabled(!$inventoryActive)>
                                     @foreach($remarks as $remark)
-                                    <option value="{{ $remark }}" @selected($remark==old("remarks.{$item->book->id}", $item->book->remarks))>{{ $remark }}</option>
+                                    <option value="{{ $remark }}" @selected($remark=="On Shelf")>{{ $remark }}</option>
                                     @endforeach
                                 </select>
                                 @else
