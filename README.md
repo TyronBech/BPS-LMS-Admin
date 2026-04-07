@@ -1,6 +1,6 @@
 # 📚 Library Management System - Admin Portal
 
-A comprehensive web-based library management system built with Laravel, designed specifically for Bicutan Parochial (BPS) administrators to efficiently manage library operations, track user activities, and generate insightful analytics. This system serves as the administrative backbone for the school's library services.
+A comprehensive web-based library management system built with Laravel, designed specifically for School Library's administrators to efficiently manage library operations, track user activities, and generate insightful analytics. This system serves as the administrative backbone for the school's library services.
 
 🌐 **Live Demo**: [https://library-admin.bps.edu.ph](https://library-admin.bps.edu.ph)
 

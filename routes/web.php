@@ -33,6 +33,7 @@ use App\Http\Controllers\Maintenance\ReservationExtensionController;
 use App\Http\Controllers\Maintenance\ReservationStatus;
 use App\Http\Controllers\Maintenance\TransactionMaintenanceController;
 use App\Http\Controllers\Settings\UISettingController;
+use App\Http\Controllers\Testing\MailPreviewController;
 use App\Http\Middleware\AuditReportAuthentication;
 use App\Http\Middleware\BackupAuthentication;
 use App\Http\Middleware\BookAuthentication;
@@ -313,6 +314,13 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
         Route::get('ui-settings', 'index')->name('settings.ui-settings');
         Route::post('ui-settings', 'update')->name('settings.update-ui-settings');
     });
+
+    if (app()->environment(['local', 'development'])) {
+        Route::prefix('testing')->controller(MailPreviewController::class)->group(function () {
+            Route::get('mails', 'index')->name('testing.mail.index');
+            Route::get('mails/{mail}', 'show')->name('testing.mail.preview');
+        });
+    }
 
     Route::post('logout', [AdminLoginController::class, 'destroy'])->name('admin.logout');
 });
