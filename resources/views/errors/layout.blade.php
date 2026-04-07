@@ -439,8 +439,8 @@
     <main class="wrap" role="main" aria-labelledby="page-title">
         <section class="card">
             <div class="brand">
-                <img src="{{ asset('img/BPSLogo.png') }}" alt="BPS logo" />
-                <span>BPS Library Management System</span>
+                <img src="{{ $settings->getOrgLogoBase64Attribute() ?? asset('img/BPSLogo.png') }}" alt="{{ $settings->org_name ?? 'Bicutan Parochial School' }} logo" />
+                <span>{{ $settings->org_name ?? 'Bicutan Parochial School' }} Library Management System</span>
             </div>
 
             <h1 id="page-title">@yield('code') — @yield('message')</h1>

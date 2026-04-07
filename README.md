@@ -1,6 +1,6 @@
-# 📚 BPS Library Management System - Admin Portal
+# 📚 Library Management System - Admin Portal
 
-A comprehensive web-based library management system built with Laravel, designed specifically for Bulacan Polytechnic School (BPS) administrators to efficiently manage library operations, track user activities, and generate insightful analytics. This system serves as the administrative backbone for the school's library services.
+A comprehensive web-based library management system built with Laravel, designed specifically for Bicutan Parochial (BPS) administrators to efficiently manage library operations, track user activities, and generate insightful analytics. This system serves as the administrative backbone for the school's library services.
 
 🌐 **Live Demo**: [https://library-admin.bps.edu.ph](https://library-admin.bps.edu.ph)
 
@@ -17,7 +17,7 @@ A comprehensive web-based library management system built with Laravel, designed
 
 ## 🔍 Overview
 
-The BPS Library Management System (LMS) Admin Portal is a capstone project developed to modernize and streamline library operations at Bicutan Parochial School, Inc. The system provides a centralized platform for:
+The Library Management System (LMS) Admin Portal is a capstone project developed to modernize and streamline library operations at Bicutan Parochial School, Inc. The system provides a centralized platform for:
 
 - **Library Staff**: To manage daily operations including book lending, returns, and user management
 - **Administrators**: To monitor library usage, generate reports, and configure system settings

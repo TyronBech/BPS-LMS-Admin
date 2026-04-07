@@ -76,7 +76,7 @@ class CategoriesController extends Controller
         return redirect()->back()->with('toast-warning', 'Invalid export type');
     }
     /**
-     * Generates a PDF report for the summary of BPS collections report.
+     * Generates a PDF report for the summary of collections report.
      *
      * @param Illuminate\Database\Eloquent\Collection $data The data to be included in the report.
      *

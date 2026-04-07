@@ -221,7 +221,7 @@
                 <div class="divider" style="margin:24px 0;"></div>
 
                 <p class="muted" style="margin:0 0 12px;">
-                  {{ $msg['security_note'] ?? 'Keep this password secure. Do not share it over chat or with untrusted parties. BPS staff will never ask you to disclose this password.' }}
+                  {{ $msg['security_note'] ?? 'Keep this password secure. Do not share it over chat or with untrusted parties. staff will never ask you to disclose this password.' }}
                 </p>
                 <p class="small" style="margin:0;">
                   {{ $msg['footer'] ?? 'This is an automated message. Please do not reply.' }}

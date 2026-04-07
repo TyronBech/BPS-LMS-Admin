@@ -1,5 +1,5 @@
 {
-    "name": "bps-lms-admin",
+    "name": "lms-admin",
     "version": "2.0.0",
     "private": true,
     "type": "module",

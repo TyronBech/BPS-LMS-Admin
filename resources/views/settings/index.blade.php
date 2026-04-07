@@ -183,7 +183,7 @@
                   <input type="text" name="org_name" id="org_name"
                     value="{{ old('org_name', $settings->org_name) }}"
                     class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 shadow-sm focus:border-primary-400 focus:ring-primary-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
-                    placeholder="e.g. BPS Library">
+                    placeholder="e.g. {{ $settings->org_initial ?? 'BPS' }} Library">
                   @error('org_name')
                   <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                   @enderror
@@ -195,7 +195,7 @@
                   <input type="text" name="org_initial" id="org_initial"
                     value="{{ old('org_initial', $settings->org_initial) }}"
                     class="w-full rounded-md border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400 shadow-sm focus:border-primary-400 focus:ring-primary-400 dark:focus:border-primary-500 dark:focus:ring-primary-500"
-                    placeholder="e.g. BPS">
+                    placeholder="e.g. {{ $settings->org_initial ?? 'BPS' }}">
                   @error('org_initial')
                   <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                   @enderror
@@ -435,7 +435,7 @@
         preview.src = e.target.result;
         preview.classList.remove('hidden');
         preview.classList.add('opacity-100', 'group-hover:blur-sm', 'group-hover:brightness-50');
-        
+
         textContainer.classList.remove('hidden');
         textContainer.classList.remove('opacity-100');
         textContainer.classList.add('opacity-0', 'group-hover:opacity-100');

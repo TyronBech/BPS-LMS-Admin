@@ -53,7 +53,7 @@ class BackupController extends Controller
         ]);
 
         // Get all zip files from the storage
-        $backupPath = storage_path('app/backups/BPS Library Management System');
+        $backupPath = storage_path('app/backups/');
         $files = glob($backupPath . '/*.zip');
 
         Log::debug('Backup: Retrieved backup files', [
@@ -124,7 +124,7 @@ class BackupController extends Controller
         }
 
         // Ensure backup target directory exists
-        $dir = storage_path('app/backups/BPS Library Management System');
+        $dir = storage_path('app/backups/');
         if (!is_dir($dir)) {
             mkdir($dir, 0775, true);
 
@@ -218,7 +218,7 @@ class BackupController extends Controller
 
         try {
             // 1. DEFINE PATHS
-            $sourceZipPath = storage_path('app/backups/BPS Library Management System/' . $request->filename);
+            $sourceZipPath = storage_path('app/backups/' . $request->filename);
 
             Log::debug('Backup: Resolving file paths', [
                 'source_path' => $sourceZipPath,
@@ -503,7 +503,7 @@ class BackupController extends Controller
         }
 
         try {
-            $filePath = storage_path('app/backups/BPS Library Management System/' . $request->filename);
+            $filePath = storage_path('app/backups/' . $request->filename);
 
             if (!file_exists($filePath)) {
                 Log::error('Backup: File not found for deletion', [

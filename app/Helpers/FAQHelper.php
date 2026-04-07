@@ -95,7 +95,7 @@ class FAQHelper
             ],
             'answers' => [
                 "To generate a report, you can click on the Export button, you can choose if the report is on PDF or Excel format.",
-                "Available report types include attendance monitoring, online research, summary of BPS collections, inventory, circulation records, accession list, overdue fines, and audit trails.",
+                "Available report types include attendance monitoring, online research, summary of collections, inventory, circulation records, accession list, overdue fines, and audit trails.",
                 "Some reports may not be visible or accessible due to user permission settings or if the report type is restricted to certain user roles.",
                 "You can filter reports by date range, type, or specific criteria relevant to the report type.",
             ]

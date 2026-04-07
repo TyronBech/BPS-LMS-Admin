@@ -127,7 +127,7 @@ class CustomBackupCommand extends Command
 
             // 3. Create ZIP archive
             $this->info('Creating ZIP archive...');
-            $backupDir = storage_path('app/backups/BPS Library Management System');
+            $backupDir = storage_path('app/backups');
 
             if (!File::exists($backupDir)) {
                 File::makeDirectory($backupDir, 0755, true);

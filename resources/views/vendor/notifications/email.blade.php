@@ -18,11 +18,11 @@ If you did not request a password reset, no further action is required.
 
 {{-- Salutation --}}
 Regards,<br>
-**BPS Library System**
+**{{ config('app.name') }} Library System**
 
 {{-- Subcopy --}}
 <x-slot:subcopy>
-If you're having trouble clicking the **"Reset Password"** button, copy and paste the URL below into your web browser:  
+If you're having trouble clicking the **"Reset Password"** button, copy and paste the URL below into your web browser:
 <span class="break-all">[{{ $displayableActionUrl }}]({{ $actionUrl }})</span>
 </x-slot:subcopy>
 </x-mail::message>
