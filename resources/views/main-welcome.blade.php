@@ -18,7 +18,7 @@
         Developed by
       </h4>
       <h3 class="text-xl sm:text-2xl md:text-2xl lg:text-3xl font-semibold text-black dark:text-white">
-        OwlQuery Group
+        OwlQuery
       </h3>
     </div>
     <div class="order-3">
