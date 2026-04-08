@@ -620,17 +620,19 @@ class UsersMaintenanceController extends Controller
             ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
-        $profileImage = null;
-        if ($request->hasFile('profile-image')) {
-            $image = $request->file('profile-image');
-            $imageContent = file_get_contents($image->getRealPath());
-            $profileImage = base64_encode($imageContent);
-        }
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $student = User::with('students')->where('id', $request->input('id'))->first();
             if ($student) {
+                $profileImage = $student->profile_image;
+
+                if ($request->hasFile('profile-image')) {
+                    $image = $request->file('profile-image');
+                    $imageContent = file_get_contents($image->getRealPath());
+                    $profileImage = base64_encode($imageContent);
+                }
+
                 $studentData = [
                     'rfid'          => $request->input('rfid'),
                     'first_name'    => $request->input('first-name'),
@@ -639,11 +641,8 @@ class UsersMaintenanceController extends Controller
                     'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
                     'gender'        => $request->input('gender'),
                     'email'         => $request->input('email'),
+                    'profile_image' => $profileImage,
                 ];
-
-                if ($profileImage !== null) {
-                    $studentData['profile_image'] = $profileImage;
-                }
 
                 $student->update($studentData);
                 $student->students()->update([
@@ -713,12 +712,6 @@ class UsersMaintenanceController extends Controller
             ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
-        $profileImage = null;
-        if ($request->hasFile('profile-image')) {
-            $image = $request->file('profile-image');
-            $imageContent = file_get_contents($image->getRealPath());
-            $profileImage = base64_encode($imageContent);
-        }
         $privileges = UserGroup::where(DB::raw('lower(user_type)'), '!=', 'visitor')
             ->where(DB::raw('lower(user_type)'), '!=', 'student')->pluck('id', 'category')->toArray();
         if (!array_key_exists($request->input('employee_role'), $privileges)) {
@@ -728,6 +721,14 @@ class UsersMaintenanceController extends Controller
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $employee = User::with('employees')->where('id', $request->input('id'))->first();
+            $profileImage = $employee?->profile_image;
+
+            if ($request->hasFile('profile-image')) {
+                $image = $request->file('profile-image');
+                $imageContent = file_get_contents($image->getRealPath());
+                $profileImage = base64_encode($imageContent);
+            }
+
             $employeeData = [
                 'rfid'          => $request->input('rfid'),
                 'first_name'    => $request->input('first-name'),
@@ -736,12 +737,9 @@ class UsersMaintenanceController extends Controller
                 'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
                 'gender'        => $request->input('gender'),
                 'email'         => $request->input('email'),
+                'profile_image' => $profileImage,
                 'privilege_id'  => $privileges[$request->input('employee_role')],
             ];
-
-            if ($profileImage !== null) {
-                $employeeData['profile_image'] = $profileImage;
-            }
 
             $employee->update($employeeData);
             $employee->employees()->update([
@@ -806,16 +804,18 @@ class UsersMaintenanceController extends Controller
             ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
-        $profileImage = null;
-        if ($request->hasFile('profile-image')) {
-            $image = $request->file('profile-image');
-            $imageContent = file_get_contents($image->getRealPath());
-            $profileImage = base64_encode($imageContent);
-        }
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $visitor = User::where('id', $request->input('id'))->first();
+            $profileImage = $visitor?->profile_image;
+
+            if ($request->hasFile('profile-image')) {
+                $image = $request->file('profile-image');
+                $imageContent = file_get_contents($image->getRealPath());
+                $profileImage = base64_encode($imageContent);
+            }
+
             $visitorData = [
                 'first_name'    => $request->input('first-name'),
                 'middle_name'   => $request->input('middle-name')   == '' ? null : $request->input('middle-name'),
@@ -823,11 +823,8 @@ class UsersMaintenanceController extends Controller
                 'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
                 'gender'        => $request->input('gender'),
                 'email'         => $request->input('email'),
+                'profile_image' => $profileImage,
             ];
-
-            if ($profileImage !== null) {
-                $visitorData['profile_image'] = $profileImage;
-            }
 
             $visitor->update($visitorData);
             $visitor->visitors()->update([
