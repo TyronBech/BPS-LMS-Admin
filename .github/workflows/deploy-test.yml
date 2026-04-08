@@ -21,6 +21,9 @@ jobs:
 
             cd ${{ secrets.SFTP_DIR_TEST }}
 
+            echo "Setting GitHub remote with auth..."
+            git remote set-url origin https://${{ secrets.GH_PATH_TEST }}@github.com/TyronBech/BPS-LMS-Admin.git
+
             echo "Fetching latest code..."
             git fetch origin
 
@@ -29,6 +32,10 @@ jobs:
 
             echo "Installing composer dependencies..."
             composer install --no-dev --optimize-autoloader --no-interaction
+
+            echo "Loading NVM and Node environment..."
+            export NVM_DIR="$HOME/.nvm"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
             echo "Installing npm dependencies..."
             npm install
