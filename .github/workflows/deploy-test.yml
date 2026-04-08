@@ -9,59 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout Repository
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      # Setup PHP
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.3'
-          extensions: mbstring, pdo, sqlite, pdo_sqlite, intl, bcmath
-
-      # Install Composer Dependencies
-      - name: Install Composer dependencies
-        run: composer install --no-dev --optimize-autoloader --no-scripts
-
-      # Setup Node
-      - name: Setup Node
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      # Install NPM Dependencies & Build Assets
-      - name: Install NPM dependencies and build assets
-        run: |
-          npm install
-          npm run build
-
-      # Clean Laravel Cache Before Packaging
-      - name: Prepare Laravel for testing deployment
-        run: |
-          php artisan config:clear || true
-          php artisan route:clear || true
-          php artisan view:clear || true
-
-      # Upload Files to Testing Server (SFTP)
-      - name: Deploy files to testing server via SFTP
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SFTP_HOST_TEST }}
-          username: ${{ secrets.SFTP_USERNAME_TEST }}
-          key: ${{ secrets.SFTP_PRIVATE_KEY_TEST }}
-          port: ${{ secrets.SFTP_PORT_TEST }}
-          source: |
-            ./
-            !.git/
-            !node_modules/
-            !tests/
-            !.github/
-          target: ${{ secrets.SFTP_DIR_TEST }}
-          overwrite: true
-
-      # Optimize Laravel on Server
-      - name: Run Laravel optimization commands
+      - name: Deploy to Server via SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
           host: ${{ secrets.SFTP_HOST_TEST }}
@@ -69,7 +17,36 @@ jobs:
           key: ${{ secrets.SFTP_PRIVATE_KEY_TEST }}
           port: ${{ secrets.SFTP_PORT_TEST }}
           script: |
+            echo "Starting deployment..."
+
             cd ${{ secrets.SFTP_DIR_TEST }}
+
+            echo "Fetching latest code..."
+            git fetch origin
+
+            echo "Resetting to latest commit..."
+            git reset --hard origin/host-testing
+
+            echo "Installing composer dependencies..."
+            composer install --no-dev --optimize-autoloader --no-interaction
+
+            echo "Installing npm dependencies..."
+            npm install
+
+            echo "Building frontend assets..."
+            npm run build
+
+            echo "Clearing caches..."
+            php artisan config:clear
+            php artisan route:clear
+            php artisan view:clear
+
+            echo "Rebuilding caches..."
             php artisan config:cache
             php artisan route:cache
             php artisan view:cache
+
+            echo "Fixing permissions..."
+            chmod -R 775 storage bootstrap/cache
+
+            echo "Deployment completed successfully."
