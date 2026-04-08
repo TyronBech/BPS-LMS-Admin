@@ -2,75 +2,55 @@ name: BPS LMS Admin Test Deployment
 
 on:
   push:
-    branches: ["host-testing"]
+    branches: [ "host-testing" ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GH_PATH_TEST }}
-          ref: host-testing
 
-      - name: Setup Node.js
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo, sqlite, pdo_sqlite, intl, bcmath
+
+      - name: Prepare Laravel storage and cache
+        run: |
+          mkdir -p storage/framework/{sessions,views,cache}
+          mkdir -p bootstrap/cache
+          chmod -R 777 storage bootstrap/cache
+
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader --no-scripts
+
+      - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
-      - name: Install and build frontend assets
+      - name: Install NPM dependencies and build assets
         run: |
           npm install
           npm run build
 
-      - name: Commit built assets back to branch
+      - name: Prepare Laravel for Testing
         run: |
-          git config user.name "github-actions"
-          git config user.email "github-actions@github.com"
-          git add public/build -f
-          git diff --staged --quiet || git commit -m "chore: build frontend assets [skip ci]"
-          git push origin host-testing
+          php artisan config:clear || true
+          php artisan route:clear || true
+          php artisan view:clear || true
 
-      - name: Deploy to Server via SSH
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Deploy via SFTP (SSH key)
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SFTP_HOST_TEST }}
           username: ${{ secrets.SFTP_USERNAME_TEST }}
           key: ${{ secrets.SFTP_PRIVATE_KEY_TEST }}
           port: ${{ secrets.SFTP_PORT_TEST }}
-          script: |
-            echo "Starting deployment..."
-
-            cd ${{ secrets.SFTP_DIR_TEST }}
-
-            echo "Setting GitHub remote with PAT..."
-            export GIT_TERMINAL_PROMPT=0
-            git -c credential.helper='' remote set-url origin https://x-access-token:${{ secrets.GH_PATH_TEST }}@github.com/TyronBech/BPS-LMS-Admin.git
-
-            echo "Fetching latest code..."
-            git -c credential.helper='' fetch origin
-
-            echo "Resetting to latest commit..."
-            git reset --hard origin/host-testing
-
-            echo "Installing composer dependencies..."
-            composer install --no-dev --optimize-autoloader --no-interaction
-
-            echo "Clearing OPcache via HTTP..."
-            echo "<?php opcache_reset();" > public/opcache-reset.php
-            curl -s https://${{ secrets.SFTP_URL_TEST }}/opcache-reset.php || echo "OPcache reset failed, continuing..."
-            rm -f public/opcache-reset.php
-
-            echo "Clearing all Laravel caches..."
-            php artisan optimize:clear
-
-            echo "Rebuilding caches..."
-            php artisan optimize
-            php artisan view:cache
-
-            echo "Fixing permissions..."
-            chmod -R 775 storage bootstrap/cache
-
-            echo "Deployment completed successfully."
+          source: "./"
+          target: ${{ secrets.SFTP_DIR_TEST }}
+          rm: true
+          overwrite: true
