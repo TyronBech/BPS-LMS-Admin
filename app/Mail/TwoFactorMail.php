@@ -44,7 +44,7 @@ class TwoFactorMail extends Mailable
             'brand_name'      => ($settings->org_initial ?? '') . ' Library Management System',
             // 'brand_logo' removed
             'brand_logo_alt'  => ($settings->org_initial ?? '') . ' Logo',
-            'subject'         => '🔐 Two-Factor Authentication Code - ' . ($settings->org_initial ?? env('APP_NAME')),
+            'subject'         => '🔐 Two-Factor Authentication Code - ' . ($settings->org_initial ?? config('app.name')),
             'title'           => 'Two-Factor Authentication',
             'greeting'        => "Dear {$displayName},",
             'intro'           => 'Someone is attempting to access your account. If this was you, use the code below to complete your login.',
@@ -59,7 +59,7 @@ class TwoFactorMail extends Mailable
             ],
             'help_text'       => 'If you didn\'t receive the code or it has expired, you can request a new one by returning to the login page and clicking "Resend Code."',
             'cta_label'       => 'Go to Login Page',
-            'cta_url'         => env('E_LIBRARY_URL'),
+            'cta_url'         => config('app.e_library_url'),
             'contact_email'   => 'owlquery.tech@gmail.com',
             'contact_phone'   => '(02) 8252-9613',
             'contact_hours'   => 'Monday-Friday, 8:00 AM - 5:00 PM',

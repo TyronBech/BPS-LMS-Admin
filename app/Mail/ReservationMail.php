@@ -72,7 +72,7 @@ class ReservationMail extends Mailable
             'penalty_status_label' => 'Penalty Status',
             'reason_label'         => 'Reason',
             'cta_label'       => 'View My Reservations',
-            'cta_url'         => env('E_LIBRARY_URL') . '/web/reservations',
+            'cta_url'         => rtrim(config('app.e_library_url'), '/') . '/web/reservations',
             'thanks'          => 'Thank you for using our library services.',
             'footer'          => 'If you have any questions, please contact the library staff. ℹ️',
         ], $msg);

@@ -59,7 +59,7 @@ class BackupPasswordMail extends Mailable
             'username_label'  => 'Requested by',
             'password_label'  => 'Backup password',
             'cta_label'       => 'Open the System',
-            'cta_url'         => env('APP_URL'),
+            'cta_url'         => config('app.url'),
             'security_note'   => 'Keep this password secure. Do not share it over chat or with untrusted parties. ' . ($settings->org_initial ?? '') . ' staff will never ask you to disclose this password.',
             'footer'          => 'This is an automated message. Please do not reply.',
         ], $msg);

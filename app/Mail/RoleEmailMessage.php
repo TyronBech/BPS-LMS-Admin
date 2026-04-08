@@ -52,7 +52,7 @@ class RoleEmailMessage extends Mailable
             'email_label'     => 'Account email 📧',
             'role_label'      => 'Assigned role 🏷️',
             'cta_label'       => 'Sign in 🔓',
-            'cta_url'         => env('APP_URL', route('login')) . '/login',
+            'cta_url'         => rtrim(config('app.url', route('login')), '/') . '/login',
             'thanks'          => 'Thank you for your continued support of our library services.',
             'footer'          => 'If you believe this change was made in error, please contact support. ℹ️',
         ], $msg);
@@ -65,7 +65,7 @@ class RoleEmailMessage extends Mailable
     {
         return new Envelope(
             subject: $this->msg['subject'],
-            from: new Address(env('MAIL_FROM_ADDRESS', 'bps@gmail.com'), ($this->msg['org_initial'] ?? '') . ' Admin'),
+            from: new Address(config('mail.from.address', 'bps@gmail.com'), ($this->msg['org_initial'] ?? '') . ' Admin'),
         );
     }
 

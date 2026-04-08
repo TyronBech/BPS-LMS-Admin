@@ -204,7 +204,7 @@
                   <tr>
                     <td align="left">
                       <!--[if mso]>
-                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ $msg['cta_url'] ?? env('APP_URL') }}" style="height:44px; v-text-anchor:middle; width:220px;" arcsize="10%" strokecolor="<?php echo $primaryColor; ?>" fillcolor="<?php echo $primaryColor; ?>">
+                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ $msg['cta_url'] ?? config('app.url') }}" style="height:44px; v-text-anchor:middle; width:220px;" arcsize="10%" strokecolor="<?php echo $primaryColor; ?>" fillcolor="<?php echo $primaryColor; ?>">
                           <w:anchorlock/>
                           <center style="color:#ffffff; font-family:Segoe UI, Arial, sans-serif; font-size:16px; font-weight:600;">
                             {{ $msg['cta_label'] ?? 'Open the System' }}
@@ -212,7 +212,7 @@
                         </v:roundrect>
                       <![endif]-->
                       <!--[if !mso]><!-- -->
-                      <a href="{{ $msg['cta_url'] ?? env('APP_URL') }}">{{ $msg['cta_label'] ?? 'Open the System' }}</a>
+                      <a href="{{ $msg['cta_url'] ?? config('app.url') }}">{{ $msg['cta_label'] ?? 'Open the System' }}</a>
                       <!--<![endif]-->
                     </td>
                   </tr>

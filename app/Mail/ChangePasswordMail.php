@@ -50,7 +50,7 @@ class ChangePasswordMail extends Mailable
             'email_label'     => 'Account email',
             'security_note'   => 'If you did not make this change, please reset your password immediately and contact support. 🛡️',
             'cta_label'       => 'Reset your password',
-            'cta_url'         => env('APP_URL') . '/admin/profile',
+            'cta_url'         => rtrim(config('app.url'), '/') . '/admin/profile',
             'thanks'          => 'Thank you for helping us keep your account secure.',
             'footer'          => 'This is an automated message. Please do not reply. ℹ️',
         ], $msg);
@@ -63,7 +63,7 @@ class ChangePasswordMail extends Mailable
     {
         return new Envelope(
             subject: $this->msg['subject'],
-            from: new Address(env('MAIL_FROM_ADDRESS', 'bps@gmail.com'), ($this->msg['org_initial'] ?? '') . ' Admin'),
+            from: new Address(config('mail.from.address', 'bps@gmail.com'), ($this->msg['org_initial'] ?? '') . ' Admin'),
         );
     }
 

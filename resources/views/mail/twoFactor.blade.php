@@ -318,7 +318,7 @@
                   <tr>
                     <td align="center">
                       <!--[if mso]>
-                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ $msg['cta_url'] ?? env('E_LIBRARY_URL') }}" style="height:44px; v-text-anchor:middle; width:220px;" arcsize="10%" strokecolor="<?php echo $primaryColor; ?>" fillcolor="<?php echo $primaryColor; ?>">
+                        <v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" href="{{ $msg['cta_url'] ?? config('app.e_library_url') }}" style="height:44px; v-text-anchor:middle; width:220px;" arcsize="10%" strokecolor="<?php echo $primaryColor; ?>" fillcolor="<?php echo $primaryColor; ?>">
                           <w:anchorlock/>
                           <center style="color:#ffffff; font-family:Segoe UI, Arial, sans-serif; font-size:16px; font-weight:600;">
                             {{ $msg['cta_label'] ?? 'Go to Login Page' }}
@@ -326,7 +326,7 @@
                         </v:roundrect>
                       <![endif]-->
                       <!--[if !mso]><!-- -->
-                      <a href="{{ $msg['cta_url'] ?? env('E_LIBRARY_URL') }}">{{ $msg['cta_label'] ?? 'Go to Login Page' }}</a>
+                      <a href="{{ $msg['cta_url'] ?? config('app.e_library_url') }}">{{ $msg['cta_label'] ?? 'Go to Login Page' }}</a>
                       <!--<![endif]-->
                     </td>
                   </tr>

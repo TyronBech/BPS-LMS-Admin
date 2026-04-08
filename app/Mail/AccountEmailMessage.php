@@ -55,7 +55,7 @@ class AccountEmailMessage extends Mailable
             'reminder'       => 'For your security, please change your password after your first login. 🛡️',
             'thanks'         => 'Thank you for being part of the ' . ($settings->org_initial ?? '') . ' learning community.',
             'cta_label'      => 'Access your account 🔓',
-            'cta_url'        => env('E_LIBRARY_URL') . '/web/login',
+            'cta_url'        => rtrim(config('app.e_library_url'), '/') . '/web/login',
             'footer'         => 'If you did not request or expect this message, please disregard this email or contact support. ℹ️',
         ], $msg);
     }

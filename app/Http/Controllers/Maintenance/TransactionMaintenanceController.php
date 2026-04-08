@@ -275,11 +275,11 @@ class TransactionMaintenanceController extends Controller
      */
     private function getBookImage($title = null, $author = null, $isbn = null)
     {
-        $apiKey = env('GOOGLE_BOOKS_API_KEY');
+        $apiKey = config('services.google_books.api_key');
         
         // Check if API key exists
         if (empty($apiKey)) {
-            Log::warning('Google Books API key is not set in .env file', ['timestamp' => now()]);
+            Log::warning('Google Books API key is not configured', ['timestamp' => now()]);
             return null;
         }
 
