@@ -21,8 +21,9 @@ jobs:
 
             cd ${{ secrets.SFTP_DIR_TEST }}
 
-            echo "Setting GitHub remote with auth..."
-            git remote set-url origin https://${{ secrets.GH_PATH_TEST }}@github.com/TyronBech/BPS-LMS-Admin.git
+            echo "Setting GitHub remote with PAT..."
+            export GIT_TERMINAL_PROMPT=0
+            git remote set-url origin https://x-access-token:${{ secrets.GH_PATH_TEST }}@github.com/TyronBech/BPS-LMS-Admin.git
 
             echo "Fetching latest code..."
             git fetch origin
@@ -33,9 +34,10 @@ jobs:
             echo "Installing composer dependencies..."
             composer install --no-dev --optimize-autoloader --no-interaction
 
-            echo "Loading NVM and Node environment..."
-            export NVM_DIR="$HOME/.nvm"
-            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            echo "Loading Node environment..."
+            NODE_PATH=$(find $HOME/.nvm/versions/node -name "node" -type f | sort -V | tail -1 | xargs dirname)
+            export PATH="$NODE_PATH:$PATH"
+            echo "Node: $(node -v), npm: $(npm -v)"
 
             echo "Installing npm dependencies..."
             npm install
