@@ -1,52 +1,56 @@
-name: BPS LMS Admin Test Deployment
+name: BPS LMS Admin Production Deployment
 
 on:
   push:
-    branches: ["host-production"]
+    branches: [ "host-production" ]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Deploy to Server via SSH
-        uses: appleboy/ssh-action@v1.0.3
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, pdo, sqlite, pdo_sqlite, intl, bcmath
+
+      - name: Prepare Laravel storage and cache
+        run: |
+          mkdir -p storage/framework/{sessions,views,cache}
+          mkdir -p bootstrap/cache
+          chmod -R 777 storage bootstrap/cache
+
+      - name: Install Composer dependencies
+        run: composer install --no-dev --optimize-autoloader --no-scripts
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+
+      - name: Install NPM dependencies and build assets
+        run: |
+          npm install
+          npm run build
+
+      - name: Prepare Laravel for Production
+        run: |
+          php artisan config:clear || true
+          php artisan route:clear || true
+          php artisan view:clear || true
+
+      - name: Deploy via SFTP (SSH key)
+        uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SFTP_HOST_PROD }}
           username: ${{ secrets.SFTP_USERNAME_PROD }}
           key: ${{ secrets.SFTP_PRIVATE_KEY_PROD }}
           port: ${{ secrets.SFTP_PORT_PROD }}
-          script: |
-            echo "Starting deployment..."
-
-            cd ${{ secrets.SFTP_DIR_PROD }}
-
-            echo "Fetching latest code..."
-            git fetch origin
-
-            echo "Resetting to latest commit..."
-            git reset --hard origin/host-production
-
-            echo "Installing composer dependencies..."
-            composer install --no-dev --optimize-autoloader --no-interaction
-
-            echo "Installing npm dependencies..."
-            npm install
-
-            echo "Building frontend assets..."
-            npm run build
-
-            echo "Clearing caches..."
-            php artisan config:clear
-            php artisan route:clear
-            php artisan view:clear
-
-            echo "Rebuilding caches..."
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-
-            echo "Fixing permissions..."
-            chmod -R 775 storage bootstrap/cache
-
-            echo "Deployment completed successfully."
+          source: "./"
+          target: ${{ secrets.SFTP_DIR_PROD }}
+          rm: true
+          overwrite: true
