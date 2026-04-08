@@ -36,14 +36,16 @@ jobs:
             echo "Building frontend assets..."
             npm run build
 
-            echo "Clearing caches..."
-            php artisan config:clear
-            php artisan route:clear
-            php artisan view:clear
+            echo "Clearing OPcache via HTTP..."
+            echo "<?php opcache_reset();" > public/opcache-reset.php
+            curl -s https://${{ secrets.SFTP_URL_TEST }}/opcache-reset.php || echo "OPcache reset failed, continuing..."
+            rm -f public/opcache-reset.php
+
+            echo "Clearing all Laravel caches..."
+            php artisan optimize:clear
 
             echo "Rebuilding caches..."
-            php artisan config:cache
-            php artisan route:cache
+            php artisan optimize
             php artisan view:cache
 
             echo "Fixing permissions..."
