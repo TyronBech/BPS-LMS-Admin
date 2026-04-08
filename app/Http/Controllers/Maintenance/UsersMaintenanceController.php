@@ -620,18 +620,18 @@ class UsersMaintenanceController extends Controller
             ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
+        $profileImage = null;
         if ($request->hasFile('profile-image')) {
             $image = $request->file('profile-image');
             $imageContent = file_get_contents($image->getRealPath());
-            $base64Image = base64_encode($imageContent);
-            $request->merge(['profile-image' => $base64Image]);
+            $profileImage = base64_encode($imageContent);
         }
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $student = User::with('students')->where('id', $request->input('id'))->first();
             if ($student) {
-                $student->update([
+                $studentData = [
                     'rfid'          => $request->input('rfid'),
                     'first_name'    => $request->input('first-name'),
                     'middle_name'   => $request->input('middle-name')   == '' ? null : $request->input('middle-name'),
@@ -639,8 +639,13 @@ class UsersMaintenanceController extends Controller
                     'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
                     'gender'        => $request->input('gender'),
                     'email'         => $request->input('email'),
-                    'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
-                ]);
+                ];
+
+                if ($profileImage !== null) {
+                    $studentData['profile_image'] = $profileImage;
+                }
+
+                $student->update($studentData);
                 $student->students()->update([
                     'id_number'     => $request->input('id_number'),
                     'level'         => $request->input('level'),
@@ -708,11 +713,11 @@ class UsersMaintenanceController extends Controller
             ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
+        $profileImage = null;
         if ($request->hasFile('profile-image')) {
             $image = $request->file('profile-image');
             $imageContent = file_get_contents($image->getRealPath());
-            $base64Image = base64_encode($imageContent);
-            $request->merge(['profile-image' => $base64Image]);
+            $profileImage = base64_encode($imageContent);
         }
         $privileges = UserGroup::where(DB::raw('lower(user_type)'), '!=', 'visitor')
             ->where(DB::raw('lower(user_type)'), '!=', 'student')->pluck('id', 'category')->toArray();
@@ -723,7 +728,7 @@ class UsersMaintenanceController extends Controller
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $employee = User::with('employees')->where('id', $request->input('id'))->first();
-            $employee->update([
+            $employeeData = [
                 'rfid'          => $request->input('rfid'),
                 'first_name'    => $request->input('first-name'),
                 'middle_name'   => $request->input('middle-name')   == '' ? null : $request->input('middle-name'),
@@ -731,9 +736,14 @@ class UsersMaintenanceController extends Controller
                 'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
                 'gender'        => $request->input('gender'),
                 'email'         => $request->input('email'),
-                'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
                 'privilege_id'  => $privileges[$request->input('employee_role')],
-            ]);
+            ];
+
+            if ($profileImage !== null) {
+                $employeeData['profile_image'] = $profileImage;
+            }
+
+            $employee->update($employeeData);
             $employee->employees()->update([
                 'employee_id'   => $request->input('employee_id'),
                 'employee_role' => $request->input('employee_role'),
@@ -796,25 +806,30 @@ class UsersMaintenanceController extends Controller
             ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
+        $profileImage = null;
         if ($request->hasFile('profile-image')) {
             $image = $request->file('profile-image');
             $imageContent = file_get_contents($image->getRealPath());
-            $base64Image = base64_encode($imageContent);
-            $request->merge(['profile-image' => $base64Image]);
+            $profileImage = base64_encode($imageContent);
         }
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $visitor = User::where('id', $request->input('id'))->first();
-            $visitor->update([
+            $visitorData = [
                 'first_name'    => $request->input('first-name'),
                 'middle_name'   => $request->input('middle-name')   == '' ? null : $request->input('middle-name'),
                 'last_name'     => $request->input('last-name'),
                 'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
                 'gender'        => $request->input('gender'),
                 'email'         => $request->input('email'),
-                'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
-            ]);
+            ];
+
+            if ($profileImage !== null) {
+                $visitorData['profile_image'] = $profileImage;
+            }
+
+            $visitor->update($visitorData);
             $visitor->visitors()->update([
                 'school_org'   => $request->input('school_org'),
             ]);
