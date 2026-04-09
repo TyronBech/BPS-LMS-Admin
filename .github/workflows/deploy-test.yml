@@ -19,7 +19,7 @@ jobs:
           extensions: mbstring, pdo, sqlite, pdo_sqlite, intl, bcmath
 
       - name: Install Composer dependencies
-        run: composer install --no-dev --optimize-autoloader --no-interaction --prefer-dist
+        run: composer install --no-dev --optimize-autoloader --no-scripts
 
       - name: Setup Node
         uses: actions/setup-node@v4
