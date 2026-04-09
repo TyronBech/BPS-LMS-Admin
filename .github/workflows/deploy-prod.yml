@@ -1,4 +1,4 @@
-name: BPS LMS Admin Production Deployment
+name: BPS LibraSync Admin Production Deployment
 
 on:
   push:
