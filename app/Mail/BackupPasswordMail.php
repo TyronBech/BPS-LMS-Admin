@@ -46,12 +46,13 @@ class BackupPasswordMail extends Mailable
         // Get logo from settings or fallback to default
         $this->logoData = $settings->org_logo ? base64_decode($settings->org_logo) : null;
         $this->defaultLogoPath = public_path('img/OwlQuery.png');
+        $brandName = trim(($settings->org_initial ?? '') . ' ' . config('app.name'));
 
         $this->msg = array_replace([
-            'brand_name'      => ($settings->org_initial ?? '') . ' Library Management System',
+            'brand_name'      => $brandName,
             // 'brand_logo' removed to prevent clipping
             'brand_logo_alt'  => ($settings->org_initial ?? '') . ' Logo',
-            'subject'         => ($settings->org_initial ?? '') . ' Library Management System - Your Backup Password',
+            'subject'         => $brandName . ' - Your Backup Password',
             'title'           => 'Database Backup Password 🔒',
             'greeting'        => "Dear {$username},",
             'intro'           => 'A new database backup has been created and secured with encryption. Use the password below to open the backup archive when restoring or reviewing the backup.',

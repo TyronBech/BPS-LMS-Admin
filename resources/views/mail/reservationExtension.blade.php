@@ -209,7 +209,7 @@
                   <tr>
                     <td align="left" class="font"
                       style="color:#ffffff; font-weight:600; font-size:16px;">
-                      {{ $msg['brand_name'] ?? config('app.name', 'Library Management System') }}
+                      {{ $msg['brand_name'] ?? config('app.name') }}
                     </td>
                     <td align="right">
                       @if(isset($logoData) && $logoData)
@@ -364,7 +364,7 @@
                   🕐 Hours: Monday-Friday, 8:00 AM - 5:00 PM
                 </p>
 
-                <p class="muted" style="margin:12px 0 0;">{{ $msg['thanks'] ?? 'Thank you for using our Library Management System.' }}</p>
+                <p class="muted" style="margin:12px 0 0;">{{ $msg['thanks'] ?? ('Thank you for using our ' . config('app.name') . '.') }}</p>
                 <p class="small" style="margin:8px 0 0;">{{ $msg['footer'] ?? 'This is an automated message. Please do not reply to this email.' }}</p>
               </td>
             </tr>

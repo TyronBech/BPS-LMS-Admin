@@ -3,14 +3,14 @@
     <div class="md:flex md:justify-between md:gap-6 lg:gap-8">
       <div class="mb-6 md:mb-0 md:max-w-xs lg:max-w-md">
         <a href="{{ $settings->social_links['website'] ?? '#' }}" target="_blank" rel="noopener noreferrer" class="flex items-center skip-loader">
-          <img src="{{ $settings->org_logo_base64 ?? '' }}" class="h-12 w-12 md:h-16 md:w-16 me-3 rounded-full flex-shrink-0" alt="{{ $settings->org_name ?? 'Library Management System' }} Logo" />
+          <img src="{{ $settings->org_logo_base64 ?? '' }}" class="h-12 w-12 md:h-16 md:w-16 me-3 rounded-full flex-shrink-0" alt="{{ $settings->org_name ?? config('app.name') }} Logo" />
           <div class="min-w-0">
-            <span class="self-center text-sm md:text-lg font-semibold dark:text-white break-words">{{ $settings->org_name ?? 'Library Management System' }}</span>
+            <span class="self-center text-sm md:text-lg font-semibold dark:text-white break-words">{{ $settings->org_name ?? config('app.name') }}</span>
             <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 break-words">{{ $settings->org_address ?? '123 Main St, City, Country' }}</p>
           </div>
         </a>
         <p class="mt-4 text-xs md:text-sm text-gray-500 dark:text-gray-400">
-          Library Management System Admin Panel for managing school library attendance and resources.
+          {{ config('app.name') }} Admin Panel for managing school library attendance and resources.
         </p>
       </div>
       <div class="grid grid-cols-2 gap-6 sm:gap-6 sm:grid-cols-3 flex-1">
