@@ -18,6 +18,12 @@ jobs:
           php-version: '8.3'
           extensions: mbstring, pdo, sqlite, pdo_sqlite, intl, bcmath
 
+      - name: Prepare Laravel storage and cache
+        run: |
+          mkdir -p storage/framework/{sessions,views,cache}
+          mkdir -p bootstrap/cache
+          chmod -R 777 storage bootstrap/cache
+
       - name: Install Composer dependencies
         run: composer install --no-dev --optimize-autoloader --no-scripts
 
@@ -31,58 +37,20 @@ jobs:
           npm install
           npm run build
 
-      - name: Create deployment archive
+      - name: Prepare Laravel for Testing
         run: |
-          tar -czf deploy.tar.gz \
-            --exclude='.git' \
-            --exclude='.github' \
-            --exclude='node_modules' \
-            --exclude='tests' \
-            --exclude='.env' \
-            --exclude='.env.*' \
-            --exclude='deploy.tar.gz' \
-            .
+          php artisan config:clear || true
+          php artisan route:clear || true
+          php artisan view:clear || true
 
-      - name: Upload archive to server
+      - name: Deploy via SFTP (SSH key)
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.SFTP_HOST_TEST }}
           username: ${{ secrets.SFTP_USERNAME_TEST }}
           key: ${{ secrets.SFTP_PRIVATE_KEY_TEST }}
           port: ${{ secrets.SFTP_PORT_TEST }}
-          source: deploy.tar.gz
+          source: "./"
           target: ${{ secrets.SFTP_DIR_TEST }}
-
-      - name: Extract and finalize deployment on server
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SFTP_HOST_TEST }}
-          username: ${{ secrets.SFTP_USERNAME_TEST }}
-          key: ${{ secrets.SFTP_PRIVATE_KEY_TEST }}
-          port: ${{ secrets.SFTP_PORT_TEST }}
-          script: |
-            set -e
-
-            DEPLOY_PATH="${{ secrets.SFTP_DIR_TEST }}"
-
-            cd "$DEPLOY_PATH"
-
-            # Extract archive over existing files and clean up
-            tar -xzf deploy.tar.gz
-            rm -f deploy.tar.gz
-
-            # Ensure storage and cache directories exist with correct permissions
-            mkdir -p storage/framework/{sessions,views,cache}
-            mkdir -p bootstrap/cache
-            chmod -R 775 storage bootstrap/cache
-
-            # Build Laravel caches
-            php artisan config:cache
-            php artisan route:cache
-            php artisan view:cache
-            php artisan event:cache
-
-            # Restart queue workers (if applicable)
-            php artisan queue:restart
-
-            echo "Deployment successful."
+          rm: true
+          overwrite: true
