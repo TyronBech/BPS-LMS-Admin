@@ -33,10 +33,11 @@ class BackupSuccessMail extends Mailable
 
         $this->logoData = $this->settings->org_logo ? base64_decode($this->settings->org_logo) : null;
         $this->defaultLogoPath = public_path('img/OwlQuery.png');
+        $brandName = trim(($this->settings->org_initial ?? '') . ' ' . config('app.name'));
 
         $this->msg = [
             'org_initial'     => $this->settings->org_initial ?? '',
-            'brand_name'      => ($this->settings->org_initial ?? '') . ' Library Management System',
+            'brand_name'      => $brandName,
             // 'brand_logo' removed to avoid base64 clipping
             'brand_logo_alt'  => ($this->settings->org_initial ?? '') . ' Logo',
             'subject'         => '✅ Backup Generated: System Backup Completed',

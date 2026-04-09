@@ -9,7 +9,7 @@
     <link rel="icon" href="{{ $settings->getOrgLogoBase64Attribute() }}">
     <meta name="robots" content="noindex, nofollow" />
     <meta name="theme-color" content="{{ ($settings->theme_colors ?? [])['primary'] ?? '#20246b' }}" />
-    <title>@yield('code') • @yield('message') | {{ $settings->org_initial }} LMS</title>
+    <title>@yield('code') • @yield('message') | {{ trim(($settings->org_initial ?? '') . ' ' . config('app.name')) }}</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -440,7 +440,7 @@
         <section class="card">
             <div class="brand">
                 <img src="{{ $settings->getOrgLogoBase64Attribute() ?? asset('img/BPSLogo.png') }}" alt="{{ $settings->org_name ?? 'Bicutan Parochial School' }} logo" />
-                <span>{{ $settings->org_name ?? 'Bicutan Parochial School' }} Library Management System</span>
+                <span>{{ trim(($settings->org_name ?? 'Bicutan Parochial School') . ' ' . config('app.name')) }}</span>
             </div>
 
             <h1 id="page-title">@yield('code') — @yield('message')</h1>

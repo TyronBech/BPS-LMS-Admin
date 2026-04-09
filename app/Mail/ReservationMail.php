@@ -51,13 +51,14 @@ class ReservationMail extends Mailable
         // Get logo from settings or fallback to default
         $this->logoData = $settings->org_logo ? base64_decode($settings->org_logo) : null;
         $this->defaultLogoPath = public_path('img/OwlQuery.png');
+        $brandName = trim(($settings->org_initial ?? '') . ' ' . config('app.name'));
 
         $subjectText = $transactionType === 'extended'
             ? '✅ Book Extension Request Approved'
             : '❌ Book Extension Request Rejected';
 
         $this->msg = array_replace([
-            'brand_name'      => ($settings->org_initial ?? '') . ' Library Management System',
+            'brand_name'      => $brandName,
             // 'brand_logo' removed
             'brand_logo_alt'  => ($settings->org_initial ?? '') . ' Logo',
             'subject'         => $subjectText,

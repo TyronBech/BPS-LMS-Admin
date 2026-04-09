@@ -12,7 +12,7 @@
       </h1>
       <hr class="w-full max-w-xs h-px bg-gray-500 border-0 my-2 dark:bg-white">
       <h2 class="text-lg sm:text-xl md:text-xl lg:text-2xl font-semibold text-black dark:text-white">
-        Library Management System
+        {{ config('app.name') }}
       </h2>
       <h4 class="text-base sm:text-lg md:text-base lg:text-lg font-semibold text-black my-4 dark:text-white">
         Developed by
@@ -43,7 +43,7 @@
     </div>
     <div class="text-center md:text-left">
       <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight text-gray-900 dark:text-white">
-        About the Library Management System
+        About the {{ config('app.name') }}
       </h2>
       <p class="mt-6 text-lg md:text-xl text-gray-600 dark:text-gray-300">
         A streamlined solution for managing books, users, and resources. It offers efficient cataloging, borrowing, and returning processes, enhancing user experience and library operations.

@@ -1,4 +1,4 @@
-# 📚 Library Management System - Admin Portal
+# 📚 LibraSync - Admin Portal
 
 A comprehensive web-based library management system built with Laravel, designed specifically for School Library's administrators to efficiently manage library operations, track user activities, and generate insightful analytics. This system serves as the administrative backbone for the school's library services.
 
@@ -17,7 +17,7 @@ A comprehensive web-based library management system built with Laravel, designed
 
 ## 🔍 Overview
 
-The Library Management System (LMS) Admin Portal is a capstone project developed to modernize and streamline library operations at Bicutan Parochial School, Inc. The system provides a centralized platform for:
+The LibraSync Admin Portal is a capstone project developed to modernize and streamline library operations at School's library. The system provides a centralized platform for:
 
 - **Library Staff**: To manage daily operations including book lending, returns, and user management
 - **Administrators**: To monitor library usage, generate reports, and configure system settings
@@ -238,5 +238,5 @@ This project is developed as a capstone project for educational purposes.
 ## 🙏 Acknowledgments
 
 - Polytechnic University of the Philippines for the opportunity of this capstone
-- Bicutan Parochial School, Inc. for the support in this project
+- Bicutan Parochial School, Inc. and Sto. Niño Catholic School, Inc. for the support in this project
 - Laravel community for excellent documentation
