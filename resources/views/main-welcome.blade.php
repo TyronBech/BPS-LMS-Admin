@@ -59,37 +59,37 @@
     Our Services
   </h2>
   <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-8">
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-lg transition-shadow duration-300">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 hover: transition- duration-300 shadow-md">
       <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Book Management</h3>
       <p class="text-gray-600 dark:text-gray-300">
         Efficiently catalog and manage your library's book collection with easy-to-use tools for adding, updating, and organizing books.
       </p>
     </div>
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-lg transition-shadow duration-300">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 hover: transition- duration-300 shadow-md">
       <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">User Accounts</h3>
       <p class="text-gray-600 dark:text-gray-300">
         Create and manage user accounts for library members, allowing them to borrow books and access library resources seamlessly.
       </p>
     </div>
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-lg transition-shadow duration-300">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 hover: transition- duration-300 shadow-md">
       <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Reporting and Analytics</h3>
       <p class="text-gray-600 dark:text-gray-300">
         Gain valuable insights into library usage and performance with detailed reports and analytics tools.
       </p>
     </div>
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-lg transition-shadow duration-300">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 hover: transition- duration-300 shadow-md">
       <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Inventory Management</h3>
       <p class="text-gray-600 dark:text-gray-300">
         Keep track of inventory levels, manage stock, and ensure availability of books for users.
       </p>
     </div>
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-lg transition-shadow duration-300">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 hover: transition- duration-300 shadow-md">
       <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Borrowing and Returning</h3>
       <p class="text-gray-600 dark:text-gray-300">
         Simplify the borrowing and returning process with an intuitive interface for both users and library staff.
       </p>
     </div>
-    <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-lg transition-shadow duration-300">
+    <div class="bg-white dark:bg-gray-800 rounded-lg p-6 hover: transition- duration-300 shadow-md">
       <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-4">Security and Authentication</h3>
       <p class="text-gray-600 dark:text-gray-300">
         Implement robust security measures to protect library data and user accounts from unauthorized access.

@@ -28,7 +28,7 @@
 <div id="FAQsModal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[100%] max-h-full bg-gray-900 bg-opacity-50">
   <div class="relative p-4 w-full max-w-4xl max-h-full">
     <!-- Modal content -->
-    <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-2xl">
+    <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-md">
       <!-- Modal header -->
       <div class="flex items-center justify-between p-4 md:p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-primary-700 to-primary-800 rounded-t-lg">
         <div class="flex items-center gap-3">
@@ -80,7 +80,7 @@
                 </button>
               </h2>
               <div id="accordion-dashboard-body-{{ $index }}" class="hidden" aria-labelledby="accordion-dashboard-heading-{{ $index }}">
-                <div class="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div class="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md">
                   <p class="text-gray-700 dark:text-gray-300">{{ $dashboardFAQs['answers'][$index] }}</p>
                 </div>
               </div>
@@ -121,7 +121,7 @@
                 </button>
               </h2>
               <div id="accordion-inventory-body-{{ $index }}" class="hidden" aria-labelledby="accordion-inventory-heading-{{ $index }}">
-                <div class="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div class="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md">
                   <p class="text-gray-700 dark:text-gray-300">{{ $inventoryFAQs['answers'][$index] }}</p>
                 </div>
               </div>
@@ -167,7 +167,7 @@
                 </button>
               </h2>
               <div id="accordion-report-body-{{ $index }}" class="hidden" aria-labelledby="accordion-report-heading-{{ $index }}">
-                <div class="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div class="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md">
                   <p class="text-gray-700 dark:text-gray-300">{{ $reportFAQs['answers'][$index] }}</p>
                 </div>
               </div>
@@ -209,7 +209,7 @@
                 </button>
               </h2>
               <div id="accordion-import-body-{{ $index }}" class="hidden" aria-labelledby="accordion-import-heading-{{ $index }}">
-                <div class="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div class="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md">
                   <p class="text-gray-700 dark:text-gray-300">{{ $importFAQs['answers'][$index] }}</p>
                 </div>
               </div>
@@ -259,7 +259,7 @@
                 </button>
               </h2>
               <div id="accordion-maintenance-body-{{ $index }}" class="hidden" aria-labelledby="accordion-maintenance-heading-{{ $index }}">
-                <div class="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg">
+                <div class="p-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-md">
                   <p class="text-gray-700 dark:text-gray-300">{{ $maintenanceFAQs['answers'][$index] }}</p>
                 </div>
               </div>

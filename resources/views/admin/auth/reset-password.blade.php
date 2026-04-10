@@ -52,7 +52,7 @@
 		<div class="flex flex-col items-center justify-center h-[calc(100vh-17rem)] w-full">
 			<img class="w-20 h-20 block mb-4 dark:hidden" src="{{ asset('img/OwlQuery.png') }}" alt="OwlQuery">
 			<img class="hidden dark:block w-20 h-20 mb-4" src="{{ asset('img/OwlQuery Dark.png') }}" alt="OwlQuery">
-			<div class="block max-w-lg p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+			<div class="block max-w-lg p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
 				<form action="{{ route('password.store') }}" method="POST" class="w-96">
 					@csrf
 					<input type="hidden" name="token" value="{{ $request->route('token') }}">

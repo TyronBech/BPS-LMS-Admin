@@ -3,7 +3,7 @@
 @use('App\Enum\RolesEnum')
 <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
   <h1 class="font-semibold text-center text-3xl md:text-4xl mb-8">Maintenance</h1>
-  <div class="w-full p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+  <div class="w-full p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
       <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Edit Role</h5>
       <a href="{{ request('return_to', route('maintenance.roles-and-permissions.management')) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-primary-500 rounded-lg hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500 mt-4 sm:mt-0">

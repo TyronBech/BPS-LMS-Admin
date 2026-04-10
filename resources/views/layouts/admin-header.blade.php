@@ -36,7 +36,7 @@
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
               </svg></button>
             <!-- Dropdown menu -->
-            <div id="navbarReport" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
+            <div id="navbarReport" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg w-44 dark:bg-gray-700 dark:divide-gray-600 shadow-md">
               <ul class="py-2 text-sm text-gray-900" aria-labelledby="dropdownLargeButton">
                 @can(PermissionsEnum::VIEW_USER_REPORTS)
                 <li>
@@ -127,7 +127,7 @@
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
               </svg></button>
             <!-- Dropdown menu -->
-            <div id="navbarImport" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
+            <div id="navbarImport" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg w-44 dark:bg-gray-700 dark:divide-gray-600 shadow-md">
               <ul class="py-2 text-sm text-gray-900" aria-labelledby="dropdownLargeButton">
                 @can(PermissionsEnum::IMPORT_USERS)
                 <li>
@@ -180,7 +180,7 @@
               </svg>
             </button>
             <!-- Dropdown menu -->
-            <div id="navbarMaintenance" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
+            <div id="navbarMaintenance" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg w-44 dark:bg-gray-700 dark:divide-gray-600 shadow-md">
               <ul class="py-2 text-sm text-gray-900" aria-labelledby="dropdownLargeButton">
                 @can(PermissionsEnum::VIEW_USERS_MAINTENANCE)
                 <li>
@@ -291,7 +291,7 @@
                       <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
                     </svg>
                   </button>
-                  <div id="doubleDropdown" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700">
+                  <div id="doubleDropdown" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg w-44 dark:bg-gray-700 shadow-md">
                     <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="doubleDropdownButton">
                       <li>
                         <a href="{{ route('maintenance.admins') }}" class="flex pl-2 py-2 hover:bg-tertiary-100 dark:hover:bg-tertiary-700">
@@ -343,7 +343,7 @@
               </svg>
             </button>
             <!-- Dropdown menu -->
-            <div id="userSettings" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
+            <div id="userSettings" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg w-44 dark:bg-gray-700 dark:divide-gray-600 shadow-md">
               <ul class="py-2 text-sm text-gray-900" aria-labelledby="dropdownLargeButton">
                 <li>
                   <a href="{{ route('profile') }}" class="flex pl-2 py-2 hover:bg-tertiary-100 dark:text-white dark:hover:bg-tertiary-700">

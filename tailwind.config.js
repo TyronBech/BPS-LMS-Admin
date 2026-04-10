@@ -55,6 +55,11 @@ export default {
                     900: "rgb(var(--color-tertiary-900) / <alpha-value>)",
                 },
             },
+            boxShadow: {
+                // This custom shadow adds lighting to the top, bottom, and sides seamlessly.
+                // It drops the traditional directional light and applies an even glow.
+                md: "0 0 15px -3px rgb(0 0 0 / 0.1), 0 0 6px -4px rgb(0 0 0 / 0.1)",
+            },
         },
     },
 
