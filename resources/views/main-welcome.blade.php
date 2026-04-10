@@ -11,8 +11,8 @@
         {{ $settings->org_name ?? 'School Name' }}
       </h1>
       <hr class="w-full max-w-xs h-px bg-gray-500 border-0 my-2 dark:bg-white">
-      <h2 class="text-lg sm:text-xl md:text-xl lg:text-2xl font-semibold text-black dark:text-white">
-        {{ config('app.name') }}
+      <h2 class="text-lg sm:text-xl md:text-xl lg:text-2xl font-bold text-black dark:text-white">
+        {{ config('app.name') }} - Library Management System
       </h2>
       <h4 class="text-base sm:text-lg md:text-base lg:text-lg font-semibold text-black my-4 dark:text-white">
         Developed by

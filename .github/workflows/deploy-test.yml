@@ -1,4 +1,4 @@
-name: BPS LibraSync Admin Test Deployment
+name: BPS OwlLib Admin Test Deployment
 
 on:
   push:

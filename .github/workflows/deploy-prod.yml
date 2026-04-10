@@ -1,4 +1,4 @@
-name: BPS LibraSync Admin Production Deployment
+name: BPS OwlLib Admin Production Deployment
 
 on:
   push:
