@@ -39,9 +39,14 @@ class ProfileController extends Controller
      */
     public function update(Request $request)
     {
+        $profileImageFileName = $request->hasFile('profile_image')
+            ? $request->file('profile_image')->getClientOriginalName()
+            : null;
+
         Log::info('Profile: Update attempt', [
             'user_id' => Auth::guard('admin')->id(),
             'ip_address' => $request->ip(),
+            'profile_image_file' => $profileImageFileName,
             'timestamp' => now(),
         ]);
 
@@ -107,7 +112,10 @@ class ProfileController extends Controller
             DB::rollBack();
             Log::error('Profile: Update failed - Database error', [
                 'user_id' => Auth::guard('admin')->id(),
-                'error' => $e->getMessage(),
+                'error' => $this->sanitizeDatabaseErrorMessage($e->getMessage()),
+                'sql_state' => $e->errorInfo[0] ?? null,
+                'driver_code' => $e->errorInfo[1] ?? null,
+                'profile_image_file' => $profileImageFileName,
                 'timestamp' => now(),
             ]);
             return redirect()->back()->with('toast-error', 'Failed to update information. Please try again.')->withInput();
@@ -154,19 +162,19 @@ class ProfileController extends Controller
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
-            
+
             $user = User::findOrFail(Auth::guard('admin')->id());
             $user->two_factor_enabled = 1;
-            
+
             // Generate backup codes (10 codes)
             $backupCodes = [];
             for ($i = 0; $i < 10; $i++) {
                 $backupCodes[] = strtoupper(Str::random(8));
             }
             $user->two_factor_backup_codes = json_encode($backupCodes);
-            
+
             $user->save();
-            
+
             DB::commit();
 
             Log::info('Profile: 2FA enabled successfully', [
@@ -218,13 +226,13 @@ class ProfileController extends Controller
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
-            
+
             $user = User::findOrFail(Auth::guard('admin')->id());
             $user->two_factor_enabled = 0;
             $user->two_factor_secret = null;
             $user->two_factor_backup_codes = null;
             $user->save();
-            
+
             DB::commit();
 
             Log::info('Profile: 2FA disabled successfully', [
@@ -271,5 +279,16 @@ class ProfileController extends Controller
             'email' => $user->email,
             'timestamp' => now(),
         ]);
+    }
+
+    private function sanitizeDatabaseErrorMessage(string $message): string
+    {
+        $connectionPos = strpos($message, '(Connection:');
+
+        if ($connectionPos !== false) {
+            return trim(substr($message, 0, $connectionPos));
+        }
+
+        return $message;
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Http\Controllers\Maintenance;
 
 use App\Http\Controllers\Controller;
-use App\Models\Book;
 use App\Models\Subject;
 use App\Models\SubjectAccessCode;
 use Illuminate\Http\Request;
@@ -44,7 +43,6 @@ class SubjectMaintenanceController extends Controller
     }
 
     $subjectsQuery = Subject::with([
-      'book:id,title,accession',
       'accessCodes:id,access_code',
     ]);
 
@@ -52,10 +50,6 @@ class SubjectMaintenanceController extends Controller
       $subjectsQuery->where(function ($query) use ($search) {
         $query->where('name', 'like', "%{$search}%")
           ->orWhere('ddc', 'like', "%{$search}%")
-          ->orWhereHas('book', function ($bookQuery) use ($search) {
-            $bookQuery->where('title', 'like', "%{$search}%")
-              ->orWhere('accession', 'like', "%{$search}%");
-          })
           ->orWhereHas('accessCodes', function ($accessCodeQuery) use ($search) {
             $accessCodeQuery->where('access_code', 'like', "%{$search}%");
           });
@@ -75,11 +69,7 @@ class SubjectMaintenanceController extends Controller
       'sort_order' => $sortOrder,
     ]);
 
-    $books = Book::select('id', 'title', 'accession')
-      ->orderBy('title', 'asc')
-      ->get();
-
-    return view('maintenance.subjects.index', compact('subjects', 'books', 'perPage', 'search', 'sortBy', 'sortOrder'));
+    return view('maintenance.subjects.index', compact('subjects', 'perPage', 'search', 'sortBy', 'sortOrder'));
   }
 
   public function store(Request $request)
@@ -87,14 +77,12 @@ class SubjectMaintenanceController extends Controller
     Log::info('Subject Maintenance: Attempting to create subject', [
       'user_id' => Auth::guard('admin')->id(),
       'user_name' => Auth::guard('admin')->user()->full_name,
-      'book_id' => $request->input('book_id'),
       'subject_name' => $request->input('name'),
       'ip_address' => $request->ip(),
       'timestamp' => now(),
     ]);
 
     $validator = Validator::make($request->all(), [
-      'book_id' => 'required|integer|exists:bk_books,id',
       'ddc' => 'nullable|string|max:50',
       'name' => 'required|string|max:255',
       'access_codes' => 'required|string',
@@ -115,7 +103,7 @@ class SubjectMaintenanceController extends Controller
       DB::statement('SET @current_user_id = ?', [Auth::guard('admin')->user()->id]);
 
       $subject = Subject::create([
-        'book_id' => $request->input('book_id'),
+        'book_id' => null,
         'ddc' => $request->input('ddc') ?: null,
         'name' => trim((string) $request->input('name')),
       ]);
@@ -151,7 +139,6 @@ class SubjectMaintenanceController extends Controller
 
     $validator = Validator::make($request->all(), [
       'edit_subject_id' => 'required|integer|exists:bk_subjects,id',
-      'book_id' => 'required|integer|exists:bk_books,id',
       'ddc' => 'nullable|string|max:50',
       'name' => 'required|string|max:255',
       'access_codes' => 'required|string',
@@ -173,7 +160,6 @@ class SubjectMaintenanceController extends Controller
 
       $subject = Subject::findOrFail($request->input('edit_subject_id'));
       $subject->update([
-        'book_id' => $request->input('book_id'),
         'ddc' => $request->input('ddc') ?: null,
         'name' => trim((string) $request->input('name')),
       ]);

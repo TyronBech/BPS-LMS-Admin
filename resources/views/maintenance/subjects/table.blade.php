@@ -18,7 +18,6 @@
                 <th scope="col" class="px-6 py-3">DDC</th>
                 <th scope="col" class="px-6 py-3">Subject</th>
                 <th scope="col" class="px-6 py-3 hidden lg:table-cell">Access Codes</th>
-                <th scope="col" class="px-6 py-3 hidden xl:table-cell">Book</th>
                 <th scope="col" class="px-6 py-3">Actions</th>
             </tr>
         </thead>
@@ -47,14 +46,12 @@
                         @endif
                     </div>
                 </td>
-                <td class="px-6 py-4 hidden xl:table-cell">{{ $item->book->title ?? 'N/A' }}</td>
                 <td class="px-6 py-4">
                     <div class="flex items-center space-x-2">
                         @can(PermissionsEnum::EDIT_SUBJECTS)
                         @php
                         $subjectPayload = [
                         'id' => $item->id,
-                        'book_id' => $item->book_id,
                         'ddc' => $item->ddc,
                         'name' => $item->name,
                         'access_codes' => $item->accessCodes->pluck('access_code')->values()->all(),
@@ -75,7 +72,7 @@
             </tr>
             @empty
             <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                <td colspan="5" class="px-6 py-4 text-center">No subjects found.</td>
+                <td colspan="4" class="px-6 py-4 text-center">No subjects found.</td>
             </tr>
             @endforelse
         </tbody>
@@ -123,16 +120,6 @@
                             </div>
                         </div>
                         <input type="hidden" id="add_access_codes" name="access_codes" value="{{ old('access_codes', '[]') }}">
-                    </div>
-
-                    <div>
-                        <label for="add_book_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Related Book:</label>
-                        <select id="add_book_id" name="book_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
-                            <option value="" disabled {{ old('book_id') ? '' : 'selected' }}>Choose a book</option>
-                            @foreach($books as $book)
-                            <option value="{{ $book->id }}" {{ old('book_id') == $book->id ? 'selected' : '' }}>{{ $book->title }} ({{ $book->accession }})</option>
-                            @endforeach
-                        </select>
                     </div>
                 </div>
                 <div class="flex items-center justify-end p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
@@ -184,16 +171,6 @@
                             </div>
                         </div>
                         <input type="hidden" id="edit_access_codes" name="access_codes" value="[]">
-                    </div>
-
-                    <div>
-                        <label for="edit_book_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Related Book:</label>
-                        <select id="edit_book_id" name="book_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
-                            <option value="" disabled>Choose a book</option>
-                            @foreach($books as $book)
-                            <option value="{{ $book->id }}">{{ $book->title }} ({{ $book->accession }})</option>
-                            @endforeach
-                        </select>
                     </div>
                 </div>
                 <div class="flex items-center justify-end p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
@@ -421,7 +398,6 @@
         const editSubjectId = document.getElementById('edit_subject_id');
         const editDdc = document.getElementById('edit_ddc');
         const editName = document.getElementById('edit_name');
-        const editBookId = document.getElementById('edit_book_id');
 
         editSubjectButtons.forEach((button) => {
             button.addEventListener('click', function() {
@@ -430,7 +406,6 @@
                 editSubjectId.value = subject.id;
                 editDdc.value = subject.ddc || '';
                 editName.value = subject.name || '';
-                editBookId.value = subject.book_id || '';
                 editManager.setCodes(subject.access_codes || []);
             });
         });

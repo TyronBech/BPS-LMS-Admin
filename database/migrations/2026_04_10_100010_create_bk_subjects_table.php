@@ -11,7 +11,7 @@ return new class extends Migration
     {
         Schema::create('bk_subjects', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('book_id')->unsigned();
+            $table->bigInteger('book_id')->unsigned()->nullable();
             $table->string('ddc', 50)->nullable();
             $table->string('name');
             $table->timestamp('created_at')->nullable()->useCurrent();

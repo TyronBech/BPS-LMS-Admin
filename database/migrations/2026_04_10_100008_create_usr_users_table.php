@@ -17,8 +17,8 @@ return new class extends Migration
             $table->string('middle_name', 100)->nullable();
             $table->string('last_name', 100);
             $table->string('suffix', 10)->nullable();
-            $table->enum('gender', ['Male','Female','Prefer not to say']);
-            $table->string('profile_image')->nullable();
+            $table->enum('gender', ['Male', 'Female', 'Prefer not to say']);
+            $table->binary('profile_image')->nullable();
             $table->string('email', 50)->nullable();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
@@ -36,6 +36,10 @@ return new class extends Migration
             $table->index('privilege_id');
             $table->foreign('privilege_id')->references('id')->on('privileges')->onDelete('cascade');
         });
+
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE `usr_users` MODIFY `profile_image` LONGBLOB NULL');
+        }
     }
 
     public function down(): void
