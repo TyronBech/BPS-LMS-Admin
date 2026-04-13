@@ -2,9 +2,9 @@
 
 namespace Database\Seeders;
 
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
-use Illuminate\Database\Seeder;
 use App\Models\StudentDetail;
+use App\Models\User;
+use Illuminate\Database\Seeder;
 
 class StudentDetailSeeder extends Seeder
 {
@@ -14,6 +14,17 @@ class StudentDetailSeeder extends Seeder
     protected $model = StudentDetail::class;
     public function run(): void
     {
-        StudentDetail::factory()->count(5)->create();
+        $studentUsers = User::query()
+            ->whereHas('privileges', function ($query) {
+                $query->where('user_type', 'student');
+            })
+            ->doesntHave('students')
+            ->get();
+
+        foreach ($studentUsers as $user) {
+            StudentDetail::factory()->create([
+                'user_id' => $user->id,
+            ]);
+        }
     }
 }

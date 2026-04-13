@@ -1,0 +1,26 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Models\Book;
+use App\Models\Subject;
+use Illuminate\Database\Eloquent\Factories\Factory;
+
+/**
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Subject>
+ */
+class SubjectFactory extends Factory
+{
+  protected $model = Subject::class;
+
+  public function definition(): array
+  {
+    $book = Book::query()->inRandomOrder()->first() ?? Book::factory()->create();
+
+    return [
+      'book_id' => $book->id,
+      'ddc' => str_pad((string) $this->faker->numberBetween(0, 999), 3, '0', STR_PAD_LEFT),
+      'name' => $this->faker->unique()->words(2, true),
+    ];
+  }
+}
