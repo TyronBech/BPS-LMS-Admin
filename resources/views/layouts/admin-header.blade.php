@@ -1,6 +1,6 @@
 @use('App\Enum\PermissionsEnum')
 <header class="sticky top-0 z-50">
-  <nav class="bg-primary-500 border-gray-200 dark:bg-primary-500">
+  <nav class="bg-primary-600 border-gray-200 dark:bg-primary-600">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
       <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 rtl:space-x-reverse">
         <img class="rounded-full w-16 h-16 md:w-20 md:h-20" src="{{ $settings->org_logo_base64 ?? '' }}" alt="School Logo">
@@ -17,7 +17,7 @@
         </svg>
       </button>
       <div class="hidden w-full lg:block lg:w-auto" id="navbar-dropdown">
-        <ul class="flex flex-col font-medium p-3 lg:p-0 mt-4 border border-gray-100 rounded-lg lg:flex-row lg:items-center lg:space-x-6 rtl:space-x-reverse lg:mt-0 lg:border-0 lg:bg-primary-500 dark:bg-gray-800 lg:dark:bg-primary-500 dark:border-gray-700">
+        <ul class="flex flex-col font-medium p-3 lg:p-0 mt-4 border border-gray-100 rounded-lg lg:flex-row lg:items-center lg:space-x-6 rtl:space-x-reverse lg:mt-0 lg:border-0 dark:bg-gray-800 dark:border-gray-700">
           <li>
             <a href="{{ route('dashboard') }}" class="block py-2 px-3 text-white rounded hover:bg-tertiary-500 lg:hover:bg-transparent lg:border-0 lg:hover:text-tertiary-500 lg:p-0 dark:text-white lg:dark:hover:text-tertiary-500 dark:hover:bg-tertiary-500 dark:hover:text-white lg:dark:hover:bg-transparent" aria-current="page">Home</a>
           </li>
@@ -166,6 +166,7 @@
           @endif
           @if(auth()->user()->can(PermissionsEnum::VIEW_USERS_MAINTENANCE) ||
           auth()->user()->can(PermissionsEnum::VIEW_BOOKS_MAINTENANCE) ||
+          auth()->user()->can(PermissionsEnum::VIEW_SUBJECTS_MAINTENANCE) ||
           auth()->user()->can(PermissionsEnum::VIEW_BOOK_CATEGORIES_MAINTENANCE) ||
           auth()->user()->can(PermissionsEnum::VIEW_PRIVILEGES_MAINTENANCE) ||
           auth()->user()->can(PermissionsEnum::VIEW_PENALTY_RULES_MAINTENANCE) ||
@@ -199,6 +200,17 @@
                       <path fill-rule="evenodd" d="M6 2a2 2 0 0 0-2 2v15a3 3 0 0 0 3 3h12a1 1 0 1 0 0-2h-2v-2h2a1 1 0 0 0 1-1V4a2 2 0 0 0-2-2h-8v16h5v2H7a1 1 0 1 1 0-2h1V2H6Z" clip-rule="evenodd" />
                     </svg>
                     <span class="ms-2">Books</span>
+                  </a>
+                </li>
+                @endcan
+                @can(PermissionsEnum::VIEW_SUBJECTS_MAINTENANCE)
+                <li>
+                  <a href="{{ route('maintenance.subjects') }}" class="flex pl-2 py-2 hover:bg-tertiary-100 dark:text-white dark:hover:bg-tertiary-700">
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                      <path fill-rule="evenodd" d="M12 2a4 4 0 0 0-4 4v1.126A4.002 4.002 0 0 0 10 15h4a4.002 4.002 0 0 0 2-7.874V6a4 4 0 0 0-4-4Zm2 7h-4a2 2 0 1 0 0 4h4a2 2 0 1 0 0-4Z" clip-rule="evenodd" />
+                      <path d="M5 19a3 3 0 0 1 3-3h8a3 3 0 1 1 0 6H8a3 3 0 0 1-3-3Z" />
+                    </svg>
+                    <span class="ms-2">Subjects</span>
                   </a>
                 </li>
                 @endcan

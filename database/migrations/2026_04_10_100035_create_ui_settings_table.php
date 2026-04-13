@@ -14,8 +14,8 @@ return new class extends Migration
             $table->string('org_name', 100);
             $table->string('org_initial', 45)->nullable();
             $table->text('org_address');
-            $table->string('org_logo');
-            $table->string('org_logo_full');
+            $table->binary('org_logo');
+            $table->binary('org_logo_full');
             $table->string('email', 100);
             $table->string('contact_number', 45);
             $table->json('social_links')->nullable();
@@ -24,6 +24,10 @@ return new class extends Migration
             $table->timestamp('updated_at')->nullable()->useCurrent()->useCurrentOnUpdate();
             $table->timestamp('deleted_at')->nullable();
         });
+
+        if (DB::getDriverName() === 'mysql') {
+            DB::statement('ALTER TABLE `ui_settings` MODIFY `org_logo` LONGBLOB NOT NULL, MODIFY `org_logo_full` LONGBLOB NOT NULL');
+        }
     }
 
     public function down(): void

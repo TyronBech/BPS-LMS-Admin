@@ -94,7 +94,7 @@ class RolesController extends Controller
      * If an exception occurs during the database transaction, the function will rollback the transaction and redirect back to the management page with a toast error.
      *
      * If the transaction is successful, the function will redirect back to the management page with a toast success.
-     * 
+     *
      * @param Request $request
      * @return \Illuminate\Http\Response
      * @throws \Illuminate\Validation\ValidationException
@@ -125,6 +125,7 @@ class RolesController extends Controller
         $restrictions = [
             PermissionsEnum::VIEW_USERS_MAINTENANCE->value            => [PermissionsEnum::ADD_USERS->value, PermissionsEnum::EDIT_USERS->value, PermissionsEnum::DELETE_USERS->value],
             PermissionsEnum::VIEW_BOOKS_MAINTENANCE->value            => [PermissionsEnum::ADD_BOOKS->value, PermissionsEnum::EDIT_BOOKS->value, PermissionsEnum::DELETE_BOOKS->value],
+            PermissionsEnum::VIEW_SUBJECTS_MAINTENANCE->value         => [PermissionsEnum::ADD_SUBJECTS->value, PermissionsEnum::EDIT_SUBJECTS->value, PermissionsEnum::DELETE_SUBJECTS->value],
             PermissionsEnum::VIEW_BOOK_CATEGORIES_MAINTENANCE->value  => [PermissionsEnum::ADD_CATEGORIES->value, PermissionsEnum::EDIT_CATEGORIES->value, PermissionsEnum::DELETE_CATEGORIES->value],
             PermissionsEnum::VIEW_PRIVILEGES_MAINTENANCE->value       => [PermissionsEnum::ADD_PRIVILEGES->value, PermissionsEnum::EDIT_PRIVILEGES->value, PermissionsEnum::DELETE_PRIVILEGES->value],
             PermissionsEnum::VIEW_PENALTY_RULES_MAINTENANCE->value    => [PermissionsEnum::ADD_PENALTY_RULES->value, PermissionsEnum::EDIT_PENALTY_RULES->value, PermissionsEnum::DELETE_PENALTY_RULES->value],
@@ -258,7 +259,7 @@ class RolesController extends Controller
             'timestamp' => now(),
         ]);
 
-        if($request->input('role_id') == 1) {
+        if ($request->input('role_id') == 1) {
             $request->validate([
                 'permissions' => 'array',
             ]);
@@ -280,6 +281,7 @@ class RolesController extends Controller
         $restrictions = [
             PermissionsEnum::VIEW_USERS_MAINTENANCE->value            => [PermissionsEnum::ADD_USERS->value, PermissionsEnum::EDIT_USERS->value, PermissionsEnum::DELETE_USERS->value],
             PermissionsEnum::VIEW_BOOKS_MAINTENANCE->value            => [PermissionsEnum::ADD_BOOKS->value, PermissionsEnum::EDIT_BOOKS->value, PermissionsEnum::DELETE_BOOKS->value],
+            PermissionsEnum::VIEW_SUBJECTS_MAINTENANCE->value         => [PermissionsEnum::ADD_SUBJECTS->value, PermissionsEnum::EDIT_SUBJECTS->value, PermissionsEnum::DELETE_SUBJECTS->value],
             PermissionsEnum::VIEW_BOOK_CATEGORIES_MAINTENANCE->value  => [PermissionsEnum::ADD_CATEGORIES->value, PermissionsEnum::EDIT_CATEGORIES->value, PermissionsEnum::DELETE_CATEGORIES->value],
             PermissionsEnum::VIEW_PRIVILEGES_MAINTENANCE->value       => [PermissionsEnum::ADD_PRIVILEGES->value, PermissionsEnum::EDIT_PRIVILEGES->value, PermissionsEnum::DELETE_PRIVILEGES->value],
             PermissionsEnum::VIEW_PENALTY_RULES_MAINTENANCE->value    => [PermissionsEnum::ADD_PENALTY_RULES->value, PermissionsEnum::EDIT_PENALTY_RULES->value, PermissionsEnum::DELETE_PENALTY_RULES->value],
@@ -308,7 +310,7 @@ class RolesController extends Controller
                 $role->name = $request->input('role');
                 $role->save();
             }
-            if($request->input('role_id') == 1) {
+            if ($request->input('role_id') == 1) {
                 $permissions[] = PermissionsEnum::MODIFY_ADMIN;
             }
             $role->syncPermissions($permissions);

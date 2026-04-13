@@ -51,11 +51,12 @@
 <script>
   document.addEventListener("DOMContentLoaded", function() {
     const restrictions = {
-      "View Users Maintenance":             ["Add Users", "Edit Users", "Delete Users"],
-      "View Books Maintenance":             ["Add Books", "Edit Books", "Delete Books"],
-      "View Book Categories Maintenance":   ["Add Categories", "Edit Categories", "Delete Categories"],
-      "View Privileges Maintenance":        ["Add Privileges", "Edit Privileges", "Delete Privileges"],
-      "View Penalty Rules Maintenance":     ["Add Penalty Rule", "Edit Penalty Rule", "Delete Penalty Rule"],
+      "View Users Maintenance": ["Add Users", "Edit Users", "Delete Users"],
+      "View Books Maintenance": ["Add Books", "Edit Books", "Delete Books"],
+      "View Subjects Maintenance": ["Add Subjects", "Edit Subjects", "Delete Subjects"],
+      "View Book Categories Maintenance": ["Add Categories", "Edit Categories", "Delete Categories"],
+      "View Privileges Maintenance": ["Add Privileges", "Edit Privileges", "Delete Privileges"],
+      "View Penalty Rules Maintenance": ["Add Penalty Rule", "Edit Penalty Rule", "Delete Penalty Rule"],
       "View Book Circulations Maintenance": ["Edit Book Circulations"]
     };
 

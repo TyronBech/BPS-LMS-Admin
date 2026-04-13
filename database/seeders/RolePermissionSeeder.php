@@ -21,6 +21,9 @@ class RolePermissionSeeder extends Seeder
         Permission::create(['name' => 'Add Books',                           'guard_name' => 'admin']);
         Permission::create(['name' => 'Edit Books',                          'guard_name' => 'admin']);
         Permission::create(['name' => 'Delete Books',                        'guard_name' => 'admin']);
+        Permission::create(['name' => 'Add Subjects',                        'guard_name' => 'admin']);
+        Permission::create(['name' => 'Edit Subjects',                       'guard_name' => 'admin']);
+        Permission::create(['name' => 'Delete Subjects',                     'guard_name' => 'admin']);
         Permission::create(['name' => 'Create Reports',                      'guard_name' => 'admin']);
         Permission::create(['name' => 'View User Reports',                   'guard_name' => 'admin']);
         Permission::create(['name' => 'View Summary Reports',                'guard_name' => 'admin']);
@@ -44,6 +47,7 @@ class RolePermissionSeeder extends Seeder
         Permission::create(['name' => 'Edit Book Circulations',              'guard_name' => 'admin']);
         Permission::create(['name' => 'View Users Maintenance',              'guard_name' => 'admin']);
         Permission::create(['name' => 'View Books Maintenance',              'guard_name' => 'admin']);
+        Permission::create(['name' => 'View Subjects Maintenance',           'guard_name' => 'admin']);
         Permission::create(['name' => 'View Book Categories Maintenance',    'guard_name' => 'admin']);
         Permission::create(['name' => 'View Privileges Maintenance',         'guard_name' => 'admin']);
         Permission::create(['name' => 'View Penalty Rules Maintenance',      'guard_name' => 'admin']);
@@ -64,29 +68,67 @@ class RolePermissionSeeder extends Seeder
 
         // Admin gets most permissions except the most critical system ones
         $role2->givePermissionTo([
-            'Add Users', 'Edit Users', 'Delete Users',
-            'Add Books', 'Edit Books', 'Delete Books',
-            'Create Reports', 'View User Reports', 'View Summary Reports',
-            'View Inventory Reports', 'View Book Circulation Reports',
-            'View Accession List Reports', 'View Penalty Reports',
-            'Book Inventory', 'Import Users', 'Import Faculties & Staffs', 'Import Books',
-            'Add Privileges', 'Edit Privileges', 'Delete Privileges',
-            'Add Categories', 'Edit Categories', 'Delete Categories',
-            'Add Penalty Rule', 'Edit Penalty Rule', 'Delete Penalty Rule',
-            'Edit Book Circulations', 'View Users Maintenance', 'View Books Maintenance',
-            'View Book Categories Maintenance', 'View Privileges Maintenance',
-            'View Penalty Rules Maintenance', 'View Book Circulations Maintenance',
-            'View Dashboard', 'Reservation Approvals'
+            'Add Users',
+            'Edit Users',
+            'Delete Users',
+            'Add Books',
+            'Edit Books',
+            'Delete Books',
+            'Add Subjects',
+            'Edit Subjects',
+            'Delete Subjects',
+            'Create Reports',
+            'View User Reports',
+            'View Summary Reports',
+            'View Inventory Reports',
+            'View Book Circulation Reports',
+            'View Accession List Reports',
+            'View Penalty Reports',
+            'Book Inventory',
+            'Import Users',
+            'Import Faculties & Staffs',
+            'Import Books',
+            'Add Privileges',
+            'Edit Privileges',
+            'Delete Privileges',
+            'Add Categories',
+            'Edit Categories',
+            'Delete Categories',
+            'Add Penalty Rule',
+            'Edit Penalty Rule',
+            'Delete Penalty Rule',
+            'Edit Book Circulations',
+            'View Users Maintenance',
+            'View Books Maintenance',
+            'View Subjects Maintenance',
+            'View Book Categories Maintenance',
+            'View Privileges Maintenance',
+            'View Penalty Rules Maintenance',
+            'View Book Circulations Maintenance',
+            'View Dashboard',
+            'Reservation Approvals'
         ]);
 
         // Librarian gets book, inventory, and circulation management permissions
         $role3->givePermissionTo([
-            'Add Books', 'Edit Books',
-            'Create Reports', 'View Inventory Reports', 'View Book Circulation Reports',
-            'View Accession List Reports', 'Book Inventory', 'Import Books',
-            'Edit Book Circulations', 'View Books Maintenance',
-            'View Book Categories Maintenance', 'View Book Circulations Maintenance',
-            'View Dashboard', 'Reservation Approvals'
+            'Add Books',
+            'Edit Books',
+            'Add Subjects',
+            'Edit Subjects',
+            'Delete Subjects',
+            'Create Reports',
+            'View Inventory Reports',
+            'View Book Circulation Reports',
+            'View Accession List Reports',
+            'Book Inventory',
+            'Import Books',
+            'Edit Book Circulations',
+            'View Books Maintenance',
+            'View Subjects Maintenance',
+            'View Book Categories Maintenance',
+            'View Book Circulations Maintenance',
+            'View Dashboard',
+            'Reservation Approvals'
         ]);
 
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();

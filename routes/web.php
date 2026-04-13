@@ -14,6 +14,7 @@ use App\Http\Controllers\Import\BookImportController;
 use App\Http\Controllers\Import\FacultyStaffImportController;
 use App\Http\Controllers\Maintenance\AdminMaintenanceController;
 use App\Http\Controllers\Maintenance\BookMaintenanceController;
+use App\Http\Controllers\Maintenance\SubjectMaintenanceController;
 use App\Http\Controllers\Maintenance\UsersMaintenanceController;
 use App\Http\Controllers\Maintenance\CategoryMaintenanceController;
 use App\Http\Controllers\Roles_Permissions\RolesController;
@@ -37,6 +38,7 @@ use App\Http\Controllers\Testing\MailPreviewController;
 use App\Http\Middleware\AuditReportAuthentication;
 use App\Http\Middleware\BackupAuthentication;
 use App\Http\Middleware\BookAuthentication;
+use App\Http\Middleware\SubjectAuthentication;
 use App\Http\Middleware\SuperAdminAuthentication;
 use App\Http\Middleware\UserAuthentication;
 use App\Http\Middleware\InventoryAuthentication;
@@ -216,6 +218,14 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
                 Route::put('edit-category', 'update')->name('maintenance.update-category');
                 Route::delete('delete-category', 'destroy')->name('maintenance.delete-category');
             });
+        });
+
+        Route::prefix('subjects')->middleware(SubjectAuthentication::class)->controller(SubjectMaintenanceController::class)->group(function () {
+            Route::get('subjects', 'index')->name('maintenance.subjects');
+            Route::post('add-subject', 'store')->name('maintenance.store-subject');
+            Route::put('edit-subject', 'update')->name('maintenance.update-subject');
+            Route::delete('delete-subject', 'destroy')->name('maintenance.delete-subject');
+            Route::get('subject-access-code-suggestions', 'suggestAccessCodes')->name('maintenance.subject-access-code-suggestions');
         });
 
         Route::prefix('users')->middleware(UserAuthentication::class)->controller(UsersMaintenanceController::class)->group(function () {

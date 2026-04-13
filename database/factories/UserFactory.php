@@ -51,10 +51,7 @@ class UserFactory extends Factory
             } elseif (in_array($user->privilege_id, [2, 3, 4])) {
                 EmployeeDetail::factory()->create(['user_id' => $user->id]);
             } elseif ($user->privilege_id == 5) {
-                VisitorDetail::factory()->create([
-                    'user_id' => $user->id,
-                    'gender' => $user->gender
-                ]);
+                VisitorDetail::factory()->create(['user_id' => $user->id]);
             }
         });
     }
@@ -64,7 +61,7 @@ class UserFactory extends Factory
      */
     public function unverified(): static
     {
-        return $this->state(fn (array $attributes) => [
+        return $this->state(fn(array $attributes) => [
             'email_verified_at' => null,
         ]);
     }
