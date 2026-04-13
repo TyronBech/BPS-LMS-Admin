@@ -17,7 +17,7 @@
         </svg>
       </button>
       <div class="hidden w-full lg:block lg:w-auto" id="navbar-dropdown">
-        <ul class="flex flex-col font-medium p-3 lg:p-0 mt-4 border border-gray-100 rounded-lg lg:flex-row lg:items-center lg:space-x-6 rtl:space-x-reverse lg:mt-0 lg:border-0 dark:bg-gray-800 dark:border-gray-700">
+        <ul class="flex flex-col font-medium p-3 lg:p-0 mt-4 border border-gray-100 rounded-lg lg:flex-row lg:items-center lg:space-x-6 rtl:space-x-reverse lg:mt-0 lg:border-0 dark:border-gray-700">
           <li>
             <a href="{{ route('dashboard') }}" class="block py-2 px-3 text-white rounded hover:bg-tertiary-500 lg:hover:bg-transparent lg:border-0 lg:hover:text-tertiary-500 lg:p-0 dark:text-white lg:dark:hover:text-tertiary-500 dark:hover:bg-tertiary-500 dark:hover:text-white lg:dark:hover:bg-transparent" aria-current="page">Home</a>
           </li>
