@@ -3,6 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\EmployeeDetail;
+use App\Models\StagingUser;
 use App\Models\StudentDetail;
 use App\Models\User;
 use App\Models\UserGroup;
@@ -51,34 +52,108 @@ class DatabaseSeeder extends Seeder
                 ->first();
         }
 
-        $admin = User::updateOrCreate(
+        $defaultPassword = 'password';
+
+        $requestedSuperAdmins = [
             [
                 'email' => 'tyronbechayda1112@gmail.com',
-            ],
-            [
                 'rfid' => '6160866730887',
-                'privilege_id' => $employeePrivilege?->id,
                 'first_name' => 'Tyron',
                 'middle_name' => null,
                 'last_name' => 'Bechayda',
                 'suffix' => null,
                 'gender' => 'Male',
-                'profile_image' => 'default.jpg',
-                'password' => Hash::make('password'),
-            ]
-        );
-
-        EmployeeDetail::updateOrCreate(
-            ['user_id' => $admin->id],
-            [
                 'employee_id' => 'EMP-TYRON-0001',
                 'employee_role' => 'Librarian',
-            ]
-        );
+            ],
+            [
+                'email' => 'jcormita000@gmail.com',
+                'rfid' => null,
+                'first_name' => 'Jhon Carl',
+                'middle_name' => null,
+                'last_name' => 'Ormita',
+                'suffix' => null,
+                'gender' => 'Prefer not to say',
+                'employee_id' => 'EMP-JCORMITA-0001',
+                'employee_role' => 'Librarian',
+            ],
+            [
+                'email' => 'christiangomelanfog123@gmail.com',
+                'rfid' => null,
+                'first_name' => 'Christian',
+                'middle_name' => null,
+                'last_name' => 'Gomelan',
+                'suffix' => null,
+                'gender' => 'Prefer not to say',
+                'employee_id' => 'EMP-GOMELANFOG-0001',
+                'employee_role' => 'Librarian',
+            ],
+            [
+                'email' => 'princessryanramos29@gmail.com',
+                'rfid' => null,
+                'first_name' => 'Princess Ryan',
+                'middle_name' => '',
+                'last_name' => 'Ramos',
+                'suffix' => null,
+                'gender' => 'Female',
+                'employee_id' => 'EMP-RAMOS-0001',
+                'employee_role' => 'Librarian',
+            ],
+        ];
 
-        StudentDetail::where('user_id', $admin->id)->delete();
-        VisitorDetail::where('user_id', $admin->id)->delete();
+        foreach ($requestedSuperAdmins as $account) {
+            StagingUser::updateOrCreate(
+                ['email' => $account['email']],
+                [
+                    'rfid' => $account['rfid'],
+                    'first_name' => $account['first_name'],
+                    'middle_name' => $account['middle_name'],
+                    'last_name' => $account['last_name'],
+                    'suffix' => $account['suffix'],
+                    'gender' => $account['gender'],
+                    'email' => $account['email'],
+                    'password' => $defaultPassword,
+                    'profile_image' => 'default.jpg',
+                    'user_type' => 'employee',
+                    'employee_id' => $account['employee_id'],
+                    'employee_role' => $account['employee_role'],
+                ]
+            );
+        }
 
-        $admin->syncRoles(['Super Admin']);
+        DB::statement('CALL DistributeStagingUsers()');
+
+        foreach ($requestedSuperAdmins as $account) {
+            $user = User::where('email', $account['email'])->first();
+
+            if (!$user) {
+                continue;
+            }
+
+            $user->update([
+                'rfid' => $account['rfid'],
+                'privilege_id' => $employeePrivilege?->id,
+                'first_name' => $account['first_name'],
+                'middle_name' => $account['middle_name'],
+                'last_name' => $account['last_name'],
+                'suffix' => $account['suffix'],
+                'gender' => $account['gender'],
+                'profile_image' => 'default.jpg',
+                'password' => Hash::make($defaultPassword),
+            ]);
+
+            EmployeeDetail::updateOrCreate(
+                ['user_id' => $user->id],
+                [
+                    'employee_id' => $account['employee_id'],
+                    'employee_role' => $account['employee_role'],
+                ]
+            );
+
+            StudentDetail::where('user_id', $user->id)->delete();
+            VisitorDetail::where('user_id', $user->id)->delete();
+
+            $user->syncRoles(['Super Admin']);
+        }
     }
 }
