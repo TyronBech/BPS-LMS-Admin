@@ -11,14 +11,14 @@ class SystemSettingSeeder extends Seeder
     {
         $settings = [
             [
-                'key' => 'app_timezone',
-                'value' => 'Asia/Manila',
-                'description' => 'Default timezone for scheduled and displayed dates.',
+                'key' => 'reservation_system_active',
+                'value' => 'true',
+                'description' => 'Indicates if the reservation system is active.',
             ],
             [
-                'key' => 'max_login_attempts',
-                'value' => '5',
-                'description' => 'Maximum login retries before temporary lockout.',
+                'key' => 'inventory_cycle_active',
+                'value' => '0',
+                'description' => 'Tracks whether the book inventory cycle is currently active.',
             ],
         ];
 

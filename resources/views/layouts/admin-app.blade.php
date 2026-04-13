@@ -24,7 +24,6 @@
             'secondary' => $settings->theme_colors['secondary'] ?? '#EBF5FF',
             'tertiary' => $settings->theme_colors['tertiary'] ?? '#C27803',
         ];
-        Log::info('Theme Colors: ' . json_encode($colors));
       ?>
 
       <?php foreach($colors as $name => $hex): ?>
