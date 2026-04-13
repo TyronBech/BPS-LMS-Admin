@@ -43,7 +43,7 @@
 </div>
 
 <div class="container mx-auto w-full md:w-[90%] p-4">
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+  <div class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-md">
     <h2 class="text-center mb-4 font-semibold text-2xl dark:text-white">Graph Data for Users</h2>
     <div class="relative h-[300px]">
       <canvas id="logsChart"></canvas>

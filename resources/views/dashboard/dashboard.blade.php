@@ -19,7 +19,7 @@
 <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Home</h1>
 @if(auth()->user()->can(PermissionsEnum::VIEW_DASHBOARD))
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-  <div class="flex flex-col min-h-96 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col min-h-96 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div>
       <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Current Users</h5>
       <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Total number of users currently timed-in in the library.</p>
@@ -29,13 +29,13 @@
     </div>
     <button type="button" id="timeout-all-users" class="text-white bg-gradient-to-r from-primary-500 via-primary-500 to-primary-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-primary-300 dark:focus:ring-primary-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Timeout All Users</button>
   </div>
-  <div class="flex flex-col min-h-96 md:col-span-1 lg:col-span-3 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col min-h-96 md:col-span-1 lg:col-span-3 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Monthly Logs</h5>
     <div class="relative h-full">
       <canvas id="monthly-logs"></canvas>
     </div>
   </div>
-  <div class="flex flex-col min-h-96 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col min-h-96 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div>
       <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Total Books</h5>
       <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Total number of books in the database.</p>
@@ -44,19 +44,19 @@
       <h1 id="book-count" class="text-8xl text-center font-extrabold dark:text-gray-300"></h1>
     </div>
   </div>
-  <div class="flex flex-col min-h-96 md:col-span-1 lg:col-span-3 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col min-h-96 md:col-span-1 lg:col-span-3 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Transaction History</h5>
     <div class="relative h-full">
       <canvas id="transaction-history"></canvas>
     </div>
   </div>
-  <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Yearly Book Acquisition</h5>
     <div class="relative h-full mb-5">
       <canvas id="yearly-books"></canvas>
     </div>
   </div>
-  <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
       <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">User Registration Growth</h5>
       <div class="inline-flex rounded-lg border border-gray-200 dark:border-gray-600 p-1 bg-gray-100 dark:bg-gray-700">
@@ -72,7 +72,7 @@
       <canvas id="registered-users"></canvas>
     </div>
   </div>
-  <div class="flex flex-col col-span-1 md:col-span-2 lg:col-span-4 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col col-span-1 md:col-span-2 lg:col-span-4 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
       <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
         Top 6 Most Visited Students per Grade Level
@@ -101,7 +101,7 @@
       <p class="text-center text-gray-500 col-span-full py-10">Loading data...</p>
     </div>
   </div>
-  <div class="flex flex-col col-span-1 md:col-span-2 lg:col-span-4 justify-between p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col col-span-1 md:col-span-2 lg:col-span-4 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
       <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
         Top 3 Students with the Most Borrowed Books per Grade Level
@@ -130,13 +130,13 @@
       <p class="text-center text-gray-500 col-span-full py-10">Loading data...</p>
     </div>
   </div>
-  <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 5 Most Borrowed Books</h5>
     <div class="relative h-full">
       <canvas id="top-borrowed-books"></canvas>
     </div>
   </div>
-  <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+  <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 5 Most Borrowed Books per Category</h5>
     <div class="relative h-full">
       <canvas id="top-borrowed-categories"></canvas>
@@ -179,7 +179,7 @@
         <span class="sr-only">${type} icon</span>
       </div>
       <div class="ms-3 text-sm font-normal">${message}</div>
-      <button type="button" class="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700" onclick="this.parentElement.remove()">
+      <button type="button" class="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700 shadow-md" onclick="this.parentElement.remove()">
         <span class="sr-only">Close</span>
         <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
@@ -370,7 +370,7 @@
         if (filteredStudents.length === 0) return;
 
         let tableHTML = `
-        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm dark:shadow-lg hover:shadow-md transition-shadow duration-200 overflow-hidden flex flex-col h-full">
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-xl dark: hover: transition- duration-200 overflow-hidden flex flex-col h-full shadow-md">
           <div class="bg-gradient-to-r from-primary-500 to-primary-500 px-5 py-3 border-b border-primary-500">
             <h6 class="text-white text-lg font-bold flex items-center gap-2">
               <svg class="w-5 h-5 text-primary-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
@@ -470,7 +470,7 @@
         if (filteredStudents.length === 0) return;
 
         let tableHTML = `
-      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-xl shadow-sm dark:shadow-lg hover:shadow-md transition-shadow duration-200 overflow-hidden flex flex-col h-full">
+      <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-xl dark: hover: transition- duration-200 overflow-hidden flex flex-col h-full shadow-md">
         <div class="bg-gradient-to-r from-primary-500 to-primary-500 px-5 py-3 border-b border-primary-500">
           <h6 class="text-white text-lg font-bold flex items-center gap-2">
              <svg class="w-5 h-5 text-amber-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
@@ -996,7 +996,7 @@
 </script>
 @else
 
-<div class="flex flex-col items-center max-w-sm p-6 my-28 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+<div class="flex flex-col items-center max-w-sm p-6 my-28 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
   <svg class="w-16 h-16 opacity-70 mb-3 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
     <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14v3m-3-6V7a3 3 0 1 1 6 0v4m-8 0h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
   </svg>

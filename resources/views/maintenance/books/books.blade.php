@@ -3,7 +3,7 @@
 @use('App\Enum\PermissionsEnum')
 <div class="container mx-auto px-4 sm:px-6 lg:px-8">
   <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Maintenance</h1>
-  <div class="w-full p-4 sm:p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+  <div class="w-full p-4 sm:p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
       <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Books</h5>
       @can(PermissionsEnum::ADD_BOOKS, 'admin')
@@ -26,7 +26,7 @@
             </svg>
           </div>
           <input type="text" id="search" name="search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Search by title, author, etc." value="{{ old('search', $search) }}" autocomplete="off">
-          <div id="suggestions-container" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg dark:bg-gray-700 dark:border-gray-600 hidden">
+          <div id="suggestions-container" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg dark:bg-gray-700 dark:border-gray-600 hidden shadow-md">
             <ul id="suggestions-list" class="max-h-60 overflow-y-auto text-gray-900 dark:text-white">
               {{-- Suggestions will be populated by JavaScript --}}
             </ul>

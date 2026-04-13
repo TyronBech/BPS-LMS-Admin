@@ -37,16 +37,21 @@ class Book extends Model
     {
         return (new self())->getTable();
     }
-    public function category() : BelongsTo
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'category_id', 'id');
     }
-    public function transactions() : HasMany
+    public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class, 'book_id', 'id');
     }
-    public function inventory() : HasMany
+    public function inventory(): HasMany
     {
         return $this->hasMany(Inventory::class, 'book_id', 'id');
+    }
+
+    public function subjects(): HasMany
+    {
+        return $this->hasMany(Subject::class, 'book_id', 'id');
     }
 }

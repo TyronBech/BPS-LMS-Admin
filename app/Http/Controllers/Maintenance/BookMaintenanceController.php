@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Category;
+use App\Models\Subject;
 use Dompdf\Dompdf;
 use Exception;
 use Illuminate\Http\Client\ConnectionException;
@@ -114,7 +115,8 @@ class BookMaintenanceController extends Controller
         $availability   = $this->extract_enums($books->getTable(), 'availability_status');
         $remarks        = $this->extract_enums($books->getTable(), 'remarks');
         $book_types     = $this->extract_enums($books->getTable(), 'book_type');
-        return view('maintenance.books.create', compact('categories', 'condition', 'availability', 'remarks', 'book_types'));
+        $subjects = Subject::with('accessCodes')->orderBy('name')->get();
+        return view('maintenance.books.create', compact('categories', 'condition', 'availability', 'remarks', 'book_types', 'subjects'));
     }
     /**
      * Store a new book
@@ -129,12 +131,16 @@ class BookMaintenanceController extends Controller
     {
         ini_set('memory_limit', '4096M');
         $books = new Book();
+        $coverImageFileName = $request->hasFile('cover_image')
+            ? $request->file('cover_image')->getClientOriginalName()
+            : null;
 
         Log::info('Book Maintenance: Attempting to store new book(s)', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name,
             'accession_input' => $request->input('accession'),
             'title' => $request->input('title'),
+            'cover_image_file' => $coverImageFileName,
             'ip_address' => $request->ip(),
             'timestamp' => now(),
         ]);
@@ -143,6 +149,7 @@ class BookMaintenanceController extends Controller
             'accession'         => 'required|string',
             'call_number'       => 'nullable|string|max:50',
             'title'             => 'required|string|max:150',
+            'subject_id'        => 'nullable|integer|exists:bk_subjects,id,deleted_at,NULL',
             'authors'           => 'nullable|string|max:1024',
             'description'       => 'nullable|string',
             'edition'           => 'nullable|string|max:50',
@@ -165,6 +172,13 @@ class BookMaintenanceController extends Controller
             }
             if ($remarks !== 'On Shelf' && $availability !== 'Unavailable') {
                 $validator->errors()->add('availability', 'Availability must be "Unavailable" when the book is not On Shelf.');
+            }
+            $accessionCount = collect(explode(',', (string) $request->input('accession', '')))
+                ->map(fn($item) => trim((string) $item))
+                ->filter(fn($item) => $item !== '')
+                ->count();
+            if ($request->filled('subject_id') && $accessionCount > 1) {
+                $validator->errors()->add('subject_id', 'You can only link one selected subject when adding a single accession.');
             }
         });
         if ($validator->fails()) {
@@ -194,10 +208,16 @@ class BookMaintenanceController extends Controller
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
-            $accessions = array_map('trim', explode(',', $request->input('accession')));
+            $subjectId = $request->filled('subject_id') ? (int) $request->input('subject_id') : null;
+            $accessions = collect(explode(',', (string) $request->input('accession')))
+                ->map(fn($item) => trim((string) $item))
+                ->filter(fn($item) => $item !== '')
+                ->values();
+
+            $createdBookIds = [];
             foreach ($accessions as $accession) {
                 $barcode = new DNS1D();
-                Book::create([
+                $createdBook = Book::create([
                     'accession'             => $accession,
                     'call_number'           => $request->input('call_number') ?? null,
                     'barcode'               => $barcode->getBarcodeJPG($accession, 'C39', 2, 80, array(0, 0, 0, 0), false),
@@ -216,6 +236,14 @@ class BookMaintenanceController extends Controller
                     'condition_status'      => $request->input('condition'),
                     'availability_status'   => $request->input('availability'),
                 ]);
+
+                $createdBookIds[] = $createdBook->id;
+            }
+
+            if ($subjectId && count($createdBookIds) === 1) {
+                Subject::where('id', $subjectId)->update([
+                    'book_id' => $createdBookIds[0],
+                ]);
             }
             // After creating books, update remarks/availability and create inventory entries within the same transaction
             $importedAccessions = array_map('trim', explode(',', $request->input('accession')));
@@ -233,14 +261,16 @@ class BookMaintenanceController extends Controller
             DB::rollBack();
             Log::error('Book Maintenance: Database error during creation', [
                 'user_id' => Auth::guard('admin')->id(),
-                'error_message' => $e->getMessage(),
-                'error_trace' => $e->getTraceAsString(),
+                'error_message' => $this->sanitizeDatabaseErrorMessage($e->getMessage()),
+                'sql_state' => $e->errorInfo[0] ?? null,
+                'driver_code' => $e->errorInfo[1] ?? null,
+                'cover_image_file' => $coverImageFileName,
                 'timestamp' => now(),
             ]);
             if ($e->getCode() == 23000) {
                 return redirect()->back()->with('toast-error', 'Book with this accession number already exists!')->withInput();
             } else {
-                return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
+                return redirect()->back()->with('toast-error', $this->sanitizeDatabaseErrorMessage($e->getMessage()))->withInput();
             }
         }
         DB::commit();
@@ -274,13 +304,15 @@ class BookMaintenanceController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            $book = Book::findOrFail($id);
+            $book = Book::with(['subjects.accessCodes'])->findOrFail($id);
+            $linkedSubjectId = Subject::where('book_id', $book->id)->value('id');
             $books = new Book();
             $categories     = Category::pluck('name', 'id');
             $condition      = $this->extract_enums($books->getTable(), 'condition_status');
             $availability   = $this->extract_enums($books->getTable(), 'availability_status');
             $remarks        = $this->extract_enums($books->getTable(), 'remarks');
             $book_types     = $this->extract_enums($books->getTable(), 'book_type');
+            $subjects       = Subject::with('accessCodes')->orderBy('name')->get();
         } catch (\Exception $e) {
             Log::error('Book Maintenance: Error accessing edit form', [
                 'user_id' => Auth::guard('admin')->id(),
@@ -289,7 +321,7 @@ class BookMaintenanceController extends Controller
             ]);
             return redirect()->back()->with('toast-error', 'Something went wrong!')->withInput();
         }
-        return view('maintenance.books.edit', compact('book', 'categories', 'condition', 'availability', 'remarks', 'book_types'));
+        return view('maintenance.books.edit', compact('book', 'linkedSubjectId', 'categories', 'condition', 'availability', 'remarks', 'book_types', 'subjects'));
     }
     /**
      * Show books
@@ -345,7 +377,7 @@ class BookMaintenanceController extends Controller
 
         if ($request->input('barcodeBtn') === 'barcode') {
             $this->export_barcode($request);
-        } elseif( $request->input('callNumberBtn') === 'callNumber') {
+        } elseif ($request->input('callNumberBtn') === 'callNumber') {
             $this->export_call_numbers($request);
         }
         // Fetch categories for dropdown
@@ -484,12 +516,16 @@ class BookMaintenanceController extends Controller
     {
         ini_set('memory_limit', '4096M');
         $books = new Book();
+        $coverImageFileName = $request->hasFile('cover_image')
+            ? $request->file('cover_image')->getClientOriginalName()
+            : null;
 
         Log::info('Book Maintenance: Attempting to update book', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name,
             'book_id' => $request->input('id'),
             'accession' => $request->input('accession'),
+            'cover_image_file' => $coverImageFileName,
             'ip_address' => $request->ip(),
             'timestamp' => now(),
         ]);
@@ -498,6 +534,7 @@ class BookMaintenanceController extends Controller
             'accession'         => 'required|string|max:50',
             'call_number'       => 'nullable|string|max:50',
             'title'             => 'required|string|max:150',
+            'subject_id'        => 'nullable|integer|exists:bk_subjects,id,deleted_at,NULL',
             'authors'           => 'nullable|string|max:1024',
             'description'       => 'nullable|string',
             'edition'           => 'nullable|string|max:50',
@@ -562,15 +599,25 @@ class BookMaintenanceController extends Controller
                 'condition_status'      => $request->input('condition'),
                 'availability_status'   => $request->input('availability'),
             ]);
+
+            $subjectId = $request->filled('subject_id') ? (int) $request->input('subject_id') : null;
+            if ($subjectId) {
+                Subject::where('book_id', $book->id)->where('id', '!=', $subjectId)->update(['book_id' => null]);
+                Subject::where('id', $subjectId)->update(['book_id' => $book->id]);
+            } else {
+                Subject::where('book_id', $book->id)->update(['book_id' => null]);
+            }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             Log::error('Book Maintenance: Database error during update', [
                 'user_id' => Auth::guard('admin')->id(),
-                'error_message' => $e->getMessage(),
-                'error_trace' => $e->getTraceAsString(),
+                'error_message' => $this->sanitizeDatabaseErrorMessage($e->getMessage()),
+                'sql_state' => $e->errorInfo[0] ?? null,
+                'driver_code' => $e->errorInfo[1] ?? null,
+                'cover_image_file' => $coverImageFileName,
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
+            return redirect()->back()->with('toast-error', $this->sanitizeDatabaseErrorMessage($e->getMessage()))->withInput();
         }
         DB::commit();
         Log::info('Book Maintenance: Book updated successfully', [
@@ -597,11 +644,15 @@ class BookMaintenanceController extends Controller
     {
         ini_set('memory_limit', '4096M');
         $books = new Book();
+        $coverImageFileName = $request->hasFile('cover_image')
+            ? $request->file('cover_image')->getClientOriginalName()
+            : null;
 
         Log::info('Book Maintenance: Attempting to copy book', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name,
             'source_accession' => $request->input('accession'),
+            'cover_image_file' => $coverImageFileName,
             'ip_address' => $request->ip(),
             'timestamp' => now(),
         ]);
@@ -610,6 +661,7 @@ class BookMaintenanceController extends Controller
             'accession'         => 'required|string',
             'call_number'       => 'nullable|string|max:50',
             'title'             => 'required|string|max:150',
+            'subject_id'        => 'nullable|integer|exists:bk_subjects,id,deleted_at,NULL',
             'authors'           => 'nullable|string|max:1024',
             'description'       => 'nullable|string',
             'edition'           => 'nullable|string|max:50',
@@ -633,6 +685,13 @@ class BookMaintenanceController extends Controller
             if ($remarks !== 'On Shelf' && $availability !== 'Unavailable') {
                 $validator->errors()->add('availability', 'Availability must be "Unavailable" when the book is not On Shelf.');
             }
+            $accessionCount = collect(explode(',', (string) $request->input('accession', '')))
+                ->map(fn($item) => trim((string) $item))
+                ->filter(fn($item) => $item !== '')
+                ->count();
+            if ($request->filled('subject_id') && $accessionCount > 1) {
+                $validator->errors()->add('subject_id', 'You can only link one selected subject when copying a single accession.');
+            }
         });
         if ($validator->fails()) {
             Log::warning('Book Maintenance: Copy validation failed', [
@@ -652,10 +711,16 @@ class BookMaintenanceController extends Controller
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
-            $accessions = array_map('trim', explode(',', $request->input('accession')));
+            $subjectId = $request->filled('subject_id') ? (int) $request->input('subject_id') : null;
+            $accessions = collect(explode(',', (string) $request->input('accession')))
+                ->map(fn($item) => trim((string) $item))
+                ->filter(fn($item) => $item !== '')
+                ->values();
+
+            $copiedBookIds = [];
             foreach ($accessions as $accession) {
                 $barcode = new DNS1D();
-                Book::create([
+                $copiedBook = Book::create([
                     'accession'             => $accession,
                     'call_number'           => $request->input('call_number') ?? null,
                     'barcode'               => $barcode->getBarcodeJPG($request->input('accession'), 'C39', 2, 80, array(0, 0, 0, 0), false),
@@ -674,6 +739,14 @@ class BookMaintenanceController extends Controller
                     'condition_status'      => $request->input('condition'),
                     'availability_status'   => "Unavailable",
                 ]);
+
+                $copiedBookIds[] = $copiedBook->id;
+            }
+
+            if ($subjectId && count($copiedBookIds) === 1) {
+                Subject::where('id', $subjectId)->update([
+                    'book_id' => $copiedBookIds[0],
+                ]);
             }
             // After copying books, update remarks/availability and create inventory entries within the same transaction
             $copiedAccessions = array_map('trim', explode(',', $request->input('accession')));
@@ -691,11 +764,13 @@ class BookMaintenanceController extends Controller
             DB::rollBack();
             Log::error('Book Maintenance: Database error during copy', [
                 'user_id' => Auth::guard('admin')->id(),
-                'error_message' => $e->getMessage(),
-                'error_trace' => $e->getTraceAsString(),
+                'error_message' => $this->sanitizeDatabaseErrorMessage($e->getMessage()),
+                'sql_state' => $e->errorInfo[0] ?? null,
+                'driver_code' => $e->errorInfo[1] ?? null,
+                'cover_image_file' => $coverImageFileName,
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
+            return redirect()->back()->with('toast-error', $this->sanitizeDatabaseErrorMessage($e->getMessage()))->withInput();
         }
         DB::commit();
         Log::info('Book Maintenance: Book copy created successfully', [
@@ -870,7 +945,7 @@ class BookMaintenanceController extends Controller
             ]);
             return redirect()->back()->with('toast-warning', 'No books found for call number export!')->withInput();
         }
-        if($books->every(fn($book) => is_null($book->call_number))) {
+        if ($books->every(fn($book) => is_null($book->call_number))) {
             Log::warning('Book Maintenance: No call numbers found for selected books', [
                 'user_id' => Auth::guard('admin')->id(),
                 'user_name' => Auth::guard('admin')->user()->full_name,
@@ -1086,7 +1161,6 @@ class BookMaintenanceController extends Controller
 
             // Force HTTPS and return
             return str_replace('http://', 'https://', $thumbnail);
-
         } catch (ConnectionException $e) {
             Log::error('Connection error while fetching book image', [
                 'message' => $e->getMessage(),
@@ -1126,5 +1200,16 @@ class BookMaintenanceController extends Controller
             $enumValues = str_getcsv($matches[1], ',', "'");
         }
         return $enumValues;
+    }
+
+    private function sanitizeDatabaseErrorMessage(string $message): string
+    {
+        $connectionPos = strpos($message, '(Connection:');
+
+        if ($connectionPos !== false) {
+            return trim(substr($message, 0, $connectionPos));
+        }
+
+        return $message;
     }
 }

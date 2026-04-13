@@ -2,7 +2,7 @@
 
 namespace App\Enum;
 
-enum PermissionsEnum : string
+enum PermissionsEnum: string
 {
     case ADD_USERS                          = 'Add Users';
     case EDIT_USERS                         = 'Edit Users';
@@ -10,6 +10,9 @@ enum PermissionsEnum : string
     case ADD_BOOKS                          = 'Add Books';
     case EDIT_BOOKS                         = 'Edit Books';
     case DELETE_BOOKS                       = 'Delete Books';
+    case ADD_SUBJECTS                       = 'Add Subjects';
+    case EDIT_SUBJECTS                      = 'Edit Subjects';
+    case DELETE_SUBJECTS                    = 'Delete Subjects';
     case MODIFY_ADMIN                       = 'Modify Admins';
     case CREATE_REPORTS                     = 'Create Reports';
     case BOOK_INVENTORY                     = 'Book Inventory';
@@ -35,6 +38,7 @@ enum PermissionsEnum : string
     case EDIT_TRANSACTIONS                  = 'Edit Book Circulations';
     case VIEW_USERS_MAINTENANCE             = 'View Users Maintenance';
     case VIEW_BOOKS_MAINTENANCE             = 'View Books Maintenance';
+    case VIEW_SUBJECTS_MAINTENANCE          = 'View Subjects Maintenance';
     case VIEW_BOOK_CATEGORIES_MAINTENANCE   = 'View Book Categories Maintenance';
     case VIEW_PRIVILEGES_MAINTENANCE        = 'View Privileges Maintenance';
     case VIEW_PENALTY_RULES_MAINTENANCE     = 'View Penalty Rules Maintenance';
@@ -43,5 +47,4 @@ enum PermissionsEnum : string
     case CREATE_BACKUPS                     = 'Create Backups';
     case RESERVATION_APPROVALS              = 'Reservation Approvals';
     case MODIFY_UI_SETTINGS                 = 'Modify UI Settings';
-
 }

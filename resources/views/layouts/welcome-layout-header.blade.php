@@ -6,7 +6,7 @@
         <div class="flex flex-col justify-center">
           <h1 class="text-sm md:text-lg lg:text-xl text-white font-semibold text-start">{{ $settings->org_name ?? 'School Name' }}</h1>
           <hr class="h-px my-1 bg-gray-200 border-0">
-          <h1 class="text-sm md:text-lg lg:text-xl text-white font-semibold text-start">{{ config('app.name') }}</h1>
+          <h1 class="text-xs md:text-base lg:text-lg text-white font-semibold text-start">{{ config('app.name') }} - Library Management System</h1>
         </div>
       </a>
       <button data-collapse-toggle="navbar-dropdown" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-gray-100 rounded-lg lg:hidden hover:bg-gray-100/20 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-gray-400 dark:hover:bg-gray-700 dark:focus:ring-gray-600" aria-controls="navbar-dropdown" aria-expanded="false">

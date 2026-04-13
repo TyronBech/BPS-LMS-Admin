@@ -2,7 +2,7 @@
 @section('content')
 <div class="container mx-auto px-4 sm:px-6 lg:px-8">
   <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Maintenance</h1>
-  <div class="w-full p-4 sm:p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+  <div class="w-full p-4 sm:p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
       <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Add New Book</h5>
       <a href="{{ request('return_to', route('maintenance.books')) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-primary-500 rounded-lg hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500 mt-4 sm:mt-0">
@@ -54,6 +54,21 @@
           <label for="authors" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Authors:</label>
           <input type="text" id="authors" name="authors" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Juan Dela Cruz" value="{{ old('authors') }}">
           @error('authors')
+          <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+          @enderror
+        </div>
+        <div class="md:col-span-2">
+          <label for="subject_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Subject:</label>
+          <select id="subject_id" name="subject_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+            <option value="">No subject linked</option>
+            @foreach($subjects as $subject)
+            <option value="{{ $subject->id }}" {{ old('subject_id') == $subject->id ? 'selected' : '' }}>
+              {{ $subject->name }}{{ $subject->ddc ? ' (DDC: '.$subject->ddc.')' : '' }}{{ $subject->accessCodes->isNotEmpty() ? ' - '.$subject->accessCodes->pluck('access_code')->implode(', ') : '' }}
+            </option>
+            @endforeach
+          </select>
+          <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Create or edit subjects and access codes in Subject Maintenance.</p>
+          @error('subject_id')
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
           @enderror
         </div>

@@ -1,6 +1,6 @@
 @extends('layouts.app-form')
 @section('content')
-<div class="relative max-w-lg mx-auto my-8 sm:my-12 md:my-16 lg:my-20 h-auto bg-white shadow-md rounded-lg p-6 sm:p-8 md:p-10 dark:bg-gray-800">
+<div class="relative max-w-lg mx-auto my-8 sm:my-12 md:my-16 lg:my-20 h-auto bg-white rounded-lg p-6 sm:p-8 md:p-10 dark:bg-gray-800 shadow-md">
 
   {{-- Lockout Overlay --}}
   @if (session('lockout_time'))
@@ -26,7 +26,7 @@
   @endif
 
   {{-- 2FA Modal Overlay --}}
-  <div id="2fa-modal" class="hidden absolute inset-0 z-40 flex-col items-center justify-center bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-gray-700 transition-all duration-300">
+  <div id="2fa-modal" class="hidden absolute inset-0 z-40 flex-col items-center justify-center bg-white/95 dark:bg-gray-800/95 backdrop-blur-sm rounded-lg border border-gray-200 dark:border-gray-700 transition-all duration-300 shadow-md">
     <div class="text-center p-6 sm:p-8 w-full max-w-md">
       <!-- Header -->
       <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-gradient-to-br from-primary-500 to-purple-600 mb-4 shadow-lg">
@@ -69,7 +69,7 @@
           Continue to Verification
         </button>
 
-        <button type="button" id="2fa-cancel-btn" class="w-full text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 focus:ring-4 focus:outline-none focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 dark:focus:ring-gray-700">
+        <button type="button" id="2fa-cancel-btn" class="w-full text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 focus:ring-4 focus:outline-none focus:ring-gray-200 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600 dark:hover:bg-gray-600 dark:focus:ring-gray-700 shadow-md">
           <svg class="inline w-4 h-4 mr-2 -mt-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
           </svg>

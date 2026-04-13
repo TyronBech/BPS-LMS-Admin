@@ -2,7 +2,7 @@
 @section('content')
 <div class="container mx-auto px-4 sm:px-6 lg:px-8">
     <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Maintenance</h1>
-    <div class="w-full p-4 sm:p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+    <div class="w-full p-4 sm:p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
         <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
             <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Edit Book</h5>
             <a href="{{ request('return_to', route('maintenance.books')) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-primary-500 rounded-lg hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500 mt-4 sm:mt-0">
@@ -56,6 +56,21 @@
                     <label for="authors" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Authors:</label>
                     <input type="text" id="authors" name="authors" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Juan Dela Cruz" value="{{ $book->author }}">
                     @error('authors')
+                    <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div class="md:col-span-2">
+                    <label for="subject_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Subject:</label>
+                    <select id="subject_id" name="subject_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+                        <option value="">No subject linked</option>
+                        @foreach($subjects as $subject)
+                        <option value="{{ $subject->id }}" {{ old('subject_id', $linkedSubjectId) == $subject->id ? 'selected' : '' }}>
+                            {{ $subject->name }}{{ $subject->ddc ? ' (DDC: '.$subject->ddc.')' : '' }}{{ $subject->accessCodes->isNotEmpty() ? ' - '.$subject->accessCodes->pluck('access_code')->implode(', ') : '' }}
+                        </option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Create or edit subjects and access codes in Subject Maintenance.</p>
+                    @error('subject_id')
                     <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
                     @enderror
                 </div>
@@ -166,7 +181,7 @@
 <div id="copy-book-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
     <div class="relative p-4 w-full max-w-2xl max-h-full">
         <!-- Modal content -->
-        <div class="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
+        <div class="relative bg-white rounded-lg dark:bg-gray-700 shadow-md">
             <!-- Modal header -->
             <div class="flex items-center justify-between p-4 md:p-5 border-b rounded-t dark:border-gray-600">
                 <h3 class="text-xl font-semibold text-gray-900 dark:text-white">
@@ -189,6 +204,20 @@
                             <input type="text" id="copy_accession" name="accession" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., FIL0123456789" required>
                             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Add multiple by separating with a comma.</p>
                             @error('accession')
+                            <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div class="md:col-span-2">
+                            <label for="copy_subject_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Subject:</label>
+                            <select id="copy_subject_id" name="subject_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
+                                <option value="">No subject linked</option>
+                                @foreach($subjects as $subject)
+                                <option value="{{ $subject->id }}" {{ old('subject_id', $linkedSubjectId) == $subject->id ? 'selected' : '' }}>
+                                    {{ $subject->name }}{{ $subject->ddc ? ' (DDC: '.$subject->ddc.')' : '' }}{{ $subject->accessCodes->isNotEmpty() ? ' - '.$subject->accessCodes->pluck('access_code')->implode(', ') : '' }}
+                                </option>
+                                @endforeach
+                            </select>
+                            @error('subject_id')
                             <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
                             @enderror
                         </div>
@@ -243,7 +272,7 @@
                 <!-- Modal footer -->
                 <div class="flex items-center justify-end p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
                     <button type="submit" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Submit</button>
-                    <button data-modal-hide="copy-book-modal" type="button" class="skip-loader py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-500 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-50 dark:border-gray-600 dark:hover:text-primary-50 dark:hover:bg-gray-700">Cancel</button>
+                    <button data-modal-hide="copy-book-modal" type="button" class="skip-loader py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-500 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-50 dark:border-gray-600 dark:hover:text-primary-50 dark:hover:bg-gray-700 shadow-md">Cancel</button>
                 </div>
             </form>
         </div>

@@ -3,7 +3,7 @@
 @use('App\Enum\PermissionsEnum')
 <div class="container mx-auto px-4 sm:px-6 lg:px-8">
   <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Maintenance</h1>
-  <div class="w-full p-4 sm:p-6 bg-white border border-gray-200 rounded-lg shadow dark:bg-gray-800 dark:border-gray-700">
+  <div class="w-full p-4 sm:p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0">
       <h5 class="mb-1 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Users</h5>
       <div class="flex flex-col sm:flex-row sm:items-center gap-4">

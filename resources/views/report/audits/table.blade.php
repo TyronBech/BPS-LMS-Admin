@@ -5,7 +5,7 @@
 @use('App\Models\EmployeeDetail')
 @use('App\Models\VisitorDetail')
 <div id="tabular" class="container mx-auto mt-2 mb-4">
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md">
     <div class="p-4">
       <h2 class="text-center mb-4 font-semibold text-2xl dark:text-white">Report Table for User Audits</h2>
       <form method="GET" class="flex items-center">

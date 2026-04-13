@@ -39,7 +39,7 @@
           <div class="flex flex-col justify-center">
             <h1 class="text-sm md:text-lg lg:text-xl text-white font-semibold text-start">{{ $settings->org_name ?? 'School Name' }}</h1>
             <hr class="h-px bg-gray-200 border-0 my-1">
-            <h1 class="text-sm md:text-lg lg:text-xl text-white font-semibold text-start">{{ config('app.name') }}</h1>
+            <h1 class="text-xs md:text-base lg:text-lg text-white font-semibold text-start">{{ config('app.name') }} - Library Management System</h1>
           </div>
         </a>
       </div>

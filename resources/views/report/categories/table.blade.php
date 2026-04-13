@@ -1,5 +1,5 @@
 @use('App\Enum\PermissionsEnum')
-<div class="bg-white dark:bg-gray-800 rounded-lg shadow mt-2 mb-4">
+<div class="bg-white dark:bg-gray-800 rounded-lg mt-2 mb-4 shadow-md">
   <div class="p-4">
     <h2 class="text-center mb-4 font-semibold text-2xl dark:text-white">Report Table for Materials</h2>
   </div>
