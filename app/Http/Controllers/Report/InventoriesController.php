@@ -146,7 +146,7 @@ class InventoriesController extends Controller
 
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml(view('pdf.inventory-pdf-report', $items));
-        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->setPaper('legal', 'portrait');
         $dompdf->render();
         $dompdf->stream('inventory-report ' . date('Y-m-d') . '.pdf', ['Attachment' => true]);
         exit;
@@ -175,6 +175,10 @@ class InventoriesController extends Controller
         $logo->setWorksheet($sheet);
 
         $sheet->setTitle('Inventory Report');
+        $sheet->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_LEGAL);
+        $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
+        $sheet->getPageSetup()->setFitToWidth(1);
+        $sheet->getPageSetup()->setFitToHeight(0);
         $sheet->mergeCells('A6:D6');
         $sheet->setCellValue('A6', 'Inventory Report');
         $sheet->getStyle('A6:D6')->getFont()->setBold(true);
@@ -214,6 +218,9 @@ class InventoriesController extends Controller
             $sheet->setCellValue('B' . $row, $item->author);
             $sheet->setCellValue('C' . $row, $item->title);
             $sheet->setCellValue('D' . $row, $item->remarks);
+            $sheet->getStyle('A' . $row . ':D' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle('A' . $row . ':D' . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+            $sheet->getStyle('A' . $row . ':D' . $row)->getAlignment()->setWrapText(true);
             $row++;
         }
 

@@ -206,6 +206,10 @@ class TransactionController extends Controller
         $logo->setWorksheet($sheet);
 
         $sheet->setTitle('Book Circulation Report');
+        $sheet->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_LEGAL);
+        $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
+        $sheet->getPageSetup()->setFitToWidth(1);
+        $sheet->getPageSetup()->setFitToHeight(0);
 
         $endCol = 'J';
         if ($type && $type == 'Borrowed') {
@@ -310,6 +314,9 @@ class TransactionController extends Controller
                 $sheet->setCellValue('F' . $row, $item->transaction_type);
                 $sheet->setCellValue('G' . $row, $item->status);
             }
+            $sheet->getStyle('A' . $row . ':' . $endCol . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle('A' . $row . ':' . $endCol . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+            $sheet->getStyle('A' . $row . ':' . $endCol . $row)->getAlignment()->setWrapText(true);
             $row++;
         }
 

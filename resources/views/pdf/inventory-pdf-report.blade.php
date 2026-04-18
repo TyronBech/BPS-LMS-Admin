@@ -38,10 +38,12 @@
       text-align: center;
     }
 
-    h2, p {
+    h2,
+    p {
       margin: 0;
       padding: 0;
     }
+
     .title {
       text-align: center;
       font-size: 14px;
@@ -76,10 +78,11 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      table-layout: fixed;
+      table-layout: auto;
     }
 
-    th, td {
+    th,
+    td {
       border: 1px solid #ddd;
       padding: 4px;
       font-size: 10px;
@@ -155,8 +158,8 @@
       $font = $fontMetrics->getFont("DejaVu Sans", "normal");
       $size = 9;
       $pageText = "Page {PAGE_NUM} of {PAGE_COUNT}";
-      $x = 500;
-      $y = 820;
+      $x = $pdf->get_width() - 120;
+      $y = $pdf->get_height() - 20;
       $pdf->page_text($x, $y, $pageText, $font, $size);
     }
   </script>

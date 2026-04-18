@@ -84,7 +84,7 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      table-layout: fixed;
+      table-layout: auto;
     }
 
     th,
@@ -102,9 +102,21 @@
       text-align: center;
     }
 
+    .left-col {
+      text-align: left;
+    }
+
+    .center-col {
+      text-align: center;
+    }
+
     .total {
       font-weight: bold;
       text-align: right;
+    }
+
+    .total.center-col {
+      text-align: center;
     }
 
     @media print {
@@ -124,7 +136,7 @@
 <body>
   <header>
     <div class="logo">
-      <img src="data:image/png;base64,{{ $logo }}" alt="{{ $settings->org_initial }} Logo">
+      <img src="data:image/png;base64,{{ $logo }}" alt="{{ $title }} Logo">
     </div>
     <hr>
   </header>
@@ -136,35 +148,47 @@
     <table>
       <thead>
         <tr>
-          <th>Legend</th>
-          <th>Description</th>
-          <th>Previous Inventory</th>
-          <th>Newly Acquired</th>
-          <th>Discarded</th>
-          <th>Present Inventory</th>
+          <th class="left-col">Legend</th>
+          <th class="left-col">Description</th>
+          <th class="center-col">Previous Inventory</th>
+          <th class="center-col">Newly Acquired</th>
+          <th class="center-col">Lost and Paid For</th>
+          <th class="center-col">Lost and Replaced</th>
+          <th class="center-col">Unreturned</th>
+          <th class="center-col">Missing</th>
+          <th class="center-col">Discarded</th>
+          <th class="center-col">Present Inventory</th>
         </tr>
       </thead>
       <tbody>
         @forelse($data as $item)
         <tr>
-          <td>{{ $item->legend }}</td>
-          <td>{{ $item->name }}</td>
-          <td>{{ $item->previous_inventory }}</td>
-          <td>{{ $item->newly_acquired }}</td>
-          <td>{{ $item->discarded }}</td>
-          <td>{{ $item->present_inventory }}</td>
+          <td class="left-col">{{ $item->legend }}</td>
+          <td class="left-col">{{ $item->name }}</td>
+          <td class="center-col">{{ $item->previous_inventory }}</td>
+          <td class="center-col">{{ $item->newly_acquired }}</td>
+          <td class="center-col">{{ $item->lost_and_paid_for }}</td>
+          <td class="center-col">{{ $item->lost_and_replaced }}</td>
+          <td class="center-col">{{ $item->unreturned }}</td>
+          <td class="center-col">{{ $item->missing }}</td>
+          <td class="center-col">{{ $item->discarded }}</td>
+          <td class="center-col">{{ $item->present_inventory }}</td>
         </tr>
         @empty
         <tr>
-          <td colspan="6" style="text-align: center;">No data found.</td>
+          <td colspan="10" style="text-align: center;">No data found.</td>
         </tr>
         @endforelse
         <tr>
           <td colspan="2" class="total">Total:</td>
-          <td class="total">{{ $data->sum('previous_inventory') }}</td>
-          <td class="total">{{ $data->sum('newly_acquired') }}</td>
-          <td class="total">{{ $data->sum('discarded') }}</td>
-          <td class="total">{{ $data->sum('present_inventory') }}</td>
+          <td class="total center-col">{{ $data->sum('previous_inventory') }}</td>
+          <td class="total center-col">{{ $data->sum('newly_acquired') }}</td>
+          <td class="total center-col">{{ $data->sum('lost_and_paid_for') }}</td>
+          <td class="total center-col">{{ $data->sum('lost_and_replaced') }}</td>
+          <td class="total center-col">{{ $data->sum('unreturned') }}</td>
+          <td class="total center-col">{{ $data->sum('missing') }}</td>
+          <td class="total center-col">{{ $data->sum('discarded') }}</td>
+          <td class="total center-col">{{ $data->sum('present_inventory') }}</td>
         </tr>
       </tbody>
     </table>
@@ -179,8 +203,8 @@
       $font = $fontMetrics->getFont("DejaVu Sans", "normal");
       $size = 9;
       $pageText = "Page {PAGE_NUM} of {PAGE_COUNT}";
-      $x = 500;
-      $y = 820; // Adjust this if needed
+      $x = $pdf->get_width() - 120;
+      $y = $pdf->get_height() - 20;
       $pdf->page_text($x, $y, $pageText, $font, $size);
     }
   </script>

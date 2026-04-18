@@ -148,6 +148,7 @@ class BookMaintenanceController extends Controller
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string',
             'call_number'       => 'nullable|string|max:50',
+            'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:150',
             'subject_id'        => 'nullable|integer|exists:bk_subjects,id,deleted_at,NULL',
             'authors'           => 'nullable|string|max:1024',
@@ -220,6 +221,7 @@ class BookMaintenanceController extends Controller
                 $createdBook = Book::create([
                     'accession'             => $accession,
                     'call_number'           => $request->input('call_number') ?? null,
+                    'isbn'                  => $request->input('isbn') ?? null,
                     'barcode'               => $barcode->getBarcodeJPG($accession, 'C39', 2, 80, array(0, 0, 0, 0), false),
                     'title'                 => $request->input('title'),
                     'author'                => $request->input('authors') ?? null,
@@ -418,6 +420,7 @@ class BookMaintenanceController extends Controller
                 $q->where('accession', 'like', '%' . $search . '%')
                     ->orWhere('title', 'like', '%' . $search . '%')
                     ->orWhere('author', 'like', '%' . $search . '%')
+                    ->orWhere('isbn', 'like', '%' . $search . '%')
                     ->orWhere('publisher', 'like', '%' . $search . '%')
                     ->orWhere('place_of_publication', 'like', '%' . $search . '%')
                     ->orWhere('edition', 'like', '%' . $search . '%')
@@ -533,6 +536,7 @@ class BookMaintenanceController extends Controller
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string|max:50',
             'call_number'       => 'nullable|string|max:50',
+            'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:150',
             'subject_id'        => 'nullable|integer|exists:bk_subjects,id,deleted_at,NULL',
             'authors'           => 'nullable|string|max:1024',
@@ -583,6 +587,7 @@ class BookMaintenanceController extends Controller
             $book->update([
                 'accession'             => $request->input('accession'),
                 'call_number'           => $request->input('call_number'),
+                'isbn'                  => $request->input('isbn'),
                 'barcode'               => $barcode->getBarcodeJPG($request->input('accession'), 'C39', 2, 80, array(0, 0, 0, 0), false),
                 'title'                 => $request->input('title'),
                 'author'                => $request->input('authors'),
@@ -660,6 +665,7 @@ class BookMaintenanceController extends Controller
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string',
             'call_number'       => 'nullable|string|max:50',
+            'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:150',
             'subject_id'        => 'nullable|integer|exists:bk_subjects,id,deleted_at,NULL',
             'authors'           => 'nullable|string|max:1024',
@@ -723,6 +729,7 @@ class BookMaintenanceController extends Controller
                 $copiedBook = Book::create([
                     'accession'             => $accession,
                     'call_number'           => $request->input('call_number') ?? null,
+                    'isbn'                  => $request->input('isbn') ?? null,
                     'barcode'               => $barcode->getBarcodeJPG($request->input('accession'), 'C39', 2, 80, array(0, 0, 0, 0), false),
                     'title'                 => $request->input('title'),
                     'author'                => $request->input('authors') ?? null,
@@ -839,6 +846,7 @@ class BookMaintenanceController extends Controller
                     $q->where('accession', 'like', '%' . $search . '%')
                         ->orWhere('title', 'like', '%' . $search . '%')
                         ->orWhere('author', 'like', '%' . $search . '%')
+                        ->orWhere('isbn', 'like', '%' . $search . '%')
                         ->orWhere('publisher', 'like', '%' . $search . '%')
                         ->orWhere('place_of_publication', 'like', '%' . $search . '%')
                         ->orWhere('edition', 'like', '%' . $search . '%')
@@ -919,6 +927,7 @@ class BookMaintenanceController extends Controller
                     $q->where('accession', 'like', '%' . $search . '%')
                         ->orWhere('title', 'like', '%' . $search . '%')
                         ->orWhere('author', 'like', '%' . $search . '%')
+                        ->orWhere('isbn', 'like', '%' . $search . '%')
                         ->orWhere('publisher', 'like', '%' . $search . '%')
                         ->orWhere('place_of_publication', 'like', '%' . $search . '%')
                         ->orWhere('edition', 'like', '%' . $search . '%')

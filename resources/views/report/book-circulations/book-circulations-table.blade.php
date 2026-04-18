@@ -16,28 +16,34 @@
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
             <th scope="col" class="px-6 py-3">Accession</th>
-            <th scope="col" class="px-6 py-3">Call Number</th>
+            <th scope="col" class="px-6 py-3">Author</th>
             <th scope="col" class="px-6 py-3">Title</th>
-            <th scope="col" class="px-6 py-3">Category</th>
-            <th scope="col" class="px-6 py-3">Availability</th>
-            <th scope="col" class="px-6 py-3">Condition</th>
+            <th scope="col" class="px-6 py-3">Publication</th>
+            <th scope="col" class="px-6 py-3">Publisher</th>
+            <th scope="col" class="px-6 py-3">Call Number</th>
+            <th scope="col" class="px-6 py-3">ISBN</th>
+            <th scope="col" class="px-6 py-3">Copyright</th>
+            <th scope="col" class="px-6 py-3">Status</th>
           </tr>
         </thead>
         <tbody>
           @forelse($data as $item)
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
             <td class="px-6 py-4">{{ $item->accession }}</td>
-            <td class="px-6 py-4">{{ $item->call_number }}</td>
+            <td class="px-6 py-4">{{ $item->author ?? 'N/A' }}</td>
             <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
               {{ $item->title }}
             </th>
-            <td class="px-6 py-4">{{ $item->category->name }}</td>
-            <td class="px-6 py-4">{{ ucwords($item->availability) }}</td>
-            <td class="px-6 py-4">{{ ucwords($item->condition) }}</td>
+            <td class="px-6 py-4">{{ $item->place_of_publication ?? 'N/A' }}</td>
+            <td class="px-6 py-4">{{ $item->publisher ?? 'N/A' }}</td>
+            <td class="px-6 py-4">{{ $item->call_number ?? 'N/A' }}</td>
+            <td class="px-6 py-4">{{ $item->isbn ?? 'N/A' }}</td>
+            <td class="px-6 py-4">{{ $item->copyrights ?? 'N/A' }}</td>
+            <td class="px-6 py-4">{{ $item->remarks ?? 'N/A' }}</td>
           </tr>
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-            <td colspan="6" class="px-6 py-4 text-center">No data found.</td>
+            <td colspan="9" class="px-6 py-4 text-center">No data found.</td>
           </tr>
           @endforelse
         </tbody>

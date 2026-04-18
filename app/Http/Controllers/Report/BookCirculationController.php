@@ -167,7 +167,7 @@ class BookCirculationController extends Controller
         $options->set('isRemoteEnabled', true);
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml(view('pdf.book-pdf-report', $items));
-        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->setPaper('legal', 'landscape');
         $dompdf->render();
         $dompdf->stream('book-records ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;
@@ -200,45 +200,61 @@ class BookCirculationController extends Controller
         $logo->setWorksheet($sheet);
 
         $sheet->setTitle('Accession List Report');
-        $sheet->mergeCells('A6:F6');
+        $sheet->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_LEGAL);
+        $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
+        $sheet->getPageSetup()->setFitToWidth(1);
+        $sheet->getPageSetup()->setFitToHeight(0);
+        $sheet->mergeCells('A6:I6');
         $sheet->setCellValue('A6', 'Book Records');
-        $sheet->getStyle('A6:F6')->getFont()->setBold(true);
-        $sheet->getStyle('A6:F6')->getFont()->setSize(14);
-        $sheet->getStyle('A6:F6')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('A6:F6')->getAlignment()->setVertical('center');
+        $sheet->getStyle('A6:I6')->getFont()->setBold(true);
+        $sheet->getStyle('A6:I6')->getFont()->setSize(14);
+        $sheet->getStyle('A6:I6')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A6:I6')->getAlignment()->setVertical('center');
 
-        $sheet->getColumnDimension('A')->setWidth(20);
-        $sheet->getColumnDimension('B')->setWidth(20);
-        $sheet->getColumnDimension('C')->setWidth(60);
-        $sheet->getColumnDimension('D')->setWidth(20);
-        $sheet->getColumnDimension('E')->setWidth(20);
-        $sheet->getColumnDimension('F')->setWidth(20);
-        $sheet->mergeCells('A8:F8');
+        $sheet->getColumnDimension('A')->setWidth(18);
+        $sheet->getColumnDimension('B')->setWidth(28);
+        $sheet->getColumnDimension('C')->setWidth(40);
+        $sheet->getColumnDimension('D')->setWidth(22);
+        $sheet->getColumnDimension('E')->setWidth(26);
+        $sheet->getColumnDimension('F')->setWidth(22);
+        $sheet->getColumnDimension('G')->setWidth(18);
+        $sheet->getColumnDimension('H')->setWidth(18);
+        $sheet->getColumnDimension('I')->setWidth(22);
+        $sheet->mergeCells('A8:I8');
         $sheet->setCellValue('A8', 'Report Generated On: ' . date('F j, Y'));
-        $sheet->getStyle('A7:F8')->getFont()->setBold(true);
-        $sheet->getStyle('A7:F8')->getFont()->setSize(10);
-        $sheet->getStyle('A7:F8')->getAlignment()->setHorizontal('left');
-        $sheet->getStyle('A7:F8')->getAlignment()->setVertical('left');
-        $sheet->getStyle('A7:F8')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A10:F10')->getFont()->setSize(10);
-        $sheet->getStyle('A10:F10')->getFont()->setBold(true);
-        $sheet->getStyle('A10:F10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A10:F10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+        $sheet->getStyle('A7:I8')->getFont()->setBold(true);
+        $sheet->getStyle('A7:I8')->getFont()->setSize(10);
+        $sheet->getStyle('A7:I8')->getAlignment()->setHorizontal('left');
+        $sheet->getStyle('A7:I8')->getAlignment()->setVertical('left');
+        $sheet->getStyle('A7:I8')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A10:I10')->getFont()->setSize(10);
+        $sheet->getStyle('A10:I10')->getFont()->setBold(true);
+        $sheet->getStyle('A10:I10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A10:I10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
 
         $sheet->setCellValue('A10', 'Accession');
-        $sheet->setCellValue('B10', 'Call Number');
+        $sheet->setCellValue('B10', 'Author');
         $sheet->setCellValue('C10', 'Title');
-        $sheet->setCellValue('D10', 'Category');
-        $sheet->setCellValue('E10', 'Availability');
-        $sheet->setCellValue('F10', 'Condition');
+        $sheet->setCellValue('D10', 'Publication');
+        $sheet->setCellValue('E10', 'Publisher');
+        $sheet->setCellValue('F10', 'Call Number');
+        $sheet->setCellValue('G10', 'ISBN');
+        $sheet->setCellValue('H10', 'Copyright');
+        $sheet->setCellValue('I10', 'Status');
         $row = 11;
         foreach ($data as $item) {
             $sheet->setCellValue('A' . $row, $item->accession);
-            $sheet->setCellValue('B' . $row, $item->call_number ?? 'N/A');
+            $sheet->setCellValue('B' . $row, $item->author ?? 'N/A');
             $sheet->setCellValue('C' . $row, $item->title);
-            $sheet->setCellValue('D' . $row, $item->category->name);
-            $sheet->setCellValue('E' . $row, $item->availability_status);
-            $sheet->setCellValue('F' . $row, $item->condition_status);
+            $sheet->setCellValue('D' . $row, $item->place_of_publication ?? 'N/A');
+            $sheet->setCellValue('E' . $row, $item->publisher ?? 'N/A');
+            $sheet->setCellValue('F' . $row, $item->call_number ?? 'N/A');
+            $sheet->setCellValue('G' . $row, $item->isbn ?? 'N/A');
+            $sheet->setCellValue('H' . $row, $item->copyrights ?? 'N/A');
+            $sheet->setCellValue('I' . $row, $item->remarks ?? 'N/A');
+            $sheet->getStyle('A' . $row . ':I' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle('A' . $row . ':I' . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+            $sheet->getStyle('A' . $row . ':I' . $row)->getAlignment()->setWrapText(true);
             $row++;
         }
 
@@ -249,13 +265,13 @@ class BookCirculationController extends Controller
                 ],
             ],
         ];
-        $sheet->getStyle('A10:F' . ($row - 1))->applyFromArray($styleArray);
+        $sheet->getStyle('A10:I' . ($row - 1))->applyFromArray($styleArray);
 
         $row += 2;
-        $sheet->mergeCells('A' . $row . ':F' . $row);
+        $sheet->mergeCells('A' . $row . ':I' . $row);
         $sheet->setCellValue('A' . $row, 'Report Generated By: ' . Auth::user()->first_name . ' ' . Auth::user()->last_name);
 
-        $styleRange = 'A' . $row . ':F' . $row;
+        $styleRange = 'A' . $row . ':I' . $row;
         $sheet->getStyle($styleRange)->getFont()->setBold(true);
         $sheet->getStyle($styleRange)->getFont()->setSize(10);
         $sheet->getStyle($styleRange)->getAlignment()->setHorizontal('left');
@@ -296,7 +312,13 @@ class BookCirculationController extends Controller
                 'id',
                 'category_id',
                 'accession',
+                'author',
+                'place_of_publication',
+                'publisher',
                 'call_number',
+                'isbn',
+                'copyrights',
+                'remarks',
                 'title',
                 'barcode',
                 'availability_status as availability',

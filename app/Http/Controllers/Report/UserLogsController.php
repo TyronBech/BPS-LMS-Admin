@@ -500,7 +500,7 @@ class UserLogsController extends Controller
             $options->set('isRemoteEnabled', true);
 
             $pdf = new Dompdf($options);
-            $pdf->setPaper('A4', 'landscape');
+            $pdf->setPaper('legal', 'landscape');
             $pdf->loadHtml(view('pdf.user-graph-pdf-report', $items)->render());
             $pdf->render();
 
@@ -544,7 +544,7 @@ class UserLogsController extends Controller
         $options->set('isRemoteEnabled', true);
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml(view('pdf.user-pdf-report-format', $items));
-        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->setPaper('legal', 'portrait');
         $dompdf->render();
         $dompdf->stream('users-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;
@@ -577,6 +577,10 @@ class UserLogsController extends Controller
         $logo->setWorksheet($sheet);
 
         $sheet->setTitle('Attendance Monitoring Report');
+        $sheet->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_LEGAL);
+        $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
+        $sheet->getPageSetup()->setFitToWidth(1);
+        $sheet->getPageSetup()->setFitToHeight(0);
         $sheet->mergeCells('A6:D6');
         $sheet->setCellValue('A6', 'Attendance Monitoring Report');
         $sheet->getStyle('A6:D6')->getFont()->setBold(true);
@@ -617,6 +621,9 @@ class UserLogsController extends Controller
             } else {
                 $sheet->setCellValue('D' . $row, 'No Time Out');
             }
+            $sheet->getStyle('A' . $row . ':D' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle('A' . $row . ':D' . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+            $sheet->getStyle('A' . $row . ':D' . $row)->getAlignment()->setWrapText(true);
             $row++;
         }
 
