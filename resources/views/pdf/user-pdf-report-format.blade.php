@@ -6,11 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
     @page {
-      margin: 30px 25px 40px 25px; /* Top, Right, Bottom, Left */
+      margin: 30px 25px 40px 25px;
+      /* Top, Right, Bottom, Left */
     }
 
     body {
-      font-family: 'DejaVu Sans', sans-serif; /* safer than web fonts in DOMPDF */
+      font-family: 'DejaVu Sans', sans-serif;
+      /* safer than web fonts in DOMPDF */
       font-size: 10px;
       margin: 0;
       padding: 0;
@@ -37,7 +39,8 @@
       text-align: center;
     }
 
-    h2, p {
+    h2,
+    p {
       margin: 0;
       padding: 0;
     }
@@ -71,10 +74,11 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      table-layout: fixed;
+      table-layout: auto;
     }
 
-    th, td {
+    th,
+    td {
       border: 1px solid #ddd;
       padding: 4px;
       font-size: 10px;
@@ -106,7 +110,7 @@
 <body>
   <header>
     <div class="logo">
-      <img src="data:image/png;base64,{{ $logo }}" alt="{{ $settings->org_initial }} Logo">
+      <img src="data:image/png;base64,{{ $logo }}" alt="{{ $title }} Logo">
     </div>
     <hr>
   </header>
@@ -127,18 +131,18 @@
       </thead>
       <tbody>
         @forelse($data as $item)
-          @if($item->user)
-            <tr>
-              <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
-              <td>{{ \Carbon\Carbon::parse($item->time_in)->format('M j, Y') }}</td>
-              <td>{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
-              <td>{{ \Carbon\Carbon::parse($item->time_out)->format('g:i A') }}</td>
-            </tr>
-          @endif
+        @if($item->user)
+        <tr>
+          <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
+          <td>{{ \Carbon\Carbon::parse($item->time_in)->format('M j, Y') }}</td>
+          <td>{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
+          <td>{{ \Carbon\Carbon::parse($item->time_out)->format('g:i A') }}</td>
+        </tr>
+        @endif
         @empty
-          <tr>
-            <td colspan="4" style="text-align: center;">No data found.</td>
-          </tr>
+        <tr>
+          <td colspan="4" style="text-align: center;">No data found.</td>
+        </tr>
         @endforelse
       </tbody>
     </table>
@@ -153,8 +157,8 @@
       $font = $fontMetrics->getFont("DejaVu Sans", "normal");
       $size = 9;
       $pageText = "Page {PAGE_NUM} of {PAGE_COUNT}";
-      $x = 500;
-      $y = 820; // Adjusted to stay within bottom margin
+      $x = $pdf->get_width() - 120;
+      $y = $pdf->get_height() - 20;
       $pdf->page_text($x, $y, $pageText, $font, $size);
     }
   </script>

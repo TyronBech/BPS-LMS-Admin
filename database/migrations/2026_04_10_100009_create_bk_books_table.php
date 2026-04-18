@@ -18,10 +18,11 @@ return new class extends Migration
             $table->enum('book_type', ['physical', 'ebook'])->default('physical');
             $table->text('description')->nullable();
             $table->string('edition', 50)->nullable();
+            $table->string('isbn', 50)->nullable();
             $table->string('place_of_publication', 50)->nullable();
             $table->string('publisher', 100)->nullable();
             $table->string('copyrights', 50)->nullable();
-            $table->enum('remarks', ['On Shelf', 'Missing', 'Lost', 'Discarded', 'Lost And Paid For'])->default('on shelf');
+            $table->enum('remarks', ['On Shelf', 'Unreturned', 'Missing', 'Lost', 'Discarded', 'Lost And Paid For', 'Lost And Replaced'])->default('on shelf');
             $table->bigInteger('category_id')->unsigned();
             $table->binary('cover_image')->nullable();
             $table->string('digital_copy_url')->nullable();

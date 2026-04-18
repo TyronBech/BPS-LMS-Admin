@@ -220,7 +220,7 @@ class ComputerUseController extends Controller
         $options->set('isRemoteEnabled', true);
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml(view('pdf.computer-pdf-report', $items));
-        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->setPaper('legal', 'portrait');
         $dompdf->render();
         $dompdf->stream('computer-use-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;
@@ -255,6 +255,10 @@ class ComputerUseController extends Controller
         $logo->setWorksheet($sheet);
 
         $sheet->setTitle('Computer Use Report');
+        $sheet->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_LEGAL);
+        $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
+        $sheet->getPageSetup()->setFitToWidth(1);
+        $sheet->getPageSetup()->setFitToHeight(0);
         if ($data->first() && $data->first()->user->students) {
             $sheet->mergeCells('A6:E6');
             $sheet->getStyle('A6:E6')->getFont()->setBold(true);
@@ -268,7 +272,7 @@ class ComputerUseController extends Controller
             $sheet->getStyle('A6:D6')->getAlignment()->setHorizontal('center');
             $sheet->getStyle('A6:D6')->getAlignment()->setVertical('center');
         } else {
-             $sheet->mergeCells('A6:C6');
+            $sheet->mergeCells('A6:C6');
             $sheet->getStyle('A6:C6')->getFont()->setBold(true);
             $sheet->getStyle('A6:C6')->getFont()->setSize(14);
             $sheet->getStyle('A6:C6')->getAlignment()->setHorizontal('center');
@@ -344,6 +348,9 @@ class ComputerUseController extends Controller
             }
             $sheet->setCellValue($colD . $row, Carbon::parse($item->time_in)->format('M j, Y'));
             $sheet->setCellValue($colE . $row, Carbon::parse($item->time_in)->format('g:i A'));
+            $sheet->getStyle('A' . $row . ':' . $colE . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle('A' . $row . ':' . $colE . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+            $sheet->getStyle('A' . $row . ':' . $colE . $row)->getAlignment()->setWrapText(true);
             $row++;
         }
 

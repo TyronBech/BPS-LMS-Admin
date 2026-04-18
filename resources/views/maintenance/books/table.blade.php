@@ -47,7 +47,8 @@
         <th scope="col" class="px-6 py-3">Title</th>
         <th scope="col" class="px-6 py-3 hidden md:table-cell">Accession</th>
         <th scope="col" class="px-6 py-3 hidden lg:table-cell">Call Number</th>
-        <th scope="col" class="px-6 py-3 hidden xl:table-cell">Remarks</th>
+        <th scope="col" class="px-6 py-3 hidden xl:table-cell">ISBN</th>
+        <th scope="col" class="px-6 py-3 hidden 2xl:table-cell">Remarks</th>
         <th scope="col" class="px-6 py-3">Actions</th>
       </tr>
     </thead>
@@ -66,7 +67,8 @@
         </th>
         <td class="px-6 py-4 hidden md:table-cell">{{ $item->accession }}</td>
         <td class="px-6 py-4 hidden lg:table-cell">{{ $item->call_number }}</td>
-        <td class="px-6 py-4 hidden xl:table-cell">{{ $item->remarks }}</td>
+        <td class="px-6 py-4 hidden xl:table-cell">{{ $item->isbn ?? '-' }}</td>
+        <td class="px-6 py-4 hidden 2xl:table-cell">{{ $item->remarks }}</td>
         <td class="px-6 py-4">
           <div class="flex items-center space-x-2">
             <a href="{{ route('maintenance.view-book', ['accession' => $item->accession, 'return_to' => request()->fullUrl()]) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 focus:ring-4 focus:outline-none focus:ring-yellow-300 dark:bg-yellow-400 dark:hover:bg-yellow-500 dark:focus:ring-yellow-800">View</a>
@@ -83,7 +85,7 @@
       </tr>
       @empty
       <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-        <td colspan="6" class="px-6 py-4 text-center">No books found.</td>
+        <td colspan="7" class="px-6 py-4 text-center">No books found.</td>
       </tr>
       @endforelse
     </tbody>

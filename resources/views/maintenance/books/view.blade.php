@@ -45,6 +45,10 @@
           <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">{{ $book->call_number ?? '-' }}</p>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <p class="font-semibold text-gray-900 dark:text-white">ISBN:</p>
+          <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">{{ $book->isbn ?? '-' }}</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <p class="font-semibold text-gray-900 dark:text-white">Edition:</p>
           <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">{{ $book->edition ?? '-' }}</p>
         </div>

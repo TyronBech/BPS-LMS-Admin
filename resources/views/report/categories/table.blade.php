@@ -11,6 +11,10 @@
           <th scope="col" class="px-6 py-3">Description</th>
           <th scope="col" class="px-6 py-3">Previous Inventory</th>
           <th scope="col" class="px-6 py-3">Newly Acquired</th>
+          <th scope="col" class="px-6 py-3">Lost and Paid For</th>
+          <th scope="col" class="px-6 py-3">Lost and Replaced</th>
+          <th scope="col" class="px-6 py-3">Unreturned</th>
+          <th scope="col" class="px-6 py-3">Missing</th>
           <th scope="col" class="px-6 py-3">Discarded</th>
           <th scope="col" class="px-6 py-3">Present Inventory</th>
         </tr>
@@ -22,18 +26,26 @@
           <td class="px-6 py-4">{{ $item->name }}</td>
           <td class="px-6 py-4">{{ $item->previous_inventory }}</td>
           <td class="px-6 py-4">{{ $item->newly_acquired }}</td>
+          <td class="px-6 py-4">{{ $item->lost_and_paid_for }}</td>
+          <td class="px-6 py-4">{{ $item->lost_and_replaced }}</td>
+          <td class="px-6 py-4">{{ $item->unreturned }}</td>
+          <td class="px-6 py-4">{{ $item->missing }}</td>
           <td class="px-6 py-4">{{ $item->discarded }}</td>
           <td class="px-6 py-4">{{ $item->present_inventory }}</td>
         </tr>
         @empty
         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-          <td colspan="6" class="px-6 py-4 text-center">No data found.</td>
+          <td colspan="10" class="px-6 py-4 text-center">No data found.</td>
         </tr>
         @endforelse
         <tr class="bg-gray-50 font-bold dark:bg-gray-700 dark:text-gray-300">
           <td class="px-6 py-4 text-right" colspan="2">Total:</td>
           <td class="px-6 py-4">{{ $data->sum('previous_inventory') }}</td>
           <td class="px-6 py-4">{{ $data->sum('newly_acquired') }}</td>
+          <td class="px-6 py-4">{{ $data->sum('lost_and_paid_for') }}</td>
+          <td class="px-6 py-4">{{ $data->sum('lost_and_replaced') }}</td>
+          <td class="px-6 py-4">{{ $data->sum('unreturned') }}</td>
+          <td class="px-6 py-4">{{ $data->sum('missing') }}</td>
           <td class="px-6 py-4">{{ $data->sum('discarded') }}</td>
           <td class="px-6 py-4">{{ $data->sum('present_inventory') }}</td>
         </tr>

@@ -33,14 +33,17 @@
       max-width: 420px;
       margin-right: 10px;
     }
+
     .school-info {
       text-align: center;
     }
 
-    h2, p {
+    h2,
+    p {
       margin: 0;
       padding: 0;
     }
+
     .title {
       text-align: center;
       font-size: 14px;
@@ -74,10 +77,11 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      table-layout: fixed;
+      table-layout: auto;
     }
 
-    th, td {
+    th,
+    td {
       border: 1px solid #ddd;
       padding: 4px;
       font-size: 10px;
@@ -108,7 +112,7 @@
 <body>
   <header>
     <div class="logo">
-      <img src="data:image/png;base64,{{ $logo }}" alt="{{ $settings->org_initial }} Logo">
+      <img src="data:image/png;base64,{{ $logo }}" alt="{{ $title }} Logo">
     </div>
     <hr>
   </header>
@@ -134,19 +138,19 @@
       </thead>
       <tbody>
         @forelse($data as $item)
-          @if($item->user)
-          <tr>
-            <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
-            @if($item->user->students)
-            <td>{{ $item->user->students->level }}</td>
-            <td>{{ $item->user->students->section }}</td>
-            @elseif($item->user->employees)
-            <td>{{ $item->user->employees->employee_role }}</td>
-            @endif
-            <td>{{ \Carbon\Carbon::parse($item->time_in)->format('M j, Y') }}</td>
-            <td>{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
-          </tr>
+        @if($item->user)
+        <tr>
+          <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
+          @if($item->user->students)
+          <td>{{ $item->user->students->level }}</td>
+          <td>{{ $item->user->students->section }}</td>
+          @elseif($item->user->employees)
+          <td>{{ $item->user->employees->employee_role }}</td>
           @endif
+          <td>{{ \Carbon\Carbon::parse($item->time_in)->format('M j, Y') }}</td>
+          <td>{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
+        </tr>
+        @endif
         @empty
         <tr>
           <td colspan="5" style="text-align: center;">No data found.</td>
@@ -165,8 +169,8 @@
       $font = $fontMetrics->getFont("DejaVu Sans", "normal");
       $size = 9;
       $pageText = "Page {PAGE_NUM} of {PAGE_COUNT}";
-      $x = 500;
-      $y = 820;
+      $x = $pdf->get_width() - 120;
+      $y = $pdf->get_height() - 20;
       $pdf->page_text($x, $y, $pageText, $font, $size);
     }
   </script>

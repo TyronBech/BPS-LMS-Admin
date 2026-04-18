@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <style>
     @page {
-      margin: 30px 25px 40px 25px; /* Top, Right, Bottom, Left */
+      margin: 30px 25px 40px 25px;
+      /* Top, Right, Bottom, Left */
     }
 
     body {
-      font-family: 'DejaVu Sans', sans-serif; /* safer than web fonts in DOMPDF */
+      font-family: 'DejaVu Sans', sans-serif;
+      /* safer than web fonts in DOMPDF */
       font-size: 10px;
       margin: 0;
       padding: 0;
@@ -35,7 +38,8 @@
       text-align: center;
     }
 
-    h2, p {
+    h2,
+    p {
       margin: 0;
       padding: 0;
     }
@@ -69,7 +73,16 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      table-layout: fixed;
+      table-layout: auto;
+    }
+
+    th,
+    td {
+      border: 1px solid #ddd;
+      padding: 4px;
+      font-size: 10px;
+      word-break: break-word;
+      text-align: left;
     }
 
     th {
@@ -107,28 +120,34 @@
     <table>
       <thead>
         <tr>
-          <th>Accession Number</th>
-          <th>Call Number</th>
+          <th>Accession</th>
+          <th>Author</th>
           <th>Title</th>
-          <th>Category</th>
-          <th>Availability</th>
-          <th>Condition</th>
+          <th>Publication</th>
+          <th>Publisher</th>
+          <th>Call Number</th>
+          <th>ISBN</th>
+          <th>Copyright</th>
+          <th>Status</th>
         </tr>
       </thead>
       <tbody>
         @forelse($data as $item)
-          <tr>
-            <td>{{ $item->accession }}</td>
-            <td>{{ $item->call_number }}</td>
-            <td>{{ $item->title }}</td>
-            <td>{{ $item->category->name }}</td>
-            <td>{{ $item->availability_status }}</td>
-            <td>{{ $item->condition_status }}</td>
-          </tr>
+        <tr>
+          <td>{{ $item->accession }}</td>
+          <td>{{ $item->author ?? 'N/A' }}</td>
+          <td>{{ $item->title }}</td>
+          <td>{{ $item->place_of_publication ?? 'N/A' }}</td>
+          <td>{{ $item->publisher ?? 'N/A' }}</td>
+          <td>{{ $item->call_number ?? 'N/A' }}</td>
+          <td>{{ $item->isbn ?? 'N/A' }}</td>
+          <td>{{ $item->copyrights ?? 'N/A' }}</td>
+          <td>{{ $item->remarks ?? 'N/A' }}</td>
+        </tr>
         @empty
-          <tr>
-            <td colspan="6" style="text-align: center;">No data found.</td>
-          </tr>
+        <tr>
+          <td colspan="9" style="text-align: center;">No data found.</td>
+        </tr>
         @endforelse
       </tbody>
     </table>
@@ -141,10 +160,14 @@
     if (isset($pdf)) {
       $font = $fontMetrics->getFont("DejaVu Sans", "normal");
       $size = 9;
-      $pdf->page_text(520, 820, "Page {PAGE_NUM} of {PAGE_COUNT}", $font, $size);
+      $pageText = "Page {PAGE_NUM} of {PAGE_COUNT}";
+      $x = $pdf->get_width() - 120;
+      $y = $pdf->get_height() - 20;
+      $pdf->page_text($x, $y, $pageText, $font, $size);
     }
   </script>
   @php echo ob_get_clean(); @endphp
   @endif
 </body>
+
 </html>
