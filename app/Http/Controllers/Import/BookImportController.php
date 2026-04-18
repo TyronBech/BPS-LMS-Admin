@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Book;
 use App\Models\Category;
 use App\Models\Inventory;
+use App\Models\Subject;
 use Milon\Barcode\DNS1D;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
@@ -91,7 +92,6 @@ class BookImportController extends Controller
                 }
                 $request->session()->put('book_import_data', $sessionData);
                 $data = $sessionData;
-
             } else if ($request->has('page') || $request->has('perPage')) {
                 Log::debug('Book Import: Loading data from session for pagination', [
                     'user_id' => Auth::id(),
@@ -101,7 +101,6 @@ class BookImportController extends Controller
 
                 // Navigating via GET, just use session data
                 $data = $sessionData;
-
             } else {
                 // Initial file upload
                 if ($request->file('file') == null) {
@@ -146,21 +145,22 @@ class BookImportController extends Controller
                     return redirect()->route('import.import-books')->with('toast-error', "Excel file is empty.");
                 }
 
+                $headerRowIndex = 18;
+                $hasLeadingEmptyColumn = isset($rows[$headerRowIndex][0], $rows[$headerRowIndex][1])
+                    && trim((string) $rows[$headerRowIndex][0]) === ''
+                    && strtolower(trim((string) $rows[$headerRowIndex][1])) === 'accession';
+                $baseCol = $hasLeadingEmptyColumn ? 1 : 0;
+
                 for ($i = 19; $i < count($rows); $i++) {
-                    if (
-                        $rows[$i][1] == null &&
-                        $rows[$i][2] == null &&
-                        $rows[$i][3] == null &&
-                        $rows[$i][4] == null &&
-                        $rows[$i][5] == null &&
-                        $rows[$i][6] == null &&
-                        $rows[$i][7] == null &&
-                        $rows[$i][8] == null &&
-                        $rows[$i][9] == null &&
-                        $rows[$i][10] == null &&
-                        $rows[$i][11] == null &&
-                        $rows[$i][12] == null
-                    ) {
+                    $isEmptyRow = true;
+                    for ($col = $baseCol; $col <= $baseCol + 12; $col++) {
+                        if (isset($rows[$i][$col]) && trim((string) $rows[$i][$col]) !== '') {
+                            $isEmptyRow = false;
+                            break;
+                        }
+                    }
+
+                    if ($isEmptyRow) {
                         Log::debug('Book Import: Skipping empty row in Excel', [
                             'row_number' => $i + 1,
                             'user_id' => Auth::id(),
@@ -169,18 +169,19 @@ class BookImportController extends Controller
                     }
 
                     $bookData = array(
-                        'accession'             => $rows[$i][1],
-                        'call_number'           => $rows[$i][2],
-                        'title'                 => $rows[$i][3],
-                        'authors'               => $rows[$i][4],
-                        'book_type'             => $rows[$i][5],
-                        'description'           => $rows[$i][6],
-                        'edition'               => $rows[$i][7],
-                        'place_of_publication'  => $rows[$i][8],
-                        'publisher'             => $rows[$i][9],
-                        'copyrights'            => $rows[$i][10],
-                        'category'              => $rows[$i][11],
-                        'digital_copy_url'      => $rows[$i][12],
+                        'accession'             => isset($rows[$i][$baseCol]) ? trim((string) $rows[$i][$baseCol]) : null,
+                        'author'                => isset($rows[$i][$baseCol + 1]) ? trim((string) $rows[$i][$baseCol + 1]) : null,
+                        'title'                 => isset($rows[$i][$baseCol + 2]) ? trim((string) $rows[$i][$baseCol + 2]) : null,
+                        'place_of_publication'  => isset($rows[$i][$baseCol + 3]) ? trim((string) $rows[$i][$baseCol + 3]) : null,
+                        'publisher'             => isset($rows[$i][$baseCol + 4]) ? trim((string) $rows[$i][$baseCol + 4]) : null,
+                        'call_number'           => isset($rows[$i][$baseCol + 5]) ? trim((string) $rows[$i][$baseCol + 5]) : null,
+                        'isbn'                  => isset($rows[$i][$baseCol + 6]) ? trim((string) $rows[$i][$baseCol + 6]) : null,
+                        'subject'               => isset($rows[$i][$baseCol + 7]) ? trim((string) $rows[$i][$baseCol + 7]) : null,
+                        'description'           => isset($rows[$i][$baseCol + 8]) ? trim((string) $rows[$i][$baseCol + 8]) : null,
+                        'copyrights'            => isset($rows[$i][$baseCol + 9]) ? trim((string) $rows[$i][$baseCol + 9]) : null,
+                        'book_type'             => isset($rows[$i][$baseCol + 10]) ? trim((string) $rows[$i][$baseCol + 10]) : null,
+                        'category'              => isset($rows[$i][$baseCol + 11]) ? trim((string) $rows[$i][$baseCol + 11]) : null,
+                        'digital_copy_url'      => isset($rows[$i][$baseCol + 12]) ? trim((string) $rows[$i][$baseCol + 12]) : null,
                     );
 
                     Log::debug('Book Import: Book data extracted from Excel', [
@@ -219,7 +220,6 @@ class BookImportController extends Controller
                 'total_books' => count($data),
                 'user_id' => Auth::id(),
             ]);
-
         } catch (\Exception $e) {
             $errors = "An error occurred while loading the books: " . $e->getMessage();
 
@@ -285,8 +285,8 @@ class BookImportController extends Controller
         ]);
 
         foreach ($data as $index => $item) {
-            $item['book_type'] = strtolower($item['book_type']);
-            $item['category'] = strtolower($item['category']);
+            $item['book_type'] = isset($item['book_type']) ? strtolower(trim((string) $item['book_type'])) : null;
+            $item['category'] = isset($item['category']) ? strtolower(trim((string) $item['category'])) : '';
 
             Log::debug('Book Import: Validating book data', [
                 'row_index' => $index,
@@ -298,18 +298,19 @@ class BookImportController extends Controller
             ]);
 
             $validator = Validator::make($item, [
-                'accession'             => 'required|string|max:50',
-                'call_number'           => 'nullable|string|max:50',
-                'title'                 => 'required|string|max:255',
-                'authors'               => 'nullable|string|max:255',
-                'book_type'             => 'nullable|string|in:' . implode(',', $this->extract_enums($books->getTable(), 'book_type')),
-                'description'           => 'nullable|string',
-                'edition'               => 'nullable|string|max:50',
-                'place_of_publication'  => 'nullable|string|max:100',
+                'accession'             => 'required|string|max:20',
+                'author'                => 'nullable|string',
+                'title'                 => 'required|string|max:150',
+                'place_of_publication'  => 'nullable|string|max:50',
                 'publisher'             => 'nullable|string|max:100',
-                'copyrights'            => 'nullable|string|max:255',
+                'call_number'           => 'nullable|string|max:50',
+                'isbn'                  => 'nullable|string|max:50',
+                'subject'               => 'nullable|string|max:255',
+                'description'           => 'nullable|string',
+                'copyrights'            => 'nullable|string|max:50',
+                'book_type'             => 'nullable|string|in:' . implode(',', $this->extract_enums($books->getTable(), 'book_type')),
                 'category'              => 'required|string|in:' . implode(',', Category::pluck(DB::raw('lower(name)'))->toArray()),
-                'digital_copy_url'      => 'nullable|url',
+                'digital_copy_url'      => 'nullable|url|max:255',
             ]);
 
             if ($validator->fails()) {
@@ -376,15 +377,15 @@ class BookImportController extends Controller
 
                 $newBook = Book::create([
                     'accession'             => $item['accession'],
-                    'call_number'           => $item['call_number'] ?? null,
+                    'author'                => $item['author'] ?? null,
                     'title'                 => $item['title'],
-                    'author'                => $item['authors'] ?? null,
-                    'book_type'             => $item['book_type'] ?? null,
+                    'place_of_publication'  => $item['place_of_publication'] ?? null,
+                    'publisher'             => $item['publisher'] ?? null,
+                    'call_number'           => $item['call_number'] ?? null,
+                    'isbn'                  => $item['isbn'] ?? null,
                     'description'           => $item['description'] ?? null,
-                    'edition'               => $item['edition'] ?? null,
-                    'place_of_publication'  => $item['place_of_publication'],
-                    'publisher'             => $item['publisher'],
-                    'copyrights'            => $item['copyrights'],
+                    'copyrights'            => $item['copyrights'] ?? null,
+                    'book_type'             => $item['book_type'] ?? null,
                     'category_id'           => $category->id,
                     'barcode'               => $barcode->getBarcodeJPG($item['accession'], 'C39', 2, 80, array(0, 0, 0, 0), false),
                     'digital_copy_url'      => $item['digital_copy_url'] ?? null,
@@ -392,6 +393,18 @@ class BookImportController extends Controller
                     'availability_status'   => 'Unavailable',
                     'condition_status'      => 'New',
                 ]);
+
+                if (!empty($item['subject'])) {
+                    $subjects = preg_split('/\s*[;,|]\s*/', $item['subject']);
+                    $subjectNames = array_unique(array_filter(array_map('trim', $subjects)));
+
+                    foreach ($subjectNames as $subjectName) {
+                        Subject::create([
+                            'book_id' => $newBook->id,
+                            'name' => $subjectName,
+                        ]);
+                    }
+                }
 
                 // Create inventory entry for the new book
                 Inventory::create([
@@ -416,7 +429,6 @@ class BookImportController extends Controller
                 ]);
 
                 $newBooksCount++;
-
             } catch (\Illuminate\Database\QueryException $e) {
                 DB::rollBack();
 

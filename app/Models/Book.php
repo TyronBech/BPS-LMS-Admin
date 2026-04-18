@@ -21,6 +21,7 @@ class Book extends Model
         'author',
         'description',
         'edition',
+        'isbn',
         'place_of_publication',
         'publisher',
         'copyrights',
