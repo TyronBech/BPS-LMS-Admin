@@ -20,6 +20,9 @@ jobs:
           php-version: '8.3'
 
       - name: Install Composer Dependencies
+        env:
+          DB_CONNECTION: mysql
+          DB_DATABASE: ":memory:"
         run: composer install --no-dev --optimize-autoloader
 
       # 2. Setup Node and compile frontend assets
