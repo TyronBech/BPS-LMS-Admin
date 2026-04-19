@@ -1,0 +1,70 @@
+name: SNCS OwlLib Admin Test Deployment
+
+on:
+  push:
+    branches:
+      - sncs-host-testing
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # 1. Setup PHP and install backend dependencies
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+
+      - name: Install Composer Dependencies
+        run: composer install --no-dev --optimize-autoloader
+
+      # 2. Setup Node and compile frontend assets (React & Tailwind v4)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Build Frontend
+        run: npm install && npm run build
+
+      # 3. Deploy via Rsync to the hidden directory path
+      - name: Deploy to SNCS via SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SNCS_TEST_SSH_KEY }}
+          SERVER_IP: ${{ secrets.SNCS_TEST_HOST }}
+          USERNAME: ${{ secrets.SNCS_TEST_USERNAME }}
+          PORT: ${{ secrets.SNCS_TEST_PORT }}
+          DEPLOY_PATH: ${{ secrets.SNCS_TEST_DEPLOY_PATH }}
+        run: |
+          # Set up the SSH key securely
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+
+          # Add the SNCS server to known_hosts to prevent interactive prompts
+          ssh-keyscan -p $PORT -H $SERVER_IP >> ~/.ssh/known_hosts
+
+          # Deploy files to the secret path
+          rsync -avz --delete \
+            --exclude='.env' \
+            --exclude='/storage/' \
+            --exclude='/.git/' \
+            --exclude='/.github/' \
+            --exclude='/node_modules/' \
+            -e "ssh -p $PORT" ./ $USERNAME@$SERVER_IP:$DEPLOY_PATH
+
+      # 4. Run Artisan Commands directly in the target folder
+      - name: Run Laravel Optimization and Migrations
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SNCS_TEST_SSH_KEY }}
+          SERVER_IP: ${{ secrets.SNCS_TEST_HOST }}
+          USERNAME: ${{ secrets.SNCS_TEST_USERNAME }}
+          PORT: ${{ secrets.SNCS_TEST_PORT }}
+          DEPLOY_PATH: ${{ secrets.SNCS_TEST_DEPLOY_PATH }}
+        run: |
+          # Navigate to the secret path before running artisan commands
+          ssh -p $PORT $USERNAME@$SERVER_IP "cd $DEPLOY_PATH && php artisan optimize:clear && php artisan migrate --force"
