@@ -22,11 +22,11 @@ jobs:
       - name: Install Composer Dependencies
         run: composer install --no-dev --optimize-autoloader
 
-      # 2. Setup Node and compile frontend assets (React & Tailwind v4)
+      # 2. Setup Node and compile frontend assets
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '24'
 
       - name: Build Frontend
         run: npm install && npm run build
@@ -58,7 +58,7 @@ jobs:
             -e "ssh -p $PORT" ./ $USERNAME@$SERVER_IP:$DEPLOY_PATH
 
       # 4. Run Artisan Commands directly in the target folder
-      - name: Run Laravel Optimization and Migrations
+      - name: Run Laravel Optimization Commands on SNCS
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SNCS_TEST_SSH_KEY }}
           SERVER_IP: ${{ secrets.SNCS_TEST_HOST }}
@@ -67,4 +67,4 @@ jobs:
           DEPLOY_PATH: ${{ secrets.SNCS_TEST_DEPLOY_PATH }}
         run: |
           # Navigate to the secret path before running artisan commands
-          ssh -p $PORT $USERNAME@$SERVER_IP "cd $DEPLOY_PATH && php artisan optimize:clear && php artisan migrate --force"
+          ssh -p $PORT $USERNAME@$SERVER_IP "cd $DEPLOY_PATH && php artisan optimize:clear"
