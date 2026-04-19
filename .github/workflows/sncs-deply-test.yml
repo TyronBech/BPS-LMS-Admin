@@ -69,5 +69,10 @@ jobs:
           PORT: ${{ secrets.SNCS_TEST_PORT }}
           DEPLOY_PATH: ${{ secrets.SNCS_TEST_DEPLOY_PATH }}
         run: |
-          # Navigate to the secret path before running artisan commands
-          ssh -p $PORT $USERNAME@$SERVER_IP "cd $DEPLOY_PATH && php artisan optimize:clear"
+          # Navigate to the secret path, create required cache directories, then run artisan commands
+          ssh -p $PORT $USERNAME@$SERVER_IP "cd $DEPLOY_PATH && \
+            mkdir -p storage/framework/cache/data \
+                     storage/framework/views \
+                     storage/framework/sessions \
+                     bootstrap/cache && \
+            php artisan optimize:clear"
