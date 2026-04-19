@@ -23,7 +23,7 @@ jobs:
         env:
           DB_CONNECTION: sqlite
           DB_DATABASE: ":memory:"
-        run: composer install --no-dev --optimize-autoloader
+        run: composer install --no-dev --optimize-autoloader --no-scripts
 
       # 2. Setup Node and compile frontend assets
       - name: Setup Node.js
