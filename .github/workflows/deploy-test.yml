@@ -9,48 +9,68 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
+      - name: Checkout Code
         uses: actions/checkout@v4
 
+      # 1. Setup PHP and install backend dependencies
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
-          extensions: mbstring, pdo, sqlite, pdo_sqlite, intl, bcmath
+          php-version: "8.5"
 
-      - name: Prepare Laravel storage and cache
-        run: |
-          mkdir -p storage/framework/{sessions,views,cache}
-          mkdir -p bootstrap/cache
-          chmod -R 777 storage bootstrap/cache
-
-      - name: Install Composer dependencies
+      - name: Install Composer Dependencies
+        env:
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
         run: composer install --no-dev --optimize-autoloader --no-scripts
 
-      - name: Setup Node
+      # 2. Setup Node and compile frontend assets
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '24'
+          node-version: "24"
 
-      - name: Install NPM dependencies and build assets
+      - name: Build Frontend
+        run: npm install && npm run build
+
+      # 3. Deploy via Rsync over SSH
+      - name: Deploy to Test via SSH
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SFTP_PRIVATE_KEY_TEST }}
+          SERVER_IP: ${{ secrets.SFTP_HOST_TEST }}
+          USERNAME: ${{ secrets.SFTP_USERNAME_TEST }}
+          PORT: ${{ secrets.SFTP_PORT_TEST }}
+          DEPLOY_PATH: ${{ secrets.SFTP_DIR_TEST }}
         run: |
-          npm install
-          npm run build
+          # Set up the SSH key securely
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
 
-      - name: Prepare Laravel for Testing
+          # Add server host key to avoid interactive prompt
+          ssh-keyscan -p $PORT -H $SERVER_IP >> ~/.ssh/known_hosts
+
+          # Deploy files to remote path
+          rsync -avz --delete \
+            --exclude='.env' \
+            --exclude='/storage/' \
+            --exclude='/.git/' \
+            --exclude='/.github/' \
+            --exclude='/node_modules/' \
+            -e "ssh -p $PORT" ./ $USERNAME@$SERVER_IP:$DEPLOY_PATH
+
+      # 4. Run Artisan Commands directly in the target folder
+      - name: Run Laravel Optimization Commands on Test
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SFTP_PRIVATE_KEY_TEST }}
+          SERVER_IP: ${{ secrets.SFTP_HOST_TEST }}
+          USERNAME: ${{ secrets.SFTP_USERNAME_TEST }}
+          PORT: ${{ secrets.SFTP_PORT_TEST }}
+          DEPLOY_PATH: ${{ secrets.SFTP_DIR_TEST }}
         run: |
-          php artisan config:clear || true
-          php artisan route:clear || true
-          php artisan view:clear || true
-
-      - name: Deploy via SFTP (SSH key)
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.SFTP_HOST_TEST }}
-          username: ${{ secrets.SFTP_USERNAME_TEST }}
-          key: ${{ secrets.SFTP_PRIVATE_KEY_TEST }}
-          port: ${{ secrets.SFTP_PORT_TEST }}
-          source: "./"
-          target: ${{ secrets.SFTP_DIR_TEST }}
-          rm: true
-          overwrite: true
+          ssh -p $PORT $USERNAME@$SERVER_IP "cd $DEPLOY_PATH && \
+            mkdir -p storage/framework/cache/data \
+                     storage/framework/views \
+                     storage/framework/sessions \
+                     bootstrap/cache && \
+            php artisan optimize:clear"

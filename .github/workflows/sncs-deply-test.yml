@@ -1,8 +1,9 @@
-name: BPS OwlLib Admin Production Deployment
+name: SNCS OwlLib Admin Test Deployment
 
 on:
   push:
-    branches: [ "host-production" ]
+    branches:
+      - sncs-host-testing
 
 jobs:
   deploy:
@@ -16,7 +17,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.5"
+          php-version: '8.5'
 
       - name: Install Composer Dependencies
         env:
@@ -28,29 +29,29 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "24"
+          node-version: '24'
 
       - name: Build Frontend
         run: npm install && npm run build
 
-      # 3. Deploy via Rsync over SSH
-      - name: Deploy to Production via SSH
+      # 3. Deploy via Rsync to the hidden directory path
+      - name: Deploy to SNCS via SSH
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SFTP_PRIVATE_KEY_PROD }}
-          SERVER_IP: ${{ secrets.SFTP_HOST_PROD }}
-          USERNAME: ${{ secrets.SFTP_USERNAME_PROD }}
-          PORT: ${{ secrets.SFTP_PORT_PROD }}
-          DEPLOY_PATH: ${{ secrets.SFTP_DIR_PROD }}
+          SSH_PRIVATE_KEY: ${{ secrets.SNCS_TEST_SSH_KEY }}
+          SERVER_IP: ${{ secrets.SNCS_TEST_HOST }}
+          USERNAME: ${{ secrets.SNCS_TEST_USERNAME }}
+          PORT: ${{ secrets.SNCS_TEST_PORT }}
+          DEPLOY_PATH: ${{ secrets.SNCS_TEST_DEPLOY_PATH }}
         run: |
           # Set up the SSH key securely
           mkdir -p ~/.ssh
           echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
           chmod 600 ~/.ssh/id_ed25519
 
-          # Add server host key to avoid interactive prompt
+          # Add the SNCS server to known_hosts to prevent interactive prompts
           ssh-keyscan -p $PORT -H $SERVER_IP >> ~/.ssh/known_hosts
 
-          # Deploy files to remote path
+          # Deploy files to the secret path
           rsync -avz --delete \
             --exclude='.env' \
             --exclude='/storage/' \
@@ -60,14 +61,15 @@ jobs:
             -e "ssh -p $PORT" ./ $USERNAME@$SERVER_IP:$DEPLOY_PATH
 
       # 4. Run Artisan Commands directly in the target folder
-      - name: Run Laravel Optimization Commands on Production
+      - name: Run Laravel Optimization Commands on SNCS
         env:
-          SSH_PRIVATE_KEY: ${{ secrets.SFTP_PRIVATE_KEY_PROD }}
-          SERVER_IP: ${{ secrets.SFTP_HOST_PROD }}
-          USERNAME: ${{ secrets.SFTP_USERNAME_PROD }}
-          PORT: ${{ secrets.SFTP_PORT_PROD }}
-          DEPLOY_PATH: ${{ secrets.SFTP_DIR_PROD }}
+          SSH_PRIVATE_KEY: ${{ secrets.SNCS_TEST_SSH_KEY }}
+          SERVER_IP: ${{ secrets.SNCS_TEST_HOST }}
+          USERNAME: ${{ secrets.SNCS_TEST_USERNAME }}
+          PORT: ${{ secrets.SNCS_TEST_PORT }}
+          DEPLOY_PATH: ${{ secrets.SNCS_TEST_DEPLOY_PATH }}
         run: |
+          # Navigate to the secret path, create required cache directories, then run artisan commands
           ssh -p $PORT $USERNAME@$SERVER_IP "cd $DEPLOY_PATH && \
             mkdir -p storage/framework/cache/data \
                      storage/framework/views \
