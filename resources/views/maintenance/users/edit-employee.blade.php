@@ -53,7 +53,6 @@
             <option value="" disabled>Choose an option</option>
             <option value="Male" {{ ($user->gender ?? old('gender')) == 'Male' ? 'selected' : '' }}>Male</option>
             <option value="Female" {{ ($user->gender ?? old('gender')) == 'Female' ? 'selected' : '' }}>Female</option>
-            <option value="Prefer not to say" {{ ($user->gender ?? old('gender')) == 'Prefer not to say' ? 'selected' : '' }}>Prefer not to say</option>
           </select>
           @error('gender')
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>

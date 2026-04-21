@@ -51,7 +51,6 @@
             <option value="" selected disabled>Choose an option</option>
             <option value="Male" {{ old('gender') == 'Male' ? 'selected' : '' }}>Male</option>
             <option value="Female" {{ old('gender') == 'Female' ? 'selected' : '' }}>Female</option>
-            <option value="Prefer not to say" {{ old('gender') == 'Prefer not to say' ? 'selected' : '' }}>Prefer not to say</option>
           </select>
           @error('gender')
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>

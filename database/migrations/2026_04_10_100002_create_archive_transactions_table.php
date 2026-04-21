@@ -24,7 +24,7 @@ return new class extends Migration
             $table->bigInteger('user_id')->unsigned()->nullable();
             $table->string('rfid', 20)->nullable();
             $table->string('full_name')->nullable();
-            $table->enum('gender', ['Male','Female','Prefer not to say'])->nullable();
+            $table->enum('gender', ['Male','Female'])->nullable();
             $table->string('user_type', 50)->nullable();
             $table->string('category', 50)->nullable();
             $table->bigInteger('book_id')->unsigned()->nullable();
