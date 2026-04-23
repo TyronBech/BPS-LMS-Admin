@@ -76,5 +76,4 @@ jobs:
                      storage/framework/sessions \
                      bootstrap/cache && \
             php artisan optimize:clear && \
-            php artisan storage:link && \
             php artisan migrate"
