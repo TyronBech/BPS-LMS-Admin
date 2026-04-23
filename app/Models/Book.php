@@ -27,6 +27,7 @@ class Book extends Model
         'copyrights',
         'remarks',
         'category_id',
+        'subject_id',
         'cover_image',
         'digital_copy_url',
         'barcode',
@@ -51,8 +52,8 @@ class Book extends Model
         return $this->hasMany(Inventory::class, 'book_id', 'id');
     }
 
-    public function subjects(): HasMany
+    public function subject(): BelongsTo
     {
-        return $this->hasMany(Subject::class, 'book_id', 'id');
+        return $this->belongsTo(Subject::class, 'subject_id', 'id');
     }
 }

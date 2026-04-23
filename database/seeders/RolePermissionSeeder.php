@@ -57,6 +57,8 @@ class RolePermissionSeeder extends Seeder
         Permission::create(['name' => 'View Audit Reports',                  'guard_name' => 'admin']);
         Permission::create(['name' => 'Reservation Approvals',               'guard_name' => 'admin']);
         Permission::create(['name' => 'Modify UI Settings',                  'guard_name' => 'admin']);
+        Permission::create(['name' => 'View Subject Maintenance',            'guard_name' => 'admin']);
+        Permission::create(['name' => 'View Bibliography Reports',           'guard_name' => 'admin']);
 
 
         $role1 = Role::create(['name' => 'Super Admin',  'guard_name' => 'admin']);
@@ -106,7 +108,9 @@ class RolePermissionSeeder extends Seeder
             'View Penalty Rules Maintenance',
             'View Book Circulations Maintenance',
             'View Dashboard',
-            'Reservation Approvals'
+            'Reservation Approvals',
+            'View Subject Maintenance',
+            'View Bibliography Reports'
         ]);
 
         // Librarian gets book, inventory, and circulation management permissions
@@ -128,7 +132,9 @@ class RolePermissionSeeder extends Seeder
             'View Book Categories Maintenance',
             'View Book Circulations Maintenance',
             'View Dashboard',
-            'Reservation Approvals'
+            'Reservation Approvals',
+            'View Subject Maintenance',
+            'View Bibliography Reports'
         ]);
 
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();

@@ -397,11 +397,17 @@ class BookImportController extends Controller
                 if (!empty($item['subject'])) {
                     $subjects = preg_split('/\s*[;,|]\s*/', $item['subject']);
                     $subjectNames = array_unique(array_filter(array_map('trim', $subjects)));
+                    $subjectName = reset($subjectNames);
 
-                    foreach ($subjectNames as $subjectName) {
-                        Subject::create([
-                            'book_id' => $newBook->id,
+                    if ($subjectName !== false) {
+                        $subject = Subject::firstOrCreate([
                             'name' => $subjectName,
+                        ], [
+                            'name' => $subjectName,
+                        ]);
+
+                        $newBook->update([
+                            'subject_id' => $subject->id,
                         ]);
                     }
                 }

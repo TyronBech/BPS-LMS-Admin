@@ -17,6 +17,7 @@
             <tr>
                 <th scope="col" class="px-6 py-3">DDC</th>
                 <th scope="col" class="px-6 py-3">Subject</th>
+                <th scope="col" class="px-6 py-3 hidden md:table-cell">Linked Books</th>
                 <th scope="col" class="px-6 py-3 hidden lg:table-cell">Access Codes</th>
                 <th scope="col" class="px-6 py-3">Actions</th>
             </tr>
@@ -27,7 +28,13 @@
                 <td class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">{{ $item->ddc ?? 'N/A' }}</td>
                 <th scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white">
                     <div class="text-base font-semibold break-words">{{ $item->name }}</div>
-                    <div class="mt-1 flex flex-wrap gap-1 lg:hidden">
+                        <div class="mt-1 flex flex-wrap gap-1 lg:hidden">
+                        @foreach($item->books->take(2) as $book)
+                        <span class="inline-flex items-center rounded-md bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200 md:hidden">{{ $book->accession }}</span>
+                        @endforeach
+                        @if($item->books->count() > 2)
+                        <span class="inline-flex items-center rounded-md bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-300">+{{ $item->books->count() - 2 }} more</span>
+                        @endif
                         @foreach($item->accessCodes->take(2) as $code)
                         <span class="inline-flex items-center rounded-md bg-blue-100 px-2 py-0.5 text-xs font-medium text-blue-800 dark:bg-blue-900/50 dark:text-blue-200">{{ $code->access_code }}</span>
                         @endforeach
@@ -36,6 +43,23 @@
                         @endif
                     </div>
                 </th>
+                <td class="px-6 py-4 hidden md:table-cell">
+                    @if($item->books->isNotEmpty())
+                    <div class="space-y-1">
+                        @foreach($item->books->take(3) as $book)
+                        <div>
+                            <div class="text-sm font-medium text-gray-900 dark:text-white">{{ $book->accession }}</div>
+                            <div class="text-xs text-gray-500 dark:text-gray-400 break-words">{{ $book->title }}</div>
+                        </div>
+                        @endforeach
+                        @if($item->books->count() > 3)
+                        <div class="text-xs text-gray-500 dark:text-gray-400">+{{ $item->books->count() - 3 }} more</div>
+                        @endif
+                    </div>
+                    @else
+                    <span class="text-xs text-gray-500 dark:text-gray-400">Not linked</span>
+                    @endif
+                </td>
                 <td class="px-6 py-4 hidden lg:table-cell">
                     <div class="flex flex-wrap gap-1 max-w-[28rem]">
                         @foreach($item->accessCodes->take(4) as $code)
@@ -72,7 +96,7 @@
             </tr>
             @empty
             <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-                <td colspan="4" class="px-6 py-4 text-center">No subjects found.</td>
+                <td colspan="5" class="px-6 py-4 text-center">No subjects found.</td>
             </tr>
             @endforelse
         </tbody>
