@@ -3,14 +3,13 @@
 namespace App\Http\Middleware;
 
 use App\Enum\PermissionsEnum;
-use App\Enum\RolesEnum;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class AuditReportAuthentication
+class ViewInventoryReportsMiddleware
 {
     /**
      * Handle an incoming request.
@@ -19,9 +18,12 @@ class AuditReportAuthentication
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if(!Auth::guard('admin')->check()) return redirect()->route('login')->with('toast-error', 'You are not authenticated');
+        if (!Auth::guard('admin')->check()) return redirect()->route('login')->with('toast-error', 'You are not authenticated');
+
         $authAdmin = User::findOrFail(Auth::guard('admin')->user()->id);
-        if(!$authAdmin->hasRole(RolesEnum::SUPER_ADMIN) || !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_AUDIT_REPORTS)) return abort(403);
+
+        if (!$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_INVENTORY_REPORTS)) return abort(403);
+
         return $next($request);
     }
 }

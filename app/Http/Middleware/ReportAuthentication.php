@@ -25,7 +25,8 @@ class ReportAuthentication
             && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_SUMMARY_REPORTS)
             && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_TRANSACTION_REPORTS)
             && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_BOOK_CIRCULATION_REPORTS)
-            && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_PENALTY_REPORTS)) return abort(403);
+            && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_PENALTY_REPORTS)
+            && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_BIBLIOGRAPHY_REPORTS)) return abort(403);
         return $next($request);
     }
 }
