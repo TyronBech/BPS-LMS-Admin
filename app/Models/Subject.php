@@ -4,8 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Subject extends Model
@@ -17,14 +17,13 @@ class Subject extends Model
     public $timestamps = true;
 
     protected $fillable = [
-        'book_id',
         'ddc',
         'name',
     ];
 
-    public function book(): BelongsTo
+    public function books(): HasMany
     {
-        return $this->belongsTo(Book::class, 'book_id', 'id')->withTrashed();
+        return $this->hasMany(Book::class, 'subject_id', 'id');
     }
 
     public function accessCodes(): BelongsToMany

@@ -2,7 +2,6 @@
 
 namespace Database\Factories;
 
-use App\Models\Book;
 use App\Models\Subject;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -15,10 +14,7 @@ class SubjectFactory extends Factory
 
   public function definition(): array
   {
-    $book = Book::query()->inRandomOrder()->first() ?? Book::factory()->create();
-
     return [
-      'book_id' => $book->id,
       'ddc' => str_pad((string) $this->faker->numberBetween(0, 999), 3, '0', STR_PAD_LEFT),
       'name' => $this->faker->unique()->words(2, true),
     ];

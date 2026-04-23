@@ -47,6 +47,5 @@ enum PermissionsEnum: string
     case CREATE_BACKUPS                     = 'Create Backups';
     case RESERVATION_APPROVALS              = 'Reservation Approvals';
     case MODIFY_UI_SETTINGS                 = 'Modify UI Settings';
-    case VIEW_SUBJECT_MAINTENANCE           = 'View Subject Maintenance';
     case VIEW_BIBLIOGRAPHY_REPORTS          = 'View Bibliography Reports';
 }

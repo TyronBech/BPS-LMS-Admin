@@ -70,7 +70,7 @@ class BookMaintenanceController extends Controller
         }
 
         $categories = Category::select('id', 'name')->get();
-        $booksQuery = Book::with('category');
+        $booksQuery = Book::with(['category', 'subject']);
 
         if ($sortBy && $sortOrder) {
             $booksQuery->orderBy($sortBy, $sortOrder)->orderBy('id', 'desc');
@@ -174,13 +174,6 @@ class BookMaintenanceController extends Controller
             if ($remarks !== 'On Shelf' && $availability !== 'Unavailable') {
                 $validator->errors()->add('availability', 'Availability must be "Unavailable" when the book is not On Shelf.');
             }
-            $accessionCount = collect(explode(',', (string) $request->input('accession', '')))
-                ->map(fn($item) => trim((string) $item))
-                ->filter(fn($item) => $item !== '')
-                ->count();
-            if ($request->filled('subject_id') && $accessionCount > 1) {
-                $validator->errors()->add('subject_id', 'You can only link one selected subject when adding a single accession.');
-            }
         });
         if ($validator->fails()) {
             Log::warning('Book Maintenance: Creation validation failed', [
@@ -234,18 +227,13 @@ class BookMaintenanceController extends Controller
                     'digital_copy_url'      => $request->input('digital_copy_url') ?? null,
                     'remarks'               => $request->input('remarks'),
                     'category_id'           => $request->input('category'),
+                    'subject_id'            => $subjectId,
                     'book_type'             => $request->input('book_type'),
                     'condition_status'      => $request->input('condition'),
                     'availability_status'   => $request->input('availability'),
                 ]);
 
                 $createdBookIds[] = $createdBook->id;
-            }
-
-            if ($subjectId && count($createdBookIds) === 1) {
-                Subject::where('id', $subjectId)->update([
-                    'book_id' => $createdBookIds[0],
-                ]);
             }
             // After creating books, update remarks/availability and create inventory entries within the same transaction
             $importedAccessions = array_map('trim', explode(',', $request->input('accession')));
@@ -306,8 +294,8 @@ class BookMaintenanceController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            $book = Book::with(['subjects.accessCodes'])->findOrFail($id);
-            $linkedSubjectId = Subject::where('book_id', $book->id)->value('id');
+            $book = Book::with(['subject.accessCodes'])->findOrFail($id);
+            $linkedSubjectId = $book->subject_id;
             $books = new Book();
             $categories     = Category::pluck('name', 'id');
             $condition      = $this->extract_enums($books->getTable(), 'condition_status');
@@ -403,7 +391,7 @@ class BookMaintenanceController extends Controller
             $trimmed_accessions = array_map('trim', $accessions);
         }
         // Start query
-        $books = Book::query();
+        $books = Book::with(['category', 'subject']);
 
         // Apply category filter if provided
         if ($category) {
@@ -584,6 +572,8 @@ class BookMaintenanceController extends Controller
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $barcode = new DNS1D();
             $book = Book::findOrFail($request->input('id'));
+            $subjectId = $request->filled('subject_id') ? (int) $request->input('subject_id') : null;
+
             $book->update([
                 'accession'             => $request->input('accession'),
                 'call_number'           => $request->input('call_number'),
@@ -600,18 +590,11 @@ class BookMaintenanceController extends Controller
                 'digital_copy_url'      => $request->input('digital_copy_url'),
                 'remarks'               => $request->input('remarks'),
                 'category_id'           => $request->input('category'),
+                'subject_id'            => $subjectId,
                 'book_type'             => $request->input('book_type'),
                 'condition_status'      => $request->input('condition'),
                 'availability_status'   => $request->input('availability'),
             ]);
-
-            $subjectId = $request->filled('subject_id') ? (int) $request->input('subject_id') : null;
-            if ($subjectId) {
-                Subject::where('book_id', $book->id)->where('id', '!=', $subjectId)->update(['book_id' => null]);
-                Subject::where('id', $subjectId)->update(['book_id' => $book->id]);
-            } else {
-                Subject::where('book_id', $book->id)->update(['book_id' => null]);
-            }
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             Log::error('Book Maintenance: Database error during update', [
@@ -691,13 +674,6 @@ class BookMaintenanceController extends Controller
             if ($remarks !== 'On Shelf' && $availability !== 'Unavailable') {
                 $validator->errors()->add('availability', 'Availability must be "Unavailable" when the book is not On Shelf.');
             }
-            $accessionCount = collect(explode(',', (string) $request->input('accession', '')))
-                ->map(fn($item) => trim((string) $item))
-                ->filter(fn($item) => $item !== '')
-                ->count();
-            if ($request->filled('subject_id') && $accessionCount > 1) {
-                $validator->errors()->add('subject_id', 'You can only link one selected subject when copying a single accession.');
-            }
         });
         if ($validator->fails()) {
             Log::warning('Book Maintenance: Copy validation failed', [
@@ -730,7 +706,7 @@ class BookMaintenanceController extends Controller
                     'accession'             => $accession,
                     'call_number'           => $request->input('call_number') ?? null,
                     'isbn'                  => $request->input('isbn') ?? null,
-                    'barcode'               => $barcode->getBarcodeJPG($request->input('accession'), 'C39', 2, 80, array(0, 0, 0, 0), false),
+                    'barcode'               => $barcode->getBarcodeJPG($accession, 'C39', 2, 80, array(0, 0, 0, 0), false),
                     'title'                 => $request->input('title'),
                     'author'                => $request->input('authors') ?? null,
                     'description'           => $request->input('description') ?? null,
@@ -742,18 +718,13 @@ class BookMaintenanceController extends Controller
                     'digital_copy_url'      => $request->input('digital_copy_url') ?? null,
                     'remarks'               => "Missing",
                     'category_id'           => $request->input('category'),
+                    'subject_id'            => $subjectId,
                     'book_type'             => $request->input('book_type'),
                     'condition_status'      => $request->input('condition'),
                     'availability_status'   => "Unavailable",
                 ]);
 
                 $copiedBookIds[] = $copiedBook->id;
-            }
-
-            if ($subjectId && count($copiedBookIds) === 1) {
-                Subject::where('id', $subjectId)->update([
-                    'book_id' => $copiedBookIds[0],
-                ]);
             }
             // After copying books, update remarks/availability and create inventory entries within the same transaction
             $copiedAccessions = array_map('trim', explode(',', $request->input('accession')));
@@ -1221,4 +1192,5 @@ class BookMaintenanceController extends Controller
 
         return $message;
     }
+
 }

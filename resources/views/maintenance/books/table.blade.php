@@ -64,6 +64,13 @@
         <th scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white max-w-[15rem] sm:max-w-xs md:max-w-sm lg:max-w-md">
           <div class="text-base font-semibold break-words">{{ $item->title }}</div>
           <div class="font-normal text-gray-500 md:hidden">Acc: {{ $item->accession }}</div>
+          @if($item->subject)
+          <div class="mt-1">
+            <span class="inline-flex items-center rounded-md bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200">
+              Subject: {{ $item->subject->name }}
+            </span>
+          </div>
+          @endif
         </th>
         <td class="px-6 py-4 hidden md:table-cell">{{ $item->accession }}</td>
         <td class="px-6 py-4 hidden lg:table-cell">{{ $item->call_number }}</td>

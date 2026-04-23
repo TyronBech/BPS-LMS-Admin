@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Maintenance;
 
 use App\Http\Controllers\Controller;
+use App\Models\Book;
 use App\Models\Subject;
 use App\Models\SubjectAccessCode;
 use Illuminate\Http\Request;
@@ -44,12 +45,17 @@ class SubjectMaintenanceController extends Controller
 
     $subjectsQuery = Subject::with([
       'accessCodes:id,access_code',
+      'books:id,subject_id,accession,title',
     ]);
 
     if ($search !== '') {
       $subjectsQuery->where(function ($query) use ($search) {
         $query->where('name', 'like', "%{$search}%")
           ->orWhere('ddc', 'like', "%{$search}%")
+          ->orWhereHas('books', function ($bookQuery) use ($search) {
+            $bookQuery->where('title', 'like', "%{$search}%")
+              ->orWhere('accession', 'like', "%{$search}%");
+          })
           ->orWhereHas('accessCodes', function ($accessCodeQuery) use ($search) {
             $accessCodeQuery->where('access_code', 'like', "%{$search}%");
           });
@@ -68,7 +74,6 @@ class SubjectMaintenanceController extends Controller
       'sort_by' => $sortBy,
       'sort_order' => $sortOrder,
     ]);
-
     return view('maintenance.subjects.index', compact('subjects', 'perPage', 'search', 'sortBy', 'sortOrder'));
   }
 
@@ -103,7 +108,6 @@ class SubjectMaintenanceController extends Controller
       DB::statement('SET @current_user_id = ?', [Auth::guard('admin')->user()->id]);
 
       $subject = Subject::create([
-        'book_id' => null,
         'ddc' => $request->input('ddc') ?: null,
         'name' => trim((string) $request->input('name')),
       ]);
@@ -208,6 +212,7 @@ class SubjectMaintenanceController extends Controller
       DB::statement('SET @current_user_id = ?', [Auth::guard('admin')->user()->id]);
 
       $subject = Subject::with('accessCodes')->findOrFail($request->input('delete_subject_id'));
+      Book::withTrashed()->where('subject_id', $subject->id)->update(['subject_id' => null]);
       $subject->accessCodes()->detach();
       $subject->delete();
 
