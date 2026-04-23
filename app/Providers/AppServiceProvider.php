@@ -25,7 +25,9 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Gate::before(function ($user, $ability) {
-            return $user->hasRole('Super Admin') ? true : null;
+            if(config('app.debug') && $user->hasRole('Super Admin')) {
+                return true;
+            }
         });
         DB::statement('SET time_zone = "+08:00"');
         $settings = new UISetting();
