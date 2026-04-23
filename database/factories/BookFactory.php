@@ -32,7 +32,7 @@ class BookFactory extends Factory
             'copyrights' => $this->faker->year(),
             'remarks' => $this->faker->randomElement(['On Shelf', 'Lost', 'Missing']),
             'category_id' => $category->id,
-            'cover_image' => 'default.jpg',
+            'cover_image' => null,
             'digital_copy_url' => $this->faker->optional()->url(),
             'barcode' => $accession,
             'availability_status' => $this->faker->randomElement(['Available', 'Borrowed', 'In Use', 'Reserved']),

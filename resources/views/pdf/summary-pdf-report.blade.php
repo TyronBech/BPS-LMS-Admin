@@ -203,7 +203,7 @@
       $font = $fontMetrics->getFont("DejaVu Sans", "normal");
       $size = 9;
       $pageText = "Page {PAGE_NUM} of {PAGE_COUNT}";
-      $x = $pdf->get_width() - 120;
+      $x = $pdf->get_width() - 80;
       $y = $pdf->get_height() - 20;
       $pdf->page_text($x, $y, $pageText, $font, $size);
     }

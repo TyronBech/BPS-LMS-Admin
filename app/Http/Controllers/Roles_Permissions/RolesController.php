@@ -306,12 +306,15 @@ class RolesController extends Controller
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $role = Role::findById($request->input('role_id'));
-            if (!$request->input('role_id') == 1) {
+            if (!$request->input('role_id') == Role::findByName('Super Admin')->id) {
                 $role->name = $request->input('role');
                 $role->save();
             }
-            if ($request->input('role_id') == 1) {
+            if ($request->input('role_id') == Role::findByName('Super Admin')->id) {
                 $permissions[] = PermissionsEnum::MODIFY_ADMIN;
+                $permissions[] = PermissionsEnum::CREATE_BACKUPS;
+                $permissions[] = PermissionsEnum::VIEW_AUDIT_REPORTS;
+                $permissions[] = PermissionsEnum::MODIFY_UI_SETTINGS;
             }
             $role->syncPermissions($permissions);
         } catch (\Illuminate\Database\QueryException $e) {

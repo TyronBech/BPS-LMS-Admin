@@ -33,6 +33,7 @@ use App\Http\Controllers\Maintenance\PenaltyRuleController;
 use App\Http\Controllers\Maintenance\ReservationExtensionController;
 use App\Http\Controllers\Maintenance\ReservationStatus;
 use App\Http\Controllers\Maintenance\TransactionMaintenanceController;
+use App\Http\Controllers\Report\BibliographyController;
 use App\Http\Controllers\Settings\UISettingController;
 use App\Http\Controllers\Testing\MailPreviewController;
 use App\Http\Middleware\AuditReportAuthentication;
@@ -42,7 +43,6 @@ use App\Http\Middleware\SubjectAuthentication;
 use App\Http\Middleware\SuperAdminAuthentication;
 use App\Http\Middleware\UserAuthentication;
 use App\Http\Middleware\InventoryAuthentication;
-use App\Http\Middleware\ReportAuthentication;
 use App\Http\Middleware\PrivilegeAuthentication;
 use App\Http\Middleware\BookCategoriesAuthentication;
 use App\Http\Middleware\BookImportAuthentication;
@@ -54,6 +54,13 @@ use App\Http\Middleware\PreventBackHistory;
 use App\Http\Middleware\ReservationAuthentication;
 use App\Http\Middleware\StudentImportAuthentication;
 use App\Http\Middleware\UISettingAuthentication;
+use App\Http\Middleware\ViewBookCirculationReportsMiddleware;
+use App\Http\Middleware\ViewBibliographyMiddleware;
+use App\Http\Middleware\ViewInventoryReportsMiddleware;
+use App\Http\Middleware\ViewPenaltyReportsMiddleware;
+use App\Http\Middleware\ViewSummaryReportsMiddleware;
+use App\Http\Middleware\ViewTransactionReportsMiddleware;
+use App\Http\Middleware\ViewUserReportsMiddleware;
 
 Route::middleware(['guest', RedirectIfAuthenticated::class, PreventBackHistory::class])->group(function () {
     Route::get('/', function () {
@@ -111,46 +118,51 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
         Route::get('top-categories-borrowed', 'topCategoriesBorrowed')->name('fetch-top-categories-borrowed');
     });
 
-    Route::prefix('report')->middleware(ReportAuthentication::class)->group(function () {
-        Route::controller(UserLogsController::class)->group(function () {
+    Route::prefix('report')->group(function () {
+        Route::controller(UserLogsController::class)->middleware(ViewUserReportsMiddleware::class)->group(function () {
             Route::get('user-report', 'index')->name('report.user');
             Route::post('user-report', 'search')->name('report.user-search');
             Route::get('user-graph', 'graph')->name('report.user-graph');
             Route::post('export-graph', 'exportGraph')->name('report.graph-export-pdf');
         });
 
-        Route::controller(ComputerUseController::class)->group(function () {
+        Route::controller(ComputerUseController::class)->middleware(ViewUserReportsMiddleware::class)->group(function () {
             Route::get('computer-use', 'index')->name('report.computer-use');
             Route::post('computer-use', 'search')->name('report.computer-use-search');
         });
 
-        Route::controller(VisitorLogsController::class)->group(function () {
+        Route::controller(VisitorLogsController::class)->middleware(ViewUserReportsMiddleware::class)->group(function () {
             Route::get('visitor-report', 'index')->name('report.visitor');
             Route::post('visitor-report', 'retrieve')->name('report.visitor-retrieve');
         });
 
-        Route::controller(TransactionController::class)->group(function () {
+        Route::controller(TransactionController::class)->middleware(ViewTransactionReportsMiddleware::class)->group(function () {
             Route::get('book-circulation', 'index')->name('report.circulation');
             Route::post('book-circulation', 'search')->name('report.circulation-search');
         });
 
-        Route::controller(BookCirculationController::class)->group(function () {
+        Route::controller(BibliographyController::class)->middleware(ViewBibliographyMiddleware::class)->group(function () {
+            Route::get('bibliography', 'index')->name('report.bibliography');
+            Route::post('bibliography', 'search')->name('report.bibliography-search');
+        });
+
+        Route::controller(BookCirculationController::class)->middleware(ViewBookCirculationReportsMiddleware::class)->group(function () {
             Route::get('accession-list', 'index')->name('report.accession-list');
             Route::post('accession-list', 'search')->name('report.accession-list-search');
         });
 
-        Route::controller(CategoriesController::class)->group(function () {
+        Route::controller(CategoriesController::class)->middleware(ViewSummaryReportsMiddleware::class)->group(function () {
             Route::get('summary', 'index')->name('report.summary');
             Route::post('summary', 'export')->name('report.summary-export');
             Route::post('update-summary', 'update')->name('report.summary-update');
         });
 
-        Route::controller(InventoriesController::class)->group(function () {
+        Route::controller(InventoriesController::class)->middleware(ViewInventoryReportsMiddleware::class)->group(function () {
             Route::get('inventory-report', 'index')->name('report.inventory');
             Route::post('inventory-report', 'search')->name('report.inventory-search');
         });
 
-        Route::controller(PenaltiesController::class)->group(function () {
+        Route::controller(PenaltiesController::class)->middleware(ViewPenaltyReportsMiddleware::class)->group(function () {
             Route::get('penalties', 'index')->name('report.penalties');
             Route::post('penalties', 'search')->name('report.penalties-search');
         });
