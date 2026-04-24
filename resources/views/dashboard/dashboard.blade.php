@@ -27,7 +27,7 @@
     <div class="mb-2">
       <h1 id="timed-in-count" class="text-8xl text-center font-extrabold dark:text-gray-300"></h1>
     </div>
-    <button type="button" id="timeout-all-users" class="text-white bg-gradient-to-r from-primary-500 via-primary-500 to-primary-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-primary-300 dark:focus:ring-primary-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Timeout All Users</button>
+    <button type="button" id="timeout-all-users" data-modal-target="timeout-all-users-modal" data-modal-toggle="timeout-all-users-modal" class="skip-loader text-white bg-gradient-to-r from-primary-500 via-primary-500 to-primary-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-primary-300 dark:focus:ring-primary-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Timeout All Users</button>
   </div>
   <div class="flex flex-col min-h-96 md:col-span-1 lg:col-span-3 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Monthly Logs</h5>
@@ -143,6 +143,36 @@
     </div>
   </div>
 
+  <div id="timeout-all-users-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+    <div class="relative p-4 w-full max-w-md max-h-full">
+      <div class="relative bg-white rounded-lg dark:bg-gray-700 shadow-md">
+        <button type="button" class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="timeout-all-users-modal">
+          <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
+          </svg>
+          <span class="sr-only">Close modal</span>
+        </button>
+        <div class="p-4 md:p-5 text-center">
+          <svg class="mx-auto mb-4 text-red-400 w-12 h-12 dark:text-red-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
+            <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+          </svg>
+          <h3 class="mb-3 text-base md:text-lg font-normal text-gray-500 dark:text-gray-400 px-2">
+            Timeout all currently logged-in users?
+          </h3>
+          <p class="mb-5 text-sm text-gray-600 dark:text-gray-400 px-2">
+            This will end every active library session immediately.
+          </p>
+          <button type="button" id="confirm-timeout-all-users" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
+            Yes, timeout all users
+          </button>
+          <button data-modal-hide="timeout-all-users-modal" type="button" class="skip-loader py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-700 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 shadow-md">
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- Fixed Refresh Button (Bottom Right) -->
   <div class="fixed bottom-6 left-6 z-50">
     <button type="button" id="refresh" class="flex items-center gap-2 text-white bg-primary-500 hover:bg-primary-600 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-full text-sm px-6 py-3 text-center shadow-lg transition-transform hover:scale-105 dark:bg-primary-500 dark:hover:bg-primary-400 dark:focus:ring-primary-500">
@@ -191,6 +221,12 @@
     setTimeout(() => toast.remove(), 5000);
   }
 
+  const pendingDashboardToast = sessionStorage.getItem('dashboard-timeout-toast');
+  if (pendingDashboardToast) {
+    sessionStorage.removeItem('dashboard-timeout-toast');
+    showToast(pendingDashboardToast, 'success');
+  }
+
   // Handle API errors gracefully
   async function handleApiResponse(response, errorContext = '') {
     if (!response.ok) {
@@ -219,11 +255,16 @@
     }
   }
   // Timeout all users
-  document.getElementById('timeout-all-users').addEventListener('click', async () => {
-    if (!confirm('Are you sure you want to timeout all currently logged-in users?')) {
-      return;
-    }
+  const timeoutAllUsersConfirmButton = document.getElementById('confirm-timeout-all-users');
 
+  function setTimeoutAllUsersPending(isPending) {
+    timeoutAllUsersConfirmButton.disabled = isPending;
+    timeoutAllUsersConfirmButton.classList.toggle('opacity-70', isPending);
+    timeoutAllUsersConfirmButton.classList.toggle('cursor-not-allowed', isPending);
+  }
+
+  timeoutAllUsersConfirmButton.addEventListener('click', async () => {
+    setTimeoutAllUsersPending(true);
     try {
       const response = await fetch("{{ route('timeout-all-users') }}", {
         method: 'POST',
@@ -233,10 +274,11 @@
         },
       });
       await handleApiResponse(response, 'timeout operation');
-      showToast('All users have been timed out successfully.', 'success');
-      setTimeout(() => location.reload(), 1500);
+      sessionStorage.setItem('dashboard-timeout-toast', 'All users have been timed out successfully.');
+      window.location.reload();
     } catch (error) {
-      showToast('Failed to timeout users. Please try again.', 'error');
+      showToast(error.message || 'Failed to timeout users. Please try again.', 'error');
+      setTimeoutAllUsersPending(false);
     }
   });
   // Fetch the monthly count of logs
