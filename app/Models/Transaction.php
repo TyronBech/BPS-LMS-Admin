@@ -26,6 +26,7 @@ class Transaction extends Model
         'status',
         'book_condition',
         'penalty_total',
+        'discount',
         'penalty_status',
         'remarks',
     ];

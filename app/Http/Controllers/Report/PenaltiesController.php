@@ -60,7 +60,8 @@ class PenaltiesController extends Controller
         }
 
         $data = $this->generateData($request, new Transaction(), false);
-        return view('report.penalties.index', compact('data', 'fromInputDate', 'toInputDate', 'search', 'perPage'));
+        $summary = $this->generateSummary($request, new Transaction());
+        return view('report.penalties.index', compact('data', 'summary', 'fromInputDate', 'toInputDate', 'search', 'perPage'));
     }
     /**
      * Handles the search request for the penalties report.
@@ -110,20 +111,23 @@ class PenaltiesController extends Controller
                 'user_id' => Auth::guard('admin')->id(),
                 'timestamp' => now()
             ]);
-            $data = $this->generateData($request, new Transaction(), true);
-            $this->generatePDF($data);
+            $data    = $this->generateData($request, new Transaction(), true);
+            $summary = $this->calculateSummary($data);
+            $this->generatePDF($data, $summary);
             return redirect()->route('report.penalties')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {
             Log::info('Penalties Report: Generating Excel export', [
                 'user_id' => Auth::guard('admin')->id(),
                 'timestamp' => now()
             ]);
-            $data = $this->generateData($request, new Transaction(), true);
-            $this->exportExcel($data);
+            $data    = $this->generateData($request, new Transaction(), true);
+            $summary = $this->calculateSummary($data);
+            $this->exportExcel($data, $summary);
             return redirect()->route('report.penalties')->with('toast-success', 'Successfully exported to Excel');
         }
         $data = $this->generateData($request, new Transaction(), false);
-        return view('report.penalties.index', compact('data', 'search', 'fromInputDate', 'toInputDate', 'perPage'));
+        $summary = $this->generateSummary($request, new Transaction());
+        return view('report.penalties.index', compact('data', 'summary', 'search', 'fromInputDate', 'toInputDate', 'perPage'));
     }
     /**
      * Generates a PDF report for the overdue fines report.
@@ -134,7 +138,7 @@ class PenaltiesController extends Controller
      *
      * @param \Illuminate\Database\Eloquent\Collection $data The data to be included in the report.
      */
-    private function generatePDF(Collection $data)
+    private function generatePDF(Collection $data, array $summary)
     {
         ini_set('memory_limit', '2048M');
         ini_set('max_execution_time', 300);
@@ -148,6 +152,7 @@ class PenaltiesController extends Controller
             'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
             'date'          => "as of " . date('F j, Y'),
             'data'          => $data,
+            'summary'       => $summary,
             'totalCount'    => $data->count(),
         ];
         $options = new Options();
@@ -168,7 +173,7 @@ class PenaltiesController extends Controller
      *
      * @return void
      */
-    private function exportExcel(Collection $data)
+    private function exportExcel(Collection $data, array $summary)
     {
         $spreadsheet    = new Spreadsheet();
         $logo           = new Drawing();
@@ -235,12 +240,27 @@ class PenaltiesController extends Controller
             $sheet->setCellValue('A' . $row, $item->user->first_name . ' ' . $item->user->last_name);
             $sheet->setCellValue('B' . $row, $item->book->accession);
             $sheet->setCellValue('C' . $row, $item->book->title);
-            $sheet->setCellValue('D' . $row, Carbon::parse($item->date_borrowed)->format('M j, Y'));
-            $sheet->setCellValue('E' . $row, $item->due_date ? Carbon::parse($item->due_date)->format('M j, Y') : 'Not Returned');
-            $sheet->setCellValue('F' . $row, $item->return_date ? Carbon::parse($item->return_date)->format('M j, Y') : 'Not Returned');
+            $sheet->setCellValue('D' . $row, $item->borrowed);
+            $sheet->setCellValue('E' . $row, $item->due);
+            $sheet->setCellValue('F' . $row, $item->returned);
             $sheet->setCellValue('G' . $row, $item->violation);
-            $sheet->setCellValue('H' . $row, number_format($item->penalty_total, 2));
-            $sheet->setCellValue('I' . $row, $item->penalty_status);
+            $sheet->getStyle('H' . $row)->getAlignment()->setWrapText(true);
+            if ($item->has_discount) {
+                $richText = new \PhpOffice\PhpSpreadsheet\RichText\RichText();
+                $originalAmount = $richText->createTextRun('₱ ' . number_format($item->actual_total, 2));
+                $originalAmount->getFont()->setStrikethrough(true);
+                $richText->createText("\n");
+                $discountedAmount = $richText->createTextRun('₱ ' . number_format($item->total, 2));
+                $discountedAmount->getFont()->setBold(true);
+                $discountedAmount->getFont()->getColor()->setARGB('FF16A34A');
+                $discountLabel = $richText->createTextRun('  ' . $item->discount_percent_label . ' discount');
+                $discountLabel->getFont()->getColor()->setARGB('FF16A34A');
+                $sheet->getCell('H' . $row)->setValue($richText);
+                $sheet->getRowDimension($row)->setRowHeight(32);
+            } else {
+                $sheet->setCellValue('H' . $row, '₱ ' . number_format($item->total, 2));
+            }
+            $sheet->setCellValue('I' . $row, $item->status);
             $sheet->getStyle('A' . $row . ':I' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
             $sheet->getStyle('A' . $row . ':I' . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
             $sheet->getStyle('A' . $row . ':I' . $row)->getAlignment()->setWrapText(true);
@@ -258,6 +278,18 @@ class PenaltiesController extends Controller
         $sheet->getStyle('A10:I' . ($row - 1))->applyFromArray($styleArray);
 
         $row += 2;
+        foreach ($summary['rows'] as $summaryRow) {
+            $sheet->setCellValue('A' . $row, $summaryRow['label']);
+            $sheet->setCellValue('B' . $row, '₱ ' . number_format($summaryRow['amount'], 2));
+            $sheet->getStyle('A' . $row . ':B' . $row)->getFont()->setBold($summaryRow['is_total']);
+            $sheet->getStyle('A' . $row . ':B' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+            if ($summaryRow['is_total']) {
+                $sheet->getStyle('A' . $row . ':B' . $row)->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+            }
+            $row++;
+        }
+
+        $row++;
         $sheet->mergeCells('A' . $row . ':I' . $row);
         $sheet->setCellValue('A' . $row, 'Report Generated By: ' . Auth::user()->first_name . ' ' . Auth::user()->last_name);
 
@@ -289,58 +321,16 @@ class PenaltiesController extends Controller
      */
     private function generateData(Request $request, Transaction $model, bool $isExport = false)
     {
-        $startStr = $request->input('start');
-        $endStr   = $request->input('end');
-        $search   = strtolower($request->input('search'));
         $perPage  = $request->input('perPage', 10);
-
-        $query = $model->newQuery()
-            ->with([
-                'user:id,first_name,middle_name,last_name',
-                'book:id,title,accession',
-                'penalties.penaltyRule'
-            ])
-            ->select([
-                'id',
-                'user_id',
-                'book_id',
-                'date_borrowed as borrowed',
-                'due_date as due',
-                'return_date as returned',
-                'penalty_total as total',
-                'penalty_status as status',
-                'remarks'
-            ])
-            ->whereHas('penalties')
-            ->whereHas('user')
-            ->whereHas('book')
-            ->whereHas('penalties.penaltyRule')
-            ->where('penalty_total', '>', 0);
-
-        if ($startStr && $endStr) {
-            $startDate = Carbon::createFromFormat('m/d/Y', $startStr)->startOfDay();
-            $endDate   = Carbon::createFromFormat('m/d/Y', $endStr)->endOfDay();
-            $query->whereBetween('created_at', [$startDate, $endDate]);
-        }
-
-        if ($search) {
-            $query->whereHas('user', function ($q) use ($search) {
-                $q->where(function ($sub) use ($search) {
-                    $sub->whereRaw('LOWER(first_name) LIKE ?', ["%{$search}%"])
-                        ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$search}%"])
-                        ->orWhereRaw('LOWER(CONCAT(first_name, " ", last_name)) LIKE ?', ["%{$search}%"])
-                        ->orWhereRaw('LOWER(CONCAT(last_name, ", ", first_name)) LIKE ?', ["%{$search}%"]);
-                });
-            });
-        }
+        $query = $this->buildPenaltyQuery($request, $model);
 
         $query->orderBy('created_at', 'desc')->orderBy('id', 'desc');
         if ($isExport) {
             $data = $query->get();
 
             if ($data->isNotEmpty()) {
-                $max = $data->first()->date;
-                $min = $data->last()->date;
+                $max = $data->first()->created_at;
+                $min = $data->last()->created_at;
                 $data->reporting_period = 'From ' . Carbon::parse($min)->format('F j, Y') . ' to ' . Carbon::parse($max)->format('F j, Y');
             } else {
                 $data->reporting_period = 'N/A';
@@ -364,6 +354,65 @@ class PenaltiesController extends Controller
         return $result;
     }
 
+    private function generateSummary(Request $request, Transaction $model): array
+    {
+        $items = $this->buildPenaltyQuery($request, $model)
+            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->get();
+
+        $items->transform(function ($item) {
+            return $this->formatPenaltyRow($item);
+        });
+
+        return $this->calculateSummary($items);
+    }
+
+    private function buildPenaltyQuery(Request $request, Transaction $model)
+    {
+        $startStr = $request->input('start');
+        $endStr   = $request->input('end');
+        $search   = strtolower((string) $request->input('search'));
+
+        $query = $model->newQuery()
+            ->with([
+                'user:id,first_name,middle_name,last_name',
+                'book:id,title,accession',
+                'penalties.penaltyRule'
+            ])
+            ->withSum('penalties as penalties_amount_sum', 'amount')
+            ->whereHas('user')
+            ->whereHas('book')
+            ->where(function ($subQuery) {
+                $subQuery->where('penalty_total', '>', 0)
+                    ->orWhereHas('penalties', function ($penaltyQuery) {
+                        $penaltyQuery->where('amount', '>', 0);
+                    });
+            });
+
+        if ($startStr && $endStr) {
+            $startDate = $this->parseDateInput($startStr)?->startOfDay();
+            $endDate   = $this->parseDateInput($endStr)?->endOfDay();
+
+            if ($startDate && $endDate) {
+                $query->whereBetween('created_at', [$startDate, $endDate]);
+            }
+        }
+
+        if ($search) {
+            $query->whereHas('user', function ($q) use ($search) {
+                $q->where(function ($sub) use ($search) {
+                    $sub->whereRaw('LOWER(first_name) LIKE ?', ["%{$search}%"])
+                        ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$search}%"])
+                        ->orWhereRaw('LOWER(CONCAT(first_name, " ", last_name)) LIKE ?', ["%{$search}%"])
+                        ->orWhereRaw('LOWER(CONCAT(last_name, ", ", first_name)) LIKE ?', ["%{$search}%"]);
+                });
+            });
+        }
+
+        return $query;
+    }
+
     /**
      * Helper to process the penalty string and clean up the object.
      * This prevents code duplication between Export and Pagination logic.
@@ -373,7 +422,6 @@ class PenaltiesController extends Controller
      */
     private function formatPenaltyRow(Transaction $transaction)
     {
-        // Extract violation types (e.g., "Overdue, Damaged")
         $violations = $transaction->penalties
             ->pluck('penaltyRule.type')
             ->filter()
@@ -381,9 +429,111 @@ class PenaltiesController extends Controller
             ->values()
             ->implode(', ');
 
-        // Append the new custom attribute
+        $resolvedTotal = (float) ($transaction->penalties_amount_sum ?? 0);
+        if ($resolvedTotal <= 0) {
+            $resolvedTotal = (float) ($transaction->penalty_total ?? 0);
+        }
+        $discountRate = $this->normalizeDiscountRate($transaction->discount ?? 0);
+        $hasDiscount = $transaction->penalty_status === 'Discounted' && $discountRate > 0;
+        $discountedTotal = $hasDiscount
+            ? round($resolvedTotal * (1 - $discountRate), 2)
+            : $resolvedTotal;
+        $discountAmount = max(round($resolvedTotal - $discountedTotal, 2), 0);
+
+        $transaction->borrowed = $transaction->date_borrowed
+            ? Carbon::parse($transaction->date_borrowed)->format('M j, Y')
+            : 'Not Borrowed';
+        $transaction->due = $transaction->due_date
+            ? Carbon::parse($transaction->due_date)->format('M j, Y')
+            : 'No Due Date';
+        $transaction->returned = $transaction->return_date
+            ? Carbon::parse($transaction->return_date)->format('M j, Y')
+            : 'Unreturned';
+        $transaction->actual_total = $resolvedTotal;
+        $transaction->discount_rate = $discountRate;
+        $transaction->discount_percent_label = $this->formatDiscountPercent($discountRate);
+        $transaction->discount_amount = $discountAmount;
+        $transaction->has_discount = $hasDiscount;
+        $transaction->discounted_total = $discountedTotal;
+        $transaction->total = $discountedTotal;
+        $transaction->status = $transaction->penalty_status ?: 'No Penalty';
         $transaction->violation = $violations ?: '-';
 
         return $transaction;
+    }
+
+    private function calculateSummary(Collection $items): array
+    {
+        $summary = [
+            'waived' => 0.0,
+            'discount' => 0.0,
+            'unpaid' => 0.0,
+        ];
+
+        foreach ($items as $item) {
+            $status = strtolower((string) $item->status);
+
+            if ($status === 'waived') {
+                $summary['waived'] += (float) $item->actual_total;
+            } elseif ($status === 'discounted') {
+                $summary['discount'] += (float) $item->total;
+            } elseif ($status === 'unpaid') {
+                $summary['unpaid'] += (float) $item->actual_total;
+            }
+        }
+
+        foreach ($summary as $key => $value) {
+            $summary[$key] = round($value, 2);
+        }
+
+        $summary['grand_total'] = round(array_sum($summary), 2);
+        $summary['rows'] = [
+            ['label' => 'Waived', 'amount' => $summary['waived'], 'is_total' => false],
+            ['label' => 'Discount', 'amount' => $summary['discount'], 'is_total' => false],
+            ['label' => 'Unpaid', 'amount' => $summary['unpaid'], 'is_total' => false],
+            ['label' => 'Grand Total', 'amount' => $summary['grand_total'], 'is_total' => true],
+        ];
+
+        return $summary;
+    }
+
+    private function normalizeDiscountRate($value): float
+    {
+        $discount = (float) $value;
+
+        if ($discount > 1) {
+            $discount /= 100;
+        }
+
+        return max(0, min($discount, 1));
+    }
+
+    private function formatDiscountPercent(float $rate): string
+    {
+        $percent = $rate * 100;
+        $formatted = number_format($percent, 2);
+        $formatted = rtrim(rtrim($formatted, '0'), '.');
+
+        return $formatted . '%';
+    }
+
+    private function parseDateInput(?string $value): ?Carbon
+    {
+        if (!$value) {
+            return null;
+        }
+
+        foreach (['m/d/Y', 'Y-m-d'] as $format) {
+            try {
+                return Carbon::createFromFormat($format, $value);
+            } catch (\Throwable $e) {
+            }
+        }
+
+        try {
+            return Carbon::parse($value);
+        } catch (\Throwable $e) {
+            return null;
+        }
     }
 }

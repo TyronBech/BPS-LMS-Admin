@@ -38,7 +38,19 @@
             <td class="px-6 py-4 whitespace-nowrap">{{ $item->due ?? 'No Due Date' }}</td>
             <td class="px-6 py-4 whitespace-nowrap">{{ $item->returned ?? 'Unreturned' }}</td>
             <td class="px-6 py-4">{{ ucwords($item->violation) ?? 'No Violation' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">₱ {{ number_format($item->total, 2) ?? '0.00' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              @if($item->has_discount)
+              <div class="flex items-start gap-2">
+                <div>
+                  <div class="text-gray-500 line-through">₱ {{ number_format($item->actual_total, 2) }}</div>
+                  <div class="font-semibold text-green-600 dark:text-green-400">₱ {{ number_format($item->total, 2) }}</div>
+                </div>
+                <span class="text-xs font-medium text-green-600 dark:text-green-400 whitespace-nowrap">{{ $item->discount_percent_label }} discount</span>
+              </div>
+              @else
+              ₱ {{ number_format($item->total, 2) ?? '0.00' }}
+              @endif
+            </td>
             <td class="px-6 py-4">{{ ucwords($item->status) ?? 'No Status' }}</td>
           </tr>
           @empty
@@ -48,6 +60,16 @@
           @endforelse
         </tbody>
       </table>
+    </div>
+    <div class="px-4 pb-2">
+      <div class="max-w-sm mt-3 border-gray-300 dark:border-gray-600 pt-3 space-y-1 text-sm text-gray-700 dark:text-gray-300">
+        @foreach($summary['rows'] as $summaryRow)
+        <div class="flex items-center justify-between {{ $summaryRow['is_total'] ? 'font-semibold border-t border-gray-300 dark:border-gray-600 pt-2 mt-2' : '' }}">
+          <span>{{ $summaryRow['label'] }}</span>
+          <span>₱ {{ number_format($summaryRow['amount'], 2) }}</span>
+        </div>
+        @endforeach
+      </div>
     </div>
     <div class="p-4">
       {{ $data->withQueryString()->links() }}

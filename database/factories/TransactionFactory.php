@@ -58,7 +58,7 @@ class TransactionFactory extends Factory
             'status' => $status,
             'book_condition' => $this->faker->randomElement(['New', 'Good', 'Fair', 'Poor']),
             'penalty_total' => 0,
-            'penalty_status' => $this->faker->randomElement(['Paid', 'Unpaid', 'Waived']),
+            'penalty_status' => 'No Penalty',
             'remarks' => "Sample remarks for transaction",
             'created_at' => now(),
             'updated_at' => now(),
