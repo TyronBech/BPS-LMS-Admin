@@ -7,6 +7,7 @@
         <input type="hidden" name="search" value="{{ old('search', request('search')) }}">
         <input type="hidden" name="start" value="{{ old('start', request('start')) }}">
         <input type="hidden" name="end" value="{{ old('end', request('end')) }}">
+        <input type="hidden" name="penalty_status" value="{{ old('penalty_status', request('penalty_status')) }}">
         <input type="number" name="perPage" id="perPage" min="1" max="500" onchange="this.form.submit()" value="{{ old('perPage', $perPage) }}" class="border border-gray-300 text-xs rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
         <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">entries per page</span>
       </form>

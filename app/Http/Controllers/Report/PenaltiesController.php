@@ -16,6 +16,7 @@ use App\Models\Transaction;
 use App\Models\UISetting;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class PenaltiesController extends Controller
@@ -35,6 +36,8 @@ class PenaltiesController extends Controller
         $fromInputDate  = $request->input('start');
         $toInputDate    = $request->input('end');
         $perPage        = $request->input('perPage', 10);
+        $penaltyStatus  = $request->input('penalty_status');
+        $penaltyStatuses = $this->getPenaltyStatuses();
 
         Log::info('Penalties Report: Page accessed', [
             'user_id' => Auth::guard('admin')->id(),
@@ -47,6 +50,7 @@ class PenaltiesController extends Controller
             'start'         => 'nullable|date',
             'end'           => 'nullable|date|after_or_equal:start',
             'search'        => 'nullable|string|max:255',
+            'penalty_status' => 'nullable|in:' . implode(',', $penaltyStatuses),
             'perPage'       => 'nullable|integer|min:1|max:500',
         ]);
         if ($validator->fails()) {
@@ -61,7 +65,7 @@ class PenaltiesController extends Controller
 
         $data = $this->generateData($request, new Transaction(), false);
         $summary = $this->generateSummary($request, new Transaction());
-        return view('report.penalties.index', compact('data', 'summary', 'fromInputDate', 'toInputDate', 'search', 'perPage'));
+        return view('report.penalties.index', compact('data', 'summary', 'fromInputDate', 'toInputDate', 'search', 'perPage', 'penaltyStatus', 'penaltyStatuses'));
     }
     /**
      * Handles the search request for the penalties report.
@@ -81,11 +85,13 @@ class PenaltiesController extends Controller
         $fromInputDate  = $request->input('start');
         $toInputDate    = $request->input('end');
         $perPage        = $request->input('perPage', 10);
+        $penaltyStatus  = $request->input('penalty_status');
+        $penaltyStatuses = $this->getPenaltyStatuses();
 
         Log::info('Penalties Report: Search performed', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
-            'filters' => $request->only(['search', 'start', 'end', 'perPage']),
+            'filters' => $request->only(['search', 'start', 'end', 'penalty_status', 'perPage']),
             'action' => $request->input('submit', 'search'),
             'ip_address' => $request->ip(),
             'timestamp' => now(),
@@ -95,6 +101,7 @@ class PenaltiesController extends Controller
             'start'         => 'nullable|date',
             'end'           => 'nullable|date|after_or_equal:start',
             'search'        => 'nullable|string|max:255',
+            'penalty_status' => 'nullable|in:' . implode(',', $penaltyStatuses),
             'perPage'       => 'nullable|integer|min:1|max:500',
         ]);
         if ($validator->fails()) {
@@ -112,7 +119,7 @@ class PenaltiesController extends Controller
                 'timestamp' => now()
             ]);
             $data    = $this->generateData($request, new Transaction(), true);
-            $summary = $this->calculateSummary($data);
+            $summary = $this->generateSummary($request, new Transaction());
             $this->generatePDF($data, $summary);
             return redirect()->route('report.penalties')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {
@@ -121,13 +128,13 @@ class PenaltiesController extends Controller
                 'timestamp' => now()
             ]);
             $data    = $this->generateData($request, new Transaction(), true);
-            $summary = $this->calculateSummary($data);
+            $summary = $this->generateSummary($request, new Transaction());
             $this->exportExcel($data, $summary);
             return redirect()->route('report.penalties')->with('toast-success', 'Successfully exported to Excel');
         }
         $data = $this->generateData($request, new Transaction(), false);
         $summary = $this->generateSummary($request, new Transaction());
-        return view('report.penalties.index', compact('data', 'summary', 'search', 'fromInputDate', 'toInputDate', 'perPage'));
+        return view('report.penalties.index', compact('data', 'summary', 'search', 'fromInputDate', 'toInputDate', 'perPage', 'penaltyStatus', 'penaltyStatuses'));
     }
     /**
      * Generates a PDF report for the overdue fines report.
@@ -356,7 +363,9 @@ class PenaltiesController extends Controller
 
     private function generateSummary(Request $request, Transaction $model): array
     {
-        $items = $this->buildPenaltyQuery($request, $model)
+        // Summary is intentionally computed from all penalties data,
+        // independent from search/date/status filters.
+        $items = $this->buildPenaltyBaseQuery($model)
             ->orderBy('created_at', 'desc')
             ->orderBy('id', 'desc')
             ->get();
@@ -373,22 +382,9 @@ class PenaltiesController extends Controller
         $startStr = $request->input('start');
         $endStr   = $request->input('end');
         $search   = strtolower((string) $request->input('search'));
+        $penaltyStatus = $this->normalizePenaltyStatus($request->input('penalty_status'));
 
-        $query = $model->newQuery()
-            ->with([
-                'user:id,first_name,middle_name,last_name',
-                'book:id,title,accession',
-                'penalties.penaltyRule'
-            ])
-            ->withSum('penalties as penalties_amount_sum', 'amount')
-            ->whereHas('user')
-            ->whereHas('book')
-            ->where(function ($subQuery) {
-                $subQuery->where('penalty_total', '>', 0)
-                    ->orWhereHas('penalties', function ($penaltyQuery) {
-                        $penaltyQuery->where('amount', '>', 0);
-                    });
-            });
+        $query = $this->buildPenaltyBaseQuery($model);
 
         if ($startStr && $endStr) {
             $startDate = $this->parseDateInput($startStr)?->startOfDay();
@@ -410,7 +406,49 @@ class PenaltiesController extends Controller
             });
         }
 
+        if ($penaltyStatus) {
+            $query->where('penalty_status', $penaltyStatus);
+        }
+
         return $query;
+    }
+
+    private function buildPenaltyBaseQuery(Transaction $model)
+    {
+        return $model->newQuery()
+            ->with([
+                'user:id,first_name,middle_name,last_name',
+                'book:id,title,accession',
+                'penalties.penaltyRule'
+            ])
+            ->withSum('penalties as penalties_amount_sum', 'amount')
+            ->whereHas('user')
+            ->whereHas('book')
+            ->where(function ($subQuery) {
+                $subQuery->where('penalty_total', '>', 0)
+                    ->orWhereHas('penalties', function ($penaltyQuery) {
+                        $penaltyQuery->where('amount', '>', 0);
+                    });
+            });
+    }
+
+    private function normalizePenaltyStatus($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $status = trim((string) $value);
+        if ($status === '' || strcasecmp($status, 'All') === 0) {
+            return null;
+        }
+
+        return $status;
+    }
+
+    private function getPenaltyStatuses(): array
+    {
+        return $this->extract_enums((new Transaction())->getTableName(), 'penalty_status');
     }
 
     /**
@@ -434,10 +472,10 @@ class PenaltiesController extends Controller
             $resolvedTotal = (float) ($transaction->penalty_total ?? 0);
         }
         $discountRate = $this->normalizeDiscountRate($transaction->discount ?? 0);
-        $hasDiscount = $transaction->penalty_status === 'Discounted' && $discountRate > 0;
-        $discountedTotal = $hasDiscount
+        $discountedTotal = $discountRate > 0
             ? round($resolvedTotal * (1 - $discountRate), 2)
             : $resolvedTotal;
+        $hasDiscount = $discountRate > 0 && $discountedTotal < $resolvedTotal;
         $discountAmount = max(round($resolvedTotal - $discountedTotal, 2), 0);
 
         $transaction->borrowed = $transaction->date_borrowed
@@ -535,5 +573,30 @@ class PenaltiesController extends Controller
         } catch (\Throwable $e) {
             return null;
         }
+    }
+    /**
+     * Extracts enum values from a database table column.
+     *
+     * @param string $table The name of the database table.
+     * @param string $columnName The name of the column.
+     * @return array An array of enum values.
+     */
+    private function extract_enums($table, $columnName)
+    {
+        $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";
+        $column = DB::select($query);
+        if (empty($column)) {
+            return ['N/A'];
+        }
+        $type = $column[0]->Type;
+        // Extract enum values
+        preg_match('/enum\((.*)\)$/', $type, $matches);
+        $enumValues = [];
+
+        if (isset($matches[1])) {
+            $enumValues = str_getcsv($matches[1], ',', "'");
+        }
+        $enumValues = array_merge(['All'], $enumValues);
+        return $enumValues;
     }
 }

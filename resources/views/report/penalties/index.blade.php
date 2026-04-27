@@ -34,6 +34,15 @@
         <input type="text" name="search" id="search" placeholder="Juan" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" value="<?php echo $search; ?>">
       </div>
 
+      <div class="flex items-center w-full md:w-auto">
+        <label for="penalty_status" class="block text-sm/6 font-medium mr-2 whitespace-nowrap">Penalty Status</label>
+        <select name="penalty_status" id="penalty_status" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+          @foreach($penaltyStatuses as $status)
+          <option value="{{ $status }}" {{ ($penaltyStatus ?? '') === $status ? 'selected' : '' }}>{{ $status }}</option>
+          @endforeach
+        </select>
+      </div>
+
       {{-- Action Buttons --}}
       <div class="flex flex-wrap items-center justify-center gap-2">
         <button type="submit" name="submit" value="find" class="bg-primary-500 hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500 text-white font-bold py-2 px-4 rounded w-full sm:w-auto">Find</button>
