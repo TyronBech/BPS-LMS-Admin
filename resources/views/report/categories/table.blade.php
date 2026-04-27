@@ -4,11 +4,11 @@
     <h2 class="text-center mb-4 font-semibold text-2xl dark:text-white">Report Table for Materials</h2>
   </div>
   <div class="overflow-x-auto">
-    <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+    <table class="w-full text-sm text-center text-gray-500 dark:text-gray-400">
       <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
         <tr>
-          <th scope="col" class="px-6 py-3">Legend</th>
-          <th scope="col" class="px-6 py-3">Description</th>
+          <th scope="col" class="text-left px-6 py-3">Legend</th>
+          <th scope="col" class="text-left px-6 py-3">Description</th>
           <th scope="col" class="px-6 py-3">Previous Inventory</th>
           <th scope="col" class="px-6 py-3">Newly Acquired</th>
           <th scope="col" class="px-6 py-3">Lost and Paid For</th>
@@ -22,8 +22,8 @@
       <tbody>
         @forelse($data as $item)
         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-          <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ $item->legend }}</th>
-          <td class="px-6 py-4">{{ $item->name }}</td>
+          <th scope="row" class="text-left px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ $item->legend }}</th>
+          <td class="text-left px-6 py-4">{{ $item->name }}</td>
           <td class="px-6 py-4 text-center">{{ $item->previous_inventory }}</td>
           <td class="px-6 py-4 text-center">{{ $item->newly_acquired }}</td>
           <td class="px-6 py-4 text-center">{{ $item->lost_and_paid_for }}</td>
