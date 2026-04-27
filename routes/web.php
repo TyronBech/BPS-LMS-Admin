@@ -109,9 +109,9 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
         Route::get('current-users', 'fetchCurrentTimeInUsers')->name('fetch-current-count');
         Route::get('monthly-users', 'fetchMonthlyUsers')->name('fetch-monthly-count');
         Route::get('total-books', 'totalBooks')->name('fetch-book-count');
+        Route::get('pending-overdues-count', 'fetchPendingOverduesCount')->name('fetch-pending-overdues-count');
         Route::get('transaction-history', 'fetchTransactionHistory')->name('fetch-transaction-history');
         Route::get('yearly-aquired-books', 'fetchYearlyAquiredBooks')->name('fetch-yearly-aquired-books');
-        Route::get('registered-users', 'fetchRegisteredUsers')->name('fetch-registered-users');
         Route::get('most-visited-students', 'mostVisitedStudents')->name('fetch-most-visited-students');
         Route::get('most-borrowed-students', 'mostBorrowedStudents')->name('fetch-most-borrowed-students');
         Route::get('top-books-borrowed', 'topBooksBorrowed')->name('fetch-top-books-borrowed');

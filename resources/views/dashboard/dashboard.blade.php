@@ -7,11 +7,13 @@
       transform: translateX(100%);
       opacity: 0;
     }
+
     to {
       transform: translateX(0);
       opacity: 1;
     }
   }
+
   .animate-slide-in {
     animation: slide-in 0.3s ease-out;
   }
@@ -37,12 +39,13 @@
   </div>
   <div class="flex flex-col min-h-96 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div>
-      <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Total Books</h5>
-      <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Total number of books in the database.</p>
+      <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Pending Overdues</h5>
+      <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Total number of unpaid overdues.</p>
     </div>
-    <div class="mb-20">
-      <h1 id="book-count" class="text-8xl text-center font-extrabold dark:text-gray-300"></h1>
+    <div class="mb-2">
+      <h1 id="pending-overdues-count" class="text-8xl text-center font-extrabold dark:text-gray-300"></h1>
     </div>
+    <a href="{{ route('report.penalties', ['penalty_status' => 'Unpaid']) }}" class="skip-loader text-white bg-gradient-to-r from-primary-500 via-primary-500 to-primary-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-primary-300 dark:focus:ring-primary-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">View Unpaid Penalties</a>
   </div>
   <div class="flex flex-col min-h-96 md:col-span-1 lg:col-span-3 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Transaction History</h5>
@@ -50,26 +53,19 @@
       <canvas id="transaction-history"></canvas>
     </div>
   </div>
-  <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
+  <div class="flex flex-col min-h-96 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
+    <div>
+      <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Total Books</h5>
+      <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Total number of books in the database.</p>
+    </div>
+    <div class="mb-20">
+      <h1 id="book-count" class="text-8xl text-center font-extrabold dark:text-gray-300"></h1>
+    </div>
+  </div>
+  <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-3 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Yearly Book Acquisition</h5>
     <div class="relative h-full mb-5">
       <canvas id="yearly-books"></canvas>
-    </div>
-  </div>
-  <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
-    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-      <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">User Registration Growth</h5>
-      <div class="inline-flex rounded-lg border border-gray-200 dark:border-gray-600 p-1 bg-gray-100 dark:bg-gray-700">
-        <button type="button" id="period-monthly" class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-200 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-          Monthly
-        </button>
-        <button type="button" id="period-yearly" class="px-3 py-1.5 text-sm font-medium rounded-md transition-colors duration-200 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
-          Yearly
-        </button>
-      </div>
-    </div>
-    <div class="relative h-full mb-5">
-      <canvas id="registered-users"></canvas>
     </div>
   </div>
   <div class="flex flex-col col-span-1 md:col-span-2 lg:col-span-4 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
@@ -194,9 +190,18 @@
     };
 
     const colors = {
-      success: { bg: 'bg-green-100 dark:bg-green-800', text: 'text-green-500 dark:text-green-200' },
-      error: { bg: 'bg-red-100 dark:bg-red-800', text: 'text-red-500 dark:text-red-200' },
-      warning: { bg: 'bg-orange-100 dark:bg-orange-700', text: 'text-orange-500 dark:text-orange-200' }
+      success: {
+        bg: 'bg-green-100 dark:bg-green-800',
+        text: 'text-green-500 dark:text-green-200'
+      },
+      error: {
+        bg: 'bg-red-100 dark:bg-red-800',
+        text: 'text-red-500 dark:text-red-200'
+      },
+      warning: {
+        bg: 'bg-orange-100 dark:bg-orange-700',
+        text: 'text-orange-500 dark:text-orange-200'
+      }
     };
 
     const toast = document.createElement('div');
@@ -304,6 +309,17 @@
       showToast('Unable to load book count.', 'warning');
     }
   }
+  // Fetch the total count of pending overdues (unpaid penalties)
+  async function fetchPendingOverduesCount() {
+    try {
+      const response = await fetch("{{ route('fetch-pending-overdues-count') }}");
+      const data = await handleApiResponse(response, 'pending overdues count');
+      document.getElementById('pending-overdues-count').textContent = data.unpaid_penalties_count;
+    } catch (error) {
+      document.getElementById('pending-overdues-count').textContent = '...';
+      showToast('Unable to load pending overdues count.', 'warning');
+    }
+  }
   // Fetch the transaction history
   async function fetchTransactionHistory() {
     try {
@@ -330,59 +346,6 @@
       YearlyBooksDoughnutGraph(labels, counts);
     } catch (error) {
       showToast('Unable to load yearly acquired books chart.', 'warning');
-    }
-  }
-  // Track current period for registered users chart
-  let currentRegisteredUsersPeriod = 'monthly';
-
-  // Fetch the registered users growth (monthly or yearly)
-  async function fetchRegisteredUsers(period = 'monthly') {
-    try {
-      currentRegisteredUsersPeriod = period;
-      const url = `{{ route('fetch-registered-users') }}?period=${period}`;
-      const response = await fetch(url);
-      const data = await handleApiResponse(response, 'registered users data');
-      const labels = data.labels || [];
-      const students = data.students || [];
-      const employees = data.employees || [];
-      const visitors = data.visitors || [];
-      RegisteredUsersLineGraph(labels, students, employees, visitors);
-    } catch (error) {
-      showToast('Unable to load registered users chart.', 'warning');
-    }
-  }
-
-  // Toggle button handlers for registered users period
-  function setupRegisteredUsersPeriodToggle() {
-    const monthlyBtn = document.getElementById('period-monthly');
-    const yearlyBtn = document.getElementById('period-yearly');
-
-    const activeClasses = ['bg-white', 'dark:bg-gray-800', 'text-primary-600', 'dark:text-gray-50', 'shadow-sm'];
-    const inactiveClasses = ['text-gray-500', 'dark:text-gray-400', 'hover:text-gray-700', 'dark:hover:text-gray-300'];
-
-    function setActiveButton(activeBtn, inactiveBtn) {
-      // Remove all toggle classes first
-      activeBtn.classList.remove(...inactiveClasses);
-      inactiveBtn.classList.remove(...activeClasses);
-      // Add appropriate classes
-      activeBtn.classList.add(...activeClasses);
-      inactiveBtn.classList.add(...inactiveClasses);
-    }
-
-    if (monthlyBtn && yearlyBtn) {
-      monthlyBtn.addEventListener('click', () => {
-        if (currentRegisteredUsersPeriod !== 'monthly') {
-          setActiveButton(monthlyBtn, yearlyBtn);
-          fetchRegisteredUsers('monthly');
-        }
-      });
-
-      yearlyBtn.addEventListener('click', () => {
-        if (currentRegisteredUsersPeriod !== 'yearly') {
-          setActiveButton(yearlyBtn, monthlyBtn);
-          fetchRegisteredUsers('yearly');
-        }
-      });
     }
   }
   async function topVisitedStudents(start, end) {
@@ -611,7 +574,6 @@
   let transactionHistoryChart = null;
   let monthlyLogsChart = null;
   let yearlyBooksChart = null;
-  let registeredUsersChart = null;
   let topBorrowedBooksChart = null;
   let topBorrowedCategoriesChart = null;
   // Create a line graph for monthly logs
@@ -790,80 +752,6 @@
       }
     });
   }
-  // Create a line graph for registered users monthly growth
-  function RegisteredUsersLineGraph(labels, students, employees, visitors) {
-    const ctx = document.getElementById('registered-users').getContext('2d');
-    // Check if the chart already exists
-    if (registeredUsersChart) {
-      registeredUsersChart.destroy(); // 👈 Destroy old chart if exists
-    }
-    registeredUsersChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: labels,
-        datasets: [
-          {
-            label: 'Students',
-            data: students,
-            borderColor: 'rgba(75, 192, 192, 1)',
-            backgroundColor: 'rgba(75, 192, 192, 0.2)',
-            fill: false,
-            tension: 0.3,
-            borderWidth: 2,
-          },
-          {
-            label: 'Faculty & Staff',
-            data: employees,
-            borderColor: 'rgba(54, 162, 235, 1)',
-            backgroundColor: 'rgba(54, 162, 235, 0.2)',
-            fill: false,
-            tension: 0.3,
-            borderWidth: 2,
-          },
-          {
-            label: 'Visitors',
-            data: visitors,
-            borderColor: 'rgba(255, 182, 115, 1)',
-            backgroundColor: 'rgba(255, 182, 115, 0.2)',
-            fill: false,
-            tension: 0.3,
-            borderWidth: 2,
-          }
-        ]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        plugins: {
-          datalabels: false,
-          legend: {
-            labels: {
-              color: chartColors.fontColor,
-            },
-          },
-        },
-        scales: {
-          x: {
-            ticks: {
-              color: chartColors.fontColor,
-            },
-            grid: {
-              color: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-            },
-          },
-          y: {
-            beginAtZero: true,
-            ticks: {
-              color: chartColors.fontColor,
-            },
-            grid: {
-              color: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
-            },
-          },
-        },
-      },
-    });
-  }
   // Fetch top borrowed books
   function topBorrowedBooks(labels, counts) {
     const ctx = document.getElementById('top-borrowed-books').getContext('2d');
@@ -971,9 +859,9 @@
       fetchActiveCount(),
       fetchMonthlyCount(),
       fetchBookCount(),
+      fetchPendingOverduesCount(),
       fetchTransactionHistory(),
       fetchYearlyAquiredBooks(),
-      fetchRegisteredUsers(currentRegisteredUsersPeriod),
       topVisitedStudents(),
       topBorrowedStudents(),
       fetchTopBorrowedBooks(),
@@ -1027,10 +915,9 @@
   document.addEventListener('DOMContentLoaded', fetchActiveCount);
   document.addEventListener('DOMContentLoaded', fetchMonthlyCount);
   document.addEventListener('DOMContentLoaded', fetchBookCount);
+  document.addEventListener('DOMContentLoaded', fetchPendingOverduesCount);
   document.addEventListener('DOMContentLoaded', fetchTransactionHistory);
   document.addEventListener('DOMContentLoaded', fetchYearlyAquiredBooks);
-  document.addEventListener('DOMContentLoaded', () => fetchRegisteredUsers('monthly'));
-  document.addEventListener('DOMContentLoaded', setupRegisteredUsersPeriodToggle);
   document.addEventListener('DOMContentLoaded', () => topVisitedStudents());
   document.addEventListener('DOMContentLoaded', () => topBorrowedStudents());
   document.addEventListener('DOMContentLoaded', fetchTopBorrowedBooks);
