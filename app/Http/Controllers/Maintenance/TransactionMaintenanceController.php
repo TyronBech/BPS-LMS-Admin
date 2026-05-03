@@ -92,7 +92,7 @@ class TransactionMaintenanceController extends Controller
         } catch (Exception $e) {
             $cover = null;
         }
-        return view('maintenance.transactions.view', compact('transaction' , 'cover', 'mimeType'));
+        return view('maintenance.transactions.view', compact('transaction', 'cover', 'mimeType'));
     }
     /**
      * Retrieve a single transaction from the database based on the given id.
@@ -141,6 +141,19 @@ class TransactionMaintenanceController extends Controller
             'timestamp' => now(),
         ]);
 
+        if ($request->input('penalty_status') === 'Discounted') {
+            $discountInput = $request->input('discount');
+            if ($discountInput !== null && $discountInput !== '' && is_numeric($discountInput)) {
+                $normalizedDiscount = (float) $discountInput;
+                if ($normalizedDiscount > 1) {
+                    $normalizedDiscount /= 100;
+                }
+                $request->merge([
+                    'discount' => round(max(0, min($normalizedDiscount, 1)), 2),
+                ]);
+            }
+        }
+
         $validator = Validator::make($request->all(), [
             'due_date'          => 'required|date',
             'pickup_date'       => 'nullable|date',
@@ -149,6 +162,7 @@ class TransactionMaintenanceController extends Controller
             'book_condition'    => 'nullable|in:' . implode(',', $this->extract_enums((new Book())->getTable(), 'condition_status')),
             'penalty_status'    => 'nullable|in:' . implode(',', $this->extract_enums((new Transaction())->getTable(), 'penalty_status')),
             'penalty_total'     => 'nullable|numeric|min:0',
+            'discount'          => 'required_if:penalty_status,Discounted|nullable|numeric|between:0,1',
             'remarks'           => 'nullable|string|max:2048',
         ]);
         if ($validator->fails()) {
@@ -161,7 +175,7 @@ class TransactionMaintenanceController extends Controller
             return redirect()->back()->with('toast-warning', $validator->errors()->first());
         }
         DB::beginTransaction();
-        try{
+        try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $transaction = Transaction::find($request->input('edit_transaction_id'));
             if (!$transaction) {
@@ -208,6 +222,14 @@ class TransactionMaintenanceController extends Controller
                 }
             }
 
+            $normalizedDiscount = null;
+            if ($request->input('penalty_status') === 'Discounted') {
+                $discountInput = $request->input('discount');
+                if ($discountInput !== null && $discountInput !== '') {
+                    $normalizedDiscount = round(max(0, min((float) $discountInput, 1)), 2);
+                }
+            }
+
             $transaction->update([
                 'due_date'          => $dueDate->format('Y-m-d'),
                 'pickup_date'       => $pickupDate ? $pickupDate->format('Y-m-d') : null,
@@ -215,10 +237,11 @@ class TransactionMaintenanceController extends Controller
                 'status'            => $request->input('status'),
                 'book_condition'    => $request->input('book_condition') ?? null,
                 'penalty_total'     => $request->input('penalty_total') ?? 0,
+                'discount'          => $normalizedDiscount,
                 'penalty_status'    => $request->input('penalty_status') ?? 'No Penalty',
                 'remarks'           => $request->input('remarks') ?? null,
             ]);
-            if($request->input('transaction_type') == 'Returned' && $request->input('status') == 'Completed') {
+            if ($request->input('transaction_type') == 'Returned' && $request->input('status') == 'Completed') {
                 Log::debug('Transaction Maintenance: Updating book availability and return date', [
                     'user_id' => Auth::guard('admin')->id(),
                     'transaction_id' => $request->input('edit_transaction_id'),
@@ -232,7 +255,7 @@ class TransactionMaintenanceController extends Controller
                     'return_date' => now()->format('Y-m-d'),
                 ]);
             }
-            if(!$transaction->book) {
+            if (!$transaction->book) {
                 Log::warning('Transaction Maintenance: Update failed - Book not found', [
                     'user_id' => Auth::guard('admin')->id(),
                     'transaction_id' => $request->input('edit_transaction_id'),
@@ -242,7 +265,7 @@ class TransactionMaintenanceController extends Controller
                 DB::rollBack();
                 return redirect()->back()->with('toast-error', 'Associated book not found');
             }
-        } catch(\Illuminate\Database\QueryException $e){
+        } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             Log::error('Transaction Maintenance: Database error during update', [
                 'user_id' => Auth::guard('admin')->id(),
@@ -276,7 +299,7 @@ class TransactionMaintenanceController extends Controller
     private function getBookImage($title = null, $author = null, $isbn = null)
     {
         $apiKey = config('services.google_books.api_key');
-        
+
         // Check if API key exists
         if (empty($apiKey)) {
             Log::warning('Google Books API key is not configured', ['timestamp' => now()]);
@@ -290,16 +313,16 @@ class TransactionMaintenanceController extends Controller
 
         // Build query parts
         $queryParts = [];
-        
+
         if (!empty($isbn)) {
             // ISBN is the most accurate, prioritize it
             $queryParts[] = "isbn:" . urlencode(trim($isbn));
         }
-        
+
         if (!empty($title)) {
             $queryParts[] = "intitle:" . urlencode(trim($title));
         }
-        
+
         if (!empty($author)) {
             $queryParts[] = "inauthor:" . urlencode(trim($author));
         }
@@ -315,7 +338,7 @@ class TransactionMaintenanceController extends Controller
             $options = [
                 'timeout' => 10, // 10 second timeout
             ];
-            
+
             if (file_exists($caPath)) {
                 $options['verify'] = $caPath;
             }
@@ -347,7 +370,7 @@ class TransactionMaintenanceController extends Controller
 
             // Extract thumbnail URL
             $thumbnail = $data['items'][0]['volumeInfo']['imageLinks']['thumbnail'] ?? null;
-            
+
             if (empty($thumbnail)) {
                 Log::info('Book found but no thumbnail available', [
                     'title' => $title,
@@ -360,7 +383,6 @@ class TransactionMaintenanceController extends Controller
 
             // Force HTTPS and return
             return str_replace('http://', 'https://', $thumbnail);
-
         } catch (ConnectionException $e) {
             Log::error('Connection error while fetching book image', [
                 'message' => $e->getMessage(),

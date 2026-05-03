@@ -73,7 +73,7 @@
         </button>
       </div>
       <!-- Modal body -->
-      <form class="p-4 md:p-5" action="{{ route('maintenance.update-circulation') }}" method="POST">
+      <form id="edit-transaction-form" class="p-4 md:p-5" action="{{ route('maintenance.update-circulation') }}" method="POST">
         @csrf
         @method('PUT')
         <div class="grid gap-6 mb-6 md:grid-cols-2">
@@ -142,9 +142,15 @@
             @enderror
           </div>
           <div>
-            <label for="penalty_total" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Penalty Total:</label>
-            <input type="number" id="penalty_total" name="penalty_total" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Amount" min="0" max="1000" required />
+            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Penalty Total & Discount:</label>
+            <div class="flex items-center gap-2">
+              <input type="number" id="penalty_total" name="penalty_total" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-1/2 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="Amount" min="0" max="100000" required />
+              <input type="number" id="discount" name="discount" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 w-2/4 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white hidden" placeholder="Discount %" min="0" max="100" step="0.01" />
+            </div>
             @error('penalty_total')
+            <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+            @enderror
+            @error('discount')
             <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
             @enderror
           </div>
@@ -181,7 +187,8 @@
     const editButtons = document.querySelectorAll('.editBtn');
     const transactionTypeSelect = document.getElementById('transaction_type');
     const statusSelect = document.getElementById('status');
-    
+    const editTransactionForm = document.getElementById('edit-transaction-form');
+
     // Define status options based on transaction type
     const statusOptions = {
       'Borrowed': ['Borrowed', 'Overdue', 'Renew'],
@@ -193,10 +200,10 @@
     function updateStatusOptions(transactionType, currentStatus = '') {
       // Clear existing options
       statusSelect.innerHTML = '<option selected disabled>Choose a status</option>';
-      
+
       // Get available statuses for the selected transaction type
       const availableStatuses = statusOptions[transactionType] || [];
-      
+
       // Populate status dropdown
       availableStatuses.forEach(status => {
         const option = document.createElement('option');
@@ -234,12 +241,51 @@
             document.getElementById('pickup-datepicker').value = transaction.pickup_deadline ? new Date(transaction.pickup_deadline).toLocaleDateString('en-CA') : '';
             document.getElementById('transaction_type').value = transaction.transaction_type;
             document.getElementById('penalty_status').value = transaction.penalty_status || 'No Penalty';
-            
+
             // Update status options based on transaction type, then set the current status
             updateStatusOptions(transaction.transaction_type, transaction.status);
-            
+
             document.getElementById('book_condition').value = transaction.book_condition || '';
             document.getElementById('penalty_total').value = transaction.penalty_total || '';
+            // discount: show only when penalty_status is 'Discounted'
+            const discountEl = document.getElementById('discount');
+            if (discountEl) {
+              const rawDiscount = Number(transaction.discount ?? '');
+              const normalizedDiscount = Number.isFinite(rawDiscount)
+                ? (rawDiscount > 1 ? rawDiscount / 100 : rawDiscount)
+                : null;
+              const displayDiscount = normalizedDiscount === null
+                ? null
+                : (Math.max(0, Math.min(normalizedDiscount, 1)) * 100);
+              discountEl.value = displayDiscount === null ? '' : Number(displayDiscount.toFixed(2));
+              if ((transaction.penalty_status || '') === 'Discounted') {
+                discountEl.classList.remove('hidden');
+                discountEl.required = true;
+              } else {
+                discountEl.classList.add('hidden');
+                discountEl.required = false;
+                discountEl.value = '';
+              }
+            }
+
+            // when penalty_status changes, toggle discount field
+            const penaltyStatusEl = document.getElementById('penalty_status');
+            if (penaltyStatusEl) {
+              penaltyStatusEl.addEventListener('change', function() {
+                if (this.value === 'Discounted') {
+                  if (discountEl) {
+                    discountEl.classList.remove('hidden');
+                    discountEl.required = true;
+                  }
+                } else {
+                  if (discountEl) {
+                    discountEl.classList.add('hidden');
+                    discountEl.required = false;
+                    discountEl.value = '';
+                  }
+                }
+              });
+            }
             document.getElementById('remarks').value = transaction.remarks || '';
           },
           error: function(xhr, status, error) {
@@ -248,5 +294,23 @@
         });
       });
     });
+
+    if (editTransactionForm) {
+      editTransactionForm.addEventListener('submit', function() {
+        const penaltyStatusEl = document.getElementById('penalty_status');
+        const discountEl = document.getElementById('discount');
+        if (!discountEl || !penaltyStatusEl || penaltyStatusEl.value !== 'Discounted') {
+          return;
+        }
+
+        const uiDiscount = Number(discountEl.value);
+        if (!Number.isFinite(uiDiscount)) {
+          return;
+        }
+
+        const normalizedDiscount = Math.max(0, Math.min(uiDiscount, 100)) / 100;
+        discountEl.value = normalizedDiscount.toFixed(2);
+      });
+    }
   });
 </script>
