@@ -320,14 +320,14 @@ class UsersMaintenanceController extends Controller
         ]);
 
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|min:10|regex:/^[0-9]+$/u',
+            'rfid'          => 'required|string|min:10|regex:/^[A-Za-z0-9]+$/u',
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
             'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'id_number'     => 'required|string|min:12|regex:/^[0-9]+$/u',
+            'id_number'     => 'required|string|min:12|regex:/^[A-Za-z0-9]+$/u',
             'level'         => 'required|numeric|min:7|max:12',
             'section'       => 'required|max:50',
             'email'         => 'required|string|email|unique:' . $users->getTable() . ',email',
@@ -415,14 +415,14 @@ class UsersMaintenanceController extends Controller
         ]);
 
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|min:10|regex:/^[0-9]+$/u',
+            'rfid'          => 'required|string|min:10|regex:/^[A-Za-z0-9]+$/u',
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'suffix'        => 'nullable|string|max:10||regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
             'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'employee_id'   => 'required|string|min:6|max:12|regex:/^[0-9]+$/u',
+            'employee_id'   => 'required|string|min:6|max:12|regex:/^[A-Za-z0-9]+$/u',
             'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
             'email'         => 'required|string|email|unique:' . $users->getTable() . ',email',
         ],
@@ -599,13 +599,13 @@ class UsersMaintenanceController extends Controller
         ]);
 
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|min:10|regex:/^[0-9]+$/u',
+            'rfid'          => 'required|string|min:10|regex:/^[A-Za-z0-9]+$/u',
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
-            'id_number'     => 'required|string|min:12|regex:/^[0-9]+$/u',
+            'id_number'     => 'required|string|min:12|regex:/^[A-Za-z0-9]+$/u',
             'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'level'         => 'required|numeric|min:7|max:12',
             'section'       => 'required|max:50',
@@ -692,14 +692,14 @@ class UsersMaintenanceController extends Controller
         ]);
 
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|min:10|regex:/^[0-9]+$/u',
+            'rfid'          => 'required|string|min:10|regex:/^[A-Za-z0-9]+$/u',
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
             'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'employee_id'   => 'required|string|min:6|max:12|regex:/^[0-9]+$/u',
+            'employee_id'   => 'required|string|min:6|max:12|regex:/^[A-Za-z0-9]+$/u',
             'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
             'email'         => 'required|string|email',
         ]);
