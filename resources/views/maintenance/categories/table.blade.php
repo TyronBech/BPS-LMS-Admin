@@ -2,7 +2,7 @@
 <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
   <form method="GET" class="flex items-center m-2">
     <label for="perPage" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Show</label>
-    <input type="number" name="perPage" id="perPage" min="1" max="500" onchange="this.form.submit()" value="{{ old('perPage', $perPage) }}" class="border border-gray-300 text-xs rounded-lg focus:ring-primary-400 focus:border-primary-400 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" >
+    <input type="number" name="perPage" id="perPage" min="1" max="500" onchange="this.form.submit()" value="{{ old('perPage', $perPage) }}" class="border border-gray-300 text-xs rounded-lg focus:ring-primary-400 focus:border-primary-400 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
     <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">entries per page</span>
   </form>
   <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
@@ -11,6 +11,7 @@
         <th scope="col" class="px-6 py-3">Name</th>
         <th scope="col" class="px-6 py-3 hidden sm:table-cell">Legend</th>
         <th scope="col" class="px-6 py-3 hidden md:table-cell">Duration of Borrow (Days)</th>
+        <th scope="col" class="px-6 py-3">Borrowable</th>
         <th scope="col" class="px-6 py-3">Actions</th>
       </tr>
     </thead>
@@ -22,7 +23,14 @@
           <div class="font-normal text-gray-500 sm:hidden">{{ $item->legend }}</div>
         </th>
         <td class="px-6 py-4 hidden sm:table-cell">{{ $item->legend }}</td>
-        <td class="px-6 py-4 hidden md:table-cell">{{ $item->borrow_duration_days ?? 'None' }}</td>
+        <td class="px-6 py-4 hidden md:table-cell">{{ (int) $item->borrow_duration_days === 0 ? 'Cannot be borrowed' : $item->borrow_duration_days }}</td>
+        <td class="px-6 py-4">
+          @if((int) $item->borrow_duration_days === 0)
+          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-800">Not Borrowable</span>
+          @else
+          <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">Borrowable</span>
+          @endif
+        </td>
         <td class="px-6 py-4">
           <div class="flex items-center space-x-2">
             @can(PermissionsEnum::EDIT_CATEGORIES)
@@ -36,7 +44,7 @@
       </tr>
       @empty
       <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-        <td colspan="4" class="px-6 py-4 text-center">No categories found.</td>
+        <td colspan="5" class="px-6 py-4 text-center">No categories found.</td>
       </tr>
       @endforelse
     </tbody>
@@ -76,9 +84,25 @@
             <label for="edit_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name:</label>
             <input type="text" name="name" id="edit_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Filipino" required />
           </div>
-          <div>
+          <div class="flex w-full items-center space-x-4">
+            <div class="flex items-center space-x-2">
+              <input type="hidden" name="can_borrow_edit" id="can_borrow_edit_input" value="1">
+              <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="can_borrow_edit_switch" class="sr-only" />
+                <div id="can_borrow_edit_track" class="w-11 h-6 bg-gray-200 rounded-full relative transition-colors">
+                  <span id="can_borrow_edit_knob" class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform"></span>
+                </div>
+              </label>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">Can Be Borrowed</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Uncheck to make this category not borrowable.</p>
+            </div>
+          </div>
+
+          <div id="borrow_duration_days_edit_wrapper">
             <label for="borrow_duration_days_edit" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Duration of Borrow (Days):</label>
-            <input type="number" id="borrow_duration_days_edit" name="borrow_duration_days_edit" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 5" min="0" required />
+            <input type="number" id="borrow_duration_days_edit" name="borrow_duration_days_edit" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 5" min="1" max="999" required />
           </div>
         </div>
         <!-- Modal footer -->
@@ -125,16 +149,54 @@
       id: document.getElementById('edit_category_id'),
       legend: document.getElementById('edit_legend'),
       name: document.getElementById('edit_name'),
-      duration: document.getElementById('borrow_duration_days_edit')
+      duration: document.getElementById('borrow_duration_days_edit'),
+      hiddenInput: document.getElementById('can_borrow_edit_input'),
+      switchEl: document.getElementById('can_borrow_edit_switch'),
+      track: document.getElementById('can_borrow_edit_track'),
+      knob: document.getElementById('can_borrow_edit_knob'),
+      durationWrapper: document.getElementById('borrow_duration_days_edit_wrapper')
     };
+
+    const updateEditSwitchUI = () => {
+      if (!editModal.hiddenInput || !editModal.switchEl || !editModal.track || !editModal.knob) return;
+      const borrowable = editModal.hiddenInput.value === '1';
+      editModal.switchEl.checked = borrowable;
+      if (editModal.durationWrapper) editModal.durationWrapper.classList.toggle('hidden', !borrowable);
+      if (editModal.duration) editModal.duration.required = borrowable;
+      if (!borrowable && editModal.duration) editModal.duration.value = 0;
+      else if (borrowable && editModal.duration && (!editModal.duration.value || Number(editModal.duration.value) < 1)) editModal.duration.value = 1;
+
+      if (borrowable) {
+        editModal.track.classList.remove('bg-gray-200');
+        editModal.track.classList.add('bg-primary-500');
+        editModal.knob.style.transform = 'translateX(20px)';
+      } else {
+        editModal.track.classList.remove('bg-primary-500');
+        editModal.track.classList.add('bg-gray-200');
+        editModal.knob.style.transform = 'translateX(0)';
+      }
+    };
+
+    if (editModal.switchEl) {
+      editModal.switchEl.addEventListener('change', function() {
+        if (!editModal.hiddenInput) return;
+        editModal.hiddenInput.value = editModal.switchEl.checked ? '1' : '0';
+        updateEditSwitchUI();
+      });
+    }
 
     editButtons.forEach(btn => {
       btn.addEventListener('click', function() {
         const category = JSON.parse(this.dataset.category);
+        const categoryDuration = Number(category.borrow_duration_days ?? 0);
+        const isBorrowable = categoryDuration > 0;
+
         editModal.id.value = category.id;
         editModal.legend.value = category.legend;
         editModal.name.value = category.name;
-        editModal.duration.value = category.borrow_duration_days;
+        if (editModal.hiddenInput) editModal.hiddenInput.value = isBorrowable ? '1' : '0';
+        if (editModal.duration) editModal.duration.value = isBorrowable ? categoryDuration : 0;
+        updateEditSwitchUI();
       });
     });
 

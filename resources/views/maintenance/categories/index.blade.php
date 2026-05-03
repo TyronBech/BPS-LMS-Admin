@@ -49,9 +49,24 @@
             <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
             @enderror
           </div>
-          <div>
+          <div class="flex w-full items-center space-x-4">
+            <div class="flex items-center space-x-2">
+              <input type="hidden" name="can_borrow" id="can_borrow_add_input" value="{{ old('can_borrow', '1') }}">
+              <label class="inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="can_borrow_add_switch" class="sr-only" />
+                <div id="can_borrow_add_track" class="w-11 h-6 bg-gray-200 rounded-full relative transition-colors">
+                  <span id="can_borrow_add_knob" class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full shadow transition-transform"></span>
+                </div>
+              </label>
+            </div>
+            <div>
+              <p class="text-sm font-medium text-gray-900 dark:text-white">Can Be Borrowed</p>
+              <p class="text-xs text-gray-500 dark:text-gray-400">Toggle to mark this category borrowable or not.</p>
+            </div>
+          </div>
+          <div id="borrow_duration_days_add_wrapper">
             <label for="borrow_duration_days_add" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Duration of Borrow (Days):</label>
-            <input type="number" id="borrow_duration_days_add" name="borrow_duration_days_add" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 5" min="0" max="1000" value="{{ old('borrow_duration_days_add') }}" required>
+            <input type="number" id="borrow_duration_days_add" name="borrow_duration_days_add" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 5" min="1" max="999" value="{{ old('borrow_duration_days_add', 1) }}" required>
             @error('borrow_duration_days_add')
             <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
             @enderror
@@ -65,5 +80,43 @@
       </form>
     </div>
   </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const switchEl = document.getElementById('can_borrow_add_switch');
+      const hiddenInput = document.getElementById('can_borrow_add_input');
+      const track = document.getElementById('can_borrow_add_track');
+      const knob = document.getElementById('can_borrow_add_knob');
+      const wrapper = document.getElementById('borrow_duration_days_add_wrapper');
+      const input = document.getElementById('borrow_duration_days_add');
+
+      if (!switchEl || !hiddenInput || !track || !knob || !wrapper || !input) return;
+
+      const updateSwitchUI = () => {
+        const borrowable = hiddenInput.value === '1';
+        switchEl.checked = borrowable;
+        wrapper.classList.toggle('hidden', !borrowable);
+        input.required = borrowable;
+        if (!borrowable) input.value = 0;
+        else if (!input.value || Number(input.value) < 1) input.value = 1;
+
+        if (borrowable) {
+          track.classList.remove('bg-gray-200');
+          track.classList.add('bg-primary-500');
+          knob.style.transform = 'translateX(20px)';
+        } else {
+          track.classList.remove('bg-primary-500');
+          track.classList.add('bg-gray-200');
+          knob.style.transform = 'translateX(0)';
+        }
+      };
+
+      switchEl.addEventListener('change', function() {
+        hiddenInput.value = switchEl.checked ? '1' : '0';
+        updateSwitchUI();
+      });
+
+      updateSwitchUI();
+    });
+  </script>
 </div>
 @endsection

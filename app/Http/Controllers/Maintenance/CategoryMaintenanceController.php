@@ -81,9 +81,10 @@ class CategoryMaintenanceController extends Controller
         $validator = Validator::make($request->all(), [
             'name'                      => 'required|string|max:50',
             'legend'                    => 'required|string|max:255',
-            'borrow_duration_days_add'  => 'required|integer|min:0|max:999',
+            'can_borrow'                => 'sometimes|boolean',
+            'borrow_duration_days_add'  => 'required_if:can_borrow,1|nullable|integer|min:1|max:999',
         ]);
-        if($validator->fails()){
+        if ($validator->fails()) {
             Log::warning('Category Maintenance: Creation validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
@@ -92,7 +93,7 @@ class CategoryMaintenanceController extends Controller
             ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
-        if(Category::where('name', $request->name)->exists()) {
+        if (Category::where('name', $request->name)->exists()) {
             Log::warning('Category Maintenance: Creation failed - Category already exists', [
                 'user_id' => Auth::guard('admin')->id(),
                 'category_name' => $request->name,
@@ -102,14 +103,16 @@ class CategoryMaintenanceController extends Controller
             return redirect()->route('maintenance.categories')->with('toast-warning', 'Category already exists.')->withInput();
         }
         DB::beginTransaction();
-        try{
+        try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
+            $borrowDurationDays = $request->boolean('can_borrow') ? (int) $request->input('borrow_duration_days_add') : 0;
+
             Category::create([
                 'name'                  => $request->input('name'),
                 'legend'                => $request->input('legend'),
-                'borrow_duration_days'  => $request->input('borrow_duration_days_add'),
+                'borrow_duration_days'  => $borrowDurationDays,
             ]);
-        } catch(\Illuminate\Database\QueryException $e){
+        } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             Log::error('Category Maintenance: Database error during creation', [
                 'user_id' => Auth::guard('admin')->id(),
@@ -126,7 +129,7 @@ class CategoryMaintenanceController extends Controller
             'category_name' => $request->input('name'),
             'timestamp' => now(),
         ]);
-        return redirect()->route('maintenance.categories')->with('toast-success', 'Category updated successfully.');
+        return redirect()->route('maintenance.categories')->with('toast-success', 'Category created successfully.');
     }
     /**
      * This function is used to update a category in the database.
@@ -153,9 +156,10 @@ class CategoryMaintenanceController extends Controller
         $validator = Validator::make($request->all(), [
             'name'                      => 'required|string|max:50',
             'legend'                    => 'required|string|max:255',
-            'borrow_duration_days_edit' => 'required|integer|min:0|max:999',
+            'can_borrow_edit'           => 'sometimes|boolean',
+            'borrow_duration_days_edit' => 'required_if:can_borrow_edit,1|nullable|integer|min:1|max:999',
         ]);
-        if($validator->fails()){
+        if ($validator->fails()) {
             Log::warning('Category Maintenance: Update validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
@@ -165,14 +169,16 @@ class CategoryMaintenanceController extends Controller
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
         DB::beginTransaction();
-        try{
+        try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $category = Category::findOrFail($request->input('edit_category_id'));
+            $borrowDurationDays = $request->boolean('can_borrow_edit') ? (int) $request->input('borrow_duration_days_edit') : 0;
+
             $category->name                 = $request->input('name');
             $category->legend               = $request->input('legend');
-            $category->borrow_duration_days = $request->input('borrow_duration_days_edit');
+            $category->borrow_duration_days = $borrowDurationDays;
             $category->save();
-        } catch(\Illuminate\Database\QueryException $e){
+        } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             Log::error('Category Maintenance: Database error during update', [
                 'user_id' => Auth::guard('admin')->id(),
@@ -180,7 +186,7 @@ class CategoryMaintenanceController extends Controller
                 'error_trace' => $e->getTraceAsString(),
                 'timestamp' => now(),
             ]);
-            if($e->getCode() == 23000){
+            if ($e->getCode() == 23000) {
                 return redirect()->back()->with('toast-warning', 'Category legend or name already exists.')->withInput();
             }
             return redirect()->back()->with('toast-error', 'Error occurred while updating category.')->withInput();
@@ -215,10 +221,10 @@ class CategoryMaintenanceController extends Controller
         ]);
 
         DB::beginTransaction();
-        try{
+        try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $hasChildren = Book::where('category_id', $request->input('delete_category_id'))->exists();
-            if($hasChildren){
+            if ($hasChildren) {
                 DB::rollBack();
                 Log::warning('Category Maintenance: Deletion failed - Category has associated books', [
                     'user_id' => Auth::guard('admin')->id(),
@@ -229,7 +235,7 @@ class CategoryMaintenanceController extends Controller
             }
             $category = Category::findOrFail($request->input('delete_category_id'));
             $category->delete();
-        } catch(\Illuminate\Database\QueryException $e){
+        } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             Log::error('Category Maintenance: Database error during deletion', [
                 'user_id' => Auth::guard('admin')->id(),
