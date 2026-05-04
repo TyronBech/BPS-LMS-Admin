@@ -14,10 +14,11 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use Carbon\Carbon;
 use App\Models\Transaction;
 use App\Models\UISetting;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class PenaltiesController extends Controller
 {
@@ -64,7 +65,24 @@ class PenaltiesController extends Controller
         }
 
         $data = $this->generateData($request, new Transaction(), false);
-        $summary = $this->generateSummary($request, new Transaction());
+
+        // Build a fresh full collection (unpaginated) from the same filters so summary reflects all rows
+        try {
+            $fullQuery = $this->buildPenaltyQuery($request, new Transaction());
+            $fullQuery->orderBy('created_at', 'desc')->orderBy('id', 'desc');
+            $full = $fullQuery->get();
+            $full->transform(function ($item) {
+                return $this->formatPenaltyRow($item);
+            });
+            $full->each(function ($item) {
+                $item->makeHidden(['id', 'user_id', 'book_id', 'penalties']);
+            });
+        } catch (\Throwable $e) {
+            Log::warning('Penalties Report: failed to build full collection for summary in index', ['error' => $e->getMessage()]);
+            $full = ($data instanceof LengthAwarePaginator) ? $data->getCollection() : $data;
+        }
+
+        $summary = $this->calculateSummary($full);
         return view('report.penalties.index', compact('data', 'summary', 'fromInputDate', 'toInputDate', 'search', 'perPage', 'penaltyStatus', 'penaltyStatuses'));
     }
     /**
@@ -119,8 +137,9 @@ class PenaltiesController extends Controller
                 'timestamp' => now()
             ]);
             $data    = $this->generateData($request, new Transaction(), true);
-            $summary = $this->generateSummary($request, new Transaction());
-            $this->generatePDF($data, $summary);
+            $reportingPeriod = $this->buildReportingPeriodLabel($data);
+            $summary = $this->generateSummaryFromDataset($data);
+            $this->generatePDF($data, $summary, $reportingPeriod);
             return redirect()->route('report.penalties')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {
             Log::info('Penalties Report: Generating Excel export', [
@@ -128,12 +147,30 @@ class PenaltiesController extends Controller
                 'timestamp' => now()
             ]);
             $data    = $this->generateData($request, new Transaction(), true);
-            $summary = $this->generateSummary($request, new Transaction());
-            $this->exportExcel($data, $summary);
+            $reportingPeriod = $this->buildReportingPeriodLabel($data);
+            $summary = $this->generateSummaryFromDataset($data);
+            $this->exportExcel($data, $summary, $reportingPeriod);
             return redirect()->route('report.penalties')->with('toast-success', 'Successfully exported to Excel');
         }
         $data = $this->generateData($request, new Transaction(), false);
-        $summary = $this->generateSummary($request, new Transaction());
+
+        // Build a fresh full collection (unpaginated) from the same filters so summary reflects all rows
+        try {
+            $fullQuery = $this->buildPenaltyQuery($request, new Transaction());
+            $fullQuery->orderBy('created_at', 'desc')->orderBy('id', 'desc');
+            $full = $fullQuery->get();
+            $full->transform(function ($item) {
+                return $this->formatPenaltyRow($item);
+            });
+            $full->each(function ($item) {
+                $item->makeHidden(['id', 'user_id', 'book_id', 'penalties']);
+            });
+        } catch (\Throwable $e) {
+            Log::warning('Penalties Report: failed to build full collection for summary in search', ['error' => $e->getMessage()]);
+            $full = ($data instanceof LengthAwarePaginator) ? $data->getCollection() : $data;
+        }
+
+        $summary = $this->calculateSummary($full);
         return view('report.penalties.index', compact('data', 'summary', 'search', 'fromInputDate', 'toInputDate', 'perPage', 'penaltyStatus', 'penaltyStatuses'));
     }
     /**
@@ -145,7 +182,7 @@ class PenaltiesController extends Controller
      *
      * @param \Illuminate\Database\Eloquent\Collection $data The data to be included in the report.
      */
-    private function generatePDF(Collection $data, array $summary)
+    private function generatePDF(Collection $data, array $summary, ?string $reportingPeriod = null)
     {
         ini_set('memory_limit', '2048M');
         ini_set('max_execution_time', 300);
@@ -160,6 +197,7 @@ class PenaltiesController extends Controller
             'date'          => "as of " . date('F j, Y'),
             'data'          => $data,
             'summary'       => $summary,
+            'reporting_period' => $reportingPeriod,
             'totalCount'    => $data->count(),
         ];
         $options = new Options();
@@ -180,7 +218,7 @@ class PenaltiesController extends Controller
      *
      * @return void
      */
-    private function exportExcel(Collection $data, array $summary)
+    private function exportExcel(Collection $data, array $summary, ?string $reportingPeriod = null)
     {
         $spreadsheet    = new Spreadsheet();
         $logo           = new Drawing();
@@ -228,6 +266,15 @@ class PenaltiesController extends Controller
         $sheet->getStyle('A7:I8')->getAlignment()->setHorizontal('left');
         $sheet->getStyle('A7:I8')->getAlignment()->setVertical('left');
         $sheet->getStyle('A7:I8')->getAlignment()->setWrapText(true);
+
+        // Reporting period (if provided)
+        $sheet->mergeCells('A9:I9');
+        $sheet->setCellValue('A9', $reportingPeriod ?? '');
+        $sheet->getStyle('A9:I9')->getFont()->setBold(false);
+        $sheet->getStyle('A9:I9')->getFont()->setSize(10);
+        $sheet->getStyle('A9:I9')->getAlignment()->setHorizontal('left');
+        $sheet->getStyle('A9:I9')->getAlignment()->setVertical('left');
+        $sheet->getStyle('A9:I9')->getAlignment()->setWrapText(true);
         $sheet->getStyle('A10:I10')->getFont()->setSize(10);
         $sheet->getStyle('A10:I10')->getFont()->setBold(true);
         $sheet->getStyle('A10:I10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
@@ -285,14 +332,31 @@ class PenaltiesController extends Controller
         $sheet->getStyle('A10:I' . ($row - 1))->applyFromArray($styleArray);
 
         $row += 2;
+
+        $sheet->mergeCells('A' . $row . ':D' . $row);
+        $sheet->setCellValue('A' . $row, 'Payment Summary');
+        $sheet->getStyle('A' . $row . ':D' . $row)->getFont()->setBold(true)->setSize(11);
+        $sheet->getStyle('A' . $row . ':D' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('A' . $row . ':D' . $row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFEFF6FF');
+        $row++;
+
         foreach ($summary['rows'] as $summaryRow) {
+            $sheet->mergeCells('A' . $row . ':C' . $row);
             $sheet->setCellValue('A' . $row, $summaryRow['label']);
-            $sheet->setCellValue('B' . $row, '₱ ' . number_format($summaryRow['amount'], 2));
-            $sheet->getStyle('A' . $row . ':B' . $row)->getFont()->setBold($summaryRow['is_total']);
-            $sheet->getStyle('A' . $row . ':B' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+            // write numeric amount and apply currency format
+            $sheet->setCellValue('D' . $row, (float) ($summaryRow['amount'] ?? 0));
+            $sheet->getStyle('D' . $row)->getNumberFormat()->setFormatCode('"₱"#,##0.00');
+
+            $sheet->getStyle('A' . $row . ':D' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle('D' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+            $sheet->getStyle('A' . $row . ':D' . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+            $sheet->getStyle('A' . $row . ':D' . $row)->getBorders()->getBottom()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+
             if ($summaryRow['is_total']) {
-                $sheet->getStyle('A' . $row . ':B' . $row)->getBorders()->getTop()->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+                $sheet->getStyle('A' . $row . ':D' . $row)->getFont()->setBold(true);
+                $sheet->getStyle('A' . $row . ':D' . $row)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFF9FAFB');
             }
+
             $row++;
         }
 
@@ -318,6 +382,31 @@ class PenaltiesController extends Controller
         }
         exit;
     }
+
+    private function buildReportingPeriodLabel(Collection $data): string
+    {
+        $dueDates = $data->map(function ($item) {
+            $rawDueDate = $item->due_date ?? null;
+
+            if (!$rawDueDate) {
+                return null;
+            }
+
+            try {
+                return Carbon::parse($rawDueDate);
+            } catch (\Throwable $e) {
+                return null;
+            }
+        })->filter();
+
+        if ($dueDates->isNotEmpty()) {
+            $earliest = $dueDates->sortBy(fn($date) => $date->timestamp)->first()->format('F j, Y');
+            $latest = $dueDates->sortByDesc(fn($date) => $date->timestamp)->first()->format('F j, Y');
+            return 'Reporting Period: ' . $earliest . ' to ' . $latest;
+        }
+
+        return 'Reporting Period: Due Date Not Available';
+    }
     /**
      * Generates data for the penalties report.
      *
@@ -334,15 +423,6 @@ class PenaltiesController extends Controller
         $query->orderBy('created_at', 'desc')->orderBy('id', 'desc');
         if ($isExport) {
             $data = $query->get();
-
-            if ($data->isNotEmpty()) {
-                $max = $data->first()->created_at;
-                $min = $data->last()->created_at;
-                $data->reporting_period = 'From ' . Carbon::parse($min)->format('F j, Y') . ' to ' . Carbon::parse($max)->format('F j, Y');
-            } else {
-                $data->reporting_period = 'N/A';
-            }
-
             $data->transform(function ($item) {
                 return $this->formatPenaltyRow($item);
             });
@@ -361,20 +441,19 @@ class PenaltiesController extends Controller
         return $result;
     }
 
-    private function generateSummary(Request $request, Transaction $model): array
+    private function generateSummaryFromDataset($data): array
     {
-        // Summary is intentionally computed from all penalties data,
-        // independent from search/date/status filters.
-        $items = $this->buildPenaltyBaseQuery($model)
-            ->orderBy('created_at', 'desc')
-            ->orderBy('id', 'desc')
-            ->get();
+        if ($data instanceof LengthAwarePaginator) {
+            $items = $data->getCollection();
+        } else {
+            $items = $data;
+        }
 
-        $items->transform(function ($item) {
-            return $this->formatPenaltyRow($item);
-        });
+        if (!($items instanceof Collection)) {
+            $items = collect($items);
+        }
 
-        return $this->calculateSummary($items);
+        return $this->calculateSummary($items instanceof Collection ? $items : collect($items));
     }
 
     private function buildPenaltyQuery(Request $request, Transaction $model)
@@ -503,20 +582,38 @@ class PenaltiesController extends Controller
     private function calculateSummary(Collection $items): array
     {
         $summary = [
-            'waived' => 0.0,
-            'discount' => 0.0,
-            'unpaid' => 0.0,
+            'penalty_amount' => 0.0,
+            'discounted_amount' => 0.0,
+            'waived_amount' => 0.0,
+            'unpaid_amount' => 0.0,
+            'other_amount' => 0.0,
+            'paid_amount' => 0.0,
         ];
 
         foreach ($items as $item) {
-            $status = strtolower((string) $item->status);
+            $status = strtolower(trim((string) $item->status));
+            $actualTotal = (float) ($item->actual_total ?? 0);
+            $discountAmount = (float) ($item->discount_amount ?? 0);
+            $total = (float) ($item->total ?? 0);
 
+            $summary['penalty_amount'] += $actualTotal;
+            $summary['discounted_amount'] += $discountAmount;
+
+            // Classification rules:
+            // - Paid related: statuses 'paid' and 'discounted' (treated as collected amounts)
+            // - Unpaid related: statuses 'unpaid' and 'waived' (not collected) and the discount portion (discounted_amount)
+            // - Other: any other statuses
             if ($status === 'waived') {
-                $summary['waived'] += (float) $item->actual_total;
-            } elseif ($status === 'discounted') {
-                $summary['discount'] += (float) $item->total;
+                // waived means the whole actual total is not collectible
+                $summary['waived_amount'] += $actualTotal;
+            } elseif ($status === 'paid' || $status === 'discounted') {
+                // paid or discounted -> collected amount is the discounted total
+                $summary['paid_amount'] += $total;
             } elseif ($status === 'unpaid') {
-                $summary['unpaid'] += (float) $item->actual_total;
+                // unpaid -> remaining (not collected)
+                $summary['unpaid_amount'] += $total;
+            } else {
+                $summary['other_amount'] += $total;
             }
         }
 
@@ -524,12 +621,31 @@ class PenaltiesController extends Controller
             $summary[$key] = round($value, 2);
         }
 
-        $summary['grand_total'] = round(array_sum($summary), 2);
+        $summary['total_collectible'] = round(max(
+            $summary['penalty_amount'] - $summary['discounted_amount'] - $summary['waived_amount'],
+            0
+        ), 2);
+        // Paid collectible is what was collected (paid + discounted totals)
+        $summary['paid_collectible'] = $summary['paid_amount'];
+
+        // Unpaid collectible per your rule: waived + unpaid + discount amount
+        $summary['unpaid_collectible'] = round($summary['waived_amount'] + $summary['unpaid_amount'] + $summary['discounted_amount'], 2);
+
+        // Keep other_amount separate; non-paid related total may include other amounts if desired
+        $summary['non_paid_related_total'] = round($summary['unpaid_collectible'] + $summary['other_amount'], 2);
+        $summary['outstanding'] = $summary['unpaid_collectible'];
+        $summary['current_balance'] = $summary['outstanding'];
+        $summary['current_balance'] = $summary['outstanding'];
+
         $summary['rows'] = [
-            ['label' => 'Waived', 'amount' => $summary['waived'], 'is_total' => false],
-            ['label' => 'Discount', 'amount' => $summary['discount'], 'is_total' => false],
-            ['label' => 'Unpaid', 'amount' => $summary['unpaid'], 'is_total' => false],
-            ['label' => 'Grand Total', 'amount' => $summary['grand_total'], 'is_total' => true],
+            ['label' => 'Penalty Amount', 'amount' => $summary['penalty_amount'], 'is_total' => false],
+            ['label' => 'Amount Discounted', 'amount' => $summary['discounted_amount'], 'is_total' => false],
+            ['label' => 'Amount Waived', 'amount' => $summary['waived_amount'], 'is_total' => false],
+            ['label' => 'Not Paid Amount', 'amount' => $summary['unpaid_amount'], 'is_total' => false],
+            ['label' => 'Other Amount', 'amount' => $summary['other_amount'], 'is_total' => false],
+            ['label' => 'Total Collectible', 'amount' => $summary['total_collectible'], 'is_total' => true],
+            ['label' => 'Paid Collectible', 'amount' => $summary['paid_collectible'], 'is_total' => true],
+            ['label' => 'Unpaid Collectible', 'amount' => $summary['unpaid_collectible'], 'is_total' => true],
         ];
 
         return $summary;

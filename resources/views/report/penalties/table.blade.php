@@ -63,13 +63,54 @@
       </table>
     </div>
     <div class="px-4 pb-2">
-      <div class="max-w-sm mt-3 border-gray-300 dark:border-gray-600 pt-3 space-y-1 text-sm text-gray-700 dark:text-gray-300">
-        @foreach($summary['rows'] as $summaryRow)
-        <div class="flex items-center justify-between {{ $summaryRow['is_total'] ? 'font-semibold border-t border-gray-300 dark:border-gray-600 pt-2 mt-2' : '' }}">
-          <span>{{ $summaryRow['label'] }}</span>
-          <span>₱ {{ number_format($summaryRow['amount'], 2) }}</span>
+      <div class="mt-3 grid grid-cols-1 lg:grid-cols-12 gap-3">
+        <div class="lg:col-span-10 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-3">
+          <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Payment Summary</h3>
+
+          <div class="divide-y divide-gray-200 dark:divide-gray-700 border-y border-gray-200 dark:border-gray-700">
+            <div class="grid grid-cols-2 py-1.5 text-sm text-gray-800 dark:text-gray-200">
+              <span>Penalty Amount</span>
+              <span class="text-right font-medium">₱ {{ number_format($summary['penalty_amount'], 2) }}</span>
+            </div>
+            <div class="grid grid-cols-2 py-1.5 text-sm text-gray-700 dark:text-gray-300">
+              <span>Amount Discounted</span>
+              <span class="text-right font-medium">₱ {{ number_format($summary['discounted_amount'], 2) }}</span>
+            </div>
+            <div class="grid grid-cols-2 py-1.5 text-sm text-gray-700 dark:text-gray-300">
+              <span>Amount Waived</span>
+              <span class="text-right font-medium">₱ {{ number_format($summary['waived_amount'], 2) }}</span>
+            </div>
+            <div class="grid grid-cols-2 py-1.5 text-sm text-gray-700 dark:text-gray-300">
+              <span>Not Paid Amount</span>
+              <span class="text-right font-medium">₱ {{ number_format($summary['unpaid_amount'], 2) }}</span>
+            </div>
+            <div class="grid grid-cols-2 py-1.5 text-sm text-gray-700 dark:text-gray-300">
+              <span>Other Amount</span>
+              <span class="text-right font-medium">₱ {{ number_format($summary['other_amount'], 2) }}</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 py-2 border-b border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white mt-1">
+            <span class="text-base sm:text-lg font-semibold">Paid Collectible</span>
+            <span class="text-base sm:text-lg font-semibold text-right">₱ {{ number_format($summary['paid_collectible'] ?? 0, 2) }}</span>
+          </div>
+          <div class="grid grid-cols-2 py-2 text-orange-600 dark:text-orange-400">
+            <span class="text-base sm:text-lg font-semibold">Unpaid Collectible</span>
+            <span class="text-base sm:text-lg font-semibold text-right">₱ {{ number_format($summary['unpaid_collectible'] ?? $summary['current_balance'] ?? 0, 2) }}</span>
+          </div>
         </div>
-        @endforeach
+
+        <div class="lg:col-span-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-3">
+          <div class="rounded-lg flex flex-col justify-center border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-3 text-center">
+            <div class="text-xl sm:text-2xl font-bold text-green-600 dark:text-green-400">₱ {{ number_format($summary['paid_collectible'] ?? ($summary['paid_related_total'] ?? 0), 2) }}</div>
+            <div class="text-xs text-green-700 dark:text-green-300">Payment Recorded</div>
+          </div>
+
+          <div class="rounded-lg flex flex-col justify-center border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 p-3 text-center">
+            <div class="text-xl sm:text-2xl font-bold text-orange-600 dark:text-orange-400">₱ {{ number_format($summary['current_balance'] ?? $summary['unpaid_collectible'] ?? ($summary['remaining'] ?? 0), 2) }}</div>
+            <div class="text-xs text-orange-700 dark:text-orange-300">Payment Pending</div>
+          </div>
+        </div>
       </div>
     </div>
     <div class="p-4">
