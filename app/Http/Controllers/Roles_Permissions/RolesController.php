@@ -130,6 +130,8 @@ class RolesController extends Controller
             PermissionsEnum::VIEW_PRIVILEGES_MAINTENANCE->value       => [PermissionsEnum::ADD_PRIVILEGES->value, PermissionsEnum::EDIT_PRIVILEGES->value, PermissionsEnum::DELETE_PRIVILEGES->value],
             PermissionsEnum::VIEW_PENALTY_RULES_MAINTENANCE->value    => [PermissionsEnum::ADD_PENALTY_RULES->value, PermissionsEnum::EDIT_PENALTY_RULES->value, PermissionsEnum::DELETE_PENALTY_RULES->value],
             PermissionsEnum::VIEW_TRANSACTIONS_MAINTENANCE->value     => [PermissionsEnum::EDIT_TRANSACTIONS->value],
+            PermissionsEnum::VIEW_ANNOUNCEMENTS_MAINTENANCE->value    => [PermissionsEnum::ADD_ANNOUNCEMENTS->value, PermissionsEnum::EDIT_ANNOUNCEMENTS->value, PermissionsEnum::DELETE_ANNOUNCEMENTS->value],
+            PermissionsEnum::VIEW_GALLERY_MAINTENANCE->value          => [PermissionsEnum::ADD_GALLERY->value, PermissionsEnum::EDIT_GALLERY->value, PermissionsEnum::DELETE_GALLERY->value],
         ];
 
         // Check if user selected restricted actions without corresponding view
@@ -286,6 +288,8 @@ class RolesController extends Controller
             PermissionsEnum::VIEW_PRIVILEGES_MAINTENANCE->value       => [PermissionsEnum::ADD_PRIVILEGES->value, PermissionsEnum::EDIT_PRIVILEGES->value, PermissionsEnum::DELETE_PRIVILEGES->value],
             PermissionsEnum::VIEW_PENALTY_RULES_MAINTENANCE->value    => [PermissionsEnum::ADD_PENALTY_RULES->value, PermissionsEnum::EDIT_PENALTY_RULES->value, PermissionsEnum::DELETE_PENALTY_RULES->value],
             PermissionsEnum::VIEW_TRANSACTIONS_MAINTENANCE->value     => [PermissionsEnum::EDIT_TRANSACTIONS->value],
+            PermissionsEnum::VIEW_ANNOUNCEMENTS_MAINTENANCE->value    => [PermissionsEnum::ADD_ANNOUNCEMENTS->value, PermissionsEnum::EDIT_ANNOUNCEMENTS->value, PermissionsEnum::DELETE_ANNOUNCEMENTS->value],
+            PermissionsEnum::VIEW_GALLERY_MAINTENANCE->value          => [PermissionsEnum::ADD_GALLERY->value, PermissionsEnum::EDIT_GALLERY->value, PermissionsEnum::DELETE_GALLERY->value],
         ];
 
         // Check if user selected restricted actions without corresponding view

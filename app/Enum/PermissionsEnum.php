@@ -48,4 +48,12 @@ enum PermissionsEnum: string
     case RESERVATION_APPROVALS              = 'Reservation Approvals';
     case MODIFY_UI_SETTINGS                 = 'Modify UI Settings';
     case VIEW_BIBLIOGRAPHY_REPORTS          = 'View Bibliography Reports';
+    case VIEW_ANNOUNCEMENTS_MAINTENANCE     = 'View Announcements Maintenance';
+    case ADD_ANNOUNCEMENTS                  = 'Add Announcements';
+    case EDIT_ANNOUNCEMENTS                 = 'Edit Announcements';
+    case DELETE_ANNOUNCEMENTS               = 'Delete Announcements';
+    case VIEW_GALLERY_MAINTENANCE           = 'View Gallery Maintenance';
+    case ADD_GALLERY                        = 'Add Gallery';
+    case EDIT_GALLERY                       = 'Edit Gallery';
+    case DELETE_GALLERY                     = 'Delete Gallery';
 }

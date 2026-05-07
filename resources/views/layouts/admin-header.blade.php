@@ -183,7 +183,8 @@
           auth()->user()->can(PermissionsEnum::VIEW_TRANSACTIONS_MAINTENANCE) ||
           auth()->user()->can(PermissionsEnum::RESERVATION_APPROVALS) ||
           auth()->user()->can(PermissionsEnum::CREATE_BACKUPS) ||
-          auth()->user()->can(PermissionsEnum::MODIFY_ADMIN))
+          auth()->user()->can(PermissionsEnum::MODIFY_ADMIN) ||
+          auth()->user()->can(PermissionsEnum::VIEW_LIBRARY_WEBSITE))
           <li>
             <button id="dropdownNavbarLink" data-dropdown-toggle="navbarMaintenance" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:bg-tertiary-500 lg:hover:bg-transparent lg:border-0 lg:hover:text-tertiary-500 lg:p-0 lg:w-auto dark:text-white lg:dark:hover:text-tertiary-500 dark:hover:bg-tertiary-500 dark:hover:text-white lg:dark:hover:bg-transparent">
               <div>Maintenance <span id="maintenance-notification-badge" class="hidden ms-2 bg-red-500 text-white text-xs font-semibold px-1.5 py-0.5 rounded-full"></span></div><svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
@@ -300,6 +301,44 @@
                   </a>
                 </li>
                 @endcan
+                @if(auth()->user()->can(PermissionsEnum::VIEW_ANNOUNCEMENTS_MAINTENANCE) || auth()->user()->can(PermissionsEnum::VIEW_GALLERY_MAINTENANCE))
+                <li aria-labelledby="dropdownNavbarLink">
+                  <button id="libraryWebsiteDropdownButton" data-dropdown-toggle="libraryWebsiteDropdown" data-dropdown-placement="right-start" type="button" class="flex items-center w-full px-4 pl-2 py-2 hover:bg-tertiary-100 dark:text-white dark:hover:bg-tertiary-700">
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                      <path fill-rule="evenodd" d="M11 4.717c-2.286-.58-4.16-.756-7.045-.71A1.99 1.99 0 0 0 2 6v11c0 1.133.934 2.022 2.044 2.007 2.759-.038 4.5.16 6.956.791V4.717Zm2 15.081c2.456-.631 4.198-.829 6.956-.791A2.013 2.013 0 0 0 22 16.999V6a1.99 1.99 0 0 0-1.955-1.993c-2.885-.046-4.76.13-7.045.71v15.081Z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="ms-2">Library Website</span>
+                    <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
+                      <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
+                    </svg>
+                  </button>
+                  <div id="libraryWebsiteDropdown" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg w-44 dark:bg-gray-700 shadow-md">
+                    <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="libraryWebsiteDropdownButton">
+                      @can(PermissionsEnum::VIEW_ANNOUNCEMENTS_MAINTENANCE)
+                      <li>
+                        <a href="{{ route('maintenance.library-website.announcements') }}" class="flex pl-2 py-2 hover:bg-tertiary-100 dark:hover:bg-tertiary-700">
+                          <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path fill-rule="evenodd" d="M12 8a1 1 0 0 0-1 1v10H9a1 1 0 1 0 0 2h11a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1h-8Zm4 10a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z" clip-rule="evenodd" />
+                            <path fill-rule="evenodd" d="M5 3a2 2 0 0 0-2 2v6h6V9a3 3 0 0 1 3-3h8c.35 0 .687.06 1 .17V5a2 2 0 0 0-2-2H5Zm4 10H3v2a2 2 0 0 0 2 2h4v-4Z" clip-rule="evenodd" />
+                          </svg>
+                          <span class="ms-2">Announcements</span>
+                        </a>
+                      </li>
+                      @endcan
+                      @can(PermissionsEnum::VIEW_GALLERY_MAINTENANCE)
+                      <li>
+                        <a href="{{ route('maintenance.library-website.gallery') }}" class="flex pl-2 py-2 hover:bg-tertiary-100 dark:hover:bg-tertiary-700">
+                          <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                            <path fill-rule="evenodd" d="M14 7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V7Zm2 9.387 4.684 1.562A1 1 0 0 0 22 17V7a1 1 0 0 0-1.316-.949L16 7.613v8.774Z" clip-rule="evenodd" />
+                          </svg>
+                          <span class="ms-2">Gallery</span>
+                        </a>
+                      </li>
+                      @endcan
+                    </ul>
+                  </div>
+                </li>
+                @endif
                 @if(auth()->user()->hasRole(App\Enum\RolesEnum::SUPER_ADMIN) && auth()->user()->can(PermissionsEnum::MODIFY_ADMIN))
                 <li aria-labelledby="dropdownNavbarLink">
                   <button id="doubleDropdownButton" data-dropdown-toggle="doubleDropdown" data-dropdown-placement="right-start" type="button" class="flex items-center w-full px-4 pl-2 py-2 hover:bg-tertiary-100 dark:text-white dark:hover:bg-tertiary-700">

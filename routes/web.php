@@ -33,6 +33,8 @@ use App\Http\Controllers\Maintenance\PenaltyRuleController;
 use App\Http\Controllers\Maintenance\ReservationExtensionController;
 use App\Http\Controllers\Maintenance\ReservationStatus;
 use App\Http\Controllers\Maintenance\TransactionMaintenanceController;
+use App\Http\Controllers\Maintenance\AnnouncementMaintenanceController;
+use App\Http\Controllers\Maintenance\GalleryMaintenanceController;
 use App\Http\Controllers\Report\BibliographyController;
 use App\Http\Controllers\Settings\UISettingController;
 use App\Http\Controllers\Testing\MailPreviewController;
@@ -321,6 +323,33 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
                 Route::get('edit-role', 'edit')->name('maintenance.roles-and-permissions.edit-role');
                 Route::put('edit-role', 'update')->name('maintenance.roles-and-permissions.update-role');
                 Route::delete('delete-role', 'destroy')->name('maintenance.roles-and-permissions.delete-role');
+            });
+        });
+
+        Route::prefix('library-website')->group(function () {
+            Route::prefix('announcements')->controller(AnnouncementMaintenanceController::class)->group(function () {
+                Route::get('announcements', 'index')->name('maintenance.library-website.announcements');
+                Route::get('add-announcement', 'create')->name('maintenance.library-website.create-announcement');
+                Route::post('add-announcement', 'store')->name('maintenance.library-website.store-announcement');
+                Route::get('view-announcement', 'show')->name('maintenance.library-website.view-announcement');
+                Route::get('edit-announcement', 'edit')->name('maintenance.library-website.edit-announcement');
+                Route::put('edit-announcement', 'update')->name('maintenance.library-website.update-announcement');
+                Route::delete('delete-announcement', 'destroy')->name('maintenance.library-website.delete-announcement');
+            });
+
+            Route::prefix('gallery')->controller(GalleryMaintenanceController::class)->group(function () {
+                Route::get('gallery', 'index')->name('maintenance.library-website.gallery');
+                Route::get('show-folder', 'showFolder')->name('maintenance.library-website.gallery.show-folder');
+                Route::get('add-folder', 'createFolder')->name('maintenance.library-website.gallery.create-folder');
+                Route::post('add-folder', 'storeFolder')->name('maintenance.library-website.gallery.store-folder');
+                Route::get('edit-folder', 'editFolder')->name('maintenance.library-website.gallery.edit-folder');
+                Route::put('edit-folder', 'updateFolder')->name('maintenance.library-website.gallery.update-folder');
+                Route::delete('delete-folder', 'destroyFolder')->name('maintenance.library-website.gallery.delete-folder');
+                Route::get('add-video', 'createVideo')->name('maintenance.library-website.gallery.create-video');
+                Route::post('add-video', 'storeVideo')->name('maintenance.library-website.gallery.store-video');
+                Route::get('edit-video', 'editVideo')->name('maintenance.library-website.gallery.edit-video');
+                Route::put('edit-video', 'updateVideo')->name('maintenance.library-website.gallery.update-video');
+                Route::delete('delete-video', 'destroyVideo')->name('maintenance.library-website.gallery.delete-video');
             });
         });
     });

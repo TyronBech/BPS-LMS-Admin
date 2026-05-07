@@ -13,7 +13,8 @@ class GalleryVideo extends Model
         'title',
         'description',
         'url',
-        'thumbnail'
+        'thumbnail',
+        'sort_order',
     ];
 
     public function folder()

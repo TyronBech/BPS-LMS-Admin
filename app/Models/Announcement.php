@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Announcement extends Model
 {
+    use SoftDeletes;
+
     protected $table = 'announcements';
     protected $primaryKey = 'id';
     protected $fillable = [
@@ -18,6 +21,11 @@ class Announcement extends Model
         'is_featured',
         'is_published',
         'quote',
-        'image'
+        'image',
+    ];
+
+    protected $casts = [
+        'is_featured'  => 'boolean',
+        'is_published' => 'boolean',
     ];
 }
