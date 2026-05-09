@@ -58,6 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 btn.offsetParent === null || // hidden
                 btn.closest(".dashboard-card") ||
                 btn.classList.contains("skip-loader") || // skip-loader class
+                btn.closest(".skip-loader") || // skip-loader parent
                 (form && !form.checkValidity()) || // form is invalid
                 (!form && // not inside a form...
                     id !== "refresh" && // ...and not refresh
@@ -74,7 +75,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll("form").forEach((form) => {
         form.addEventListener("submit", (e) => {
             const submitter = e.submitter;
-            if (form.classList.contains("skip-loader")) return;
+            if (form.classList.contains("skip-loader") || form.closest(".skip-loader")) return;
             if (
                 submitter &&
                 (submitter.value === "pdf" || submitter.value === "excel")
@@ -109,7 +110,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 link.id === "dropdownNavbarLink" ||
                 link.closest("#dropdownNavbarLink") || // nested inside dropdown button
                 link.target === "_blank" ||
-                link.classList.contains("skip-loader") // skip-loader class
+                link.classList.contains("skip-loader") || // skip-loader class
+                link.closest(".skip-loader") // skip-loader parent
             ) {
                 return;
             }
@@ -140,12 +142,26 @@ document.addEventListener("DOMContentLoaded", () => {
         const isSubjectAccessCodeSuggestions = url.includes(
             "subject-access-code-suggestions",
         );
+        const isCategoriesAutocomplete = url.includes("categories/autocomplete");
+        const isCategoriesMaintenance = !isCategoriesAutocomplete && url.includes("maintenance/categories");
+
+        // Check for custom header to skip loader
+        let hasSkipHeader = false;
+        if (args[1] && args[1].headers) {
+            if (args[1].headers instanceof Headers) {
+                hasSkipHeader = args[1].headers.has("X-Skip-Loader");
+            } else {
+                hasSkipHeader = !!args[1].headers["X-Skip-Loader"];
+            }
+        }
 
         const shouldSkip =
             isDashboardAnalytics ||
             isPendingExtensions ||
             isMaintenanceStatus ||
-            isSubjectAccessCodeSuggestions;
+            isSubjectAccessCodeSuggestions ||
+            isCategoriesAutocomplete || // ALWAYS skip autocomplete suggestions
+            (isCategoriesMaintenance && hasSkipHeader); // Skip maintenance update ONLY if header is present
 
         try {
             if (!shouldSkip) {
@@ -177,6 +193,7 @@ document.addEventListener("DOMContentLoaded", () => {
             "maintenance/reservations/toggle",
             "maintenance/reservations/stats",
             "subject-access-code-suggestions",
+            "maintenance/categories/autocomplete",
         ];
 
         const shouldSkipLoader = urlsToSkip.some((skipUrl) =>

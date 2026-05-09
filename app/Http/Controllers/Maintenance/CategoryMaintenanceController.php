@@ -23,22 +23,28 @@ class CategoryMaintenanceController extends Controller
      */
     public function index(Request $request)
     {
-        $perPage = $request->input('perPage', 10);
+        $perPrintPage    = $request->input('perPrintPage', 10);
+        $perNonPrintPage = $request->input('perNonPrintPage', 10);
+        $perEbooksPage   = $request->input('perEbooksPage', 10);
+        $search          = $request->input('search-categories', '');
 
         Log::info('Category Maintenance: List page accessed', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name,
-            'per_page' => $perPage,
+            'search_term' => $search,
             'ip_address' => $request->ip(),
             'timestamp' => now(),
         ]);
 
         $validator = Validator::make($request->all(), [
-            'perPage' => 'nullable|integer|min:1|max:500',
+            'perPrintPage'    => 'nullable|integer|min:1|max:500',
+            'perNonPrintPage' => 'nullable|integer|min:1|max:500',
+            'perEbooksPage'   => 'nullable|integer|min:1|max:500',
+            'search-categories' => 'nullable|string|max:255',
         ]);
 
         if ($validator->fails()) {
-            Log::warning('Category Maintenance: Invalid perPage parameter', [
+            Log::warning('Category Maintenance: Invalid parameters', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
@@ -47,12 +53,61 @@ class CategoryMaintenanceController extends Controller
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
 
-        $categories = Category::orderBy('created_at', 'desc')
-            ->paginate($perPage)
-            ->appends([
-                'perPage' => $perPage,
-            ]);
-        return view('maintenance.categories.index', compact('categories', 'perPage'));
+        $query = Category::query();
+
+        if (!empty($search)) {
+            $query->where(function ($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('legend', 'like', "%{$search}%");
+            });
+        }
+
+        $printCategories = (clone $query)->where('category_type', 'Print')
+            ->orderBy('created_at', 'desc')
+            ->paginate($perPrintPage, ['*'], 'print_page')
+            ->appends(['perPrintPage' => $perPrintPage, 'search-categories' => $search]);
+
+        $nonPrintCategories = (clone $query)->where('category_type', 'Non-print')
+            ->orderBy('created_at', 'desc')
+            ->paginate($perNonPrintPage, ['*'], 'non_print_page')
+            ->appends(['perNonPrintPage' => $perNonPrintPage, 'search-categories' => $search]);
+
+        $ebooksCategories = (clone $query)->where('category_type', 'E-books')
+            ->orderBy('created_at', 'desc')
+            ->paginate($perEbooksPage, ['*'], 'ebooks_page')
+            ->appends(['perEbooksPage' => $perEbooksPage, 'search-categories' => $search]);
+
+        return view('maintenance.categories.index', compact(
+            'printCategories',
+            'nonPrintCategories',
+            'ebooksCategories',
+            'perPrintPage',
+            'perNonPrintPage',
+            'perEbooksPage',
+            'search'
+        ));
+    }
+
+    /**
+     * Autocomplete search for categories
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function autocomplete(Request $request)
+    {
+        $search = $request->input('q', '');
+
+        if (empty($search)) {
+            return response()->json([]);
+        }
+
+        $suggestions = Category::where('name', 'like', "%{$search}%")
+            ->orWhere('legend', 'like', "%{$search}%")
+            ->limit(10)
+            ->get(['name', 'legend']);
+
+        return response()->json($suggestions);
     }
     /**
      * Store a new category

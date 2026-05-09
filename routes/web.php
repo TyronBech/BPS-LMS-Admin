@@ -228,6 +228,7 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
 
             Route::prefix('categories')->middleware(BookCategoriesAuthentication::class)->controller(CategoryMaintenanceController::class)->group(function () {
                 Route::get('categories', 'index')->name('maintenance.categories');
+                Route::get('autocomplete', 'autocomplete')->name('maintenance.categories-autocomplete');
                 Route::post('add-category', 'store')->name('maintenance.store-category');
                 Route::put('edit-category', 'update')->name('maintenance.update-category');
                 Route::delete('delete-category', 'destroy')->name('maintenance.delete-category');
