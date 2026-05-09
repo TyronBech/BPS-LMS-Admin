@@ -10,6 +10,7 @@
       <tr>
         <th scope="col" class="px-6 py-3">Name</th>
         <th scope="col" class="px-6 py-3 hidden sm:table-cell">Legend</th>
+        <th scope="col" class="px-6 py-3 hidden md:table-cell">Category Type</th>
         <th scope="col" class="px-6 py-3 hidden md:table-cell">Duration of Borrow (Days)</th>
         <th scope="col" class="px-6 py-3">Borrowable</th>
         <th scope="col" class="px-6 py-3">Actions</th>
@@ -23,6 +24,11 @@
           <div class="font-normal text-gray-500 sm:hidden">{{ $item->legend }}</div>
         </th>
         <td class="px-6 py-4 hidden sm:table-cell">{{ $item->legend }}</td>
+        <td class="px-6 py-4 hidden md:table-cell">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+            {{ $item->category_type ?? 'Print' }}
+          </span>
+        </td>
         <td class="px-6 py-4 hidden md:table-cell">{{ (int) $item->borrow_duration_days === 0 ? 'Cannot be borrowed' : $item->borrow_duration_days }}</td>
         <td class="px-6 py-4">
           @if((int) $item->borrow_duration_days === 0)
@@ -83,6 +89,15 @@
           <div>
             <label for="edit_name" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Name:</label>
             <input type="text" name="name" id="edit_name" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Filipino" required />
+          </div>
+          <div>
+            <label for="edit_category_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Category Type:</label>
+            <select name="category_type" id="edit_category_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
+              <option value="">-- Select Category Type --</option>
+              <option value="Print">Print</option>
+              <option value="Non-print">Non-print</option>
+              <option value="E-books">E-books</option>
+            </select>
           </div>
           <div class="flex w-full items-center space-x-4">
             <div class="flex items-center space-x-2">
@@ -149,6 +164,7 @@
       id: document.getElementById('edit_category_id'),
       legend: document.getElementById('edit_legend'),
       name: document.getElementById('edit_name'),
+      categoryType: document.getElementById('edit_category_type'),
       duration: document.getElementById('borrow_duration_days_edit'),
       hiddenInput: document.getElementById('can_borrow_edit_input'),
       switchEl: document.getElementById('can_borrow_edit_switch'),
@@ -194,6 +210,7 @@
         editModal.id.value = category.id;
         editModal.legend.value = category.legend;
         editModal.name.value = category.name;
+        if (editModal.categoryType) editModal.categoryType.value = category.category_type ?? 'Print';
         if (editModal.hiddenInput) editModal.hiddenInput.value = isBorrowable ? '1' : '0';
         if (editModal.duration) editModal.duration.value = isBorrowable ? categoryDuration : 0;
         updateEditSwitchUI();

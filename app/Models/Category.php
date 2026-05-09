@@ -16,6 +16,7 @@ class Category extends Model
     protected $fillable = [
         'legend',
         'name',
+        'category_type',
         'previous_inventory',
         'discarded',
         'newly_acquired',
@@ -24,7 +25,7 @@ class Category extends Model
 
     ];
 
-    public function books() : HasMany
+    public function books(): HasMany
     {
         return $this->hasMany(Book::class, 'category_id', 'id');
     }

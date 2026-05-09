@@ -49,6 +49,18 @@
             <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
             @enderror
           </div>
+          <div>
+            <label for="category_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Category Type:</label>
+            <select id="category_type" name="category_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
+              <option value="">-- Select Category Type --</option>
+              <option value="Print" {{ old('category_type') === 'Print' ? 'selected' : '' }}>Print</option>
+              <option value="Non-print" {{ old('category_type') === 'Non-print' ? 'selected' : '' }}>Non-print</option>
+              <option value="E-books" {{ old('category_type') === 'E-books' ? 'selected' : '' }}>E-books</option>
+            </select>
+            @error('category_type')
+            <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+            @enderror
+          </div>
           <div class="flex w-full items-center space-x-4">
             <div class="flex items-center space-x-2">
               <input type="hidden" name="can_borrow" id="can_borrow_add_input" value="{{ old('can_borrow', '1') }}">

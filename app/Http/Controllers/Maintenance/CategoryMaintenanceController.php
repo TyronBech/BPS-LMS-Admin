@@ -81,6 +81,7 @@ class CategoryMaintenanceController extends Controller
         $validator = Validator::make($request->all(), [
             'name'                      => 'required|string|max:50',
             'legend'                    => 'required|string|max:255',
+            'category_type'             => 'required|in:Print,Non-print,E-books',
             'can_borrow'                => 'sometimes|boolean',
             'borrow_duration_days_add'  => 'required_if:can_borrow,1|nullable|integer|min:1|max:999',
         ]);
@@ -110,6 +111,7 @@ class CategoryMaintenanceController extends Controller
             Category::create([
                 'name'                  => $request->input('name'),
                 'legend'                => $request->input('legend'),
+                'category_type'         => $request->input('category_type'),
                 'borrow_duration_days'  => $borrowDurationDays,
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
@@ -156,6 +158,7 @@ class CategoryMaintenanceController extends Controller
         $validator = Validator::make($request->all(), [
             'name'                      => 'required|string|max:50',
             'legend'                    => 'required|string|max:255',
+            'category_type'             => 'required|in:Print,Non-print,E-books',
             'can_borrow_edit'           => 'sometimes|boolean',
             'borrow_duration_days_edit' => 'required_if:can_borrow_edit,1|nullable|integer|min:1|max:999',
         ]);
@@ -176,6 +179,7 @@ class CategoryMaintenanceController extends Controller
 
             $category->name                 = $request->input('name');
             $category->legend               = $request->input('legend');
+            $category->category_type        = $request->input('category_type');
             $category->borrow_duration_days = $borrowDurationDays;
             $category->save();
         } catch (\Illuminate\Database\QueryException $e) {
