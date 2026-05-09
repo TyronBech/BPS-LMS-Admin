@@ -104,7 +104,7 @@ class BookMaintenanceController extends Controller
         ]);
 
         $books = new Book();
-        $categories     = $categories = Category::select('id', 'name', 'legend')
+        $categories     = $categories = Category::select('id', 'name', 'legend', 'category_type')
             ->with(['books' => function ($query) {
                 $query->select('category_id', 'accession') // must include category_id for relation
                     ->orderByDesc('accession')
@@ -174,6 +174,7 @@ class BookMaintenanceController extends Controller
             if ($remarks !== 'On Shelf' && $availability !== 'Unavailable') {
                 $validator->errors()->add('availability', 'Availability must be "Unavailable" when the book is not On Shelf.');
             }
+            $this->validateCategoryBookTypeRelationship($validator, $request);
         });
         if ($validator->fails()) {
             Log::warning('Book Maintenance: Creation validation failed', [
@@ -297,7 +298,7 @@ class BookMaintenanceController extends Controller
             $book = Book::with(['subject.accessCodes'])->findOrFail($id);
             $linkedSubjectId = $book->subject_id;
             $books = new Book();
-            $categories     = Category::pluck('name', 'id');
+            $categories     = Category::select('id', 'name', 'category_type')->orderBy('name')->get();
             $condition      = $this->extract_enums($books->getTable(), 'condition_status');
             $availability   = $this->extract_enums($books->getTable(), 'availability_status');
             $remarks        = $this->extract_enums($books->getTable(), 'remarks');
@@ -550,6 +551,7 @@ class BookMaintenanceController extends Controller
             if ($remarks !== 'On Shelf' && $availability !== 'Unavailable') {
                 $validator->errors()->add('availability', 'Availability must be "Unavailable" when the book is not On Shelf.');
             }
+            $this->validateCategoryBookTypeRelationship($validator, $request);
         });
         if ($validator->fails()) {
             Log::warning('Book Maintenance: Update validation failed', [
@@ -674,6 +676,7 @@ class BookMaintenanceController extends Controller
             if ($remarks !== 'On Shelf' && $availability !== 'Unavailable') {
                 $validator->errors()->add('availability', 'Availability must be "Unavailable" when the book is not On Shelf.');
             }
+            $this->validateCategoryBookTypeRelationship($validator, $request);
         });
         if ($validator->fails()) {
             Log::warning('Book Maintenance: Copy validation failed', [
@@ -1182,6 +1185,26 @@ class BookMaintenanceController extends Controller
         return $enumValues;
     }
 
+    private function validateCategoryBookTypeRelationship($validator, Request $request): void
+    {
+        $categoryId = $request->input('category');
+        $bookType = $request->input('book_type');
+
+        if (!$categoryId || !$bookType) {
+            return;
+        }
+
+        $category = Category::find($categoryId);
+        if (!$category) {
+            return;
+        }
+
+        if ($category->category_type !== $bookType) {
+            $validator->errors()->add('category', 'Selected category must match the selected book type.');
+            $validator->errors()->add('book_type', 'Selected book type must match the selected category type.');
+        }
+    }
+
     private function sanitizeDatabaseErrorMessage(string $message): string
     {
         $connectionPos = strpos($message, '(Connection:');
@@ -1192,5 +1215,4 @@ class BookMaintenanceController extends Controller
 
         return $message;
     }
-
 }

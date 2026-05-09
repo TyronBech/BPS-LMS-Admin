@@ -24,11 +24,22 @@
           @enderror
         </div>
         <div>
+          <label for="book_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Book Type:</label>
+          <select id="book_type" name="book_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
+            @foreach($book_types as $value)
+            <option value="{{ $value }}" {{ old('book_type') == $value ? 'selected' : '' }}>{{ $value }}</option>
+            @endforeach
+          </select>
+          @error('book_type')
+          <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+          @enderror
+        </div>
+        <div>
           <label for="category" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Category:</label>
           <select id="category" name="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
             <option value="" selected disabled>Choose a category</option>
             @foreach($categories as $category)
-            <option value="{{ $category->id }}" {{ old('category') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+            <option value="{{ $category->id }}" data-category-type="{{ $category->category_type }}" {{ old('category') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
             @endforeach
           </select>
           @error('category')
@@ -54,6 +65,13 @@
           <label for="isbn" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">ISBN:</label>
           <input type="text" id="isbn" name="isbn" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 9789712345678" value="{{ old('isbn') }}">
           @error('isbn')
+          <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+          @enderror
+        </div>
+        <div>
+          <label for="edition" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Edition:</label>
+          <input type="text" id="edition" name="edition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 1st Edition" value="{{ old('edition') }}">
+          @error('edition')
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
           @enderror
         </div>
@@ -87,20 +105,6 @@
           @enderror
         </div>
         <div>
-          <label for="edition" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Edition:</label>
-          <input type="text" id="edition" name="edition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 1st Edition" value="{{ old('edition') }}">
-          @error('edition')
-          <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
-          @enderror
-        </div>
-        <div>
-          <label for="publication" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Place of Publication:</label>
-          <input type="text" id="publication" name="publication" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Manila, Philippines" value="{{ old('publication') }}">
-          @error('publication')
-          <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
-          @enderror
-        </div>
-        <div>
           <label for="publisher" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Publisher:</label>
           <input type="text" id="publisher" name="publisher" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., National Library" value="{{ old('publisher') }}">
           @error('publisher')
@@ -115,16 +119,9 @@
           @enderror
         </div>
         <div>
-          <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white" for="cover_image">Cover Image:</label>
-          <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-700 focus:outline-none dark:border-gray-600 dark:placeholder-gray-400" id="cover_image" name="cover_image" type="file">
-          @error('cover_image')
-          <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
-          @enderror
-        </div>
-        <div>
-          <label for="digital_copy_url" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Digital Copy URL:</label>
-          <input type="url" id="digital_copy_url" name="digital_copy_url" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="https://example.com" value="{{ old('digital_copy_url') }}">
-          @error('digital_copy_url')
+          <label for="publication" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Place of Publication:</label>
+          <input type="text" id="publication" name="publication" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Manila, Philippines" value="{{ old('publication') }}">
+          @error('publication')
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
           @enderror
         </div>
@@ -140,13 +137,16 @@
           @enderror
         </div>
         <div>
-          <label for="book_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Book Type:</label>
-          <select id="book_type" name="book_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
-            @foreach($book_types as $value)
-            <option value="{{ $value }}" {{ old('book_type') == $value ? 'selected' : '' }}>{{ $value }}</option>
-            @endforeach
-          </select>
-          @error('book_type')
+          <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white" for="cover_image">Cover Image:</label>
+          <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-700 focus:outline-none dark:border-gray-600 dark:placeholder-gray-400" id="cover_image" name="cover_image" type="file">
+          @error('cover_image')
+          <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+          @enderror
+        </div>
+        <div>
+          <label for="digital_copy_url" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Digital Copy URL:</label>
+          <input type="url" id="digital_copy_url" name="digital_copy_url" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="https://example.com" value="{{ old('digital_copy_url') }}">
+          @error('digital_copy_url')
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
           @enderror
         </div>
@@ -182,37 +182,80 @@
 </div>
 @endsection
 @section('scripts')
+<script type="application/json" id="book-categories-data">
+  {!! $categories->toJson() !!}
+</script>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
     const categorySelect = document.getElementById('category');
+    const bookTypeSelect = document.getElementById('book_type');
     const accessionInput = document.getElementById('accession');
     const remarksSelect = document.getElementById('remarks');
     const availabilitySelect = document.getElementById('availability');
     const availabilityHidden = document.getElementById('availability_hidden');
+    const categoriesData = document.getElementById('book-categories-data');
+    const categories = categoriesData ? JSON.parse(categoriesData.textContent || '[]') : [];
 
-    // from PHP: an array of category objects (id, name, legend, books, ...)
-    const categoriesArray = <?php echo json_encode($categories); ?> || [];
-
-    // build a lookup map keyed by category id (string keys)
-    const categories = {};
-    categoriesArray.forEach(cat => {
-      if (cat && typeof cat.id !== 'undefined') {
-        categories[String(cat.id)] = cat;
+    const categoriesById = {};
+    categories.forEach(function(category) {
+      if (category && category.id !== undefined && category.id !== null) {
+        categoriesById[String(category.id)] = category;
       }
     });
 
-    // returns next accession string given a last accession like "FIL000123"
+    function getCategoryById(categoryId) {
+      return categoriesById[String(categoryId)] || null;
+    }
+
+    function syncCategoryOptionsToBookType() {
+      if (!categorySelect || !bookTypeSelect) return;
+
+      const selectedBookType = bookTypeSelect.value;
+      let firstMatchingCategory = '';
+
+      Array.from(categorySelect.options).forEach(function(option) {
+        if (!option.value) return;
+
+        const category = getCategoryById(option.value);
+        const matchesBookType = !selectedBookType || !category || category.category_type === selectedBookType;
+
+        option.disabled = !!selectedBookType && !!category && category.category_type !== selectedBookType;
+        option.hidden = !!selectedBookType && !!category && category.category_type !== selectedBookType;
+
+        if (matchesBookType && !firstMatchingCategory) {
+          firstMatchingCategory = option.value;
+        }
+      });
+
+      if (categorySelect.value) {
+        const selectedCategory = getCategoryById(categorySelect.value);
+        if (selectedBookType && selectedCategory && selectedCategory.category_type !== selectedBookType) {
+          categorySelect.value = firstMatchingCategory || '';
+        }
+      } else if (selectedBookType && firstMatchingCategory) {
+        categorySelect.value = firstMatchingCategory;
+      }
+    }
+
+    function syncBookTypeFromCategory() {
+      if (!categorySelect || !bookTypeSelect) return;
+
+      const selectedCategory = getCategoryById(categorySelect.value);
+      if (!selectedCategory) return;
+
+      if (selectedCategory.category_type && bookTypeSelect.value !== selectedCategory.category_type) {
+        bookTypeSelect.value = selectedCategory.category_type;
+      }
+
+      syncCategoryOptionsToBookType();
+    }
+
     function getNextAccessionFromLast(lastAccession) {
       if (!lastAccession || typeof lastAccession !== 'string') return null;
 
-      // capture trailing digits
       const match = lastAccession.match(/(\d+)$/);
       const numberStr = match ? match[1] : null;
-
-      // prefix = everything before the trailing digits (or whole string if none)
       const prefix = numberStr ? lastAccession.slice(0, -numberStr.length) : lastAccession;
-
-      // numeric value and width (keep same digit length as last accession)
       const num = numberStr ? parseInt(numberStr, 10) : 0;
       const width = numberStr ? numberStr.length : 6;
 
@@ -221,25 +264,22 @@
     }
 
     categorySelect.addEventListener('change', function() {
-      const selectedId = String(this.value);
-      const cat = categories[selectedId];
+      syncBookTypeFromCategory();
 
-      if (!cat) {
+      const selectedCategory = getCategoryById(this.value);
+      if (!selectedCategory) {
         accessionInput.value = '';
         return;
       }
 
-      const books = Array.isArray(cat.books) ? cat.books : [];
-
+      const books = Array.isArray(selectedCategory.books) ? selectedCategory.books : [];
       if (books.length > 0 && books[0].accession) {
-        // increment last accession, preserving numeric width
         const next = getNextAccessionFromLast(books[0].accession);
         accessionInput.value = next || '';
       } else {
-        // no books yet -> build a starting accession using legend (or name fallback)
-        let prefix = (cat.legend && String(cat.legend).trim()) || '';
-        if (!prefix && cat.name) {
-          prefix = String(cat.name).replace(/\s+/g, '').slice(0, 3).toUpperCase();
+        let prefix = (selectedCategory.legend && String(selectedCategory.legend).trim()) || '';
+        if (!prefix && selectedCategory.name) {
+          prefix = String(selectedCategory.name).replace(/\s+/g, '').slice(0, 3).toUpperCase();
         }
         if (!prefix) prefix = 'ACC';
         accessionInput.value = prefix + '000001';
@@ -262,10 +302,21 @@
       }
     }
 
+    if (bookTypeSelect) {
+      bookTypeSelect.addEventListener('change', syncCategoryOptionsToBookType);
+    }
+
     if (remarksSelect) {
       remarksSelect.addEventListener('change', applyAvailabilityRule);
-      applyAvailabilityRule();
     }
+
+    if (categorySelect && categorySelect.value) {
+      syncBookTypeFromCategory();
+    } else {
+      syncCategoryOptionsToBookType();
+    }
+
+    applyAvailabilityRule();
   });
 </script>
 @endsection
