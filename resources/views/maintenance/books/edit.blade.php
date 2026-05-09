@@ -63,14 +63,14 @@
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
           @enderror
         </div>
-        <div>
+        <div id="isbn-container">
           <label for="isbn" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">ISBN:</label>
           <input type="text" id="isbn" name="isbn" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 9789712345678" value="{{ $book->isbn }}">
           @error('isbn')
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
           @enderror
         </div>
-        <div>
+        <div id="edition-container">
           <label for="edition" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Edition:</label>
           <input type="text" id="edition" name="edition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 1st Edition" value="{{ $book->edition }}">
           @error('edition')
@@ -84,7 +84,7 @@
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
           @enderror
         </div>
-        <div class="md:col-span-2">
+        <div id="subject-container" class="md:col-span-2">
           <label for="subject_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Subject:</label>
           <select id="subject_id" name="subject_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
             <option value="">No subject linked</option>
@@ -99,7 +99,7 @@
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
           @enderror
         </div>
-        <div class="md:col-span-2">
+        <div id="description-container" class="md:col-span-2">
           <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Material Description:</label>
           <textarea id="description" name="description" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-400 focus:border-primary-400 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Write material description here...">{{ $book->description ?? '' }}</textarea>
           @error('description')
@@ -120,7 +120,7 @@
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
           @enderror
         </div>
-        <div>
+        <div id="publication-container">
           <label for="publication" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Place of Publication:</label>
           <input type="text" id="publication" name="publication" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Manila, Philippines" value="{{ $book->place_of_publication }}">
           @error('publication')
@@ -128,13 +128,9 @@
           @enderror
         </div>
         <div>
-          <label for="remarks" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Remarks:</label>
-          <select id="remarks" name="remarks" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
-            @foreach($remarks as $value)
-            <option value="{{ $value }}" {{ $value == $book->remarks ? 'selected' : '' }}>{{ $value }}</option>
-            @endforeach
-          </select>
-          @error('remarks')
+          <label for="location" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Location:</label>
+          <input type="text" id="location" name="location" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Section A, Shelf 1" value="{{ $book->location }}">
+          @error('location')
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
           @enderror
         </div>
@@ -145,35 +141,48 @@
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
           @enderror
         </div>
-        <div>
+        <div id="digital-copy-container">
           <label for="digital_copy_url" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Digital Copy URL:</label>
           <input type="url" id="digital_copy_url" name="digital_copy_url" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="https://example.com" value="{{ $book->digital_copy_url }}">
           @error('digital_copy_url')
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
           @enderror
         </div>
-        <div>
-          <label for="availability" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Availability:</label>
-          <select id="availability" name="availability" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
-            @foreach($availability as $value)
-            <option value="{{ $value }}" {{ $value == $book->availability_status ? 'selected' : '' }}>{{ $value }}</option>
-            @endforeach
-          </select>
-          <input type="hidden" id="availability_hidden" name="availability" disabled>
-          @error('availability')
-          <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
-          @enderror
-        </div>
-        <div>
-          <label for="condition" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Condition:</label>
-          <select id="condition" name="condition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
-            @foreach($condition as $value)
-            <option value="{{ $value }}" {{ $value == $book->condition_status ? 'selected' : '' }}>{{ $value }}</option>
-            @endforeach
-          </select>
-          @error('condition')
-          <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
-          @enderror
+        <div class="md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div>
+            <label for="remarks" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Remarks:</label>
+            <select id="remarks" name="remarks" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
+              @foreach($remarks as $value)
+              <option value="{{ $value }}" {{ $value == $book->remarks ? 'selected' : '' }}>{{ $value }}</option>
+              @endforeach
+            </select>
+            @error('remarks')
+            <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+            @enderror
+          </div>
+          <div>
+            <label for="availability" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Availability:</label>
+            <select id="availability" name="availability" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
+              @foreach($availability as $value)
+              <option value="{{ $value }}" {{ $value == $book->availability_status ? 'selected' : '' }}>{{ $value }}</option>
+              @endforeach
+            </select>
+            <input type="hidden" id="availability_hidden" name="availability" disabled>
+            @error('availability')
+            <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+            @enderror
+          </div>
+          <div>
+            <label for="condition" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Condition:</label>
+            <select id="condition" name="condition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
+              @foreach($condition as $value)
+              <option value="{{ $value }}" {{ $value == $book->condition_status ? 'selected' : '' }}>{{ $value }}</option>
+              @endforeach
+            </select>
+            @error('condition')
+            <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+            @enderror
+          </div>
         </div>
       </div>
       <div class="flex flex-col sm:flex-row justify-end mt-6 gap-2">
@@ -387,12 +396,40 @@
       }
     }
 
+    function restructureFormByBookType() {
+      const selectedType = bookTypeSelect.value;
+      const isNonPrint = selectedType === 'Non-print';
+
+      const containersToToggle = [
+        'isbn-container',
+        'edition-container',
+        'subject-container',
+        'description-container',
+        'publication-container',
+        'digital-copy-container'
+      ];
+
+      containersToToggle.forEach(id => {
+        const container = document.getElementById(id);
+        if (container) {
+          if (isNonPrint) {
+            container.classList.add('hidden');
+          } else {
+            container.classList.remove('hidden');
+          }
+        }
+      });
+    }
+
     if (categorySelect) {
       categorySelect.addEventListener('change', syncBookTypeFromCategory);
     }
 
     if (bookTypeSelect) {
-      bookTypeSelect.addEventListener('change', syncCategoryOptionsToBookType);
+      bookTypeSelect.addEventListener('change', function() {
+        syncCategoryOptionsToBookType();
+        restructureFormByBookType();
+      });
     }
 
     if (copyBookTypeSelect) {
@@ -409,6 +446,7 @@
       syncCategoryOptionsToBookType();
     }
 
+    restructureFormByBookType();
     syncCopyCategoryFromBookType();
     applyAvailabilityRule();
   });

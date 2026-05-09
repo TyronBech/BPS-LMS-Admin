@@ -165,6 +165,7 @@ class BookMaintenanceController extends Controller
             'publication'       => 'nullable|string|max:50',
             'publisher'         => 'nullable|string|max:100',
             'copyright'         => 'nullable|string|max:50',
+            'location'          => 'nullable|string|max:100',
             'cover_image'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'digital_copy_url'  => 'nullable|string',
             'remarks'           => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'remarks')),
@@ -232,6 +233,7 @@ class BookMaintenanceController extends Controller
                     'place_of_publication'  => $request->input('publication') ?? null,
                     'publisher'             => $request->input('publisher') ?? null,
                     'copyrights'            => $request->input('copyright') ?? null,
+                    'location'              => $request->input('location') ?? null,
                     'cover_image'           => $request->input('cover_image') ?? null,
                     'digital_copy_url'      => $request->input('digital_copy_url') ?? null,
                     'remarks'               => $request->input('remarks'),
@@ -482,7 +484,7 @@ class BookMaintenanceController extends Controller
             'timestamp' => now(),
         ]);
 
-        $book = Book::with('category')->where('accession', $accession)->first();
+        $book = Book::with(['category', 'subject'])->where('accession', $accession)->first();
         try {
             $cover = $this->getBookImage($book->title, $book->author, $book->isbn ?? null);
             if (!$cover) {
@@ -550,6 +552,7 @@ class BookMaintenanceController extends Controller
             'publication'       => 'nullable|string|max:50',
             'publisher'         => 'nullable|string|max:100',
             'copyright'         => 'nullable|string|max:50',
+            'location'          => 'nullable|string|max:100',
             'cover_image'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'digital_copy_url'  => 'nullable|string|url',
             'remarks'           => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'remarks')),
@@ -604,6 +607,7 @@ class BookMaintenanceController extends Controller
                 'place_of_publication'  => $request->input('publication'),
                 'publisher'             => $request->input('publisher'),
                 'copyrights'            => $request->input('copyright'),
+                'location'              => $request->input('location'),
                 'cover_image'           => $request->input('cover_image'),
                 'digital_copy_url'      => $request->input('digital_copy_url'),
                 'remarks'               => $request->input('remarks'),

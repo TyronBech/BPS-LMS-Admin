@@ -36,6 +36,16 @@
           <p class="font-semibold text-gray-900 dark:text-white">Author:</p>
           <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">{{ $book->author }}</p>
         </div>
+        @if($book->book_type != 'Non-print')
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <p class="font-semibold text-gray-900 dark:text-white">Subject:</p>
+          <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">{{ $book->subject->name ?? '-' }}</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <p class="font-semibold text-gray-900 dark:text-white">Description:</p>
+          <p class="sm:col-span-2 text-gray-700 dark:text-gray-300 break-words">{{ $book->description ?? '-' }}</p>
+        </div>
+        @endif
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <p class="font-semibold text-gray-900 dark:text-white">Accession:</p>
           <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">{{ $book->accession }}</p>
@@ -44,6 +54,7 @@
           <p class="font-semibold text-gray-900 dark:text-white">Call Number:</p>
           <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">{{ $book->call_number ?? '-' }}</p>
         </div>
+        @if($book->book_type != 'Non-print')
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <p class="font-semibold text-gray-900 dark:text-white">ISBN:</p>
           <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">{{ $book->isbn ?? '-' }}</p>
@@ -56,6 +67,7 @@
           <p class="font-semibold text-gray-900 dark:text-white">Place of Publication:</p>
           <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">{{ $book->place_of_publication ?? '-' }}</p>
         </div>
+        @endif
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <p class="font-semibold text-gray-900 dark:text-white">Publisher:</p>
           <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">{{ $book->publisher ?? '-' }}</p>
@@ -65,9 +77,14 @@
           <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">{{ $book->copyrights ?? '-' }}</p>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <p class="font-semibold text-gray-900 dark:text-white">Location:</p>
+          <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">{{ $book->location ?? '-' }}</p>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <p class="font-semibold text-gray-900 dark:text-white">Category:</p>
           <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">{{ $book->category->name }}</p>
         </div>
+        @if($book->book_type != 'Non-print')
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <p class="font-semibold text-gray-900 dark:text-white">Digital Copy:</p>
           @if(empty($book->digital_copy_url))
@@ -76,6 +93,7 @@
           <a href="{{ $book->digital_copy_url }}" target="_blank" class="sm:col-span-2 text-primary-600 dark:text-primary-400 hover:underline">{{ $book->title }}</a>
           @endif
         </div>
+        @endif
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <p class="font-semibold text-gray-900 dark:text-white">Remarks:</p>
           <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">{{ $book->remarks }}</p>
