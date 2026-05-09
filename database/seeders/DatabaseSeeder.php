@@ -40,6 +40,7 @@ class DatabaseSeeder extends Seeder
             StagingUserSeeder::class,
             SuperAdminSeeder::class,
             ResetBookMatrix::class,
+            BookMaintenanceSeeder::class,
         ]);
     }
 }
