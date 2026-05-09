@@ -92,7 +92,7 @@
       </tr>
       @empty
       <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-        <td colspan="7" class="px-6 py-4 text-center">No books found.</td>
+        <td colspan="7" class="px-6 py-4 text-center">No materials found.</td>
       </tr>
       @endforelse
     </tbody>
@@ -114,7 +114,7 @@
         <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
         </svg>
-        <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete this book?</h3>
+        <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete this material?</h3>
         <form action="{{ route('maintenance.delete-book') }}" method="POST" class="flex items-center justify-center">
           @csrf
           @method('DELETE')
@@ -141,7 +141,7 @@
         <svg class="mx-auto mb-4 text-gray-400 w-12 h-12 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
         </svg>
-        <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete these books?</h3>
+        <h3 class="mb-5 text-lg font-normal text-gray-500 dark:text-gray-400">Are you sure you want to delete these materials?</h3>
         <form action="{{ route('maintenance.bulk-delete-book') }}" method="POST" class="flex items-center justify-center">
           @csrf
           @method('DELETE')

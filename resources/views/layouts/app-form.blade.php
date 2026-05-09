@@ -32,7 +32,7 @@
 
 <body class="relative bg-secondary-500 dark:bg-gray-900">
   <header>
-    <div class="bg-primary-500 border-gray-200 dark:bg-primary-500 min-h-20 sm:min-h-24 md:min-h-28 lg:min-h-30 py-3 sm:py-4 md:py-5">
+    <div class="bg-primary-700 border-gray-200 dark:bg-primary-700 min-h-20 sm:min-h-24 md:min-h-28 lg:min-h-30 py-3 sm:py-4 md:py-5">
       <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto px-4 sm:px-6">
         <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 rtl:space-x-reverse">
           <img class="rounded-full w-16 h-16 md:w-20 md:h-20" src="{{ $settings->getOrgLogoBase64Attribute() }}" alt="School Logo">

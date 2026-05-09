@@ -4,7 +4,7 @@
   <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Maintenance</h1>
   <div class="w-full p-4 sm:p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
-      <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Add New Book</h5>
+      <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Add New Material</h5>
       <a href="{{ request('return_to', route('maintenance.books')) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-primary-500 rounded-lg hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500 mt-4 sm:mt-0">
         <svg class="w-4 h-4 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5H1m0 0 4 4M1 5l4-4" />
@@ -18,13 +18,13 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
         <div class="md:col-span-2">
           <label for="title" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Title:</label>
-          <input type="text" id="title" name="title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Book Title" value="{{ old('title') }}" required>
+          <input type="text" id="title" name="title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Material Title" value="{{ old('title') }}" required>
           @error('title')
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
           @enderror
         </div>
         <div>
-          <label for="book_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Book Type:</label>
+          <label for="book_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Material Type:</label>
           <select id="book_type" name="book_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
             @foreach($book_types as $value)
             <option value="{{ $value }}" {{ old('book_type') == $value ? 'selected' : '' }}>{{ $value }}</option>
@@ -98,8 +98,8 @@
           @enderror
         </div>
         <div class="md:col-span-2">
-          <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Book Description:</label>
-          <textarea id="description" name="description" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-400 focus:border-primary-400 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Write book description here..." value="{{ old('description') }}"></textarea>
+          <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Material Description:</label>
+          <textarea id="description" name="description" rows="4" class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-primary-400 focus:border-primary-400 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Write material description here..." value="{{ old('description') }}"></textarea>
           @error('description')
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
           @enderror

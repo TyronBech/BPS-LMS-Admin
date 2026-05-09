@@ -5,10 +5,10 @@
   <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Maintenance</h1>
   <div class="w-full p-4 sm:p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
-      <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Books</h5>
+      <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Materials</h5>
       @can(PermissionsEnum::ADD_BOOKS, 'admin')
       <a href="{{ route('maintenance.create-book', ['return_to',  request()->fullUrl()]) }}" class="w-full sm:w-auto mt-4 sm:mt-0 inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-center text-white bg-primary-500 rounded-lg hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">
-        Add New Book
+        Add New Material
       </a>
       @endcan
     </div>
