@@ -253,7 +253,7 @@
       </tr>
     </table>
 
-    <div style="width:48%; float:right;">
+    <div style="width:48%; float:right; margin-top:12px;">
       <div style="border:1px solid #e5e7eb; padding:12px; border-radius:6px; text-align:center; margin-bottom:8px;">
         <div style="font-size:16px; font-weight:700; color:#15803d;">{{ '₱ ' . number_format($summary['paid_collectible'] ?? 0, 2) }}</div>
         <div style="font-size:11px; color:#6b7280; margin-top:4px;">Paid Collectible</div>
