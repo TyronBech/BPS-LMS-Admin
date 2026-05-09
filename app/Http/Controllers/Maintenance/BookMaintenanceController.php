@@ -33,17 +33,14 @@ class BookMaintenanceController extends Controller
         $category   = $request->input('category', '');
         $sortBy     = $request->input('sort_by', '');
         $sortOrder  = $request->input('sort_order', '');
-
-        if ($category && (!$sortBy || !$sortOrder)) {
-            $sortBy = 'accession';
-            $sortOrder = 'desc';
-        }
-
+        $bookType   = $request->input('book_type', '');
+        
         Log::info('Book Maintenance: List page accessed', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name,
             'search_term' => $search,
             'category_filter' => $category,
+            'book_type_filter' => $bookType,
             'sort_by' => $sortBy,
             'sort_order' => $sortOrder,
             'per_page' => $perPage,
@@ -53,6 +50,7 @@ class BookMaintenanceController extends Controller
 
         $validator = Validator::make($request->all(), [
             'category' => 'nullable|integer|in:' . implode(',', Category::pluck('id')->toArray()),
+            'book_type' => 'nullable|string',
             'perPage' => 'nullable|integer|min:1|max:500',
             'search' => 'nullable|string|max:255',
             'sort_by' => 'nullable|in:accession,title',
@@ -60,7 +58,7 @@ class BookMaintenanceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::warning('Book Maintenance: Invalid perPage parameter', [
+            Log::warning('Book Maintenance: Invalid parameter', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
@@ -70,7 +68,16 @@ class BookMaintenanceController extends Controller
         }
 
         $categories = Category::select('id', 'name')->get();
+        $book_types = $this->extract_enums((new Book())->getTable(), 'book_type');
         $booksQuery = Book::with(['category', 'subject']);
+
+        if ($category) {
+            $booksQuery->where('category_id', $category);
+        }
+
+        if ($bookType) {
+            $booksQuery->where('book_type', $bookType);
+        }
 
         if ($sortBy && $sortOrder) {
             $booksQuery->orderBy($sortBy, $sortOrder)->orderBy('id', 'desc');
@@ -84,10 +91,11 @@ class BookMaintenanceController extends Controller
                 'perPage' => $perPage,
                 'search' => $search,
                 'category' => $category,
+                'book_type' => $bookType,
                 'sort_by' => $sortBy,
                 'sort_order' => $sortOrder,
             ]);
-        return view('maintenance.books.books', compact('books', 'perPage', 'search', 'categories', 'category', 'sortBy', 'sortOrder'));
+        return view('maintenance.books.books', compact('books', 'perPage', 'search', 'categories', 'category', 'sortBy', 'sortOrder', 'book_types', 'bookType'));
     }
     /**
      * Create a new book
@@ -327,6 +335,7 @@ class BookMaintenanceController extends Controller
     {
         $search = $request->input('search', '');
         $category = $request->input('category', '');
+        $bookType = $request->input('book_type', '');
         $perPage = $request->input('perPage', 10);
         $sortBy = $request->input('sort_by', '');
         $sortOrder = $request->input('sort_order', '');
@@ -341,6 +350,7 @@ class BookMaintenanceController extends Controller
             'user_name' => Auth::guard('admin')->user()->full_name,
             'search_term' => $search,
             'category_filter' => $category,
+            'book_type_filter' => $bookType,
             'sort_by' => $sortBy,
             'sort_order' => $sortOrder,
             'action' => $request->input('barcodeBtn') ? 'barcode_export' : ($request->input('callNumberBtn') ? 'call_number_export' : 'view'),
@@ -350,6 +360,7 @@ class BookMaintenanceController extends Controller
 
         $validator = Validator::make($request->all(), [
             'category' => 'nullable|integer|in:' . implode(',', Category::pluck('id')->toArray()),
+            'book_type' => 'nullable|string',
             'perPage' => 'nullable|integer|min:1|max:500',
             'search' => 'nullable|string|max:255',
             'sort_by' => 'nullable|in:accession,title',
@@ -357,7 +368,7 @@ class BookMaintenanceController extends Controller
         ]);
 
         if ($validator->fails()) {
-            Log::warning('Book Maintenance: Invalid perPage parameter', [
+            Log::warning('Book Maintenance: Invalid parameter', [
                 'user_id' => Auth::guard('admin')->id(),
                 'errors' => $validator->errors(),
                 'ip_address' => $request->ip(),
@@ -373,6 +384,7 @@ class BookMaintenanceController extends Controller
         }
         // Fetch categories for dropdown
         $categories = Category::select('id', 'name')->get();
+        $book_types = $this->extract_enums((new Book())->getTable(), 'book_type');
 
         // Validate category only if present
         if ($category) {
@@ -392,20 +404,23 @@ class BookMaintenanceController extends Controller
             $trimmed_accessions = array_map('trim', $accessions);
         }
         // Start query
-        $books = Book::with(['category', 'subject']);
+        $booksQuery = Book::with(['category', 'subject']);
 
         // Apply category filter if provided
         if ($category) {
-            $books->whereHas('category', function ($q) use ($category) {
-                $q->where('id', $category);
-            });
+            $booksQuery->where('category_id', $category);
+        }
+
+        // Apply book type filter if provided
+        if ($bookType) {
+            $booksQuery->where('book_type', $bookType);
         }
 
         // Apply search filter if provided
         if ($is_multiple_accessions) {
-            $books->whereIn('accession', $trimmed_accessions);
+            $booksQuery->whereIn('accession', $trimmed_accessions);
         } elseif ($search) {
-            $books->where(function ($q) use ($search) {
+            $booksQuery->where(function ($q) use ($search) {
                 $q->where('accession', 'like', '%' . $search . '%')
                     ->orWhere('title', 'like', '%' . $search . '%')
                     ->orWhere('author', 'like', '%' . $search . '%')
@@ -426,23 +441,24 @@ class BookMaintenanceController extends Controller
 
         // Finalize query
         if ($sortBy && $sortOrder) {
-            $books->orderBy($sortBy, $sortOrder)->orderBy('id', 'desc');
+            $booksQuery->orderBy($sortBy, $sortOrder)->orderBy('id', 'desc');
         } else {
-            $books->orderBy('updated_at', 'desc')->orderBy('id', 'desc');
+            $booksQuery->orderBy('updated_at', 'desc')->orderBy('id', 'desc');
         }
 
-        $books = $books
+        $books = $booksQuery
             ->paginate($perPage)
             ->appends([
                 'perPage' => $perPage,
                 'search' => $search,
                 'category' => $category,
+                'book_type' => $bookType,
                 'sort_by' => $sortBy,
                 'sort_order' => $sortOrder,
             ])
             ->withQueryString();
 
-        return view('maintenance.books.books', compact('books', 'perPage', 'search', 'category', 'categories', 'sortBy', 'sortOrder'));
+        return view('maintenance.books.books', compact('books', 'perPage', 'search', 'category', 'categories', 'sortBy', 'sortOrder', 'book_types', 'bookType'));
     }
     /**
      * View a book with given accession number

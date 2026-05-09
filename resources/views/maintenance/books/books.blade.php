@@ -42,6 +42,13 @@
           @endforeach
         </select>
 
+        <select id="book_type" name="book_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" onchange="resetSortAndSubmit(this.form)">
+          <option value="" {{ !$bookType ? 'selected' : '' }}>All Material Types</option>
+          @foreach ($book_types as $type)
+          <option value="{{ $type }}" {{ $type == $bookType ? 'selected' : '' }}>{{ $type }}</option>
+          @endforeach
+        </select>
+
         <select id="sort_dropdown" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" onchange="updateSortAndSubmit(this.form)">
           <option value="">Default Sorting</option>
           <option value="title-asc" {{ ($sortBy == 'title' && $sortOrder == 'asc') ? 'selected' : '' }}>Title (Ascending)</option>
