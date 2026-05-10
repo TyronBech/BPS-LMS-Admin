@@ -30,7 +30,8 @@
           || auth()->user()->can(PermissionsEnum::VIEW_SUMMARY_REPORTS)
           || auth()->user()->can(PermissionsEnum::VIEW_INVENTORY_REPORTS)
           || auth()->user()->can(PermissionsEnum::VIEW_TRANSACTION_REPORTS)
-          || auth()->user()->can(PermissionsEnum::VIEW_BOOK_CIRCULATION_REPORTS))
+          || auth()->user()->can(PermissionsEnum::VIEW_BOOK_CIRCULATION_REPORTS)
+          || auth()->user()->can(PermissionsEnum::VIEW_NON_CIRCULATION_REPORTS))
           <li>
             <button id="dropdownNavbarLink" data-dropdown-toggle="navbarReport" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:bg-tertiary-500 lg:hover:bg-transparent lg:border-0 lg:hover:text-tertiary-500 lg:p-0 lg:w-auto dark:text-white lg:dark:hover:text-tertiary-500 dark:hover:bg-tertiary-500 dark:hover:text-white lg:dark:hover:bg-transparent">Reports <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
@@ -84,6 +85,16 @@
                       <path fill-rule="evenodd" d="M8 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1h2a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2Zm6 1h-4v2H9a1 1 0 0 0 0 2h6a1 1 0 1 0 0-2h-1V4Zm-3 8a1 1 0 0 1 1-1h3a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1Zm-2-1a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H9Zm2 5a1 1 0 0 1 1-1h3a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1Zm-2-1a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H9Z" clip-rule="evenodd" />
                     </svg>
                     <span class="ms-2">Circulation Records</span>
+                  </a>
+                </li>
+                @endcan
+                @can(PermissionsEnum::VIEW_NON_CIRCULATION_REPORTS)
+                <li>
+                  <a href="{{ route('report.non-circulation') }}" class="flex pl-2 py-2 hover:bg-tertiary-100 dark:text-white dark:hover:bg-tertiary-700">
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                      <path fill-rule="evenodd" d="M8 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1h2a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2Zm6 1h-4v2H9a1 1 0 0 0 0 2h6a1 1 0 1 0 0-2h-1V4Zm-3 8a1 1 0 0 1 1-1h3a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1Zm-2-1a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H9Zm2 5a1 1 0 0 1 1-1h3a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1Zm-2-1a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H9Z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="ms-2">Non-Circulation Records</span>
                   </a>
                 </li>
                 @endcan

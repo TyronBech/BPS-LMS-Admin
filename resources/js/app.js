@@ -144,6 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
         const isCategoriesAutocomplete = url.includes("categories/autocomplete");
         const isCategoriesMaintenance = !isCategoriesAutocomplete && url.includes("maintenance/categories");
+        const isNonCirculationSearch = url.includes("/report/non-circulation/search-user");
 
         // Check for custom header to skip loader
         let hasSkipHeader = false;
@@ -161,6 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
             isMaintenanceStatus ||
             isSubjectAccessCodeSuggestions ||
             isCategoriesAutocomplete || // ALWAYS skip autocomplete suggestions
+            isNonCirculationSearch ||
             (isCategoriesMaintenance && hasSkipHeader); // Skip maintenance update ONLY if header is present
 
         try {
@@ -194,6 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
             "maintenance/reservations/stats",
             "subject-access-code-suggestions",
             "maintenance/categories/autocomplete",
+            "/report/non-circulation/search-user"
         ];
 
         const shouldSkipLoader = urlsToSkip.some((skipUrl) =>

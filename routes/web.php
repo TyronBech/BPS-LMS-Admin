@@ -143,6 +143,13 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
             Route::post('book-circulation', 'search')->name('report.circulation-search');
         });
 
+        Route::controller(\App\Http\Controllers\Report\NonCirculationController::class)->group(function () {
+            Route::get('non-circulation', 'index')->name('report.non-circulation');
+            Route::post('non-circulation', 'search')->name('report.non-circulation-search');
+            Route::post('non-circulation/store', 'store')->name('report.non-circulation-store');
+            Route::get('non-circulation/search-user', 'searchUser')->name('report.non-circulation-search-user');
+        });
+
         Route::controller(BibliographyController::class)->middleware(ViewBibliographyMiddleware::class)->group(function () {
             Route::get('bibliography', 'index')->name('report.bibliography');
             Route::post('bibliography', 'search')->name('report.bibliography-search');
