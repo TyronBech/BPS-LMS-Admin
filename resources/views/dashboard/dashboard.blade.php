@@ -853,8 +853,6 @@
   const refreshButton = document.getElementById('refresh');
   // Add event listener to the refresh button
   refreshButton.addEventListener('click', async () => {
-    showToast('Refreshing dashboard data...', 'success');
-
     await Promise.allSettled([
       fetchActiveCount(),
       fetchMonthlyCount(),

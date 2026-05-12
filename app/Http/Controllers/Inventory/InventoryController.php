@@ -7,6 +7,7 @@ use App\Models\ArchiveInventory;
 use App\Models\Book;
 use App\Models\Inventory;
 use App\Models\SystemSetting;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -566,7 +567,7 @@ class InventoryController extends Controller
         );
     }
 
-    private function extract_enums($table, $columnName)
+    private function extract_enums(string $table, string $columnName)
     {
         $query = "SHOW COLUMNS FROM {$table} LIKE '{$columnName}'";
         $column = DB::select($query);
