@@ -18,7 +18,7 @@ class Book extends Model
         'accession',
         'call_number',
         'title',
-        'author',
+        'authors',
         'description',
         'edition',
         'isbn',
@@ -35,6 +35,11 @@ class Book extends Model
         'availability_status',
         'condition_status',
     ];
+    protected $casts = [
+        'description' => 'array',
+        'authors' => 'array',
+    ];
+
     public static function getTableName()
     {
         return (new self())->getTable();
