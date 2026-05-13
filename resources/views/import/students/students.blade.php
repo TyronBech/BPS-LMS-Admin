@@ -1,39 +1,66 @@
 @extends('layouts.admin-app')
+
 @section('content')
-<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
-  <h4 class="text-2xl font-semibold mt-3 text-center">User's Data</h4>
-  <p class="mt-1 text-md/relaxed text-center">Import student's data to be used in the application using the Excel format</p>
-  <p class="mt-1 text-sm/relaxed text-slate-500 text-center">ex. newly enrolled students or transferred students can be imported.</p>
+<div class="container mx-auto px-4 py-6">
+  <div class="mb-6 text-center">
+    <h4 class="text-2xl font-bold text-slate-800 dark:text-white">Student Import</h4>
+    <p class="text-sm text-slate-500 mt-1">Bulk import student accounts using Excel format.</p>
+  </div>
+
   @if(!$showTable)
-  <div class="border-2 border-slate-700 rounded-lg flex flex-col text-center items-center mb-4 mt-4 p-4 sm:p-6 max-w-lg mx-auto">
-    <form action="{{ route('import.upload-students') }}" method="POST" enctype="multipart/form-data" class="w-full">
-      @csrf
-      <label class="block mt-4 text-sm font-medium text-gray-600" for="file_input">Upload a file in Excel format</label>
-      <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none focus:ring-primary-400 focus:border-primary-400 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:focus:ring-primary-500 dark:focus:border-primary-500 mt-2" id="file_input" name="file" type="file">
-      <button type="submit" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-2 focus:ring-green-300 font-medium rounded-lg text-md px-4 py-2 me-2 mb-2 mt-4">Import</button>
-    </form>
+  <div class="max-w-xl mx-auto">
+    <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-md p-6">
+      <form action="{{ route('import.upload-students') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
+        @csrf
+        <div class="flex flex-col items-center justify-center border-2 border-dashed border-secondary-200 dark:border-slate-600 rounded-lg p-8 bg-slate-50 dark:bg-slate-900 transition-colors hover:bg-slate-100 cursor-pointer relative group">
+          <input type="file" name="file" id="file_input" accept=".xlsx, .xls" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+          <svg class="w-10 h-10 text-primary-500 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+          </svg>
+          <p class="text-sm font-medium text-slate-700 dark:text-slate-200">Click or drag Excel file here</p>
+          <p id="file-name" class="mt-2 text-xs text-primary-600 font-semibold truncate max-w-full hidden"></p>
+        </div>
+
+        <div class="flex flex-col items-center gap-3 pt-2">
+          <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-6 rounded-md shadow-sm transition-all focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
+            Upload & Preview
+          </button>
+
+          <a href="{{ route('import.download-students-template') }}" class="skip-loader text-xs text-secondary-600 hover:text-secondary-700 underline font-medium">
+            Download Student Excel Template
+          </a>
+        </div>
+      </form>
+    </div>
   </div>
   @else
-  <form id="import-form" action="{{ route('import.upload-students') }}" method="POST" class="w-full mt-6">
-    @csrf
-    <div class="overflow-x-auto">
-      @include('import.students.table')
+  <div class="space-y-4">
+    @include('import.students.table')
+
+    <div class="flex justify-center gap-4 py-4">
+      <a href="{{ route('import.import-students') }}" class="px-6 py-2 border border-slate-300 dark:border-slate-600 rounded-md text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all">
+        Cancel
+      </a>
+      <button type="submit" form="import-form" formaction="{{ route('import.store-students') }}" class="px-8 py-2 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-md shadow-md transition-all">
+        Insert to Database
+      </button>
     </div>
-    <div class="flex justify-center">
-      <button type="submit" formaction="{{ route('import.store-students') }}" class="focus:outline-none text-white bg-green-700 hover:bg-green-800 focus:ring-2 focus:ring-green-300 font-medium rounded-lg text-md px-4 py-2 me-2 mb-2 mt-4">Insert to Database</button>
-    </div>
-  </form>
-  @endif
-  @if(!$showTable)
-  <div class="flex justify-center mt-4">
-    <a href="{{ route('import.download-students-template') }}" class="skip-loader flex items-center text-primary-500 hover:text-primary-400 dark:text-primary-400 dark:hover:text-primary-500 underline">
-      Download template for students
-      <svg class="w-6 h-6 ml-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-        <path fill-rule="evenodd" d="M13 11.15V4a1 1 0 1 0-2 0v7.15L8.78 8.374a1 1 0 1 0-1.56 1.25l4 5a1 1 0 0 0 1.56 0l4-5a1 1 0 1 0-1.56-1.25L13 11.15Z" clip-rule="evenodd" />
-        <path fill-rule="evenodd" d="M9.657 15.874 7.358 13H5a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2h-2.358l-2.3 2.874a3 3 0 0 1-4.685 0ZM17 16a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H17Z" clip-rule="evenodd" />
-      </svg>
-    </a>
   </div>
   @endif
 </div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const fileInput = document.getElementById('file_input');
+    const fileName = document.getElementById('file-name');
+    if (fileInput) {
+      fileInput.addEventListener('change', function() {
+        if (this.files && this.files[0]) {
+          fileName.textContent = this.files[0].name;
+          fileName.classList.remove('hidden');
+        }
+      });
+    }
+  });
+</script>
 @endsection

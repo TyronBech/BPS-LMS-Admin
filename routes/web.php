@@ -10,7 +10,7 @@ use App\Http\Controllers\Report\VisitorLogsController;
 use App\Http\Controllers\Report\TransactionController;
 use App\Http\Controllers\Report\BookCirculationController;
 use App\Http\Controllers\Import\StudentImportController;
-use App\Http\Controllers\Import\BookImportController;
+use App\Http\Controllers\Import\MaterialImportController;
 use App\Http\Controllers\Import\FacultyStaffImportController;
 use App\Http\Controllers\Maintenance\AdminMaintenanceController;
 use App\Http\Controllers\Maintenance\BookMaintenanceController;
@@ -47,7 +47,7 @@ use App\Http\Middleware\UserAuthentication;
 use App\Http\Middleware\InventoryAuthentication;
 use App\Http\Middleware\PrivilegeAuthentication;
 use App\Http\Middleware\BookCategoriesAuthentication;
-use App\Http\Middleware\BookImportAuthentication;
+use App\Http\Middleware\MaterialImportAuthentication;
 use App\Http\Middleware\EmployeeImportAuthentication;
 use App\Http\Middleware\ImportAuthentication;
 use App\Http\Middleware\MaintenanceAuthentication;
@@ -197,11 +197,11 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
             Route::get('employees/download-template', 'downloadTemplate')->name('import.download-employee-template');
         });
 
-        Route::controller(BookImportController::class)->middleware(BookImportAuthentication::class)->group(function () {
-            Route::get('books', 'index')->name('import.import-books');
-            Route::match(['get', 'post'], 'upload-books', 'upload')->name('import.upload-books');
-            Route::post('store-books', 'store')->name('import.store-books');
-            Route::get('books/download-template', 'downloadTemplate')->name('import.download-book-template');
+        Route::controller(MaterialImportController::class)->middleware(MaterialImportAuthentication::class)->group(function () {
+            Route::get('materials', 'index')->name('import.import-materials');
+            Route::match(['get', 'post'], 'upload-materials', 'upload')->name('import.upload-materials');
+            Route::post('store-materials', 'store')->name('import.store-materials');
+            Route::get('materials/download-template', 'downloadTemplate')->name('import.download-materials-template');
         });
     });
 

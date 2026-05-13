@@ -140,7 +140,7 @@ class StudentImportController extends Controller
                 'middle_name' => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
                 'last_name' => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
                 'suffix' => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
-                'id_number' => 'required|string|min:10|regex:/^[0-9]+$/u',
+                'id_number' => 'required|string|max:20|regex:/^[A-Za-z0-9\-\s]+$/u',
                 'grade_level' => 'required|numeric|min:7|max:12',
                 'section' => 'required|string|max:50',
                 'gender' => 'required|string|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
@@ -492,7 +492,7 @@ class StudentImportController extends Controller
                     return redirect()->route('import.import-students')->with('toast-error', "Excel file is empty.");
                 }
 
-                for ($i = 19; $i < count($rows); $i++) {
+                for ($i = 18; $i < count($rows); $i++) {
                     if (empty(array_filter(array_slice($rows[$i], 1, 7)))) {
                         Log::debug('Student Import: Skipping empty row in Excel', [
                             'row_number' => $i + 1,

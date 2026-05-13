@@ -147,7 +147,7 @@ class FacultyStaffImportController extends Controller
                 'gender'        => 'required|string|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
                 'email'         => 'required|string|email|max:255',
                 'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
-                'employee_id'   => 'required|string|min:6|max:12|regex:/^[0-9]+$/u',
+                'employee_id'   => 'required|string|max:50|regex:/^[A-Za-z0-9\-\s]+$/u',
             ]);
 
             if ($validator->fails()) {
@@ -487,19 +487,9 @@ class FacultyStaffImportController extends Controller
                     ]);
 
                     return redirect()->route('import.import-faculties-staffs')->with('toast-error', "Excel file is empty.");
-                } else if (count($rows[0]) > 11 || count($rows[0]) < 11) {
-                    Log::error('Faculty/Staff Import: Invalid number of columns', [
-                        'file_name' => $file->getClientOriginalName(),
-                        'expected_columns' => 11,
-                        'actual_columns' => count($rows[0]),
-                        'user_id' => Auth::id(),
-                        'timestamp' => now(),
-                    ]);
+                } 
 
-                    return redirect()->route('import.import-faculties-staffs')->with('toast-error', "An error occurred while saving faculties & staffs: Wrong number of columns.");
-                }
-
-                for ($i = 19; $i < count($rows); $i++) {
+                for ($i = 18; $i < count($rows); $i++) {
                     if (empty(array_filter(array_slice($rows[$i], 1, 7)))) {
                         Log::debug('Faculty/Staff Import: Skipping empty row in Excel', [
                             'row_number' => $i + 1,

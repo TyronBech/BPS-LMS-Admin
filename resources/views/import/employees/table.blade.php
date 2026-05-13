@@ -1,131 +1,156 @@
-<div class="w-full border-collapse border-2 border-slate-900 mt-2 mb-4 rounded-lg bg-white dark:bg-slate-800 dark:border-slate-700">
-  <h2 class="text-center mb-2 mt-4 font-semibold text-2xl">Spreadsheet Contents</h2>
-  <div class="p-4">
-    <div class="flex items-center">
-      <label for="perPage" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Show</label>
-      <select name="perPage" id="perPage" onchange="submitImportForm()" class="border border-gray-300 text-xs rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
-        <option value="10" @if(isset($perPage) && $perPage == 10) selected @endif>10</option>
-        <option value="25" @if(isset($perPage) && $perPage == 25) selected @endif>25</option>
-        <option value="50" @if(isset($perPage) && $perPage == 50) selected @endif>50</option>
-      </select>
-      <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">entries per page</span>
+<div class="bg-white dark:bg-slate-800 shadow-lg rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700">
+  <form id="import-form" action="{{ route('import.upload-faculties-staffs') }}" method="POST" class="w-full">
+    @csrf
+    <div class="bg-slate-50 dark:bg-slate-900 px-4 py-3 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
+      <span class="text-sm font-bold text-slate-700 dark:text-slate-300">Faculty & Staff Import Preview</span>
+      <div class="flex items-center gap-2">
+        <label for="perPage" class="text-[11px] font-bold text-slate-500 uppercase">Show</label>
+        <select name="perPage" id="perPage" onchange="submitImportForm()" class="bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 text-xs rounded p-1 focus:ring-primary-500">
+          <option value="10" @if(isset($perPage) && $perPage==10) selected @endif>10</option>
+          <option value="25" @if(isset($perPage) && $perPage==25) selected @endif>25</option>
+          <option value="50" @if(isset($perPage) && $perPage==50) selected @endif>50</option>
+        </select>
+      </div>
     </div>
-  </div>
-  @if($new)
-  <div class="inline-flex items-center justify-center w-full">
-    <hr class="w-full h-px m-4 bg-gray-500 border-0 dark:bg-gray-700">
-    <span class="absolute px-3 font-medium text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-green-400 dark:bg-gray-800">New Faculties & Staffs: {{ $newPaginatedData->total() }}</span>
-  </div>
-  <div class="overflow-x-auto p-4">
-    <table class="min-w-full table-auto bg-white dark:bg-gray-800">
-      <thead class="bg-primary-400 font-bold text-slate-200">
-        <tr>
-          <th class="px-6 py-3 text-left">RFID</th>
-          <th class="px-6 py-3 text-left">First Name</th>
-          <th class="px-6 py-3 text-left">Middle Name</th>
-          <th class="px-6 py-3 text-left">Last Name</th>
-          <th class="px-6 py-3 text-left">Suffix</th>
-          <th class="px-6 py-3 text-left">Gender</th>
-          <th class="px-6 py-3 text-left">Email</th>
-          <th class="px-6 py-3 text-left">Employee ID</th>
-          <th class="px-6 py-3 text-left">Position</th>
-        </tr>
-      </thead>
-      <tbody class="text-left">
-        @php $startIndex = ($newPaginatedData->currentPage() - 1) * $newPaginatedData->perPage(); @endphp
-        @forelse($newPaginatedData as $index => $item)
-        @php $itemIndex = $startIndex + $index; @endphp
-        <tr>
-          <td class="px-2 py-2"><input type="text" name="new_employees[{{ $itemIndex }}][rfid]" value="{{ $item['rfid'] }}" class="p-2 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2 min-w-[150px]"></td>
-          <td class="px-2 py-2"><input type="text" name="new_employees[{{ $itemIndex }}][first_name]" value="{{ $item['first_name'] }}" class="p-2 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2 min-w-[150px]"></td>
-          <td class="px-2 py-2"><input type="text" name="new_employees[{{ $itemIndex }}][middle_name]" value="{{ $item['middle_name'] }}" class="p-2 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2 min-w-[150px]"></td>
-          <td class="px-2 py-2"><input type="text" name="new_employees[{{ $itemIndex }}][last_name]" value="{{ $item['last_name'] }}" class="p-2 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2 min-w-[150px]"></td>
-          <td class="px-2 py-2"><input type="text" name="new_employees[{{ $itemIndex }}][suffix]" value="{{ $item['suffix'] ?? '' }}" class="p-2 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2 min-w-[80px]"></td>
-          <td class="px-2 py-2"><input type="text" name="new_employees[{{ $itemIndex }}][gender]" value="{{ $item['gender'] }}" class="p-2 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2 min-w-[100px]"></td>
-          <td class="px-2 py-2"><input type="text" name="new_employees[{{ $itemIndex }}][email]" value="{{ $item['email'] }}" class="p-2 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2 min-w-[250px]"></td>
-          <td class="px-2 py-2"><input type="text" name="new_employees[{{ $itemIndex }}][employee_id]" value="{{ $item['employee_id'] }}" class="p-2 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2 min-w-[150px]"></td>
-          <td class="px-2 py-2"><input type="text" name="new_employees[{{ $itemIndex }}][employee_role]" value="{{ $item['employee_role'] }}" class="p-2 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2 min-w-[200px]"></td>
-        </tr>
-        @empty
-        <tr>
-          <td colspan="9" class="py-4 text-center">No data found.</td>
-        </tr>
-        @endforelse
-      </tbody>
-    </table>
-    <div class="mt-4 pagination-links">
-        {{ $newPaginatedData->appends(request()->except('new'))->links() }}
+
+    <div class="p-4 space-y-8">
+      @if($new)
+      <div class="space-y-3">
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400 text-[10px] font-black uppercase tracking-wider rounded-full border border-green-200 dark:border-green-800">
+            New Faculty & Staff ({{ $newPaginatedData->total() }})
+          </span>
+          <div class="h-px bg-slate-100 dark:bg-slate-700 flex-grow"></div>
+        </div>
+
+        <div class="overflow-x-auto rounded border border-slate-100 dark:border-slate-700">
+          <table class="w-full text-left border-collapse min-w-[1000px]">
+            <thead>
+              <tr class="bg-primary-600 text-white text-[10px] uppercase tracking-wider font-black">
+                <th class="px-3 py-2 border-r border-primary-500 w-[150px]">RFID & ID</th>
+                <th class="px-3 py-2 border-r border-primary-500">Full Name Details</th>
+                <th class="px-3 py-2 border-r border-primary-500 w-[100px]">Gender</th>
+                <th class="px-3 py-2 border-r border-primary-500">Email Address</th>
+                <th class="px-3 py-2 w-[200px]">Employment Role</th>
+              </tr>
+            </thead>
+            <tbody class="text-[11px]">
+              @php $startIndex = ($newPaginatedData->currentPage() - 1) * $newPaginatedData->perPage(); @endphp
+              @forelse($newPaginatedData as $index => $item)
+              @php $itemIndex = $startIndex + $index; @endphp
+              <tr class="border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50/50 dark:hover:bg-slate-900/30">
+                <td class="p-2 space-y-1 bg-slate-50/30 dark:bg-slate-900/10">
+                  <input type="text" name="new_employees[{{ $itemIndex }}][rfid]" value="{{ $item['rfid'] }}" class="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[10px] p-1 h-6 font-mono" placeholder="RFID">
+                  <input type="text" name="new_employees[{{ $itemIndex }}][employee_id]" value="{{ $item['employee_id'] }}" class="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[10px] p-1 h-6 font-mono" placeholder="Emp ID">
+                </td>
+                <td class="p-2">
+                  <div class="grid grid-cols-4 gap-1">
+                    <input type="text" name="new_employees[{{ $itemIndex }}][last_name]" value="{{ $item['last_name'] }}" class="col-span-1 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7" placeholder="Last Name">
+                    <input type="text" name="new_employees[{{ $itemIndex }}][first_name]" value="{{ $item['first_name'] }}" class="col-span-1 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7" placeholder="First Name">
+                    <input type="text" name="new_employees[{{ $itemIndex }}][middle_name]" value="{{ $item['middle_name'] }}" class="col-span-1 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7" placeholder="Middle">
+                    <input type="text" name="new_employees[{{ $itemIndex }}][suffix]" value="{{ $item['suffix'] ?? '' }}" class="col-span-1 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7" placeholder="Sfx">
+                  </div>
+                </td>
+                <td class="p-2 text-center">
+                  <input type="text" name="new_employees[{{ $itemIndex }}][gender]" value="{{ $item['gender'] }}" class="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7 text-center">
+                </td>
+                <td class="p-2">
+                  <input type="text" name="new_employees[{{ $itemIndex }}][email]" value="{{ $item['email'] }}" class="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7">
+                </td>
+                <td class="p-2 bg-secondary-50/10 dark:bg-slate-900/20">
+                  <input type="text" name="new_employees[{{ $itemIndex }}][employee_role]" value="{{ $item['employee_role'] }}" class="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7" placeholder="Position/Role">
+                </td>
+              </tr>
+              @empty
+              <tr>
+                <td colspan="5" class="py-8 text-center text-slate-400 italic">No new faculty found.</td>
+              </tr>
+              @endforelse
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination-links mt-2">
+          {{ $newPaginatedData->appends(request()->except('new'))->links() }}
+        </div>
+      </div>
+      @endif
+
+      @if($existing)
+      <div class="space-y-3">
+        <div class="flex items-center gap-3">
+          <span class="px-3 py-1 bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400 text-[10px] font-black uppercase tracking-wider rounded-full border border-amber-200 dark:border-amber-800">
+            Existing Faculty & Staff ({{ $existingPaginatedData->total() }})
+          </span>
+          <div class="h-px bg-slate-100 dark:bg-slate-700 flex-grow"></div>
+        </div>
+
+        <div class="overflow-x-auto rounded border border-slate-100 dark:border-slate-700">
+          <table class="w-full text-left border-collapse min-w-[1000px]">
+            <thead>
+              <tr class="bg-slate-700 text-white text-[10px] uppercase tracking-wider font-black">
+                <th class="px-3 py-2 border-r border-slate-600 w-[150px]">RFID & ID</th>
+                <th class="px-3 py-2 border-r border-slate-600">Full Name Details</th>
+                <th class="px-3 py-2 border-r border-slate-600 w-[100px]">Gender</th>
+                <th class="px-3 py-2 border-r border-slate-600">Email Address</th>
+                <th class="px-3 py-2 w-[200px]">Employment Role</th>
+              </tr>
+            </thead>
+            <tbody class="text-[11px]">
+              @php $startIndex = ($existingPaginatedData->currentPage() - 1) * $existingPaginatedData->perPage(); @endphp
+              @forelse($existingPaginatedData as $index => $item)
+              @php $itemIndex = $startIndex + $index; @endphp
+              <tr class="border-b border-slate-50 dark:border-slate-700/50 hover:bg-slate-50/50 dark:hover:bg-slate-900/30">
+                <td class="p-2 space-y-1 bg-slate-50/30 dark:bg-slate-900/10">
+                  <input type="text" name="existing_employees[{{ $itemIndex }}][rfid]" value="{{ $item['rfid'] }}" class="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[10px] p-1 h-6 font-mono" placeholder="RFID">
+                  <input type="text" name="existing_employees[{{ $itemIndex }}][employee_id]" value="{{ $item['employee_id'] }}" class="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[10px] p-1 h-6 font-mono" placeholder="Emp ID">
+                </td>
+                <td class="p-2">
+                  <div class="grid grid-cols-4 gap-1">
+                    <input type="text" name="existing_employees[{{ $itemIndex }}][last_name]" value="{{ $item['last_name'] }}" class="col-span-1 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7" placeholder="Last Name">
+                    <input type="text" name="existing_employees[{{ $itemIndex }}][first_name]" value="{{ $item['first_name'] }}" class="col-span-1 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7" placeholder="First Name">
+                    <input type="text" name="existing_employees[{{ $itemIndex }}][middle_name]" value="{{ $item['middle_name'] }}" class="col-span-1 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7" placeholder="Middle">
+                    <input type="text" name="existing_employees[{{ $itemIndex }}][suffix]" value="{{ $item['suffix'] ?? '' }}" class="col-span-1 bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7" placeholder="Sfx">
+                  </div>
+                </td>
+                <td class="p-2 text-center">
+                  <input type="text" name="existing_employees[{{ $itemIndex }}][gender]" value="{{ $item['gender'] }}" class="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7 text-center">
+                </td>
+                <td class="p-2">
+                  <input type="text" name="existing_employees[{{ $itemIndex }}][email]" value="{{ $item['email'] }}" class="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7">
+                </td>
+                <td class="p-2 bg-secondary-50/10 dark:bg-slate-900/20">
+                  <input type="text" name="existing_employees[{{ $itemIndex }}][employee_role]" value="{{ $item['employee_role'] }}" class="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7" placeholder="Position/Role">
+                </td>
+              </tr>
+              @empty
+              <tr>
+                <td colspan="5" class="py-8 text-center text-slate-400 italic">No existing faculty found.</td>
+              </tr>
+              @endforelse
+            </tbody>
+          </table>
+        </div>
+        <div class="pagination-links mt-2">
+          {{ $existingPaginatedData->appends(request()->except('existing'))->links() }}
+        </div>
+      </div>
+      @endif
     </div>
-  </div>
-  @endif
-  @if($existing)
-  <div class="inline-flex items-center justify-center w-full">
-    <hr class="w-full h-px m-4 bg-gray-500 border-0 dark:bg-gray-700">
-    <span class="absolute px-3 font-medium text-gray-900 -translate-x-1/2 bg-white left-1/2 dark:text-yellow-400 dark:bg-gray-800">Existing Faculties & Staffs: {{ $existingPaginatedData->total() }}</span>
-  </div>
-  <div class="overflow-x-auto p-4">
-    <table class="min-w-full table-auto bg-white dark:bg-gray-800">
-      <thead class="bg-primary-400 font-bold text-slate-200">
-        <tr>
-          <th class="px-6 py-3 text-left">RFID</th>
-          <th class="px-6 py-3 text-left">First Name</th>
-          <th class="px-6 py-3 text-left">Middle Name</th>
-          <th class="px-6 py-3 text-left">Last Name</th>
-          <th class="px-6 py-3 text-left">Suffix</th>
-          <th class="px-6 py-3 text-left">Gender</th>
-          <th class="px-6 py-3 text-left">Email</th>
-          <th class="px-6 py-3 text-left">Employee ID</th>
-          <th class="px-6 py-3 text-left">Position</th>
-        </tr>
-      </thead>
-      <tbody class="text-left">
-        @php $startIndex = ($existingPaginatedData->currentPage() - 1) * $existingPaginatedData->perPage(); @endphp
-        @forelse($existingPaginatedData as $index => $item)
-        @php $itemIndex = $startIndex + $index; @endphp
-        <tr>
-          <td class="px-2 py-2"><input type="text" name="existing_employees[{{ $itemIndex }}][rfid]" value="{{ $item['rfid'] }}" class="p-2 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2 min-w-[150px]"></td>
-          <td class="px-2 py-2"><input type="text" name="existing_employees[{{ $itemIndex }}][first_name]" value="{{ $item['first_name'] }}" class="p-2 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2 min-w-[150px]"></td>
-          <td class="px-2 py-2"><input type="text" name="existing_employees[{{ $itemIndex }}][middle_name]" value="{{ $item['middle_name'] }}" class="p-2 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2 min-w-[150px]"></td>
-          <td class="px-2 py-2"><input type="text" name="existing_employees[{{ $itemIndex }}][last_name]" value="{{ $item['last_name'] }}" class="p-2 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2 min-w-[150px]"></td>
-          <td class="px-2 py-2"><input type="text" name="existing_employees[{{ $itemIndex }}][suffix]" value="{{ $item['suffix'] ?? '' }}" class="p-2 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2 min-w-[80px]"></td>
-          <td class="px-2 py-2"><input type="text" name="existing_employees[{{ $itemIndex }}][gender]" value="{{ $item['gender'] }}" class="p-2 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2 min-w-[100px]"></td>
-          <td class="px-2 py-2"><input type="text" name="existing_employees[{{ $itemIndex }}][email]" value="{{ $item['email'] }}" class="p-2 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2 min-w-[250px]"></td>
-          <td class="px-2 py-2"><input type="text" name="existing_employees[{{ $itemIndex }}][employee_id]" value="{{ $item['employee_id'] }}" class="p-2 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2 min-w-[150px]"></td>
-          <td class="px-2 py-2"><input type="text" name="existing_employees[{{ $itemIndex }}][employee_role]" value="{{ $item['employee_role'] }}" class="p-2 border-0 w-full bg-white dark:bg-gray-800 focus:border-b-2 hover:border-b-2 min-w-[200px]"></td>
-        </tr>
-        @empty
-        <tr>
-          <td colspan="9" class="py-4 text-center">No data found.</td>
-        </tr>
-        @endforelse
-      </tbody>
-    </table>
-    <div class="mt-4 pagination-links">
-        {{ $existingPaginatedData->appends(request()->except('existing'))->links() }}
-    </div>
-  </div>
-  @endif
+  </form>
 </div>
 
 <script>
   function submitImportForm(url) {
     const form = document.getElementById('import-form');
-    if (url) {
-      form.action = url;
-    }
+    if (url) form.action = url;
     form.submit();
   }
-
   document.addEventListener('DOMContentLoaded', function() {
-    const paginationContainers = document.querySelectorAll('.pagination-links');
-    paginationContainers.forEach(container => {
-        container.addEventListener('click', function(e) {
-            const target = e.target.closest('a');
-            if (target) {
-              e.preventDefault();
-              submitImportForm(target.href);
-            }
-        });
+    document.querySelectorAll('.pagination-links a').forEach(link => {
+      link.addEventListener('click', function(e) {
+        e.preventDefault();
+        submitImportForm(this.href);
+      });
     });
   });
 </script>

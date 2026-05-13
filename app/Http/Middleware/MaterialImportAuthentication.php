@@ -9,7 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Symfony\Component\HttpFoundation\Response;
 
-class BookImportAuthentication
+class MaterialImportAuthentication
 {
     /**
      * Handle an incoming request.
