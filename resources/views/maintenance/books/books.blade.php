@@ -116,12 +116,13 @@
     const suggestionsContainer = document.getElementById('suggestions-container');
     const suggestionsList = document.getElementById('suggestions-list');
     const books = <?php echo json_encode($books->map(function ($book) {
+                    $authorStr = is_array($book->authors) ? implode(', ', array_filter($book->authors)) : ($book->authors ?? '');
                     return [
                       'title' => $book->title,
-                      'author' => $book->author,
+                      'author' => $authorStr,
                       'isbn' => $book->isbn,
                     ];
-                  })); ?>;
+                  })) ?>;
 
     searchInput.addEventListener('input', function() {
       const query = this.value.toLowerCase();
@@ -134,14 +135,14 @@
 
       const filteredBooks = books.filter(book =>
         book.title.toLowerCase().includes(query) ||
-        book.author.toLowerCase().includes(query) ||
+        (book.author && book.author.toLowerCase().includes(query)) ||
         (book.isbn && book.isbn.toLowerCase().includes(query))
       );
 
       if (filteredBooks.length > 0) {
         filteredBooks.forEach(book => {
           const li = document.createElement('li');
-          li.textContent = `${book.title} by ${book.author}`;
+          li.textContent = book.author ? `${book.title} by ${book.author}` : book.title;
           li.className = 'px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600';
           li.addEventListener('click', function() {
             searchInput.value = book.title;
