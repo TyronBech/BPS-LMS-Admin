@@ -5,7 +5,7 @@
   <div class="w-full p-4 sm:p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
       <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Add New Material</h5>
-      <a href="{{ request('return_to', route('maintenance.books')) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-primary-500 rounded-lg hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500 mt-4 sm:mt-0">
+      <a href="{{ request('return_to', route('maintenance.books')) }}" class="skip-loader inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-primary-500 rounded-lg hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500 mt-4 sm:mt-0">
         <svg class="w-4 h-4 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5H1m0 0 4 4M1 5l4-4" />
         </svg>
@@ -66,17 +66,35 @@
               <input type="text" id="edition" name="edition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 1st Edition" value="{{ old('edition') }}">
             </div>
             <div id="subject-container" class="md:col-span-2 lg:col-span-3">
-              <label for="subject_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Subject:</label>
-              <select id="subject_id" name="subject_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                <option value="">No subject linked</option>
-                @foreach($subjects as $subject)
-                <option value="{{ $subject->id }}" {{ old('subject_id') == $subject->id ? 'selected' : '' }}>
-                  {{ $subject->name }}{{ $subject->ddc ? ' (DDC: '.$subject->ddc.')' : '' }}{{ $subject->accessCodes->isNotEmpty() ? ' - '.$subject->accessCodes->pluck('access_code')->implode(', ') : '' }}
-                </option>
-                @endforeach
-              </select>
-              <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 italic">Configure in Subject Maintenance.</p>
-              @error('subject_id') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
+              <label for="subject_search" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Subject Access Codes:</label>
+              
+              <div class="relative" id="multiselect-subject">
+                {{-- Visible Search & Tags Container --}}
+                <div id="subject-tags-container" class="flex flex-wrap gap-2 p-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus-within:ring-primary-400 focus-within:border-primary-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white min-h-[45px] cursor-text">
+                  {{-- Tags will be injected here by JS --}}
+                  <input type="text" id="subject_search" class="flex-grow bg-transparent border-none focus:ring-0 p-0 text-sm min-w-[150px] placeholder-gray-400" placeholder="Search and select subjects...">
+                </div>
+
+                {{-- Dropdown Results --}}
+                <div id="subject-dropdown" class="absolute z-30 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto">
+                  <ul id="subject-options-list" class="py-1 text-sm text-gray-700 dark:text-gray-200">
+                    {{-- Options will be injected here by JS --}}
+                  </ul>
+                  <div id="no-subjects-found" class="px-4 py-2 text-gray-500 dark:text-gray-400 hidden">No subjects found.</div>
+                </div>
+
+                {{-- Actual Hidden Select for Form Submission --}}
+                <select name="subject_access_codes[]" id="subject_access_codes" class="hidden" multiple>
+                  @foreach($subjects as $subject)
+                  <option value="{{ $subject->id }}" {{ in_array($subject->id, old('subject_access_codes', [])) ? 'selected' : '' }}>
+                    {{ $subject->access_code }}
+                  </option>
+                  @endforeach
+                </select>
+              </div>
+              
+              <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 italic">Click to select subjects. Search to filter. Configure in Subject Maintenance.</p>
+              @error('subject_access_codes') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
           </div>
         </div>
@@ -388,6 +406,99 @@
 
     restructureFormByBookType();
     applyAvailabilityRule();
+
+    // --- Subject Multiselect Logic ---
+    const subjectSearch = document.getElementById('subject_search');
+    const subjectDropdown = document.getElementById('subject-dropdown');
+    const subjectOptionsList = document.getElementById('subject-options-list');
+    const subjectTagsContainer = document.getElementById('subject-tags-container');
+    const subjectHiddenSelect = document.getElementById('subject_access_codes');
+    const noSubjectsFound = document.getElementById('no-subjects-found');
+
+    // Get all subjects from the hidden select
+    const allSubjects = Array.from(subjectHiddenSelect.options).map(opt => ({
+      id: opt.value,
+      text: opt.text.trim()
+    }));
+
+    function updateTags() {
+      // Clear existing tags except the input
+      const existingTags = subjectTagsContainer.querySelectorAll('.subject-tag');
+      existingTags.forEach(tag => tag.remove());
+
+      // Add new tags for selected options
+      Array.from(subjectHiddenSelect.options).forEach(opt => {
+        if (opt.selected) {
+          const tag = document.createElement('span');
+          tag.className = 'subject-tag inline-flex items-center gap-1 px-2 py-1 bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-300 rounded text-xs font-medium border border-primary-200 dark:border-primary-800 transition-all';
+          tag.innerHTML = `
+            ${opt.text}
+            <button type="button" class="remove-tag text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-200 focus:outline-none" data-id="${opt.value}">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          `;
+          subjectTagsContainer.insertBefore(tag, subjectSearch);
+          
+          tag.querySelector('.remove-tag').addEventListener('click', (e) => {
+            e.stopPropagation();
+            opt.selected = false;
+            updateTags();
+          });
+        }
+      });
+    }
+
+    function renderDropdown(filter = '') {
+      subjectOptionsList.innerHTML = '';
+      const filtered = allSubjects.filter(s => 
+        s.text.toLowerCase().includes(filter.toLowerCase()) && 
+        !subjectHiddenSelect.querySelector(`option[value="${s.id}"]`).selected
+      );
+
+      if (filtered.length > 0) {
+        noSubjectsFound.classList.add('hidden');
+        filtered.forEach(subject => {
+          const li = document.createElement('li');
+          li.className = 'px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors';
+          li.textContent = subject.text;
+          li.addEventListener('click', () => {
+            const opt = subjectHiddenSelect.querySelector(`option[value="${subject.id}"]`);
+            if (opt) opt.selected = true;
+            subjectSearch.value = '';
+            subjectDropdown.classList.add('hidden');
+            updateTags();
+          });
+          subjectOptionsList.appendChild(li);
+        });
+      } else {
+        noSubjectsFound.classList.remove('hidden');
+      }
+    }
+
+    subjectSearch.addEventListener('input', (e) => {
+      subjectDropdown.classList.remove('hidden');
+      renderDropdown(e.target.value);
+    });
+
+    subjectSearch.addEventListener('focus', () => {
+      subjectDropdown.classList.remove('hidden');
+      renderDropdown(subjectSearch.value);
+    });
+
+    // Handle clicks outside to close dropdown
+    document.addEventListener('click', (e) => {
+      if (!subjectSearch.contains(e.target) && !subjectDropdown.contains(e.target)) {
+        subjectDropdown.classList.add('hidden');
+      }
+    });
+
+    // Focus input when clicking the container
+    subjectTagsContainer.addEventListener('click', () => {
+      subjectSearch.focus();
+    });
+
+    // Initialize tags
+    updateTags();
   });
 </script>
 @endsection

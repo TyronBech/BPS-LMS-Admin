@@ -5,7 +5,7 @@
   <div class="w-full p-4 sm:p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
       <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Edit Material</h5>
-      <a href="{{ request('return_to', route('maintenance.books')) }}" class="inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-primary-500 rounded-lg hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500 mt-4 sm:mt-0">
+      <a href="{{ request('return_to', route('maintenance.books')) }}" class="skip-loader inline-flex items-center px-4 py-2 text-sm font-medium text-center text-white bg-primary-500 rounded-lg hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500 mt-4 sm:mt-0">
         <svg class="w-4 h-4 me-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 10">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5H1m0 0 4 4M1 5l4-4" />
         </svg>
@@ -67,17 +67,35 @@
               <input type="text" id="edition" name="edition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 1st Edition" value="{{ old('edition', $book->edition) }}">
             </div>
             <div id="subject-container" class="md:col-span-2 lg:col-span-3">
-              <label for="subject_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Subject:</label>
-              <select id="subject_id" name="subject_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-                <option value="">No subject linked</option>
-                @foreach($subjects as $subject)
-                <option value="{{ $subject->id }}" {{ old('subject_id', $linkedSubjectId) == $subject->id ? 'selected' : '' }}>
-                  {{ $subject->name }}{{ $subject->ddc ? ' (DDC: '.$subject->ddc.')' : '' }}{{ $subject->accessCodes->isNotEmpty() ? ' - '.$subject->accessCodes->pluck('access_code')->implode(', ') : '' }}
-                </option>
-                @endforeach
-              </select>
-              <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 italic">Configure in Subject Maintenance.</p>
-              @error('subject_id') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
+              <label for="subject_search" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Subject Access Codes:</label>
+              
+              <div class="relative" id="multiselect-subject">
+                {{-- Visible Search & Tags Container --}}
+                <div id="subject-tags-container" class="flex flex-wrap gap-2 p-2.5 bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus-within:ring-primary-400 focus-within:border-primary-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white min-h-[45px] cursor-text">
+                  {{-- Tags will be injected here by JS --}}
+                  <input type="text" id="subject_search" class="flex-grow bg-transparent border-none focus:ring-0 p-0 text-sm min-w-[150px] placeholder-gray-400" placeholder="Search and select subjects...">
+                </div>
+
+                {{-- Dropdown Results --}}
+                <div id="subject-dropdown" class="absolute z-30 w-full mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg shadow-xl hidden max-h-60 overflow-y-auto">
+                  <ul id="subject-options-list" class="py-1 text-sm text-gray-700 dark:text-gray-200">
+                    {{-- Options will be injected here by JS --}}
+                  </ul>
+                  <div id="no-subjects-found" class="px-4 py-2 text-gray-500 dark:text-gray-400 hidden">No subjects found.</div>
+                </div>
+
+                {{-- Actual Hidden Select for Form Submission --}}
+                <select name="subject_access_codes[]" id="subject_access_codes" class="hidden" multiple>
+                  @foreach($subjects as $subject)
+                  <option value="{{ $subject->id }}" {{ in_array($subject->id, old('subject_access_codes', $linkedSubjectIds)) ? 'selected' : '' }}>
+                    {{ $subject->access_code }}
+                  </option>
+                  @endforeach
+                </select>
+              </div>
+              
+              <p class="mt-2 text-xs text-gray-500 dark:text-gray-400 italic">Click to select subjects. Search to filter. Configure in Subject Maintenance.</p>
+              @error('subject_access_codes') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
           </div>
         </div>
@@ -91,19 +109,19 @@
           <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label for="authors_main" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Main Author:</label>
-              <input type="text" id="authors_main" name="authors[Main author]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Primary Author" value="{{ old('authors.Main author', $book->authors['Main author'] ?? '') }}">
+              <input type="text" id="authors_main" name="authors[Main author]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Primary Author" value="{{ old('authors.Main author', is_array($book->authors['Main author'] ?? '') ? implode(', ', $book->authors['Main author']) : ($book->authors['Main author'] ?? '')) }}">
             </div>
             <div>
               <label for="authors_corporate" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Corporate Author:</label>
-              <input type="text" id="authors_corporate" name="authors[Corporate author]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Organization/Company" value="{{ old('authors.Corporate author', $book->authors['Corporate author'] ?? '') }}">
+              <input type="text" id="authors_corporate" name="authors[Corporate author]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Organization/Company" value="{{ old('authors.Corporate author', is_array($book->authors['Corporate author'] ?? '') ? implode(', ', $book->authors['Corporate author']) : ($book->authors['Corporate author'] ?? '')) }}">
             </div>
             <div>
               <label for="authors_added" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Added Authors:</label>
-              <input type="text" id="authors_added" name="authors[Added authors]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Co-authors" value="{{ old('authors.Added authors', $book->authors['Added authors'] ?? '') }}">
+              <input type="text" id="authors_added" name="authors[Added authors]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Co-authors" value="{{ old('authors.Added authors', is_array($book->authors['Added authors'] ?? '') ? implode(', ', $book->authors['Added authors']) : ($book->authors['Added authors'] ?? '')) }}">
             </div>
             <div>
               <label for="authors_contributors" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Contributors:</label>
-              <input type="text" id="authors_contributors" name="authors[Contributors]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Editors, Translators, etc." value="{{ old('authors.Contributors', $book->authors['Contributors'] ?? '') }}">
+              <input type="text" id="authors_contributors" name="authors[Contributors]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Editors, Translators, etc." value="{{ old('authors.Contributors', is_array($book->authors['Contributors'] ?? '') ? implode(', ', $book->authors['Contributors']) : ($book->authors['Contributors'] ?? '')) }}">
             </div>
             @error('authors.*') <p class="md:col-span-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
           </div>
@@ -119,27 +137,27 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div class="md:col-span-2">
                 <label for="desc_description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Physical Description:</label>
-                <textarea id="desc_description" name="description[Description]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Physical characteristics">{{ old('description.Description', $book->description['Description'] ?? '') }}</textarea>
+                <textarea id="desc_description" name="description[Description]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Physical characteristics">{{ old('description.Description', is_array($book->description['Description'] ?? '') ? implode(', ', $book->description['Description']) : ($book->description['Description'] ?? '')) }}</textarea>
               </div>
               <div>
                 <label for="desc_extent" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Extent (Required):</label>
-                <input type="text" id="desc_extent" name="description[Extent]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., 200 pages" value="{{ old('description.Extent', $book->description['Extent'] ?? '') }}">
+                <input type="text" id="desc_extent" name="description[Extent]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., 200 pages" value="{{ old('description.Extent', is_array($book->description['Extent'] ?? '') ? implode(', ', $book->description['Extent']) : ($book->description['Extent'] ?? '')) }}">
               </div>
               <div>
                 <label for="desc_acc_material" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Acc Material:</label>
-                <input type="text" id="desc_acc_material" name="description[Acc Material]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Accompanying material" value="{{ old('description.Acc Material', $book->description['Acc Material'] ?? '') }}">
+                <input type="text" id="desc_acc_material" name="description[Acc Material]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Accompanying material" value="{{ old('description.Acc Material', is_array($book->description['Acc Material'] ?? '') ? implode(', ', $book->description['Acc Material']) : ($book->description['Acc Material'] ?? '')) }}">
               </div>
               <div class="md:col-span-2">
                 <label for="desc_content_notes" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Content Notes:</label>
-                <textarea id="desc_content_notes" name="description[Content notes]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Table of contents, etc.">{{ old('description.Content notes', $book->description['Content notes'] ?? '') }}</textarea>
+                <textarea id="desc_content_notes" name="description[Content notes]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Table of contents, etc.">{{ old('description.Content notes', is_array($book->description['Content notes'] ?? '') ? implode(', ', $book->description['Content notes']) : ($book->description['Content notes'] ?? '')) }}</textarea>
               </div>
               <div class="md:col-span-2">
                 <label for="desc_abstract" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Abstract:</label>
-                <textarea id="desc_abstract" name="description[Abstract]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Summary or abstract">{{ old('description.Abstract', $book->description['Abstract'] ?? '') }}</textarea>
+                <textarea id="desc_abstract" name="description[Abstract]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Summary or abstract">{{ old('description.Abstract', is_array($book->description['Abstract'] ?? '') ? implode(', ', $book->description['Abstract']) : ($book->description['Abstract'] ?? '')) }}</textarea>
               </div>
               <div class="md:col-span-2">
                 <label for="desc_reviews" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Reviews:</label>
-                <textarea id="desc_reviews" name="description[Reviews]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Material reviews">{{ old('description.Reviews', $book->description['Reviews'] ?? '') }}</textarea>
+                <textarea id="desc_reviews" name="description[Reviews]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Material reviews">{{ old('description.Reviews', is_array($book->description['Reviews'] ?? '') ? implode(', ', $book->description['Reviews']) : ($book->description['Reviews'] ?? '')) }}</textarea>
               </div>
             </div>
             @error('description.*') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
@@ -268,17 +286,16 @@
               @enderror
             </div>
             <div class="md:col-span-2">
-              <label for="copy_subject_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Subject:</label>
-              <select id="copy_subject_id" name="subject_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
-                <option value="">No subject linked</option>
+              <label for="copy_subject_access_codes" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Subject Access Codes:</label>
+              <select id="copy_subject_access_codes" name="subject_access_codes[]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white h-32" multiple>
                 @foreach($subjects as $subject)
-                <option value="{{ $subject->id }}" {{ old('subject_id', $linkedSubjectId) == $subject->id ? 'selected' : '' }}>
-                  {{ $subject->name }}{{ $subject->ddc ? ' (DDC: '.$subject->ddc.')' : '' }}{{ $subject->accessCodes->isNotEmpty() ? ' - '.$subject->accessCodes->pluck('access_code')->implode(', ') : '' }}
+                <option value="{{ $subject->id }}" {{ in_array($subject->id, $linkedSubjectIds) ? 'selected' : '' }}>
+                  {{ $subject->access_code }}
                 </option>
                 @endforeach
               </select>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Create or edit subjects and access codes in Subject Maintenance.</p>
-              @error('subject_id')
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Hold Ctrl (or Cmd) to select multiple. Configure in Subject Maintenance.</p>
+              @error('subject_access_codes')
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
               @enderror
             </div>
@@ -310,12 +327,12 @@
             <input type="hidden" name="title" value="{{ $book->title }}">
             @if(is_array($book->authors))
               @foreach($book->authors as $key => $value)
-                <input type="hidden" name="authors[{{ $key }}]" value="{{ $value }}">
+                <input type="hidden" name="authors[{{ $key }}]" value="{{ is_array($value) ? json_encode($value) : $value }}">
               @endforeach
             @endif
             @if(is_array($book->description))
               @foreach($book->description as $key => $value)
-                <input type="hidden" name="description[{{ $key }}]" value="{{ $value }}">
+                <input type="hidden" name="description[{{ $key }}]" value="{{ is_array($value) ? json_encode($value) : $value }}">
               @endforeach
             @endif
             <input type="hidden" name="publication" value="{{ $book->place_of_publication }}">
@@ -489,6 +506,99 @@
     restructureFormByBookType();
     syncCopyCategoryFromBookType();
     applyAvailabilityRule();
+
+    // --- Subject Multiselect Logic ---
+    const subjectSearch = document.getElementById('subject_search');
+    const subjectDropdown = document.getElementById('subject-dropdown');
+    const subjectOptionsList = document.getElementById('subject-options-list');
+    const subjectTagsContainer = document.getElementById('subject-tags-container');
+    const subjectHiddenSelect = document.getElementById('subject_access_codes');
+    const noSubjectsFound = document.getElementById('no-subjects-found');
+
+    // Get all subjects from the hidden select
+    const allSubjects = Array.from(subjectHiddenSelect.options).map(opt => ({
+      id: opt.value,
+      text: opt.text.trim()
+    }));
+
+    function updateTags() {
+      // Clear existing tags except the input
+      const existingTags = subjectTagsContainer.querySelectorAll('.subject-tag');
+      existingTags.forEach(tag => tag.remove());
+
+      // Add new tags for selected options
+      Array.from(subjectHiddenSelect.options).forEach(opt => {
+        if (opt.selected) {
+          const tag = document.createElement('span');
+          tag.className = 'subject-tag inline-flex items-center gap-1 px-2 py-1 bg-primary-100 text-primary-800 dark:bg-primary-900/40 dark:text-primary-300 rounded text-xs font-medium border border-primary-200 dark:border-primary-800 transition-all';
+          tag.innerHTML = `
+            ${opt.text}
+            <button type="button" class="remove-tag text-primary-600 dark:text-primary-400 hover:text-primary-800 dark:hover:text-primary-200 focus:outline-none" data-id="${opt.value}">
+              <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+          `;
+          subjectTagsContainer.insertBefore(tag, subjectSearch);
+          
+          tag.querySelector('.remove-tag').addEventListener('click', (e) => {
+            e.stopPropagation();
+            opt.selected = false;
+            updateTags();
+          });
+        }
+      });
+    }
+
+    function renderDropdown(filter = '') {
+      subjectOptionsList.innerHTML = '';
+      const filtered = allSubjects.filter(s => 
+        s.text.toLowerCase().includes(filter.toLowerCase()) && 
+        !subjectHiddenSelect.querySelector(`option[value="${s.id}"]`).selected
+      );
+
+      if (filtered.length > 0) {
+        noSubjectsFound.classList.add('hidden');
+        filtered.forEach(subject => {
+          const li = document.createElement('li');
+          li.className = 'px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer transition-colors';
+          li.textContent = subject.text;
+          li.addEventListener('click', () => {
+            const opt = subjectHiddenSelect.querySelector(`option[value="${subject.id}"]`);
+            if (opt) opt.selected = true;
+            subjectSearch.value = '';
+            subjectDropdown.classList.add('hidden');
+            updateTags();
+          });
+          subjectOptionsList.appendChild(li);
+        });
+      } else {
+        noSubjectsFound.classList.remove('hidden');
+      }
+    }
+
+    subjectSearch.addEventListener('input', (e) => {
+      subjectDropdown.classList.remove('hidden');
+      renderDropdown(e.target.value);
+    });
+
+    subjectSearch.addEventListener('focus', () => {
+      subjectDropdown.classList.remove('hidden');
+      renderDropdown(subjectSearch.value);
+    });
+
+    // Handle clicks outside to close dropdown
+    document.addEventListener('click', (e) => {
+      if (!subjectSearch.contains(e.target) && !subjectDropdown.contains(e.target)) {
+        subjectDropdown.classList.add('hidden');
+      }
+    });
+
+    // Focus input when clicking the container
+    subjectTagsContainer.addEventListener('click', () => {
+      subjectSearch.focus();
+    });
+
+    // Initialize tags
+    updateTags();
   });
 </script>
 @endsection

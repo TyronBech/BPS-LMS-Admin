@@ -5,10 +5,10 @@
   <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Maintenance</h1>
   <div class="w-full p-4 sm:p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-3">
-      <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Subjects</h5>
+      <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Subject Access Codes</h5>
       @can(PermissionsEnum::ADD_SUBJECTS)
-      <button data-modal-target="add-subject-modal" data-modal-toggle="add-subject-modal" class="w-full sm:w-auto mt-2 sm:mt-0 inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-center text-white bg-primary-500 rounded-lg hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">
-        Add New Subject
+      <button data-modal-target="add-access-code-modal" data-modal-toggle="add-access-code-modal" class="w-full sm:w-auto mt-2 sm:mt-0 inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-center text-white bg-primary-500 rounded-lg hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">
+        Add New Access Code
       </button>
       @endcan
     </div>
@@ -24,17 +24,15 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
             </svg>
           </div>
-          <input type="text" id="search" name="search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Search by DDC, subject, book, or access code" value="{{ old('search', $search) }}" autocomplete="off">
+          <input type="text" id="search" name="search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Search by access code" value="{{ $search }}" autocomplete="off">
         </div>
       </div>
 
       <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
         <select id="sort_dropdown" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" onchange="updateSortAndSubmit(this.form)">
           <option value="">Default Sorting</option>
-          <option value="ddc-asc" {{ ($sortBy == 'ddc' && $sortOrder == 'asc') ? 'selected' : '' }}>DDC (Ascending)</option>
-          <option value="ddc-desc" {{ ($sortBy == 'ddc' && $sortOrder == 'desc') ? 'selected' : '' }}>DDC (Descending)</option>
-          <option value="name-asc" {{ ($sortBy == 'name' && $sortOrder == 'asc') ? 'selected' : '' }}>Subject (Ascending)</option>
-          <option value="name-desc" {{ ($sortBy == 'name' && $sortOrder == 'desc') ? 'selected' : '' }}>Subject (Descending)</option>
+          <option value="access_code-asc" {{ ($sortBy == 'access_code' && $sortOrder == 'asc') ? 'selected' : '' }}>Code (Ascending)</option>
+          <option value="access_code-desc" {{ ($sortBy == 'access_code' && $sortOrder == 'desc') ? 'selected' : '' }}>Code (Descending)</option>
           <option value="updated_at-desc" {{ ($sortBy == 'updated_at' && $sortOrder == 'desc') ? 'selected' : '' }}>Recently Updated</option>
         </select>
 
@@ -58,9 +56,11 @@
     const sortDropdown = document.getElementById('sort_dropdown').value;
 
     if (sortDropdown) {
-      const [sortBy, sortOrder] = sortDropdown.split('-');
-      document.getElementById('sort_by').value = sortBy;
-      document.getElementById('sort_order').value = sortOrder;
+      const parts = sortDropdown.split('-');
+      const order = parts.pop();
+      const by = parts.join('-');
+      document.getElementById('sort_by').value = by;
+      document.getElementById('sort_order').value = order;
     } else {
       document.getElementById('sort_by').value = '';
       document.getElementById('sort_order').value = '';

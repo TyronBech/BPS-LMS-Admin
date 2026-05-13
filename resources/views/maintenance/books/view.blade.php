@@ -90,8 +90,16 @@
                   <span class="text-base font-medium text-gray-900 dark:text-white">{{ $book->category->name ?? '-' }}</span>
                 </div>
                 <div class="flex flex-col">
-                  <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Subject</span>
-                  <span class="text-base font-medium text-gray-900 dark:text-white">{{ $book->subject->name ?? '-' }}</span>
+                  <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Subject Access Codes</span>
+                  <div class="flex flex-wrap gap-2 mt-1">
+                    @forelse($book->subjectAccessCodes as $code)
+                      <span class="px-2 py-1 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded text-sm border border-gray-200 dark:border-gray-600">
+                        {{ $code->access_code }}
+                      </span>
+                    @empty
+                      <span class="text-base font-medium text-gray-900 dark:text-white">-</span>
+                    @endforelse
+                  </div>
                 </div>
               </div>
             </div>

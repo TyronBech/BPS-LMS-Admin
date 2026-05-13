@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -27,7 +28,6 @@ class Book extends Model
         'copyrights',
         'remarks',
         'category_id',
-        'subject_id',
         'cover_image',
         'digital_copy_url',
         'barcode',
@@ -57,8 +57,8 @@ class Book extends Model
         return $this->hasMany(Inventory::class, 'book_id', 'id');
     }
 
-    public function subject(): BelongsTo
+    public function subjectAccessCodes(): BelongsToMany
     {
-        return $this->belongsTo(Subject::class, 'subject_id', 'id');
+        return $this->belongsToMany(SubjectAccessCode::class, 'bk_book_subject_access_code', 'book_id', 'subject_access_code_id')->withTimestamps();
     }
 }

@@ -59,6 +59,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 btn.closest(".dashboard-card") ||
                 btn.classList.contains("skip-loader") || // skip-loader class
                 btn.closest(".skip-loader") || // skip-loader parent
+                btn.hasAttribute("data-modal-toggle") || // modal toggle
+                btn.hasAttribute("data-modal-hide") || // modal hide
                 (form && !form.checkValidity()) || // form is invalid
                 (!form && // not inside a form...
                     id !== "refresh" && // ...and not refresh

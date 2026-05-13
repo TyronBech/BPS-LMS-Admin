@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Category;
-use App\Models\Subject;
+use App\Models\SubjectAccessCode;
 use Dompdf\Dompdf;
 use Exception;
 use Illuminate\Http\Client\ConnectionException;
@@ -69,7 +69,21 @@ class BookMaintenanceController extends Controller
 
         $categories = Category::select('id', 'name')->get();
         $book_types = $this->extract_enums((new Book())->getTable(), 'book_type');
-        $booksQuery = Book::with(['category', 'subject']);
+        $booksQuery = Book::with(['category', 'subjectAccessCodes']);
+
+        if ($search) {
+            $booksQuery->where(function ($query) use ($search) {
+                $query->where('accession', 'like', "%{$search}%")
+                    ->orWhere('title', 'like', "%{$search}%")
+                    ->orWhere('authors->Main author', 'like', "%{$search}%")
+                    ->orWhere('authors->Added authors', 'like', "%{$search}%")
+                    ->orWhere('authors->Contributors', 'like', "%{$search}%")
+                    ->orWhere('authors->Corporate author', 'like', "%{$search}%")
+                    ->orWhereHas('subjectAccessCodes', function ($q) use ($search) {
+                        $q->where('access_code', 'like', "%{$search}%");
+                    });
+            });
+        }
 
         if ($category) {
             $booksQuery->where('category_id', $category);
@@ -123,7 +137,7 @@ class BookMaintenanceController extends Controller
         $availability   = $this->extract_enums($books->getTable(), 'availability_status');
         $remarks        = $this->extract_enums($books->getTable(), 'remarks');
         $book_types     = $this->extract_enums($books->getTable(), 'book_type');
-        $subjects = Subject::with('accessCodes')->orderBy('name')->get();
+        $subjects = SubjectAccessCode::orderBy('access_code')->get();
         return view('maintenance.books.create', compact('categories', 'condition', 'availability', 'remarks', 'book_types', 'subjects'));
     }
     /**
@@ -158,7 +172,8 @@ class BookMaintenanceController extends Controller
             'call_number'       => 'nullable|string|max:50',
             'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:150',
-            'subject_id'        => 'nullable|integer|exists:bk_subjects,id,deleted_at,NULL',
+            'subject_access_codes' => 'nullable|array',
+            'subject_access_codes.*' => 'integer|exists:bk_subject_access_codes,id,deleted_at,NULL',
             'authors'           => 'nullable|array',
             'authors.Main author'     => 'nullable|string',
             'authors.Added authors'   => 'nullable|string',
@@ -222,7 +237,7 @@ class BookMaintenanceController extends Controller
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
-            $subjectId = $request->filled('subject_id') ? (int) $request->input('subject_id') : null;
+            $subjectAccessCodeIds = $request->input('subject_access_codes', []);
             $accessions = collect(explode(',', (string) $request->input('accession')))
                 ->map(fn($item) => trim((string) $item))
                 ->filter(fn($item) => $item !== '')
@@ -248,12 +263,12 @@ class BookMaintenanceController extends Controller
                     'digital_copy_url'      => $request->input('digital_copy_url') ?? null,
                     'remarks'               => $request->input('remarks'),
                     'category_id'           => $request->input('category'),
-                    'subject_id'            => $subjectId,
                     'book_type'             => $request->input('book_type'),
                     'condition_status'      => $request->input('condition'),
                     'availability_status'   => $request->input('availability'),
                 ]);
 
+                $createdBook->subjectAccessCodes()->sync($subjectAccessCodeIds);
                 $createdBookIds[] = $createdBook->id;
             }
             // After creating books, update remarks/availability and create inventory entries within the same transaction
@@ -315,15 +330,15 @@ class BookMaintenanceController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            $book = Book::with(['subject.accessCodes'])->findOrFail($id);
-            $linkedSubjectId = $book->subject_id;
+            $book = Book::with(['subjectAccessCodes'])->findOrFail($id);
+            $linkedSubjectIds = $book->subjectAccessCodes->pluck('id')->toArray();
             $books = new Book();
             $categories     = Category::select('id', 'name', 'category_type')->orderBy('name')->get();
             $condition      = $this->extract_enums($books->getTable(), 'condition_status');
             $availability   = $this->extract_enums($books->getTable(), 'availability_status');
             $remarks        = $this->extract_enums($books->getTable(), 'remarks');
             $book_types     = $this->extract_enums($books->getTable(), 'book_type');
-            $subjects       = Subject::with('accessCodes')->orderBy('name')->get();
+            $subjects       = SubjectAccessCode::orderBy('access_code')->get();
         } catch (\Exception $e) {
             Log::error('Book Maintenance: Error accessing edit form', [
                 'user_id' => Auth::guard('admin')->id(),
@@ -332,7 +347,7 @@ class BookMaintenanceController extends Controller
             ]);
             return redirect()->back()->with('toast-error', 'Something went wrong!')->withInput();
         }
-        return view('maintenance.books.edit', compact('book', 'linkedSubjectId', 'categories', 'condition', 'availability', 'remarks', 'book_types', 'subjects'));
+        return view('maintenance.books.edit', compact('book', 'linkedSubjectIds', 'categories', 'condition', 'availability', 'remarks', 'book_types', 'subjects'));
     }
     /**
      * Show books
@@ -416,7 +431,7 @@ class BookMaintenanceController extends Controller
             $trimmed_accessions = array_map('trim', $accessions);
         }
         // Start query
-        $booksQuery = Book::with(['category', 'subject']);
+        $booksQuery = Book::with(['category', 'subjectAccessCodes']);
 
         // Apply category filter if provided
         if ($category) {
@@ -435,7 +450,10 @@ class BookMaintenanceController extends Controller
             $booksQuery->where(function ($q) use ($search) {
                 $q->where('accession', 'like', '%' . $search . '%')
                     ->orWhere('title', 'like', '%' . $search . '%')
-                    ->orWhere('author', 'like', '%' . $search . '%')
+                    ->orWhere('authors->Main author', 'like', '%' . $search . '%')
+                    ->orWhere('authors->Added authors', 'like', '%' . $search . '%')
+                    ->orWhere('authors->Contributors', 'like', '%' . $search . '%')
+                    ->orWhere('authors->Corporate author', 'like', '%' . $search . '%')
                     ->orWhere('isbn', 'like', '%' . $search . '%')
                     ->orWhere('publisher', 'like', '%' . $search . '%')
                     ->orWhere('place_of_publication', 'like', '%' . $search . '%')
@@ -494,7 +512,7 @@ class BookMaintenanceController extends Controller
             'timestamp' => now(),
         ]);
 
-        $book = Book::with(['category', 'subject'])->where('accession', $accession)->first();
+        $book = Book::with(['category', 'subjectAccessCodes'])->where('accession', $accession)->first();
         try {
             $cover = $this->getBookImage($book->title, $book->author, $book->isbn ?? null);
             if (!$cover) {
@@ -555,7 +573,8 @@ class BookMaintenanceController extends Controller
             'call_number'       => 'nullable|string|max:50',
             'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:150',
-            'subject_id'        => 'nullable|integer|exists:bk_subjects,id,deleted_at,NULL',
+            'subject_access_codes' => 'nullable|array',
+            'subject_access_codes.*' => 'integer|exists:bk_subject_access_codes,id,deleted_at,NULL',
             'authors'           => 'nullable|array',
             'authors.Main author'     => 'nullable|string',
             'authors.Added authors'   => 'nullable|string',
@@ -613,7 +632,7 @@ class BookMaintenanceController extends Controller
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $barcode = new DNS1D();
             $book = Book::findOrFail($request->input('id'));
-            $subjectId = $request->filled('subject_id') ? (int) $request->input('subject_id') : null;
+            $subjectAccessCodeIds = $request->input('subject_access_codes', []);
 
             $book->update([
                 'accession'             => $request->input('accession'),
@@ -632,11 +651,12 @@ class BookMaintenanceController extends Controller
                 'digital_copy_url'      => $request->input('digital_copy_url'),
                 'remarks'               => $request->input('remarks'),
                 'category_id'           => $request->input('category'),
-                'subject_id'            => $subjectId,
                 'book_type'             => $request->input('book_type'),
                 'condition_status'      => $request->input('condition'),
                 'availability_status'   => $request->input('availability'),
             ]);
+
+            $book->subjectAccessCodes()->sync($subjectAccessCodeIds);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             Log::error('Book Maintenance: Database error during update', [
@@ -692,7 +712,8 @@ class BookMaintenanceController extends Controller
             'call_number'       => 'nullable|string|max:50',
             'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:150',
-            'subject_id'        => 'nullable|integer|exists:bk_subjects,id,deleted_at,NULL',
+            'subject_access_codes' => 'nullable|array',
+            'subject_access_codes.*' => 'integer|exists:bk_subject_access_codes,id,deleted_at,NULL',
             'authors'           => 'nullable|array',
             'authors.Main author'     => 'nullable|string',
             'authors.Added authors'   => 'nullable|string',
@@ -746,7 +767,7 @@ class BookMaintenanceController extends Controller
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
-            $subjectId = $request->filled('subject_id') ? (int) $request->input('subject_id') : null;
+            $subjectAccessCodeIds = $request->input('subject_access_codes', []);
             $accessions = collect(explode(',', (string) $request->input('accession')))
                 ->map(fn($item) => trim((string) $item))
                 ->filter(fn($item) => $item !== '')
@@ -771,12 +792,12 @@ class BookMaintenanceController extends Controller
                     'digital_copy_url'      => $request->input('digital_copy_url') ?? null,
                     'remarks'               => "Missing",
                     'category_id'           => $request->input('category'),
-                    'subject_id'            => $subjectId,
                     'book_type'             => $request->input('book_type'),
                     'condition_status'      => $request->input('condition'),
                     'availability_status'   => "Unavailable",
                 ]);
 
+                $copiedBook->subjectAccessCodes()->sync($subjectAccessCodeIds);
                 $copiedBookIds[] = $copiedBook->id;
             }
             // After copying books, update remarks/availability and create inventory entries within the same transaction
