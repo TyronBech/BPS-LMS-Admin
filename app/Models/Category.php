@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Category extends Model
 {
@@ -28,5 +29,10 @@ class Category extends Model
     public function books(): HasMany
     {
         return $this->hasMany(Book::class, 'category_id', 'id');
+    }
+
+    public function lastAccession(): HasOne
+    {
+        return $this->hasOne(BkLastAccession::class, 'category_id', 'id');
     }
 }

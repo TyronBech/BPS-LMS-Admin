@@ -310,31 +310,43 @@
       syncCategoryOptionsToBookType();
     }
 
+    const accessionDashActive = <?php echo $accessionDashActive ? 'true' : 'false'; ?>;
+
     function getNextAccessionFromLast(lastAccession) {
       if (!lastAccession || typeof lastAccession !== 'string') return null;
 
       const match = lastAccession.match(/(\d+)$/);
       const numberStr = match ? match[1] : null;
-      const prefix = numberStr ? lastAccession.slice(0, -numberStr.length) : lastAccession;
+      let prefix = numberStr ? lastAccession.slice(0, -numberStr.length) : lastAccession;
       const num = numberStr ? parseInt(numberStr, 10) : 0;
       const width = numberStr ? numberStr.length : 6;
+
+      // Normalize prefix based on dash setting
+      if (accessionDashActive) {
+        if (prefix && !prefix.endsWith('-')) {
+          prefix += '-';
+        }
+      } else {
+        if (prefix && prefix.endsWith('-')) {
+          prefix = prefix.slice(0, -1);
+        }
+      }
 
       const nextNumberStr = String(num + 1).padStart(width, '0');
       return prefix + nextNumberStr;
     }
 
-    categorySelect.addEventListener('change', function() {
-      syncBookTypeFromCategory();
-
-      const selectedCategory = getCategoryById(this.value);
+    function prefillAccession() {
+      if (!categorySelect || !accessionInput) return;
+      const selectedCategory = getCategoryById(categorySelect.value);
       if (!selectedCategory) {
         accessionInput.value = '';
         return;
       }
 
-      const books = Array.isArray(selectedCategory.books) ? selectedCategory.books : [];
-      if (books.length > 0 && books[0].accession) {
-        const next = getNextAccessionFromLast(books[0].accession);
+      const lastAccession = selectedCategory.last_accession ? selectedCategory.last_accession.accession_number : null;
+      if (lastAccession) {
+        const next = getNextAccessionFromLast(lastAccession);
         accessionInput.value = next || '';
       } else {
         let prefix = (selectedCategory.legend && String(selectedCategory.legend).trim()) || '';
@@ -342,8 +354,20 @@
           prefix = String(selectedCategory.name).replace(/\s+/g, '').slice(0, 3).toUpperCase();
         }
         if (!prefix) prefix = 'ACC';
+
+        if (accessionDashActive) {
+          if (!prefix.endsWith('-')) prefix += '-';
+        } else {
+          if (prefix.endsWith('-')) prefix = prefix.slice(0, -1);
+        }
+
         accessionInput.value = prefix + '000001';
       }
+    }
+
+    categorySelect.addEventListener('change', function() {
+      syncBookTypeFromCategory();
+      prefillAccession();
     });
 
     function applyAvailabilityRule() {
@@ -406,6 +430,10 @@
 
     restructureFormByBookType();
     applyAvailabilityRule();
+    
+    if (categorySelect && categorySelect.value) {
+      prefillAccession();
+    }
 
     // --- Subject Multiselect Logic ---
     const subjectSearch = document.getElementById('subject_search');

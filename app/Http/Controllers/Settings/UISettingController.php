@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
 use App\Models\UISetting;
+use App\Models\SystemSetting;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Log;
@@ -34,7 +35,10 @@ class UISettingController extends Controller
             'settings' => $settingsLog,
             'timestamp' => now(),
         ]);
-        return view('settings.index', compact('settings'));
+        $accessionDashActive = SystemSetting::where('key', 'accession_number_dash_active')->first();
+        $accessionDashActive = $accessionDashActive ? ($accessionDashActive->value === 'true') : true;
+
+        return view('settings.index', compact('settings', 'accessionDashActive'));
     }
 
     public function update(Request $request)
@@ -101,6 +105,13 @@ class UISettingController extends Controller
             'tertiary',
         ]);
         $settings->save();
+
+        // Update Accession Dash Setting
+        SystemSetting::updateOrCreate(
+            ['key' => 'accession_number_dash_active'],
+            ['value' => $request->has('accession_number_dash_active') ? 'true' : 'false']
+        );
+
         Log::info('UI Settings: Settings updated successfully', [
             'user_id' => Auth::guard('admin')->id(),
             'timestamp' => now(),

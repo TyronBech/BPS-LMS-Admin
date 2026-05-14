@@ -381,6 +381,32 @@
       return categoriesById[String(categoryId)] || null;
     }
 
+    const accessionDashActive = <?php echo $accessionDashActive ? 'true' : 'false'; ?>;
+
+    function getNextAccessionFromLast(lastAccession) {
+      if (!lastAccession || typeof lastAccession !== 'string') return null;
+
+      const match = lastAccession.match(/(\d+)$/);
+      const numberStr = match ? match[1] : null;
+      let prefix = numberStr ? lastAccession.slice(0, -numberStr.length) : lastAccession;
+      const num = numberStr ? parseInt(numberStr, 10) : 0;
+      const width = numberStr ? numberStr.length : 6;
+
+      // Normalize prefix based on dash setting
+      if (accessionDashActive) {
+        if (prefix && !prefix.endsWith('-')) {
+          prefix += '-';
+        }
+      } else {
+        if (prefix && prefix.endsWith('-')) {
+          prefix = prefix.slice(0, -1);
+        }
+      }
+
+      const nextNumberStr = String(num + 1).padStart(width, '0');
+      return prefix + nextNumberStr;
+    }
+
     function syncCategoryOptionsToBookType() {
       if (!categorySelect || !bookTypeSelect) return;
 
@@ -503,9 +529,45 @@
       syncCategoryOptionsToBookType();
     }
 
+    function prefillCopyAccession() {
+      const copyAccessionInput = document.getElementById('copy_accession');
+      if (!copyAccessionInput || !copyCategoryInput) return;
+
+      const categoryId = copyCategoryInput.value;
+      const selectedCategory = getCategoryById(categoryId);
+      if (!selectedCategory) return;
+
+      const lastAccession = selectedCategory.last_accession ? selectedCategory.last_accession.accession_number : null;
+      if (lastAccession) {
+        const next = getNextAccessionFromLast(lastAccession);
+        copyAccessionInput.value = next || '';
+      } else {
+        let prefix = (selectedCategory.legend && String(selectedCategory.legend).trim()) || '';
+        if (!prefix && selectedCategory.name) {
+          prefix = String(selectedCategory.name).replace(/\s+/g, '').slice(0, 3).toUpperCase();
+        }
+        if (!prefix) prefix = 'ACC';
+
+        if (accessionDashActive) {
+          if (!prefix.endsWith('-')) prefix += '-';
+        } else {
+          if (prefix.endsWith('-')) prefix = prefix.slice(0, -1);
+        }
+
+        copyAccessionInput.value = prefix + '000001';
+      }
+    }
+
+    // Prefill when modal button is clicked
+    const copyModalBtn = document.querySelector('[data-modal-target="copy-book-modal"]');
+    if (copyModalBtn) {
+      copyModalBtn.addEventListener('click', prefillCopyAccession);
+    }
+
     restructureFormByBookType();
     syncCopyCategoryFromBookType();
     applyAvailabilityRule();
+    prefillCopyAccession();
 
     // --- Subject Multiselect Logic ---
     const subjectSearch = document.getElementById('subject_search');

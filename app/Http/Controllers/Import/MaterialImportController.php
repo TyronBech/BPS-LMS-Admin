@@ -11,6 +11,7 @@ use App\Models\Category;
 use App\Models\Inventory;
 use App\Models\SubjectAccessCode;
 use Milon\Barcode\DNS1D;
+use App\Models\BkLastAccession;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Validator;
@@ -257,6 +258,12 @@ class MaterialImportController extends Controller
                     }
                     $newMaterial->subjectAccessCodes()->sync($accessCodeIds);
                 }
+                
+                // Update last accession
+                BkLastAccession::updateOrCreate(
+                    ['category_id' => $category->id],
+                    ['accession_number' => $item['accession']]
+                );
 
                 // Inventory Entry
                 Inventory::create([

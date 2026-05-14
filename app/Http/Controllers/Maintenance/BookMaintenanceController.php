@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Milon\Barcode\DNS1D;
 use App\Models\Inventory;
+use App\Models\BkLastAccession;
+use App\Models\SystemSetting;
 
 class BookMaintenanceController extends Controller
 {
@@ -126,19 +128,19 @@ class BookMaintenanceController extends Controller
         ]);
 
         $books = new Book();
-        $categories     = $categories = Category::select('id', 'name', 'legend', 'category_type')
-            ->with(['books' => function ($query) {
-                $query->select('category_id', 'accession') // must include category_id for relation
-                    ->orderByDesc('accession')
-                    ->limit(1);
-            }])
+        $categories     = Category::select('id', 'name', 'legend', 'category_type')
+            ->with(['lastAccession'])
             ->get();
         $condition      = $this->extract_enums($books->getTable(), 'condition_status');
         $availability   = $this->extract_enums($books->getTable(), 'availability_status');
         $remarks        = $this->extract_enums($books->getTable(), 'remarks');
         $book_types     = $this->extract_enums($books->getTable(), 'book_type');
         $subjects = SubjectAccessCode::orderBy('access_code')->get();
-        return view('maintenance.books.create', compact('categories', 'condition', 'availability', 'remarks', 'book_types', 'subjects'));
+
+        $accessionDashActive = SystemSetting::where('key', 'accession_number_dash_active')->first();
+        $accessionDashActive = $accessionDashActive ? ($accessionDashActive->value === 'true') : true;
+
+        return view('maintenance.books.create', compact('categories', 'condition', 'availability', 'remarks', 'book_types', 'subjects', 'accessionDashActive'));
     }
     /**
      * Store a new book
@@ -270,6 +272,12 @@ class BookMaintenanceController extends Controller
 
                 $createdBook->subjectAccessCodes()->sync($subjectAccessCodeIds);
                 $createdBookIds[] = $createdBook->id;
+                
+                // Update last accession
+                BkLastAccession::updateOrCreate(
+                    ['category_id' => $request->input('category')],
+                    ['accession_number' => $accession]
+                );
             }
             // After creating books, update remarks/availability and create inventory entries within the same transaction
             $importedAccessions = array_map('trim', explode(',', $request->input('accession')));
@@ -333,7 +341,7 @@ class BookMaintenanceController extends Controller
             $book = Book::with(['subjectAccessCodes'])->findOrFail($id);
             $linkedSubjectIds = $book->subjectAccessCodes->pluck('id')->toArray();
             $books = new Book();
-            $categories     = Category::select('id', 'name', 'category_type')->orderBy('name')->get();
+            $categories     = Category::select('id', 'name', 'legend', 'category_type')->with(['lastAccession'])->orderBy('name')->get();
             $condition      = $this->extract_enums($books->getTable(), 'condition_status');
             $availability   = $this->extract_enums($books->getTable(), 'availability_status');
             $remarks        = $this->extract_enums($books->getTable(), 'remarks');
@@ -347,7 +355,10 @@ class BookMaintenanceController extends Controller
             ]);
             return redirect()->back()->with('toast-error', 'Something went wrong!')->withInput();
         }
-        return view('maintenance.books.edit', compact('book', 'linkedSubjectIds', 'categories', 'condition', 'availability', 'remarks', 'book_types', 'subjects'));
+        $accessionDashActive = SystemSetting::where('key', 'accession_number_dash_active')->first();
+        $accessionDashActive = $accessionDashActive ? ($accessionDashActive->value === 'true') : true;
+
+        return view('maintenance.books.edit', compact('book', 'linkedSubjectIds', 'categories', 'condition', 'availability', 'remarks', 'book_types', 'subjects', 'accessionDashActive'));
     }
     /**
      * Show books
@@ -798,6 +809,12 @@ class BookMaintenanceController extends Controller
                 ]);
 
                 $copiedBook->subjectAccessCodes()->sync($subjectAccessCodeIds);
+                
+                // Update last accession
+                BkLastAccession::updateOrCreate(
+                    ['category_id' => $request->input('category')],
+                    ['accession_number' => $accession]
+                );
                 $copiedBookIds[] = $copiedBook->id;
             }
             // After copying books, update remarks/availability and create inventory entries within the same transaction

@@ -150,6 +150,28 @@
         </div>
       </div>
     </div>
+
+    <!-- Accession Number Settings Section -->
+    <div class="mb-8">
+      <h2 class="text-xl font-semibold text-gray-700 dark:text-gray-200 mb-4 border-b dark:border-gray-700 pb-2">Accession Number Settings</h2>
+      <div class="grid grid-cols-1 gap-6">
+        <div>
+          <label class="block text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">Include Dash Separator</label>
+          <div class="flex items-center space-x-3">
+            @if($accessionDashActive)
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                Active (e.g., FIC-000001)
+              </span>
+            @else
+              <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300">
+                Inactive (e.g., FIC000001)
+              </span>
+            @endif
+          </div>
+          <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">Determines if a dash (-) is included between the category legend and the sequence number.</p>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Edit Modal -->
@@ -405,6 +427,21 @@
                   <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
                   @enderror
                 </div>
+              </div>
+            </div>
+
+            <!-- Accession Number Settings Section -->
+            <div class="mb-4 sm:mb-6">
+              <h4 class="text-lg sm:text-xl font-semibold tracking-tight text-gray-900 dark:text-white mb-2 sm:mb-3">Accession Number Settings</h4>
+              <div class="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-800/50 rounded-lg border border-gray-200 dark:border-gray-700">
+                <div>
+                  <h5 class="text-sm font-semibold text-gray-900 dark:text-white">Include Dash Separator</h5>
+                  <p class="text-xs text-gray-500 dark:text-gray-400">Add a dash between legend and number (e.g., FIC-000001)</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                  <input type="checkbox" name="accession_number_dash_active" value="1" class="sr-only peer" {{ $accessionDashActive ? 'checked' : '' }}>
+                  <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-500"></div>
+                </label>
               </div>
             </div>
 
