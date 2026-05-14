@@ -38,25 +38,25 @@ class ReservationExtensionController extends Controller
             return redirect()->route('maintenance.reservations')->with('toast-warning', $validator->errors()->first())->withInput();
         }
 
-        $pendingRequests = Transaction::where('transaction_type', 'Borrowed')
+        $pendingRequests = Transaction::whereIn('transaction_type', ['Borrowed', 'Reserved'])
             ->where('status', 'Pending')
             ->with(['user', 'book'])
-            ->orderBy('created_at', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->paginate($perPage);
 
-        $pendingExtensionCount = Transaction::where('transaction_type', 'Borrowed')
+        $pendingExtensionCount = Transaction::whereIn('transaction_type', ['Borrowed', 'Reserved'])
             ->where('status', 'Pending')
             ->count();
         
         // Count approved extensions this month
-        $approvedCount = Transaction::where('transaction_type', 'Borrowed')
+        $approvedCount = Transaction::whereIn('transaction_type', ['Borrowed', 'Reserved'])
             ->where('status', 'Borrowed')
             ->whereMonth('updated_at', now()->month)
             ->whereYear('updated_at', now()->year)
             ->count();
         
         // Count active borrowings
-        $activeBorrowings = Transaction::where('transaction_type', 'Borrowed')
+        $activeBorrowings = Transaction::whereIn('transaction_type', ['Borrowed', 'Reserved'])
             ->where('status', 'Borrowed')
             ->count();
 
@@ -77,7 +77,7 @@ class ReservationExtensionController extends Controller
     }
     public function pendingExtensionCount()
     {
-        $count = Transaction::where('transaction_type', 'Borrowed')
+        $count = Transaction::whereIn('transaction_type', ['Borrowed', 'Reserved'])
             ->where('status', 'Pending')
             ->count();
 
@@ -96,7 +96,7 @@ class ReservationExtensionController extends Controller
             'timestamp' => now(),
         ]);
 
-        $transaction = Transaction::where('transaction_type', 'Borrowed')
+        $transaction = Transaction::whereIn('transaction_type', ['Borrowed', 'Reserved'])
             ->where('status', 'Pending')
             ->findOrFail($id);
 
@@ -157,7 +157,7 @@ class ReservationExtensionController extends Controller
             'rejection_reason' => 'required|string|max:500',
         ]);
 
-        $transaction = Transaction::where('transaction_type', 'Borrowed')
+        $transaction = Transaction::whereIn('transaction_type', ['Borrowed', 'Reserved'])
             ->where('status', 'Pending')
             ->findOrFail($id);
 
@@ -205,21 +205,21 @@ class ReservationExtensionController extends Controller
             'timestamp' => now(),
         ]);
 
-        $pending = Transaction::where('transaction_type', 'Borrowed')
+        $pending = Transaction::whereIn('transaction_type', ['Borrowed', 'Reserved'])
             ->where('status', 'Pending')
             ->count();
 
-        $approved = Transaction::where('transaction_type', 'Borrowed')
+        $approved = Transaction::whereIn('transaction_type', ['Borrowed', 'Reserved'])
             ->where('status', 'Renew')
             ->whereDate('updated_at', '>=', Carbon::now()->subDays(30))
             ->count();
 
-        $rejected = Transaction::where('transaction_type', 'Borrowed')
+        $rejected = Transaction::whereIn('transaction_type', ['Borrowed', 'Reserved'])
             ->where('status', 'Borrowed')
             ->whereDate('updated_at', '>=', Carbon::now()->subDays(30))
             ->count();
 
-        $total = Transaction::where('transaction_type', 'Borrowed')
+        $total = Transaction::whereIn('transaction_type', ['Borrowed', 'Reserved'])
             ->where('status', 'Borrowed')
             ->whereDate('created_at', '>=', Carbon::now()->subDays(30))
             ->count();
@@ -325,24 +325,26 @@ class ReservationExtensionController extends Controller
             return redirect()->route('maintenance.reservations')->with('toast-warning', $validator->errors()->first())->withInput();
         }
 
-        $query = Transaction::where('transaction_type', 'Borrowed')
+        $query = Transaction::whereIn('transaction_type', ['Borrowed', 'Reserved'])
             ->where('status', 'Pending');
-
+            
         if ($request->has('search') && $request->search) {
             $searchTerm = '%' . $request->search . '%';
-            $query->whereHas('user', function ($q) use ($searchTerm) {
-                $q->where('first_name', 'like', $searchTerm)
-                    ->orWhere('last_name', 'like', $searchTerm)
-                    ->orWhere('email', 'like', $searchTerm);
-            })->orWhereHas('book', function ($q) use ($searchTerm) {
-                $q->where('title', 'like', $searchTerm)
-                    ->orWhere('accession', 'like', $searchTerm);
+            $query->where(function ($q) use ($searchTerm) {
+                $q->whereHas('user', function ($sq) use ($searchTerm) {
+                    $sq->where('first_name', 'like', $searchTerm)
+                        ->orWhere('last_name', 'like', $searchTerm)
+                        ->orWhere('email', 'like', $searchTerm);
+                })->orWhereHas('book', function ($sq) use ($searchTerm) {
+                    $sq->where('title', 'like', $searchTerm)
+                        ->orWhere('accession', 'like', $searchTerm);
+                });
             });
         }
 
         $pendingRequests = $query->with(['user', 'book'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+            ->orderBy('updated_at', 'desc')
+            ->paginate($perPage);
 
         return view('maintenance.reservations.index', compact('pendingRequests'));
     }
