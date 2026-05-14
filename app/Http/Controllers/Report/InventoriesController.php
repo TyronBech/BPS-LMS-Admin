@@ -129,7 +129,7 @@ class InventoriesController extends Controller
 
         $settings = UISetting::first() ?? new UISetting();
         $items = [
-            'title' => 'Inventory Report',
+            'title' => 'Material Inventory Report',
             'school' => $settings->org_name ?? 'Bicutan Parochial School, Inc.',
             'address' => $settings->org_address ?? 'Manuel L. Quezon St., Lower Bicutan, Taguig City',
             'logo' => $settings->org_logo_full ?? base64_encode(file_get_contents(public_path('img/BPSLogoFull.png'))),
@@ -174,13 +174,13 @@ class InventoriesController extends Controller
         $logo->setOffsetY(5);
         $logo->setWorksheet($sheet);
 
-        $sheet->setTitle('Inventory Report');
+        $sheet->setTitle('Material Inventory Report');
         $sheet->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_LEGAL);
         $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
         $sheet->getPageSetup()->setFitToWidth(1);
         $sheet->getPageSetup()->setFitToHeight(0);
         $sheet->mergeCells('A6:D6');
-        $sheet->setCellValue('A6', 'Inventory Report');
+        $sheet->setCellValue('A6', 'Material Inventory Report');
         $sheet->getStyle('A6:D6')->getFont()->setBold(true);
         $sheet->getStyle('A6:D6')->getFont()->setSize(14);
         $sheet->getStyle('A6:D6')->getAlignment()->setHorizontal('center');
@@ -262,6 +262,7 @@ class InventoriesController extends Controller
         $query = DB::table('bk_inventories as inventories')
             ->join('bk_books as books', 'books.id', '=', 'inventories.book_id')
             ->whereNull('books.deleted_at')
+            ->whereIn('books.book_type', ['Print', 'Non-Print'])
             ->selectRaw("
                 inventories.id as source_id,
                 books.accession,

@@ -4,16 +4,16 @@
             <div>
                 <h2 class="text-2xl font-semibold dark:text-white">
                     @if($inventoryActive)
-                    Scanned Books
+                    Scanned Materials
                     @else
                     Latest Saved Inventory
                     @endif
                 </h2>
                 <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
                     @if($inventoryActive)
-                    Scanned books appear here immediately. Use Save to timestamp the scanned books and keep editing remarks or condition as needed.
+                    Scanned materials appear here immediately. Use Save to timestamp the scanned materials and keep editing remarks or condition as needed.
                     @else
-                    This table shows the saved books from the most recent completed inventory cycle.
+                    This table shows the saved materials from the most recent completed inventory cycle.
                     @endif
                 </p>
             </div>
@@ -119,7 +119,7 @@
                         <tr class="border-b bg-white dark:border-gray-700 dark:bg-gray-800">
                             <td colspan="{{ $inventoryActive ? 8 : 7 }}" class="py-4 text-center" id="no-data">
                                 @if($inventoryActive)
-                                No scanned books yet.
+                                No scanned materials yet.
                                 @else
                                 No saved inventory data found.
                                 @endif

@@ -8,12 +8,12 @@
       <div class="flex-1 p-6">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div>
-            <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Book Inventory</h2>
+            <h2 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Material Inventory</h2>
             <p class="mt-2 text-sm text-gray-600 dark:text-gray-300">
               @if($inventoryActive)
-              Inventory is in progress. Scan books below, then click save to timestamp the scanned books.
+              Inventory is in progress. Scan materials below, then click save to timestamp the scanned materials.
               @else
-              Start a new inventory cycle to archive the previous inventory and prepare every book for scanning.
+              Start a new inventory cycle to archive the previous inventory and prepare every material for scanning.
               @endif
             </p>
           </div>
@@ -39,8 +39,8 @@
 
         <div class="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
           <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/40">
-            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Total Books</p>
-            <p class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">{{ number_format($stats['total_books']) }}</p>
+            <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Total Materials</p>
+            <p class="mt-2 text-2xl font-bold text-gray-900 dark:text-white">{{ number_format($stats['total_materials']) }}</p>
           </div>
           <div class="rounded-xl border border-gray-200 bg-gray-50 p-4 dark:border-gray-700 dark:bg-gray-900/40">
             <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 dark:text-gray-400">Scanned</p>
@@ -92,8 +92,8 @@
         <svg class="mx-auto mb-4 h-12 w-12 text-gray-400 dark:text-gray-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
         </svg>
-        <h3 class="mb-3 text-lg font-normal text-gray-500 dark:text-gray-400">Reset this scanned book from the current inventory?</h3>
-        <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">The book will stay in the inventory table, but it will be marked as not scanned again.</p>
+        <h3 class="mb-3 text-lg font-normal text-gray-500 dark:text-gray-400">Reset this scanned material from the current inventory?</h3>
+        <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">The material will stay in the inventory table, but it will be marked as not scanned again.</p>
         <form action="{{ route('inventory.delete') }}" id="reset-form" method="POST">
           @csrf
           @method('DELETE')
@@ -154,11 +154,11 @@
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 3 2 17h16L10 3Zm0 5v3m0 3h.01" />
         </svg>
         <h3 class="mb-3 text-lg font-normal text-gray-500 dark:text-gray-400">Finish this inventory cycle?</h3>
-        <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">Saved books will keep the selected remarks and condition you saved. Books without a saved timestamp and currently marked <span class="font-semibold">On Shelf</span> will be marked as <span class="font-semibold">Missing</span>.</p>
+        <p class="mb-2 text-sm text-gray-500 dark:text-gray-400">Saved materials will keep the selected remarks and condition you saved. Materials without a saved timestamp and currently marked <span class="font-semibold">On Shelf</span> will be marked as <span class="font-semibold">Missing</span>.</p>
         @if($stats['pending_save'] > 0)
-        <p class="mb-5 text-sm font-medium text-amber-600 dark:text-amber-300">{{ number_format($stats['pending_save']) }} scanned books are still pending save and will not be counted if you finish now.</p>
+        <p class="mb-5 text-sm font-medium text-amber-600 dark:text-amber-300">{{ number_format($stats['pending_save']) }} scanned materials are still pending save and will not be counted if you finish now.</p>
         @else
-        <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">All scanned books have already been saved.</p>
+        <p class="mb-5 text-sm text-gray-500 dark:text-gray-400">All scanned materials have already been saved.</p>
         @endif
         <button data-modal-hide="finish-modal" type="submit" form="inventory-form" formaction="{{ route('inventory.finish') }}" formmethod="POST" class="inline-flex items-center rounded-lg bg-amber-500 px-5 py-2.5 text-sm font-medium text-white hover:bg-amber-600 focus:outline-none focus:ring-4 focus:ring-amber-300 dark:focus:ring-amber-800">
           Yes, finish inventory

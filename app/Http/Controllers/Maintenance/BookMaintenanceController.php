@@ -283,7 +283,7 @@ class BookMaintenanceController extends Controller
             $importedAccessions = array_map('trim', explode(',', $request->input('accession')));
             foreach ($importedAccessions as $acc) {
                 $book = Book::where('accession', $acc)->first();
-                if ($book) {
+                if ($book && $book->book_type !== 'E-books') {
                     Inventory::create([
                         'book_id'    => $book->id,
                         'is_scanned' => 1,

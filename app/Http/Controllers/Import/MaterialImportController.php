@@ -266,11 +266,13 @@ class MaterialImportController extends Controller
                 );
 
                 // Inventory Entry
-                Inventory::create([
-                    'book_id' => $newMaterial->id,
-                    'is_scanned' => 1,
-                    'checked_at' => now(),
-                ]);
+                if ($finalType !== 'E-books') {
+                    Inventory::create([
+                        'book_id' => $newMaterial->id,
+                        'is_scanned' => 1,
+                        'checked_at' => now(),
+                    ]);
+                }
 
                 $newCount++;
             }

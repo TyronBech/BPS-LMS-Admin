@@ -78,7 +78,7 @@ class InventoryController extends Controller
                 'timestamp' => now(),
             ]);
 
-            return redirect()->route('inventory.dashboard')->with('toast-success', 'Inventory started. Scan books and click save to timestamp them.');
+            return redirect()->route('inventory.dashboard')->with('toast-success', 'Inventory started. Scan materials and click save to timestamp them.');
         } catch (\Throwable $e) {
             Log::error('Inventory: Failed to start cycle', [
                 'user_id' => Auth::guard('admin')->id(),
@@ -132,14 +132,14 @@ class InventoryController extends Controller
                 ]);
             });
 
-            Log::info('Inventory: Book scanned', [
+            Log::info('Inventory: Material scanned', [
                 'user_id' => Auth::guard('admin')->id(),
                 'user_name' => Auth::guard('admin')->user()->full_name,
                 'barcode' => $barcode,
                 'timestamp' => now(),
             ]);
 
-            return redirect()->route('inventory.dashboard', ['perPage' => $request->input('perPage', 10)])->with('toast-success', 'Book scanned. Click save to timestamp it.');
+            return redirect()->route('inventory.dashboard', ['perPage' => $request->input('perPage', 10)])->with('toast-success', 'Material scanned. Click save to timestamp it.');
         } catch (\RuntimeException $e) {
             return redirect()->back()->with('toast-warning', $e->getMessage());
         } catch (\Throwable $e) {
@@ -150,7 +150,7 @@ class InventoryController extends Controller
                 'timestamp' => now(),
             ]);
 
-            return redirect()->back()->with('toast-error', 'Failed to scan book.');
+            return redirect()->back()->with('toast-error', 'Failed to scan material.');
         }
     }
 
@@ -189,10 +189,10 @@ class InventoryController extends Controller
             ]);
 
             if ($updatedCount === 0 && $savedCount === 0) {
-                return redirect()->route('inventory.dashboard', ['perPage' => $request->input('perPage', 10)])->with('toast-warning', 'No scanned books were ready to save.');
+                return redirect()->route('inventory.dashboard', ['perPage' => $request->input('perPage', 10)])->with('toast-warning', 'No scanned materials were ready to save.');
             }
 
-            return redirect()->route('inventory.dashboard', ['perPage' => $request->input('perPage', 10)])->with('toast-success', 'Scanned books saved successfully.');
+            return redirect()->route('inventory.dashboard', ['perPage' => $request->input('perPage', 10)])->with('toast-success', 'Scanned materials saved successfully.');
         } catch (\Throwable $e) {
             Log::error('Inventory: Save failed', [
                 'error_message' => $e->getMessage(),
@@ -324,7 +324,7 @@ class InventoryController extends Controller
                 ->first();
 
             if (!$inventory) {
-                return redirect()->back()->with('toast-warning', 'No inventory record found for this book.');
+                return redirect()->back()->with('toast-warning', 'No inventory record found for this material.');
             }
 
             $inventory->update([
@@ -339,7 +339,7 @@ class InventoryController extends Controller
                 'timestamp' => now(),
             ]);
 
-            return redirect()->route('inventory.dashboard', ['perPage' => $request->input('perPage', 10)])->with('toast-success', 'Scanned book reset successfully.');
+            return redirect()->route('inventory.dashboard', ['perPage' => $request->input('perPage', 10)])->with('toast-success', 'Scanned material reset successfully.');
         } catch (\Throwable $e) {
             Log::error('Inventory: Reset failed', [
                 'accession' => $accession,
@@ -348,7 +348,7 @@ class InventoryController extends Controller
                 'timestamp' => now(),
             ]);
 
-            return redirect()->back()->with('toast-error', 'Failed to reset scanned book.');
+            return redirect()->back()->with('toast-error', 'Failed to reset scanned material.');
         }
     }
 
@@ -388,6 +388,7 @@ class InventoryController extends Controller
         $seededCount = 0;
 
         Book::query()
+            ->whereIn('book_type', ['Print', 'Non-Print'])
             ->select('id')
             ->orderBy('id')
             ->chunkById(500, function ($books) use (&$seededCount) {
@@ -542,7 +543,7 @@ class InventoryController extends Controller
     private function getInventoryStats(): array
     {
         return [
-            'total_books' => Book::count(),
+            'total_materials' => Book::whereIn('book_type', ['Print', 'Non-Print'])->count(),
             'scanned' => Inventory::where('is_scanned', true)->count(),
             'saved' => Inventory::whereNotNull('checked_at')->count(),
             'pending_save' => Inventory::where('is_scanned', true)->whereNull('checked_at')->count(),

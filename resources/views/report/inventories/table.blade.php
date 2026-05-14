@@ -1,7 +1,7 @@
 <div id="tabular" class="container mx-auto mt-2 mb-4">
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md">
     <div class="p-4">
-      <h2 class="text-center mb-4 font-semibold text-2xl dark:text-white">Report Table for Inventory</h2>
+      <h2 class="text-center mb-4 font-semibold text-2xl dark:text-white">Report Table for Material Inventory</h2>
       <form method="GET" class="flex items-center">
         <label for="perPage" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Show</label>
         <input type="hidden" name="start" value="{{ old('start', request('start')) }}">
