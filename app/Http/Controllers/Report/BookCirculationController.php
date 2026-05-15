@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Category;
 use App\Models\UISetting;
+use App\Models\SubjectAccessCode;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -17,6 +18,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use Illuminate\Database\Eloquent\Collection;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class BookCirculationController extends Controller
 {
@@ -30,8 +32,9 @@ class BookCirculationController extends Controller
     {
         $barcode        = $request->input('barcode', '');
         $title          = $request->input('title', '');
-        $perPage        = $request->input('perPage', 10);
         $category       = $request->input('category', '');
+        $subjectId      = $request->input('subject_id', 'All');
+        $perPage        = $request->input('perPage', 10);
 
         Log::info('Book Circulation Report: Page accessed', [
             'user_id' => Auth::guard('admin')->id(),
@@ -57,10 +60,11 @@ class BookCirculationController extends Controller
         }
 
         $categories     = Category::all();
+        $subjects       = SubjectAccessCode::orderBy('access_code')->get();
         $books          = new Book();
         $availability   = $this->extract_enums($books->getTable(), 'availability_status');
         $data           = $this->generateData($request, $books, false);
-        return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability', 'perPage', 'categories', 'category'));
+        return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability', 'perPage', 'categories', 'category', 'subjects', 'subjectId'));
     }
     /**
      * Processes the search request for book circulation report.
@@ -76,6 +80,7 @@ class BookCirculationController extends Controller
         $title          = $request->input('title', '');
         $availability   = $request->input('availability', 'All');
         $category       = $request->input('category', 'All');
+        $subjectId      = $request->input('subject_id', 'All');
         $perPage        = $request->input('perPage', 10);
         $action         = $request->input('submit', 'search');
 
@@ -128,6 +133,7 @@ class BookCirculationController extends Controller
         }
         $data = $this->generateData($request, $books, false);
         $categories = Category::all();
+        $subjects = SubjectAccessCode::orderBy('access_code')->get();
         $availability = $this->extract_enums($books->getTable(), 'availability_status');
         if (!count($data)) {
             Log::info('Book Circulation Report: No data found for search', [
@@ -136,7 +142,7 @@ class BookCirculationController extends Controller
             ]);
             return redirect()->route('report.accession-list')->with('toast-error', 'No data found.');
         }
-        return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability', 'perPage', 'categories', 'category'));
+        return view('report.book-circulations.book-circulations', compact('data', 'barcode', 'title', 'availability', 'perPage', 'categories', 'category', 'subjects', 'subjectId'));
     }
     /**
      * Generates a PDF report for the book circulation report.
@@ -261,7 +267,7 @@ class BookCirculationController extends Controller
         $styleArray = [
             'borders' => [
                 'allBorders' => [
-                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'borderStyle' => Border::BORDER_THIN,
                 ],
             ],
         ];
@@ -302,6 +308,7 @@ class BookCirculationController extends Controller
         $barcode      = $request->input('barcode');
         $title        = $request->input('title');
         $category     = $request->input('category', 'All');
+        $subjectId    = $request->input('subject_id', 'All');
         $availability = $request->input('availability', 'All');
         $perPage      = $request->input('perPage', 10);
 
@@ -312,7 +319,7 @@ class BookCirculationController extends Controller
                 'id',
                 'category_id',
                 'accession',
-                'author',
+                'authors',
                 'place_of_publication',
                 'publisher',
                 'call_number',
@@ -341,17 +348,33 @@ class BookCirculationController extends Controller
             $query->where('category_id', $category);
         }
 
-        $query->orderBy('accession', 'asc')->orderBy('id', 'asc');
+        if ($subjectId && $subjectId !== 'All') {
+            $query->whereHas('subjectAccessCodes', function($q) use ($subjectId) {
+                $q->where('bk_subject_access_codes.id', $subjectId);
+            });
+        }
+
+        $query->join('bk_categories as categories', 'bk_books.category_id', '=', 'categories.id')
+            ->orderBy('categories.category_type', 'asc')
+            ->orderBy('categories.name', 'asc')
+            ->orderBy('bk_books.title', 'asc')
+            ->select('bk_books.*');
 
         if ($isExport) {
             $data = $query->get();
-            $data->makeHidden(['id', 'category_id']);
+            $data->transform(function ($item) {
+                $authorsArr = is_array($item->authors) ? $item->authors : json_decode($item->authors, true);
+                $item->author = $authorsArr['Main author'] ?? 'N/A';
+                return $item->makeHidden(['id', 'category_id', 'authors']);
+            });
             return $data;
         }
 
         $result = $query->paginate($perPage)->appends($request->all());
         $result->getCollection()->transform(function ($item) {
-            return $item->makeHidden(['id', 'category_id']);
+            $authorsArr = is_array($item->authors) ? $item->authors : json_decode($item->authors, true);
+            $item->author = $authorsArr['Main author'] ?? 'N/A';
+            return $item->makeHidden(['id', 'category_id', 'authors']);
         });
 
         return $result;

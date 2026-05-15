@@ -50,7 +50,7 @@ class SubjectMaintenanceController extends Controller
         if ($sortBy && $sortOrder) {
             $query->orderBy($sortBy, $sortOrder)->orderBy('id', 'desc');
         } else {
-            $query->orderBy('updated_at', 'desc')->orderBy('id', 'desc');
+            $query->orderBy('access_code', 'asc')->orderBy('id', 'desc');
         }
 
         $subjectAccessCodes = $query->paginate($perPage)->appends([

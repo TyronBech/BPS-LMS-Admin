@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Transaction;
 use App\Models\UISetting;
+use App\Models\SubjectAccessCode;
 use Carbon\Carbon;
 use DateTime;
 use Illuminate\Support\Facades\Validator;
@@ -38,6 +39,7 @@ class TransactionController extends Controller
         $search         = $request->input('search', '');
         $perPage        = $request->input('perPage', 10);
         $type           = $request->input('type', 'All');
+        $subjectId      = $request->input('subject_id', 'All');
         $availability   = $this->extract_enums((new Transaction())->getTable(), 'transaction_type');
 
         Log::info('Transaction Report: Page accessed', [
@@ -71,7 +73,8 @@ class TransactionController extends Controller
         }
 
         $data = $this->generateData($request, new Transaction(), false);
-        return view('report.transactions.transactions', compact('data', 'search', 'fromInputDate', 'toInputDate', 'type', 'perPage', 'availability'));
+        $subjects = SubjectAccessCode::orderBy('access_code')->get();
+        return view('report.transactions.transactions', compact('data', 'search', 'fromInputDate', 'toInputDate', 'type', 'perPage', 'availability', 'subjects', 'subjectId'));
     }
     /**
      * Handles the search request for the transaction report.
@@ -92,6 +95,7 @@ class TransactionController extends Controller
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
         $type           = $request->input('type', 'All');
+        $subjectId      = $request->input('subject_id', 'All');
         $availability   = $this->extract_enums((new Transaction())->getTable(), 'transaction_type');
         $perPage        = $request->input('perPage', 10);
 
@@ -137,7 +141,8 @@ class TransactionController extends Controller
             return redirect()->route('report.circulation')->with('toast-success', 'Successfully exported to Excel');
         }
         $data = $this->generateData($request, new Transaction(), false);
-        return view('report.transactions.transactions', compact('data', 'search', 'fromInputDate', 'toInputDate', 'type', 'perPage', 'availability'));
+        $subjects = SubjectAccessCode::orderBy('access_code')->get();
+        return view('report.transactions.transactions', compact('data', 'search', 'fromInputDate', 'toInputDate', 'type', 'perPage', 'availability', 'subjects', 'subjectId'));
     }
     /**
      * Generates a PDF report for the transaction report.
@@ -146,7 +151,7 @@ class TransactionController extends Controller
      * The report includes the title, school name, type, logo, address, user name, date, data and total count.
      * The PDF report is then streamed to the browser with the filename 'transaction-report <date>.pdf'.
      *
-     * @param Illuminate\Database\Eloquent\Collection $data The data to be included in the report.
+     * @param Collection $data The data to be included in the report.
      * @param string $type The type of report to be generated.
      */
     private function generatePDF(Collection $data, string $type)
@@ -372,6 +377,7 @@ class TransactionController extends Controller
         $endStr   = $request->input('end');
         $search   = strtolower($request->input('search'));
         $type     = $request->input('type', 'All');
+        $subjectId = $request->input('subject_id', 'All');
         $perPage  = $request->input('perPage', 10);
 
         $query = $model->newQuery()
@@ -424,7 +430,18 @@ class TransactionController extends Controller
             $query->where('transaction_type', $type);
         }
 
-        $query->orderBy('date_borrowed', 'desc')->orderBy('id', 'desc');
+        if ($subjectId && $subjectId !== 'All') {
+            $query->whereHas('book.subjectAccessCodes', function($q) use ($subjectId) {
+                $q->where('bk_subject_access_codes.id', $subjectId);
+            });
+        }
+
+        $query->join('bk_books as books', 'tr_transactions.book_id', '=', 'books.id')
+            ->join('bk_categories as categories', 'books.category_id', '=', 'categories.id')
+            ->orderBy('categories.category_type', 'asc')
+            ->orderBy('categories.name', 'asc')
+            ->orderBy('books.title', 'asc')
+            ->select('tr_transactions.*');
         if ($isExport) {
             $data = $query->get();
 

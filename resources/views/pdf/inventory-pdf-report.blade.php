@@ -129,6 +129,7 @@
           <th>Accession Number</th>
           <th>Author</th>
           <th>Title</th>
+          <th>Description</th>
           <th>Remarks</th>
         </tr>
       </thead>
@@ -138,11 +139,17 @@
           <td>{{ $item->accession }}</td>
           <td>{{ $item->author }}</td>
           <td>{{ $item->title }}</td>
+          <td>
+            @php
+              $descArr = is_array($item->book->description) ? $item->book->description : json_decode($item->book->description, true);
+            @endphp
+            {{ is_array($descArr) ? implode(', ', $descArr) : ($descArr ?? 'N/A') }}
+          </td>
           <td>{{ $item->remarks }}</td>
         </tr>
         @empty
         <tr>
-          <td colspan="4" style="text-align: center;">No data found.</td>
+          <td colspan="5" style="text-align: center;">No data found.</td>
         </tr>
         @endforelse
       </tbody>

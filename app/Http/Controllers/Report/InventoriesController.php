@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
+use App\Models\Inventory;
+use App\Models\SubjectAccessCode;
 use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 
 class InventoriesController extends Controller
@@ -27,13 +29,16 @@ class InventoriesController extends Controller
         $fromInputDate = $request->input('start', '');
         $toInputDate = $request->input('end', '');
         $perPage = $request->input('perPage', 10);
+        $subjectId = $request->input('subject_id', 'All');
 
         Log::info('Inventory Report: Page accessed', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
             'filters' => [
-                'start_date' => $fromInputDate,
-                'end_date' => $toInputDate,
+                'start' => $fromInputDate,
+                'end' => $toInputDate,
+                'perPage' => $perPage,
+                'subject_id' => $subjectId,
             ],
             'ip_address' => $request->ip(),
             'timestamp' => now(),
@@ -56,9 +61,10 @@ class InventoriesController extends Controller
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
 
+        $subjects = SubjectAccessCode::orderBy('access_code')->get();
         $data = $this->generateData($request, false);
 
-        return view('report.inventories.index', compact('fromInputDate', 'toInputDate', 'data', 'perPage'));
+        return view('report.inventories.index', compact('data', 'fromInputDate', 'toInputDate', 'perPage', 'subjects', 'subjectId'));
     }
 
     public function search(Request $request)
@@ -66,11 +72,12 @@ class InventoriesController extends Controller
         $fromInputDate = $request->input('start', '');
         $toInputDate = $request->input('end', '');
         $perPage = $request->input('perPage', 10);
+        $subjectId = $request->input('subject_id', 'All');
 
         Log::info('Inventory Report: Search performed', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
-            'filters' => $request->only(['start', 'end', 'perPage']),
+            'filters' => $request->only(['start', 'end', 'perPage', 'subject_id']),
             'action' => $request->input('submit', 'search'),
             'ip_address' => $request->ip(),
             'timestamp' => now(),
@@ -94,32 +101,21 @@ class InventoriesController extends Controller
         }
 
         if ($request->input('submit') === 'pdf') {
-            Log::info('Inventory Report: Generating PDF export', [
-                'user_id' => Auth::guard('admin')->id(),
-                'timestamp' => now(),
-            ]);
-
             $data = $this->generateData($request, true);
             $this->generatePDF($data);
-
-            return redirect()->back()->with('toast-success', 'PDF generated successfully');
+            return redirect()->route('report.inventories')->with('toast-success', 'Successfully exported to PDF');
         }
 
         if ($request->input('submit') === 'excel') {
-            Log::info('Inventory Report: Generating Excel export', [
-                'user_id' => Auth::guard('admin')->id(),
-                'timestamp' => now(),
-            ]);
-
             $data = $this->generateData($request, true);
             $this->exportExcel($data);
-
-            return redirect()->back()->with('toast-success', 'Excel generated successfully');
+            return redirect()->route('report.inventories')->with('toast-success', 'Successfully exported to Excel');
         }
 
+        $subjects = SubjectAccessCode::orderBy('access_code')->get();
         $data = $this->generateData($request, false);
 
-        return view('report.inventories.index', compact('fromInputDate', 'toInputDate', 'data', 'perPage'));
+        return view('report.inventories.index', compact('data', 'fromInputDate', 'toInputDate', 'perPage', 'subjects', 'subjectId'));
     }
 
     private function generatePDF(Collection $data)
@@ -210,17 +206,24 @@ class InventoriesController extends Controller
         $sheet->setCellValue('A11', 'Accession Number');
         $sheet->setCellValue('B11', 'Author');
         $sheet->setCellValue('C11', 'Title');
-        $sheet->setCellValue('D11', 'Remarks');
+        $sheet->setCellValue('D11', 'Description');
+        $sheet->setCellValue('E11', 'Remarks');
         $row = 12;
 
         foreach ($data as $item) {
+            $book = $item->book;
+            
+            $descArr = is_array($book->description) ? $book->description : json_decode($book->description, true);
+            $descString = is_array($descArr) ? implode(', ', $descArr) : ($descArr ?? '');
+
             $sheet->setCellValue('A' . $row, $item->accession);
             $sheet->setCellValue('B' . $row, $item->author);
             $sheet->setCellValue('C' . $row, $item->title);
-            $sheet->setCellValue('D' . $row, $item->remarks);
-            $sheet->getStyle('A' . $row . ':D' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-            $sheet->getStyle('A' . $row . ':D' . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
-            $sheet->getStyle('A' . $row . ':D' . $row)->getAlignment()->setWrapText(true);
+            $sheet->setCellValue('D' . $row, $descString);
+            $sheet->setCellValue('E' . $row, $item->remarks);
+            $sheet->getStyle('A' . $row . ':E' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle('A' . $row . ':E' . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+            $sheet->getStyle('A' . $row . ':E' . $row)->getAlignment()->setWrapText(true);
             $row++;
         }
 
@@ -250,46 +253,82 @@ class InventoriesController extends Controller
 
     private function generateData(Request $request, bool $isExport = false)
     {
-        $startStr = $request->input('start');
-        $endStr = $request->input('end');
-        $perPage = $request->input('perPage', 10);
+        $startStr     = $request->input('start');
+        $endStr       = $request->input('end');
+        $barcode      = $request->input('barcode');
+        $title        = $request->input('title');
+        $category     = $request->input('category', 'All');
+        $subjectId    = $request->input('subject_id', 'All');
+        $perPage      = $request->input('perPage', 10);
         $inventoryActive = $this->isInventoryActive();
 
-        $remarksSelect = $inventoryActive
-            ? "CASE WHEN inventories.is_scanned = 0 THEN 'Pending' ELSE books.remarks END"
-            : 'books.remarks';
-
-        $query = DB::table('bk_inventories as inventories')
-            ->join('bk_books as books', 'books.id', '=', 'inventories.book_id')
-            ->whereNull('books.deleted_at')
-            ->whereIn('books.book_type', ['Print', 'Non-Print'])
-            ->selectRaw("
-                inventories.id as source_id,
-                books.accession,
-                books.author,
-                books.title,
-                {$remarksSelect} as remarks,
-                inventories.checked_at,
-                inventories.is_scanned
-            ");
+        $query = Inventory::whereHas('book', function($q) use ($title, $barcode, $category) {
+            if ($barcode) {
+                $q->where('barcode', 'like', "%{$barcode}%");
+            }
+            if ($title) {
+                $q->where('title', 'like', "%{$title}%");
+            }
+            if ($category && $category !== 'All') {
+                $q->where('category_id', $category);
+            }
+        })
+        ->with(['book.category:id,name', 'cycle'])
+        ->select([
+            'id',
+            'inventory_cycle_id',
+            'book_id',
+            'status',
+            'remarks',
+            'created_at',
+            'is_scanned'
+        ]);
 
         if ($startStr && $endStr) {
-            $startDate = Carbon::parse($startStr)->startOfDay();
-            $endDate = Carbon::parse($endStr)->endOfDay();
-
-            $query->whereBetween('inventories.checked_at', [$startDate, $endDate]);
+            $startDate = Carbon::createFromFormat('m/d/Y', $startStr)->startOfDay();
+            $endDate   = Carbon::createFromFormat('m/d/Y', $endStr)->endOfDay();
+            $query->whereBetween('created_at', [$startDate, $endDate]);
         }
 
-        $query->orderBy('books.accession', 'asc')->orderBy('inventories.id', 'asc');
+        if ($subjectId && $subjectId !== 'All') {
+            $query->whereHas('book.subjectAccessCodes', function($q) use ($subjectId) {
+                $q->where('bk_subject_access_codes.id', $subjectId);
+            });
+        }
 
         if ($isExport) {
             $data = $query->get();
+            foreach ($data as $item) {
+                $book = $item->book;
+                $remarksSelect = $inventoryActive
+                    ? ($item->is_scanned == 0 ? 'Pending' : ($book->remarks ?? 'No Remarks'))
+                    : ($book->remarks ?? 'No Remarks');
+                $item->remarks = $remarksSelect;
+                $item->accession = $book->accession;
+                $item->title = $book->title;
+                
+                $authorsArr = is_array($book->authors) ? $book->authors : json_decode($book->authors, true);
+                $item->author = $authorsArr['Main author'] ?? 'N/A';
+            }
             $data->reporting_period = $this->buildReportingPeriod($request, $inventoryActive);
-
             return $data;
         }
 
-        return $query->paginate($perPage)->appends($request->all());
+        $paginated = $query->paginate($perPage)->appends($request->all());
+        $paginated->getCollection()->each(function ($item) use ($inventoryActive) {
+            $book = $item->book;
+            $remarksSelect = $inventoryActive
+                ? ($item->is_scanned == 0 ? 'Pending' : ($book->remarks ?? 'No Remarks'))
+                : ($book->remarks ?? 'No Remarks');
+            $item->remarks = $remarksSelect;
+            $item->accession = $book->accession;
+            $item->title = $book->title;
+
+            $authorsArr = is_array($book->authors) ? $book->authors : json_decode($book->authors, true);
+            $item->author = $authorsArr['Main author'] ?? 'N/A';
+        });
+
+        return $paginated;
     }
 
     private function buildReportingPeriod(Request $request, bool $inventoryActive): string

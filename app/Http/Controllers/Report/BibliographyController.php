@@ -12,15 +12,16 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use App\Models\SubjectAccessCode;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Border;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
-use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Worksheet\PageSetup;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class BibliographyController extends Controller
 {
@@ -29,6 +30,7 @@ class BibliographyController extends Controller
         $title = $request->input('title', '');
         $author = $request->input('author', '');
         $category = $request->input('category', '');
+        $subjectId = $request->input('subject_id', 'All');
         $perPage = $request->input('perPage', 10);
 
         Log::info('Bibliography Report: Page accessed', [
@@ -38,6 +40,7 @@ class BibliographyController extends Controller
                 'title' => $title,
                 'author' => $author,
                 'category' => $category,
+                'subject_id' => $subjectId,
             ],
             'ip_address' => $request->ip(),
             'timestamp' => now(),
@@ -61,9 +64,10 @@ class BibliographyController extends Controller
         }
 
         $categories = Category::orderBy('name')->get();
+        $subjects = SubjectAccessCode::orderBy('access_code')->get();
         $data = $this->generateData($request, new Book(), false);
 
-        return view('report.bibliography.index', compact('data', 'title', 'author', 'category', 'perPage', 'categories'));
+        return view('report.bibliography.index', compact('data', 'title', 'author', 'category', 'subjectId', 'perPage', 'categories', 'subjects'));
     }
 
     public function search(Request $request)
@@ -71,6 +75,7 @@ class BibliographyController extends Controller
         $title = $request->input('title', '');
         $author = $request->input('author', '');
         $category = $request->input('category', 'All');
+        $subjectId = $request->input('subject_id', 'All');
         $perPage = $request->input('perPage', 10);
         $categoryOptions = Category::pluck('id')->map(fn ($id) => (string) $id)->prepend('All')->all();
 
@@ -127,6 +132,7 @@ class BibliographyController extends Controller
 
         $data = $this->generateData($request, new Book(), false);
         $categories = Category::orderBy('name')->get();
+        $subjects = SubjectAccessCode::orderBy('access_code')->get();
 
         if (!count($data)) {
             Log::info('Bibliography Report: No data found for search', [
@@ -137,7 +143,7 @@ class BibliographyController extends Controller
             return redirect()->route('report.bibliography')->with('toast-error', 'No data found.');
         }
 
-        return view('report.bibliography.index', compact('data', 'title', 'author', 'category', 'perPage', 'categories'));
+        return view('report.bibliography.index', compact('data', 'title', 'author', 'category', 'perPage', 'categories', 'subjects', 'subjectId'));
     }
 
     private function generatePDF(Collection $data): void
@@ -269,34 +275,39 @@ class BibliographyController extends Controller
         $title = $request->input('title');
         $author = $request->input('author');
         $category = $request->input('category', 'All');
+        $subjectId = $request->input('subject_id', 'All');
         $perPage = $request->input('perPage', 10);
 
         $query = $model->newQuery()
-            ->with('category:id,name')
-            ->whereHas('category')
-            ->select([
-                'id',
-                'category_id',
-                'title',
-                'author',
-                'place_of_publication',
-                'publisher',
-                'copyrights',
-            ]);
+            ->with(['category:id,name', 'subjectAccessCodes'])
+            ->whereHas('category');
 
         if ($title) {
             $query->where('title', 'like', "%{$title}%");
         }
 
         if ($author) {
-            $query->where('author', 'like', "%{$author}%");
+            $query->where(function ($q) use ($author) {
+                $q->where('authors', 'like', "%{$author}%")
+                  ->orWhereRaw('LOWER(authors->"$.\"Main author\"") LIKE ?', ["%".strtolower($author)."%"]);
+            });
         }
 
         if ($category && $category !== 'All') {
             $query->where('category_id', $category);
         }
 
-        $query->orderBy('title', 'asc')->orderBy('author', 'asc')->orderBy('id', 'asc');
+        if ($subjectId && $subjectId !== 'All') {
+            $query->whereHas('subjectAccessCodes', function ($sq) use ($subjectId) {
+                $sq->where('bk_subject_access_codes.id', $subjectId);
+            });
+        }
+
+        $query->join('bk_categories as categories', 'bk_books.category_id', '=', 'categories.id')
+            ->orderBy('categories.category_type', 'asc')
+            ->orderBy('categories.name', 'asc')
+            ->orderBy('bk_books.title', 'asc')
+            ->select('bk_books.*');
 
         if ($isExport) {
             $data = $query->get();
@@ -323,7 +334,11 @@ class BibliographyController extends Controller
     private function formatBibliographyEntry(Book $book): string
     {
         $title = $this->normalizeBibliographyValue($book->title, 'Untitled');
-        $author = $this->normalizeBibliographyValue($book->author);
+        
+        $authorsArr = is_array($book->authors) ? $book->authors : json_decode($book->authors, true);
+        $mainAuthor = $authorsArr['Main author'] ?? 'N/A';
+        $author = $this->normalizeBibliographyValue($mainAuthor);
+        
         $place = $this->normalizeBibliographyValue($book->place_of_publication);
         $publisher = $this->normalizeBibliographyValue($book->publisher);
         $copyright = $this->normalizeBibliographyValue($book->copyrights);

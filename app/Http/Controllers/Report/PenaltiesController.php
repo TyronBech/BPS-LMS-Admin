@@ -16,9 +16,11 @@ use App\Models\Transaction;
 use App\Models\UISetting;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Pagination\LengthAwarePaginator;
+use App\Models\SubjectAccessCode;
+use App\Models\Book;
 
 class PenaltiesController extends Controller
 {
@@ -38,6 +40,7 @@ class PenaltiesController extends Controller
         $toInputDate    = $request->input('end');
         $perPage        = $request->input('perPage', 10);
         $penaltyStatus  = $request->input('penalty_status');
+        $subjectId      = $request->input('subject_id', 'All');
         $penaltyStatuses = $this->getPenaltyStatuses();
 
         Log::info('Penalties Report: Page accessed', [
@@ -65,6 +68,7 @@ class PenaltiesController extends Controller
         }
 
         $data = $this->generateData($request, new Transaction(), false);
+        $subjects = SubjectAccessCode::orderBy('access_code')->get();
 
         // Build a fresh full collection (unpaginated) from the same filters so summary reflects all rows
         try {
@@ -83,7 +87,7 @@ class PenaltiesController extends Controller
         }
 
         $summary = $this->calculateSummary($full);
-        return view('report.penalties.index', compact('data', 'summary', 'fromInputDate', 'toInputDate', 'search', 'perPage', 'penaltyStatus', 'penaltyStatuses'));
+        return view('report.penalties.index', compact('data', 'summary', 'fromInputDate', 'toInputDate', 'search', 'perPage', 'penaltyStatus', 'penaltyStatuses', 'subjects', 'subjectId'));
     }
     /**
      * Handles the search request for the penalties report.
@@ -104,6 +108,7 @@ class PenaltiesController extends Controller
         $toInputDate    = $request->input('end');
         $perPage        = $request->input('perPage', 10);
         $penaltyStatus  = $request->input('penalty_status');
+        $subjectId      = $request->input('subject_id', 'All');
         $penaltyStatuses = $this->getPenaltyStatuses();
 
         Log::info('Penalties Report: Search performed', [
@@ -153,6 +158,7 @@ class PenaltiesController extends Controller
             return redirect()->route('report.penalties')->with('toast-success', 'Successfully exported to Excel');
         }
         $data = $this->generateData($request, new Transaction(), false);
+        $subjects = SubjectAccessCode::orderBy('access_code')->get();
 
         // Build a fresh full collection (unpaginated) from the same filters so summary reflects all rows
         try {
@@ -171,7 +177,7 @@ class PenaltiesController extends Controller
         }
 
         $summary = $this->calculateSummary($full);
-        return view('report.penalties.index', compact('data', 'summary', 'search', 'fromInputDate', 'toInputDate', 'perPage', 'penaltyStatus', 'penaltyStatuses'));
+        return view('report.penalties.index', compact('data', 'summary', 'search', 'fromInputDate', 'toInputDate', 'perPage', 'penaltyStatus', 'penaltyStatuses', 'subjects', 'subjectId'));
     }
     /**
      * Generates a PDF report for the overdue fines report.
@@ -462,6 +468,7 @@ class PenaltiesController extends Controller
         $endStr   = $request->input('end');
         $search   = strtolower((string) $request->input('search'));
         $penaltyStatus = $this->normalizePenaltyStatus($request->input('penalty_status'));
+        $subjectId = $request->input('subject_id', 'All');
 
         $query = $this->buildPenaltyBaseQuery($model);
 
@@ -487,6 +494,12 @@ class PenaltiesController extends Controller
 
         if ($penaltyStatus) {
             $query->where('penalty_status', $penaltyStatus);
+        }
+
+        if ($subjectId && $subjectId !== 'All') {
+            $query->whereHas('book.subjectAccessCodes', function ($sq) use ($subjectId) {
+                $sq->where('bk_subject_access_codes.id', $subjectId);
+            });
         }
 
         return $query;

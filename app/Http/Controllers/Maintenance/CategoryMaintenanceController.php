@@ -63,17 +63,17 @@ class CategoryMaintenanceController extends Controller
         }
 
         $printCategories = (clone $query)->where('category_type', 'Print')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('name', 'asc')
             ->paginate($perPrintPage, ['*'], 'print_page')
             ->appends(['perPrintPage' => $perPrintPage, 'search-categories' => $search]);
 
         $nonPrintCategories = (clone $query)->where('category_type', 'Non-print')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('name', 'asc')
             ->paginate($perNonPrintPage, ['*'], 'non_print_page')
             ->appends(['perNonPrintPage' => $perNonPrintPage, 'search-categories' => $search]);
 
         $ebooksCategories = (clone $query)->where('category_type', 'E-books')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('name', 'asc')
             ->paginate($perEbooksPage, ['*'], 'ebooks_page')
             ->appends(['perEbooksPage' => $perEbooksPage, 'search-categories' => $search]);
 
