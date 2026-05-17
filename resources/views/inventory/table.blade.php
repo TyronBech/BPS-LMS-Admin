@@ -85,9 +85,9 @@
                             <td class="block px-6 py-4 text-right md:table-cell md:text-center">
                                 <span class="float-left font-bold md:hidden">Remarks</span>
                                 @if($inventoryActive)
-                                <select name="remarks[{{ $item->book->id }}]" class="w-1/2 rounded-lg border border-gray-200 p-2 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 md:w-full" @disabled(!$inventoryActive)>
+                                <select name="remarks[{{ $item->book->id }}]" class="w-1/2 rounded-lg border border-gray-200 p-2 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 md:w-full" @disabled(!$inventoryActive || $item->checked_at)>
                                     @foreach($remarks as $remark)
-                                    <option value="{{ $remark }}" @selected($remark=="On Shelf")>{{ $remark }}</option>
+                                    <option value="{{ $remark }}" @selected($remark==old("remarks.{$item->book->id}", $item->book->remarks))>{{ $remark }}</option>
                                     @endforeach
                                 </select>
                                 @else
@@ -97,7 +97,7 @@
                             <td class="block px-6 py-4 text-right md:table-cell md:text-center">
                                 <span class="float-left font-bold md:hidden">Condition</span>
                                 @if($inventoryActive)
-                                <select name="condition[{{ $item->book->id }}]" class="w-1/2 rounded-lg border border-gray-200 p-2 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 md:w-full" @disabled(!$inventoryActive)>
+                                <select name="condition[{{ $item->book->id }}]" class="w-1/2 rounded-lg border border-gray-200 p-2 shadow-sm dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 md:w-full" @disabled(!$inventoryActive || $item->checked_at)>
                                     @foreach($conditions as $condition)
                                     <option value="{{ $condition }}" @selected($condition==old("condition.{$item->book->id}", $item->book->condition_status))>{{ $condition }}</option>
                                     @endforeach

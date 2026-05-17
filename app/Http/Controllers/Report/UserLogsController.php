@@ -412,6 +412,7 @@ class UserLogsController extends Controller
      */
     private function findPeakHour($times)
     {
+        $peakHour = null;
         $hourCounts = array();
         foreach ($times as $time) {
             $hour = substr($time, 0, 2);
@@ -446,14 +447,14 @@ class UserLogsController extends Controller
 
         try {
             $chart = $request->input('chart');
-            $type  = strtolower($request->input('type')); // daily, weekly, monthly
+            $type  = strtolower((string) $request->input('type', ''));
             $start = $request->input('start_date');
             $end   = $request->input('end_date');
 
             $validator = Validator::make($request->all(), [
-                'type'          => 'nullable|in:daily,weekly,monthly',
-                'start_date'    => 'nullable|date|required_with:end_date',
-                'end_date'      => 'nullable|date|required_with:start_date|after_or_equal:start_date',
+                'type'          => 'nullable|in:hourly,daily,weekly,monthly,yearly',
+                'start_date'    => 'nullable|date_format:m/d/Y|required_with:end_date',
+                'end_date'      => 'nullable|date_format:m/d/Y|required_with:start_date|after_or_equal:start_date',
             ]);
             if ($validator->fails()) {
                 return response()->json(['error' => $validator->errors()->first()], 400);
@@ -461,8 +462,17 @@ class UserLogsController extends Controller
             // build range string
             $range = '';
             if ($start && $end) {
-                // custom date range
-                $range = 'from ' . Carbon::parse($start)->format('F d, Y') . ' to ' . Carbon::parse($end)->format('F d, Y');
+                // Custom date range
+                $startDate = Carbon::createFromFormat('m/d/Y', $start);
+                $endDate = Carbon::createFromFormat('m/d/Y', $end);
+                if ($startDate->isSameDay($endDate)) {
+                    $range = $startDate->format('F d, Y');
+                } else {
+                    $range = 'from ' . $startDate->format('F d, Y') . ' to ' . $endDate->format('F d, Y');
+                }
+            } elseif ($type === 'hourly') {
+                // Today (hourly breakdown)
+                $range = Carbon::today()->format('F d, Y');
             } elseif ($type === 'daily') {
                 // today
                 $range = Carbon::today()->format('F d, Y');
@@ -480,6 +490,12 @@ class UserLogsController extends Controller
             } elseif ($type === 'monthly') {
                 // current month + year
                 $range = Carbon::now()->format('F Y');
+            } elseif ($type === 'yearly') {
+                // past 10 years
+                $now = Carbon::now();
+                $startYear = $now->year - 9;
+                $endYear = $now->year;
+                $range = 'past 10 years (' . $startYear . ' - ' . $endYear . ')';
             }
 
             $settings = UISetting::first() ?? new UISetting();

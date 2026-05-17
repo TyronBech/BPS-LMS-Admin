@@ -107,13 +107,29 @@ class InventoryController extends Controller
         $barcode = trim((string) $request->input('barcode'));
 
         try {
-            DB::transaction(function () use ($barcode) {
-                $book = Book::where('accession', $barcode)->first();
+            $book = Book::where('accession', $barcode)->first();
 
-                if (!$book) {
-                    throw new \RuntimeException('Book not found.');
-                }
+            if (!$book) {
+                throw new \RuntimeException('Book not found.');
+            }
 
+            $scanWarning = null;
+            $statusLabel = null;
+            if ($book->remarks && $book->remarks !== 'On Shelf') {
+                $statusLabel = $book->remarks;
+            } elseif ($book->availability_status && $book->availability_status !== 'Available') {
+                $statusLabel = $book->availability_status;
+            }
+
+            if ($statusLabel) {
+                $scanWarning = [
+                    'accession' => $book->accession,
+                    'title' => $book->title,
+                    'remarks' => $statusLabel,
+                ];
+            }
+
+            DB::transaction(function () use ($book) {
                 $inventory = Inventory::firstOrCreate(
                     ['book_id' => $book->id],
                     [
@@ -139,7 +155,14 @@ class InventoryController extends Controller
                 'timestamp' => now(),
             ]);
 
-            return redirect()->route('inventory.dashboard', ['perPage' => $request->input('perPage', 10)])->with('toast-success', 'Material scanned. Click save to timestamp it.');
+            $redirect = redirect()->route('inventory.dashboard', ['perPage' => $request->input('perPage', 10)])
+                ->with('toast-success', 'Material scanned. Click save to timestamp it.');
+
+            if ($scanWarning) {
+                $redirect->with('scan-remark-warning', $scanWarning);
+            }
+
+            return $redirect;
         } catch (\RuntimeException $e) {
             return redirect()->back()->with('toast-warning', $e->getMessage());
         } catch (\Throwable $e) {
@@ -520,7 +543,12 @@ class InventoryController extends Controller
             $book = $inventory->book;
             $newCondition = $conditions[$bookId] ?? $book->condition_status;
             $newRemarks = $remarks[$bookId] ?? $book->remarks;
-            $newAvailability = $newRemarks === 'On Shelf' ? 'Available' : 'Unavailable';
+            $availabilityMap = [
+                'On Shelf' => 'Available',
+                'Unreturned' => 'Borrowed',
+                'Lost and Replaced' => 'Available',
+            ];
+            $newAvailability = $availabilityMap[$newRemarks] ?? 'Unavailable';
 
             if (
                 $book->condition_status !== $newCondition ||
