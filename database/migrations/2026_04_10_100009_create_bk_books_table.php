@@ -27,7 +27,7 @@ return new class extends Migration
             $table->binary('cover_image')->nullable();
             $table->string('digital_copy_url')->nullable();
             $table->string('barcode')->nullable();
-            $table->enum('availability_status', ['Available', 'Unavailable', 'Borrowed', 'In Use', 'Reserved'])->default('available');
+            $table->enum('availability_status', ['Available', 'Unavailable', 'Borrowed', 'Reserved'])->default('available');
             $table->enum('condition_status', ['New', 'Good', 'Fair', 'Poor'])->default('good');
             $table->timestamp('created_at')->nullable()->useCurrent();
             $table->timestamp('updated_at')->nullable()->useCurrent()->useCurrentOnUpdate();

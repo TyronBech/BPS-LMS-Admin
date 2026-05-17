@@ -464,7 +464,9 @@
       }
     }
 
-    function applyAvailabilityRule() {
+    const originalAvailability = '{{ $book->availability_status }}';
+
+    function applyAvailabilityRule(isInitial = false) {
       if (!availabilitySelect || !availabilityHidden || !remarksSelect) return;
       const rv = remarksSelect.value;
       if (rv && rv !== 'On Shelf') {
@@ -473,7 +475,11 @@
         availabilityHidden.value = 'Unavailable';
         availabilityHidden.removeAttribute('disabled');
       } else {
-        availabilitySelect.value = 'Available';
+        if (isInitial) {
+          availabilitySelect.value = originalAvailability;
+        } else {
+          availabilitySelect.value = 'Available';
+        }
         availabilitySelect.removeAttribute('disabled');
         availabilityHidden.setAttribute('disabled', 'disabled');
       }
@@ -566,7 +572,7 @@
 
     restructureFormByBookType();
     syncCopyCategoryFromBookType();
-    applyAvailabilityRule();
+    applyAvailabilityRule(true);
     prefillCopyAccession();
 
     // --- Subject Multiselect Logic ---

@@ -12,14 +12,27 @@
         <svg class="mx-auto mb-4 text-green-400 w-12 h-12 dark:text-green-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m7 10 2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
         </svg>
-        <h3 class="mb-5 text-base md:text-lg font-normal text-gray-500 dark:text-gray-400 px-2">
-          Are you sure you want to approve this extension request for
-          <strong class="text-gray-900 dark:text-white">{{ $request->user->first_name }} {{ $request->user->last_name }}</strong>?
-        </h3>
-        <p class="mb-5 text-sm text-gray-600 dark:text-gray-400 px-2">
-          Book: <strong class="break-words">{{ $request->book->title }}</strong><br>
-          New Due Date: <strong>{{ \Carbon\Carbon::parse($request->requested_due_date)->format('F d, Y') }}</strong>
-        </p>
+        
+        @if($request->transaction_type === 'Reserved')
+          <h3 class="mb-5 text-base md:text-lg font-normal text-gray-500 dark:text-gray-400 px-2">
+            Are you sure you want to approve this book reservation request for
+            <strong class="text-gray-900 dark:text-white">{{ $request->user->first_name }} {{ $request->user->last_name }}</strong>?
+          </h3>
+          <p class="mb-5 text-sm text-gray-600 dark:text-gray-400 px-2">
+            Book: <strong class="break-words">{{ $request->book->title }}</strong><br>
+            Action: <strong>The book will be checked out and marked as Borrowed. Default borrow period of 7 days will be applied.</strong>
+          </p>
+        @else
+          <h3 class="mb-5 text-base md:text-lg font-normal text-gray-500 dark:text-gray-400 px-2">
+            Are you sure you want to approve this extension request for
+            <strong class="text-gray-900 dark:text-white">{{ $request->user->first_name }} {{ $request->user->last_name }}</strong>?
+          </h3>
+          <p class="mb-5 text-sm text-gray-600 dark:text-gray-400 px-2">
+            Book: <strong class="break-words">{{ $request->book->title }}</strong><br>
+            New Due Date: <strong>{{ \Carbon\Carbon::parse($request->requested_due_date)->format('F d, Y') }}</strong>
+          </p>
+        @endif
+
         <form action="{{ route('maintenance.approve-extension', $request->id) }}" method="POST" class="inline">
           @csrf
           <button type="submit" class="text-white bg-green-600 hover:bg-green-800 focus:ring-4 focus:outline-none focus:ring-green-300 dark:focus:ring-green-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
@@ -48,10 +61,19 @@
         <svg class="mx-auto mb-4 text-red-400 w-12 h-12 dark:text-red-200" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 11V6m0 8h.01M19 10a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
         </svg>
-        <h3 class="mb-5 text-base md:text-lg font-normal text-gray-500 dark:text-gray-400 px-2">
-          Reject extension request for
-          <strong class="text-gray-900 dark:text-white">{{ $request->user->first_name }} {{ $request->user->last_name }}</strong>?
-        </h3>
+        
+        @if($request->transaction_type === 'Reserved')
+          <h3 class="mb-5 text-base md:text-lg font-normal text-gray-500 dark:text-gray-400 px-2">
+            Reject book reservation request for
+            <strong class="text-gray-900 dark:text-white">{{ $request->user->first_name }} {{ $request->user->last_name }}</strong>?
+          </h3>
+        @else
+          <h3 class="mb-5 text-base md:text-lg font-normal text-gray-500 dark:text-gray-400 px-2">
+            Reject extension request for
+            <strong class="text-gray-900 dark:text-white">{{ $request->user->first_name }} {{ $request->user->last_name }}</strong>?
+          </h3>
+        @endif
+
         <form action="{{ route('maintenance.reject-extension', $request->id) }}" method="POST">
           @csrf
           <div class="mb-4 text-left">
@@ -63,7 +85,11 @@
               rows="4"
               required
               maxlength="500"
-              placeholder="Please provide a clear reason for rejecting this extension request..."
+              @if($request->transaction_type === 'Reserved')
+                placeholder="Please provide a clear reason for rejecting this reservation request..."
+              @else
+                placeholder="Please provide a clear reason for rejecting this extension request..."
+              @endif
               class="block p-2.5 w-full text-sm text-gray-900 bg-gray-50 rounded-lg border border-gray-300 focus:ring-red-500 focus:border-red-500 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-red-500 dark:focus:border-red-500"></textarea>
             <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Maximum 500 characters</p>
           </div>
