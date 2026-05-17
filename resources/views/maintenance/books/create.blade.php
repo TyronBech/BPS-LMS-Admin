@@ -214,7 +214,9 @@
               <label for="availability" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Availability:</label>
               <select id="availability" name="availability" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
                 @foreach($availability as $value)
-                <option value="{{ $value }}" {{ old('availability', 'Available') == $value ? 'selected' : '' }}>{{ $value }}</option>
+                  @if($value !== 'Borrowed' && $value !== 'Reserved')
+                    <option value="{{ $value }}" {{ old('availability', 'Available') == $value ? 'selected' : '' }}>{{ $value }}</option>
+                  @endif
                 @endforeach
               </select>
               <input type="hidden" id="availability_hidden" name="availability" disabled>

@@ -9,13 +9,13 @@
     <div class="p-4">
       <h2 class="text-center mb-4 font-semibold text-2xl dark:text-white">Report Table for User Audits</h2>
       <form method="GET" class="flex items-center">
-        <label for="perPage" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Show</label>
+        <label for="perPage" class="mr-2 text-xs font-medium text-gray-500 dark:text-gray-400">Show</label>
         <input type="hidden" name="types" value="{{ old('types', request('types')) }}">
         <input type="hidden" name="tableType" value="{{ old('tableType', request('tableType')) }}">
         <input type="hidden" name="start" value="{{ old('start', request('start')) }}">
         <input type="hidden" name="end" value="{{ old('end', request('end')) }}">
         <input type="number" name="perPage" id="perPageInput" min="1" max="500" onchange="this.form.submit()" value="{{ old('perPage', $perPage) }}" min="1" max="500" class="border border-gray-300 text-xs rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
-        <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">entries per page</span>
+        <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">entries per page</span>
       </form>
     </div>
     <div class="overflow-x-auto">

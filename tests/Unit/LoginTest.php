@@ -24,6 +24,12 @@ class LoginTest extends TestCase
             'password'      => bcrypt('password123'),
         ]);
 
+        $role = \Spatie\Permission\Models\Role::firstOrCreate([
+            'name' => \App\Enum\RolesEnum::SUPER_ADMIN->value,
+            'guard_name' => 'admin'
+        ]);
+        $user->assignRole($role);
+
         // Act: Attempt login with correct credentials
         $response = $this->post('/login', [
             'email' => 'test@example.com',
@@ -33,8 +39,8 @@ class LoginTest extends TestCase
         // Assert: Check if redirected to intended route (default: /home)
         $response->assertRedirect('/admin/dashboard');
 
-        // Assert: Check that user is authenticated
-        $this->assertAuthenticatedAs($user);
+        // Assert: Check that user is authenticated on the admin guard
+        $this->assertAuthenticatedAs($user, 'admin');
     }
     /**
      * Test login with wrong credentials
@@ -59,7 +65,7 @@ class LoginTest extends TestCase
 
         // Assert: Should redirect back with errors
         $response->assertRedirect();
-        $response->assertSessionHasErrors('email'); // Laravel returns error for 'email' field by default
+        $response->assertSessionHas('toast-error', 'Invalid email or password.'); // Custom failure message handled by controller
 
         // Assert: User should not be authenticated
         $this->assertGuest();

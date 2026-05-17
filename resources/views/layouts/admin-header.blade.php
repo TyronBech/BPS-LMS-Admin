@@ -194,8 +194,7 @@
           auth()->user()->can(PermissionsEnum::VIEW_TRANSACTIONS_MAINTENANCE) ||
           auth()->user()->can(PermissionsEnum::RESERVATION_APPROVALS) ||
           auth()->user()->can(PermissionsEnum::CREATE_BACKUPS) ||
-          auth()->user()->can(PermissionsEnum::MODIFY_ADMIN) ||
-          auth()->user()->can(PermissionsEnum::VIEW_LIBRARY_WEBSITE))
+          auth()->user()->can(PermissionsEnum::MODIFY_ADMIN))
           <li>
             <button id="dropdownNavbarLink" data-dropdown-toggle="navbarMaintenance" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:bg-tertiary-500 lg:hover:bg-transparent lg:border-0 lg:hover:text-tertiary-500 lg:p-0 lg:w-auto dark:text-white lg:dark:hover:text-tertiary-500 dark:hover:bg-tertiary-500 dark:hover:text-white lg:dark:hover:bg-transparent">
               <div>Maintenance <span id="maintenance-notification-badge" class="hidden ms-2 bg-red-500 text-white text-xs font-semibold px-1.5 py-0.5 rounded-full"></span></div><svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">

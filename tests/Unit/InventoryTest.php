@@ -3,16 +3,26 @@
 namespace Tests\Unit;
 
 use Tests\TestCase;
-
 use App\Models\Book;
 use App\Models\Inventory;
 use App\Models\User;
+use App\Models\SystemSetting;
 use Illuminate\Foundation\Testing\DatabaseTransactions;
 use PHPUnit\Framework\Attributes\Test;
 
 class InventoryTest extends TestCase
 {
     use DatabaseTransactions;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        // Ensure inventory cycle is active for the tests
+        SystemSetting::updateOrCreate(
+            ['key' => 'inventory_cycle_active'],
+            ['value' => '1', 'description' => 'Active']
+        );
+    }
 
     #[Test]
     public function it_displays_the_inventory_index_page(): void
@@ -25,6 +35,7 @@ class InventoryTest extends TestCase
         $book = Book::factory()->create();
         Inventory::factory()->create([
             'book_id' => $book->id,
+            'is_scanned' => true,
             'checked_at' => null,
         ]);
 
@@ -32,7 +43,7 @@ class InventoryTest extends TestCase
 
         $response->assertStatus(200);
         $response->assertViewIs('inventory.inventory');
-        $response->assertViewHas(['books', 'conditions', 'remarks']);
+        $response->assertViewHas(['inventory', 'conditions', 'remarks']);
     }
 
     #[Test]
@@ -49,9 +60,10 @@ class InventoryTest extends TestCase
             'barcode' => 'ABC123',
         ]);
 
-        $response->assertRedirect(route('inventory.dashboard'));
+        $response->assertRedirect(route('inventory.dashboard', ['perPage' => 10]));
         $this->assertDatabaseHas('bk_inventories', [
             'book_id' => $book->id,
+            'is_scanned' => true,
             'checked_at' => null,
         ]);
     }
@@ -67,6 +79,7 @@ class InventoryTest extends TestCase
         $book = Book::factory()->create(['accession' => 'ABC123']);
         Inventory::factory()->create([
             'book_id' => $book->id,
+            'is_scanned' => true,
             'checked_at' => null,
         ]);
 
@@ -75,7 +88,7 @@ class InventoryTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        $response->assertSessionHas('toast-warning', 'Book already in inventory!');
+        $response->assertSessionHas('toast-warning', 'Book already scanned.');
     }
 
     #[Test]
@@ -89,15 +102,16 @@ class InventoryTest extends TestCase
         $book = Book::factory()->create(['accession' => 'ABC123']);
         Inventory::factory()->create([
             'book_id' => $book->id,
+            'is_scanned' => true,
             'checked_at' => null,
         ]);
 
         $response = $this->post(route('inventory.update'), [
-            'condition' => ['ABC123' => 'Good'],
-            'remarks' => ['ABC123' => 'On Shelf'],
+            'condition' => [$book->id => 'Good'],
+            'remarks' => [$book->id => 'On Shelf'],
         ]);
 
-        $response->assertRedirect(route('inventory.dashboard'));
+        $response->assertRedirect(route('inventory.dashboard', ['perPage' => 10]));
         $this->assertDatabaseHas('bk_books', [
             'id' => $book->id,
             'condition_status' => 'Good',
@@ -116,16 +130,18 @@ class InventoryTest extends TestCase
         $book = Book::factory()->create(['accession' => 'ABC123']);
         $inventory = Inventory::factory()->create([
             'book_id' => $book->id,
+            'is_scanned' => true,
             'checked_at' => null,
         ]);
-        dump($inventory->id);
+
         $response = $this->delete(route('inventory.delete'), [
             'accession' => 'ABC123',
         ]);
 
-        $response->assertRedirect(route('inventory.dashboard'));
-        $this->assertDatabaseMissing('bk_inventories', [
+        $response->assertRedirect(route('inventory.dashboard', ['perPage' => 10]));
+        $this->assertDatabaseHas('bk_inventories', [
             'id' => $inventory->id,
+            'is_scanned' => 0,
         ]);
     }
 }

@@ -22,19 +22,19 @@ class FetchDataTest extends TestCase
         $this->actingAs($user, 'admin');
 
         Log::factory()->create([
-            'user_id'       => 106,
+            'user_id'       => $user->id,
             'computer_use'  => 'Yes',
             'time_in' => Carbon::now(),
             'time_out' => null
         ]);
         Log::factory()->create([
-            'user_id'       => 106,
+            'user_id'       => $user->id,
             'computer_use'  => 'Yes',
             'time_in' => Carbon::now()->subDay(), // yesterday
             'time_out' => null
         ]);
         Log::factory()->create([
-            'user_id'       => 106,
+            'user_id'       => $user->id,
             'computer_use'  => 'Yes',
             'time_in' => Carbon::now(),
             'time_out' => Carbon::now()

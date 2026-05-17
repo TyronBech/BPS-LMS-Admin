@@ -215,7 +215,23 @@
               <label for="availability" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Availability:</label>
               <select id="availability" name="availability" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
                 @foreach($availability as $value)
-                <option value="{{ $value }}" {{ old('availability', $book->availability_status) == $value ? 'selected' : '' }}>{{ $value }}</option>
+                  @php
+                    $isDisabled = false;
+                    $currentStatus = $book->availability_status;
+
+                    if ($value === 'Borrowed' || $value === 'Reserved') {
+                        if ($currentStatus !== $value) {
+                            $isDisabled = true;
+                        }
+                    } elseif ($value === 'Available') {
+                        if ($currentStatus === 'Borrowed' || $currentStatus === 'Reserved') {
+                            $isDisabled = true;
+                        }
+                    }
+                  @endphp
+                  <option value="{{ $value }}" {{ old('availability', $currentStatus) == $value ? 'selected' : '' }} {{ $isDisabled ? 'disabled' : '' }}>
+                    {{ $value }}
+                  </option>
                 @endforeach
               </select>
               <input type="hidden" id="availability_hidden" name="availability" disabled>
@@ -311,7 +327,9 @@
               <label for="copy_availability" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Availability:</label>
               <select id="copy_availability" name="availability" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
                 @foreach($availability as $value)
-                <option value="{{ $value }}" {{ $value == $book->availability_status ? 'selected' : '' }}>{{ $value }}</option>
+                  @if($value !== 'Borrowed' && $value !== 'Reserved')
+                    <option value="{{ $value }}" {{ ($book->availability_status === 'Borrowed' || $book->availability_status === 'Reserved' ? 'Available' : $book->availability_status) == $value ? 'selected' : '' }}>{{ $value }}</option>
+                  @endif
                 @endforeach
               </select>
               <input type="hidden" id="copy_availability_hidden" name="availability" disabled>
@@ -478,7 +496,11 @@
         if (isInitial) {
           availabilitySelect.value = originalAvailability;
         } else {
-          availabilitySelect.value = 'Available';
+          if (originalAvailability === 'Borrowed' || originalAvailability === 'Reserved') {
+            availabilitySelect.value = originalAvailability;
+          } else {
+            availabilitySelect.value = 'Available';
+          }
         }
         availabilitySelect.removeAttribute('disabled');
         availabilityHidden.setAttribute('disabled', 'disabled');

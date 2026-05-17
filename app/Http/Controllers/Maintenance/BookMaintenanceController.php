@@ -202,14 +202,7 @@ class BookMaintenanceController extends Controller
             'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
         ]);
         $validator->after(function ($validator) use ($request) {
-            $remarks = $request->input('remarks');
-            $availability = $request->input('availability');
-            if ($remarks === 'On Shelf' && $availability !== 'Available') {
-                $validator->errors()->add('availability', 'Availability must be "Available" when the book is On Shelf.');
-            }
-            if ($remarks !== 'On Shelf' && $availability !== 'Unavailable') {
-                $validator->errors()->add('availability', 'Availability must be "Unavailable" when the book is not On Shelf.');
-            }
+            $this->validateAvailabilityStatus($validator, $request);
             $this->validateCategoryBookTypeRelationship($validator, $request);
         });
         if ($validator->fails()) {
@@ -612,14 +605,7 @@ class BookMaintenanceController extends Controller
             'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
         ]);
         $validator->after(function ($validator) use ($request) {
-            $remarks = $request->input('remarks');
-            $availability = $request->input('availability');
-            if ($remarks === 'On Shelf' && $availability !== 'Available') {
-                $validator->errors()->add('availability', 'Availability must be "Available" when the book is On Shelf.');
-            }
-            if ($remarks !== 'On Shelf' && $availability !== 'Unavailable') {
-                $validator->errors()->add('availability', 'Availability must be "Unavailable" when the book is not On Shelf.');
-            }
+            $this->validateAvailabilityStatus($validator, $request);
             $this->validateCategoryBookTypeRelationship($validator, $request);
         });
         if ($validator->fails()) {
@@ -750,14 +736,7 @@ class BookMaintenanceController extends Controller
             'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
         ]);
         $validator->after(function ($validator) use ($request) {
-            $remarks = $request->input('remarks');
-            $availability = $request->input('availability');
-            if ($remarks === 'On Shelf' && $availability !== 'Available') {
-                $validator->errors()->add('availability', 'Availability must be "Available" when the book is On Shelf.');
-            }
-            if ($remarks !== 'On Shelf' && $availability !== 'Unavailable') {
-                $validator->errors()->add('availability', 'Availability must be "Unavailable" when the book is not On Shelf.');
-            }
+            $this->validateAvailabilityStatus($validator, $request);
             $this->validateCategoryBookTypeRelationship($validator, $request);
         });
         if ($validator->fails()) {
@@ -1290,6 +1269,47 @@ class BookMaintenanceController extends Controller
         if ($category->category_type !== $bookType) {
             $validator->errors()->add('category', 'Selected category must match the selected book type.');
             $validator->errors()->add('book_type', 'Selected book type must match the selected category type.');
+        }
+    }
+
+    private function validateAvailabilityStatus($validator, Request $request): void
+    {
+        $bookId = $request->input('id');
+        $remarks = $request->input('remarks');
+        $availability = $request->input('availability');
+
+        $currentBook = $bookId ? Book::find($bookId) : null;
+        $currentAvailability = $currentBook ? $currentBook->availability_status : null;
+
+        if ($currentAvailability === 'Borrowed') {
+            if ($availability === 'Available') {
+                $validator->errors()->add('availability', 'This book is currently borrowed. It must first be returned before its status can be set to "Available".');
+                return;
+            }
+        }
+
+        if ($currentAvailability === 'Reserved') {
+            if ($availability === 'Available') {
+                $validator->errors()->add('availability', 'This book is currently reserved. It must first be returned or cancelled before its status can be set to "Available".');
+                return;
+            }
+        }
+
+        // Standard availability rules based on remarks, but respecting Borrowed/Reserved states
+        if ($availability !== 'Borrowed' && $availability !== 'Reserved') {
+            if ($remarks === 'On Shelf' && $availability !== 'Available') {
+                $validator->errors()->add('availability', 'Availability must be "Available" when the book is On Shelf.');
+            }
+            if ($remarks !== 'On Shelf' && $availability !== 'Unavailable') {
+                $validator->errors()->add('availability', 'Availability must be "Unavailable" when the book is not On Shelf.');
+            }
+        } else {
+            // New book or copy trying to be created as Borrowed or Reserved
+            if (!$currentBook) {
+                $validator->errors()->add('availability', 'New books cannot be created with a "Borrowed" or "Reserved" status.');
+            } elseif ($availability !== $currentAvailability) {
+                $validator->errors()->add('availability', 'A book\'s status cannot be manually changed to "Borrowed" or "Reserved". This status is managed automatically by transactions.');
+            }
         }
     }
 

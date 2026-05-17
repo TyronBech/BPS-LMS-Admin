@@ -25,7 +25,7 @@ class BookFactory extends Factory
             'accession' => $accession,
             'call_number' => strtoupper(Str::random(3)) . ' ' . rand(100, 999) . '.' . rand(10, 99) . ' ' . Str::random(2),
             'title' => $this->faker->sentence(3),
-            'author' => $this->faker->name(),
+            'authors' => [$this->faker->name()],
             'edition' => $this->faker->numberBetween(1, 10),
             'place_of_publication' => $this->faker->city(),
             'publisher' => $this->faker->company(),
