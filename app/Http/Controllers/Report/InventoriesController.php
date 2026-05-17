@@ -212,7 +212,7 @@ class InventoriesController extends Controller
 
         foreach ($data as $item) {
             $book = $item->book;
-            
+
             $descArr = is_array($book->description) ? $book->description : json_decode($book->description, true);
             $descString = is_array($descArr) ? implode(', ', $descArr) : ($descArr ?? '');
 
@@ -262,7 +262,7 @@ class InventoriesController extends Controller
         $perPage      = $request->input('perPage', 10);
         $inventoryActive = $this->isInventoryActive();
 
-        $query = Inventory::whereHas('book', function($q) use ($title, $barcode, $category) {
+        $query = Inventory::whereHas('book', function ($q) use ($title, $barcode, $category) {
             if ($barcode) {
                 $q->where('barcode', 'like', "%{$barcode}%");
             }
@@ -273,16 +273,14 @@ class InventoriesController extends Controller
                 $q->where('category_id', $category);
             }
         })
-        ->with(['book.category:id,name', 'cycle'])
-        ->select([
-            'id',
-            'inventory_cycle_id',
-            'book_id',
-            'status',
-            'remarks',
-            'created_at',
-            'is_scanned'
-        ]);
+            ->with(['book.category:id,name'])
+            ->select([
+                'id',
+                'book_id',
+                'created_at',
+                'checked_at',
+                'is_scanned'
+            ]);
 
         if ($startStr && $endStr) {
             $startDate = Carbon::createFromFormat('m/d/Y', $startStr)->startOfDay();
@@ -291,7 +289,7 @@ class InventoriesController extends Controller
         }
 
         if ($subjectId && $subjectId !== 'All') {
-            $query->whereHas('book.subjectAccessCodes', function($q) use ($subjectId) {
+            $query->whereHas('book.subjectAccessCodes', function ($q) use ($subjectId) {
                 $q->where('bk_subject_access_codes.id', $subjectId);
             });
         }
@@ -306,7 +304,7 @@ class InventoriesController extends Controller
                 $item->remarks = $remarksSelect;
                 $item->accession = $book->accession;
                 $item->title = $book->title;
-                
+
                 $authorsArr = is_array($book->authors) ? $book->authors : json_decode($book->authors, true);
                 $item->author = $authorsArr['Main author'] ?? 'N/A';
             }

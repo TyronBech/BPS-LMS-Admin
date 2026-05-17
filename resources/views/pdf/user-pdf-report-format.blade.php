@@ -134,9 +134,9 @@
         @if($item->user)
         <tr>
           <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
-          <td>{{ \Carbon\Carbon::parse($item->time_in)->format('M j, Y') }}</td>
-          <td>{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
-          <td>{{ \Carbon\Carbon::parse($item->time_out)->format('g:i A') }}</td>
+          <td>{{ \Carbon\Carbon::parse($item->start)->format('M j, Y') }}</td>
+          <td>{{ \Carbon\Carbon::parse($item->start)->format('g:i A') }}</td>
+          <td>{{ $item->end ? \Carbon\Carbon::parse($item->end)->format('g:i A') : 'No Time Out' }}</td>
         </tr>
         @endif
         @empty

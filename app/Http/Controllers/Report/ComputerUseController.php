@@ -72,7 +72,7 @@ class ComputerUseController extends Controller
 
         $data           = $this->generateData($request, new AppLog(), false);
         $hours          = $data->map(function ($item) {
-            $item = Carbon::parse($item->time_in)->format('H:i:s');
+            $item = Carbon::parse($item->start)->format('H:i:s');
             return $item;
         });
         $hour = $this->findPeakHour($hours);
@@ -150,7 +150,7 @@ class ComputerUseController extends Controller
         }
         $data = $this->generateData($request, new AppLog(), false);
         $hours = $data->map(function ($item) {
-            $item = Carbon::parse($item->time_in)->format('H:i:s');
+            $item = Carbon::parse($item->start)->format('H:i:s');
             return $item;
         });
         $hour = $this->findPeakHour($hours);
@@ -178,6 +178,7 @@ class ComputerUseController extends Controller
      */
     private function findPeakHour($times)
     {
+        $peakHour = null;
         $hourCounts = array();
         foreach ($times as $time) {
             $hour = substr($time, 0, 2);
@@ -346,8 +347,8 @@ class ComputerUseController extends Controller
                 $colD = 'C';
                 $colE = 'D';
             }
-            $sheet->setCellValue($colD . $row, Carbon::parse($item->time_in)->format('M j, Y'));
-            $sheet->setCellValue($colE . $row, Carbon::parse($item->time_in)->format('g:i A'));
+            $sheet->setCellValue($colD . $row, Carbon::parse($item->start)->format('M j, Y'));
+            $sheet->setCellValue($colE . $row, Carbon::parse($item->start)->format('g:i A'));
             $sheet->getStyle('A' . $row . ':' . $colE . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
             $sheet->getStyle('A' . $row . ':' . $colE . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
             $sheet->getStyle('A' . $row . ':' . $colE . $row)->getAlignment()->setWrapText(true);
@@ -437,8 +438,8 @@ class ComputerUseController extends Controller
             $data = $query->get();
 
             if ($data->isNotEmpty()) {
-                $min = $data->last()->time_in;
-                $max = $data->first()->time_in;
+                $min = $data->last()->start;
+                $max = $data->first()->start;
                 $data->reporting_period = 'From ' . Carbon::parse($min)->format('M j, Y') . ' to ' . Carbon::parse($max)->format('M j, Y');
             } else {
                 $data->reporting_period = 'N/A';

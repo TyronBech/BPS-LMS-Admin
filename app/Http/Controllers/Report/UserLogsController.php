@@ -70,7 +70,7 @@ class UserLogsController extends Controller
 
         $data  = $this->generateData($request, new Log(), false);
         $hours = $data->map(function ($item) {
-            $item = Carbon::parse($item->time_in)->format('H:i:s');
+            $item = Carbon::parse($item->start)->format('H:i:s');
             return $item;
         });
         $hour = $this->findPeakHour($hours);
@@ -150,7 +150,7 @@ class UserLogsController extends Controller
         }
         $data = $this->generateData($request, $tableName, false);
         $hours = $data->map(function ($item) {
-            $item = Carbon::parse($item->time_in)->format('H:i:s');
+            $item = Carbon::parse($item->start)->format('H:i:s');
             return $item;
         });
         $hour = $this->findPeakHour($hours);
@@ -630,10 +630,10 @@ class UserLogsController extends Controller
                 continue; // Skip if users relationship is not loaded
             }
             $sheet->setCellValue('A' . $row, $item->user->last_name . ', ' . $item->user->first_name . ' ' . $item->user->middle_name);
-            $sheet->setCellValue('B' . $row, Carbon::parse($item->time_in)->format('M j, Y'));
-            $sheet->setCellValue('C' . $row, Carbon::parse($item->time_in)->format('g:i A'));
-            if ($item->time_out) {
-                $sheet->setCellValue('D' . $row, Carbon::parse($item->time_out)->format('g:i A'));
+            $sheet->setCellValue('B' . $row, Carbon::parse($item->start)->format('M j, Y'));
+            $sheet->setCellValue('C' . $row, Carbon::parse($item->start)->format('g:i A'));
+            if ($item->end) {
+                $sheet->setCellValue('D' . $row, Carbon::parse($item->end)->format('g:i A'));
             } else {
                 $sheet->setCellValue('D' . $row, 'No Time Out');
             }

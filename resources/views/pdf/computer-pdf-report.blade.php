@@ -147,8 +147,8 @@
           @elseif($item->user->employees)
           <td>{{ $item->user->employees->employee_role }}</td>
           @endif
-          <td>{{ \Carbon\Carbon::parse($item->time_in)->format('M j, Y') }}</td>
-          <td>{{ \Carbon\Carbon::parse($item->time_in)->format('g:i A') }}</td>
+          <td>{{ \Carbon\Carbon::parse($item->start)->format('M j, Y') }}</td>
+          <td>{{ \Carbon\Carbon::parse($item->start)->format('g:i A') }}</td>
         </tr>
         @endif
         @empty
