@@ -235,7 +235,7 @@ class MaterialImportController extends Controller
                     'publisher'             => $item['publisher'] ?? null,
                     'copyrights'            => $item['copyrights'] ?? null,
                     'location'              => $item['location'] ?? null,
-                    'languages'             => $item['languages'] ?? null,
+                    'languages'             => $finalType === 'Print' ? ($item['languages'] ?? null) : null,
                     'book_type'             => $finalType,
                     'category_id'           => $category->id,
                     'barcode'               => $barcode->getBarcodeJPG($item['accession'], 'C39', 2, 80, [0,0,0,0], false),

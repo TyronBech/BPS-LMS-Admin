@@ -208,10 +208,10 @@
           <td>{{ $item->violation ?? 'No Violation' }}</td>
           <td>
             @if($item->has_discount)
-            <div class="strikethrough">PHP {{ number_format($item->actual_total ?? 0, 2) }}</div>
-            <div><span class="discounted">PHP {{ number_format($item->total ?? 0, 2) }}</span><span class="discount-note">{{ $item->discount_percent_label }} discount</span></div>
+            <div class="strikethrough">₱ {{ number_format($item->actual_total ?? 0, 2) }}</div>
+            <div><span class="discounted">₱ {{ number_format($item->total ?? 0, 2) }}</span></div>
             @else
-            PHP {{ number_format($item->total ?? 0, 2) }}
+            ₱ {{ number_format($item->total ?? 0, 2) }}
             @endif
           </td>
           <td>{{ $item->status }}</td>

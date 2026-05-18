@@ -143,6 +143,28 @@ class BookMaintenanceController extends Controller
         return view('maintenance.books.create', compact('categories', 'condition', 'availability', 'remarks', 'book_types', 'subjects', 'accessionDashActive'));
     }
     /**
+     * Process subject access codes, creating new ones if they are non-numeric strings
+     *
+     * @param \Illuminate\Http\Request $request
+     */
+    private function processSubjectAccessCodes(Request $request)
+    {
+        $subjectCodes = $request->input('subject_access_codes', []);
+        $processedSubjectCodes = [];
+        if (is_array($subjectCodes)) {
+            foreach ($subjectCodes as $code) {
+                if (!is_numeric($code) && trim($code) !== '') {
+                    $newSubject = SubjectAccessCode::firstOrCreate(['access_code' => trim($code)]);
+                    $processedSubjectCodes[] = $newSubject->id;
+                } else if (is_numeric($code)) {
+                    $processedSubjectCodes[] = $code;
+                }
+            }
+            $request->merge(['subject_access_codes' => $processedSubjectCodes]);
+        }
+    }
+
+    /**
      * Store a new book
      *
      * @param \Illuminate\Http\Request $request
@@ -169,6 +191,8 @@ class BookMaintenanceController extends Controller
             'timestamp' => now(),
         ]);
 
+        $this->processSubjectAccessCodes($request);
+
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string',
             'call_number'       => 'nullable|string|max:50',
@@ -193,6 +217,7 @@ class BookMaintenanceController extends Controller
             'publisher'         => 'nullable|string|max:100',
             'copyright'         => 'nullable|string|max:50',
             'location'          => 'nullable|string|max:100',
+            'languages'         => 'nullable|string|max:50',
             'cover_image'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'digital_copy_url'  => 'nullable|string',
             'remarks'           => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'remarks')),
@@ -255,6 +280,7 @@ class BookMaintenanceController extends Controller
                     'copyrights'            => $request->input('copyright') ?? null,
                     'location'              => $request->input('location') ?? null,
                     'cover_image'           => $request->input('cover_image') ?? null,
+                    'languages'             => $request->input('languages') ?? null,
                     'digital_copy_url'      => $request->input('digital_copy_url') ?? null,
                     'remarks'               => $request->input('remarks'),
                     'category_id'           => $request->input('category'),
@@ -572,6 +598,8 @@ class BookMaintenanceController extends Controller
             'timestamp' => now(),
         ]);
 
+        $this->processSubjectAccessCodes($request);
+
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string|max:50',
             'call_number'       => 'nullable|string|max:50',
@@ -596,6 +624,7 @@ class BookMaintenanceController extends Controller
             'publisher'         => 'nullable|string|max:100',
             'copyright'         => 'nullable|string|max:50',
             'location'          => 'nullable|string|max:100',
+            'languages'         => 'nullable|string|max:50',
             'cover_image'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'digital_copy_url'  => 'nullable|string|url',
             'remarks'           => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'remarks')),
@@ -644,6 +673,7 @@ class BookMaintenanceController extends Controller
                 'publisher'             => $request->input('publisher'),
                 'copyrights'            => $request->input('copyright'),
                 'location'              => $request->input('location'),
+                'languages'             => $request->input('languages'),
                 'cover_image'           => $request->input('cover_image'),
                 'digital_copy_url'      => $request->input('digital_copy_url'),
                 'remarks'               => $request->input('remarks'),
@@ -779,12 +809,13 @@ class BookMaintenanceController extends Controller
                     'publisher'             => $request->input('publisher') ?? null,
                     'copyrights'            => $request->input('copyright') ?? null,
                     'cover_image'           => $request->input('cover_image') ?? null,
+                    'languages'             => $request->input('languages') ?? null,
                     'digital_copy_url'      => $request->input('digital_copy_url') ?? null,
-                    'remarks'               => "Missing",
+                    'remarks'               => $request->input('remarks'),
                     'category_id'           => $request->input('category'),
                     'book_type'             => $request->input('book_type'),
                     'condition_status'      => $request->input('condition'),
-                    'availability_status'   => "Unavailable",
+                    'availability_status'   => $request->input('availability'),
                 ]);
 
                 $copiedBook->subjectAccessCodes()->sync($subjectAccessCodeIds);

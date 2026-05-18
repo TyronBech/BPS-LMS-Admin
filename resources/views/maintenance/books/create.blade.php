@@ -17,18 +17,18 @@
       @csrf
       <div class="space-y-8 mt-6">
         <!-- Section 1: Core Information -->
-        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-visible">
           <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
             <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
             <h6 class="text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">Basic Information</h6>
           </div>
-          <div class="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="md:col-span-2 lg:col-span-3">
+          <div class="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
+            <div class="md:col-span-2 lg:col-span-12">
               <label for="title" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Title:</label>
               <input type="text" id="title" name="title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Material Title" value="{{ old('title') }}" required>
               @error('title') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
-            <div>
+            <div class="lg:col-span-4">
               <label for="book_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Material Type:</label>
               <select id="book_type" name="book_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
                 @foreach($book_types as $value)
@@ -37,7 +37,7 @@
               </select>
               @error('book_type') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
-            <div>
+            <div class="lg:col-span-4">
               <label for="category" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Category:</label>
               <select id="category" name="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
                 <option value="" selected disabled>Choose a category</option>
@@ -47,25 +47,29 @@
               </select>
               @error('category') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
-            <div>
+            <div class="md:col-span-2 lg:col-span-4">
               <label for="accession" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Accession Number:</label>
               <input type="text" id="accession" name="accession" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., FIL0123456789" value="{{ old('accession') }}" required>
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Multiple separated with a comma.</p>
               @error('accession') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
-            <div>
+            <div class="lg:col-span-3">
               <label for="call_number" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Call Number:</label>
               <input type="text" id="call_number" name="call_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 192.000" value="{{ old('call_number') }}">
             </div>
-            <div id="isbn-container">
+            <div id="isbn-container" class="lg:col-span-3">
               <label for="isbn" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">ISBN:</label>
               <input type="text" id="isbn" name="isbn" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 9789712345678" value="{{ old('isbn') }}">
             </div>
-            <div id="edition-container">
+            <div id="edition-container" class="lg:col-span-3">
               <label for="edition" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Edition:</label>
               <input type="text" id="edition" name="edition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 1st Edition" value="{{ old('edition') }}">
             </div>
-            <div id="subject-container" class="md:col-span-2 lg:col-span-3">
+            <div id="languages-container" class="lg:col-span-3">
+              <label for="languages" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Language:</label>
+              <input type="text" id="languages" name="languages" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., English" value="{{ old('languages') }}">
+            </div>
+            <div id="subject-container" class="md:col-span-2 lg:col-span-12">
               <label for="subject_search" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Subject Access Codes:</label>
               
               <div class="relative" id="multiselect-subject">
@@ -398,7 +402,8 @@
         'subject-container',
         'description-container',
         'publication-container',
-        'digital-copy-container'
+        'digital-copy-container',
+        'languages-container'
       ];
 
       containersToToggle.forEach(id => {
@@ -508,6 +513,31 @@
     subjectSearch.addEventListener('input', (e) => {
       subjectDropdown.classList.remove('hidden');
       renderDropdown(e.target.value);
+    });
+
+    subjectSearch.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const value = e.target.value.trim();
+        if (value !== '') {
+          const existing = allSubjects.find(s => s.text.toLowerCase() === value.toLowerCase());
+          if (existing) {
+            const opt = subjectHiddenSelect.querySelector(`option[value="${existing.id}"]`);
+            if (opt) opt.selected = true;
+          } else {
+            const id = value;
+            allSubjects.push({ id: id, text: value });
+            const opt = document.createElement('option');
+            opt.value = id;
+            opt.text = value;
+            opt.selected = true;
+            subjectHiddenSelect.appendChild(opt);
+          }
+          subjectSearch.value = '';
+          subjectDropdown.classList.add('hidden');
+          updateTags();
+        }
+      }
     });
 
     subjectSearch.addEventListener('focus', () => {

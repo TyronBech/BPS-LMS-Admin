@@ -118,9 +118,15 @@
                                     <input type="text" name="materials[{{ $itemIndex }}][category]" value="{{ $item['category'] ?? '' }}" class="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7">
                                 </div>
                             </div>
-                            <div>
-                                <label class="text-[9px] font-bold text-slate-400">Location</label>
-                                <input type="text" name="materials[{{ $itemIndex }}][location]" value="{{ $item['location'] ?? '' }}" class="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7">
+                            <div class="flex gap-1">
+                                <div class="w-1/2">
+                                    <label class="text-[9px] font-bold text-slate-400">Location</label>
+                                    <input type="text" name="materials[{{ $itemIndex }}][location]" value="{{ $item['location'] ?? '' }}" class="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7">
+                                </div>
+                                <div class="w-1/2">
+                                    <label class="text-[9px] font-bold text-slate-400">Languages</label>
+                                    <input type="text" name="materials[{{ $itemIndex }}][languages]" value="{{ $item['languages'] ?? '' }}" class="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7" placeholder="e.g. English">
+                                </div>
                             </div>
                             <div>
                                 <label class="text-[9px] font-bold text-slate-400">Subjects</label>

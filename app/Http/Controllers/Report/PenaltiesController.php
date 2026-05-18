@@ -212,7 +212,7 @@ class PenaltiesController extends Controller
         $options->set('isRemoteEnabled', true);
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml(view('pdf.penalties-pdf-report', $items));
-        $dompdf->setPaper('legal', 'portrait');
+        $dompdf->setPaper('legal', 'landscape');
         $dompdf->render();
         $dompdf->stream('overdue-fines-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;
@@ -246,7 +246,7 @@ class PenaltiesController extends Controller
 
         $sheet->setTitle('Overdue Fines Report');
         $sheet->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_LEGAL);
-        $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
+        $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
         $sheet->getPageSetup()->setFitToWidth(1);
         $sheet->getPageSetup()->setFitToHeight(0);
         $sheet->mergeCells('A6:I6');

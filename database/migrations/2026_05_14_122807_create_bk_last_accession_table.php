@@ -11,6 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // The accession number follows the format: [Prefix] + [6-digit number]
+        // The value that the accession_number is holding is the last accession number used
+        // So use the accession_number + 1 to get the next free accession number
         Schema::create('bk_last_accession', function (Blueprint $table) {
             $table->id();
             $table->string('accession_number');
