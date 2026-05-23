@@ -229,6 +229,7 @@ class BookMaintenanceController extends Controller
         $validator->after(function ($validator) use ($request) {
             $this->validateAvailabilityStatus($validator, $request);
             $this->validateCategoryBookTypeRelationship($validator, $request);
+            $this->validateAccessionPrefix($validator, $request);
         });
         if ($validator->fails()) {
             Log::warning('Book Maintenance: Creation validation failed', [
@@ -636,6 +637,7 @@ class BookMaintenanceController extends Controller
         $validator->after(function ($validator) use ($request) {
             $this->validateAvailabilityStatus($validator, $request);
             $this->validateCategoryBookTypeRelationship($validator, $request);
+            $this->validateAccessionPrefix($validator, $request);
         });
         if ($validator->fails()) {
             Log::warning('Book Maintenance: Update validation failed', [
@@ -684,6 +686,12 @@ class BookMaintenanceController extends Controller
             ]);
 
             $book->subjectAccessCodes()->sync($subjectAccessCodeIds);
+            
+            // Update last accession
+            BkLastAccession::updateOrCreate(
+                ['category_id' => $request->input('category')],
+                ['accession_number' => $request->input('accession')]
+            );
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             Log::error('Book Maintenance: Database error during update', [
@@ -768,6 +776,7 @@ class BookMaintenanceController extends Controller
         $validator->after(function ($validator) use ($request) {
             $this->validateAvailabilityStatus($validator, $request);
             $this->validateCategoryBookTypeRelationship($validator, $request);
+            $this->validateAccessionPrefix($validator, $request);
         });
         if ($validator->fails()) {
             Log::warning('Book Maintenance: Copy validation failed', [
@@ -1301,6 +1310,106 @@ class BookMaintenanceController extends Controller
             $validator->errors()->add('category', 'Selected category must match the selected book type.');
             $validator->errors()->add('book_type', 'Selected book type must match the selected category type.');
         }
+    }
+
+    private function validateAccessionPrefix($validator, Request $request): void
+    {
+        $categoryId = $request->input('category');
+        $accessionInput = $request->input('accession');
+        if (!$categoryId || !$accessionInput) return;
+
+        $category = Category::find($categoryId);
+        if (!$category) return;
+
+        $accessionDashActive = SystemSetting::where('key', 'accession_number_dash_active')->first();
+        $accessionDashActive = $accessionDashActive ? ($accessionDashActive->value === 'true') : true;
+
+        $prefix = (trim($category->legend) !== '') ? trim($category->legend) : strtoupper(substr(str_replace(' ', '', $category->name), 0, 3));
+        if ($prefix === '') $prefix = 'ACC';
+
+        if ($accessionDashActive) {
+            if (!str_ends_with($prefix, '-')) {
+                $prefix .= '-';
+            }
+        } else {
+            if (str_ends_with($prefix, '-')) {
+                $prefix = rtrim($prefix, '-');
+            }
+        }
+
+        $accessions = collect(explode(',', (string) $accessionInput))
+            ->map(fn($item) => trim((string) $item))
+            ->filter(fn($item) => $item !== '')
+            ->values();
+
+        foreach ($accessions as $acc) {
+            if (!str_starts_with($acc, $prefix)) {
+                $validator->errors()->add('accession', "The accession number '{$acc}' does not align with the selected category legend. It must start with '{$prefix}'.");
+                break;
+            }
+        }
+    }
+
+    public function getNextAccession($categoryId)
+    {
+        $category = Category::findOrFail($categoryId);
+        
+        $accessionDashActive = SystemSetting::where('key', 'accession_number_dash_active')->first();
+        $accessionDashActive = $accessionDashActive ? ($accessionDashActive->value === 'true') : true;
+
+        $prefix = (trim($category->legend) !== '') ? trim($category->legend) : strtoupper(substr(str_replace(' ', '', $category->name), 0, 3));
+        if ($prefix === '') $prefix = 'ACC';
+
+        if ($accessionDashActive) {
+            if (!str_ends_with($prefix, '-')) {
+                $prefix .= '-';
+            }
+        } else {
+            if (str_ends_with($prefix, '-')) {
+                $prefix = rtrim($prefix, '-');
+            }
+        }
+
+        // Try to get max from bk_last_accessions first
+        $lastFromTable = BkLastAccession::where('category_id', $categoryId)->value('accession_number');
+
+        // Also check bk_books (including trashed) for this category to ensure accuracy
+        $maxFromBooks = Book::withTrashed()
+            ->where('category_id', $categoryId)
+            ->where('accession', 'like', $prefix . '%')
+            ->orderByRaw('LENGTH(accession) DESC, accession DESC')
+            ->value('accession');
+
+        $lastAccession = null;
+        if ($maxFromBooks && $lastFromTable) {
+            // Extract numbers to compare
+            preg_match('/(\d+)$/', $maxFromBooks, $m1);
+            preg_match('/(\d+)$/', $lastFromTable, $m2);
+            $n1 = isset($m1[1]) ? (int)$m1[1] : 0;
+            $n2 = isset($m2[1]) ? (int)$m2[1] : 0;
+            $lastAccession = ($n1 > $n2) ? $maxFromBooks : $lastFromTable;
+        } elseif ($maxFromBooks) {
+            $lastAccession = $maxFromBooks;
+        } else {
+            $lastAccession = $lastFromTable;
+        }
+
+        if ($lastAccession) {
+            preg_match('/(\d+)$/', $lastAccession, $match);
+            $numberStr = $match[1] ?? null;
+            if ($numberStr) {
+                $num = (int)$numberStr;
+                $width = strlen($numberStr);
+                $nextNumberStr = str_pad((string)($num + 1), $width, '0', STR_PAD_LEFT);
+                $nextAccession = $prefix . $nextNumberStr;
+            } else {
+                $nextAccession = $prefix . '000001';
+            }
+        } else {
+            $nextAccession = $prefix . '000001';
+        }
+
+        return response()->json(['next_accession' => $nextAccession]);
     }
 
     private function validateAvailabilityStatus($validator, Request $request): void

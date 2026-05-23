@@ -522,33 +522,100 @@
       syncCategoryOptionsToBookType();
     }
 
-    function prefillCopyAccession() {
+    async function prefillCopyAccession() {
       const copyAccessionInput = document.getElementById('copy_accession');
       if (!copyAccessionInput || !copyCategoryInput) return;
 
       const categoryId = copyCategoryInput.value;
-      const selectedCategory = getCategoryById(categoryId);
-      if (!selectedCategory) return;
+      if (!categoryId) return;
 
-      const lastAccession = selectedCategory.last_accession ? selectedCategory.last_accession.accession_number : null;
-      if (lastAccession) {
-        const next = getNextAccessionFromLast(lastAccession);
-        copyAccessionInput.value = next || '';
-      } else {
-        let prefix = (selectedCategory.legend && String(selectedCategory.legend).trim()) || '';
-        if (!prefix && selectedCategory.name) {
-          prefix = String(selectedCategory.name).replace(/\s+/g, '').slice(0, 3).toUpperCase();
-        }
-        if (!prefix) prefix = 'ACC';
-
-        if (accessionDashActive) {
-          if (!prefix.endsWith('-')) prefix += '-';
-        } else {
-          if (prefix.endsWith('-')) prefix = prefix.slice(0, -1);
-        }
-
-        copyAccessionInput.value = prefix + '000001';
+      try {
+        const response = await fetch(`/admin/maintenance/books/next-accession/${categoryId}`);
+        const data = await response.json();
+        copyAccessionInput.value = data.next_accession || '';
+        validateCopyAccessionInput();
+      } catch (error) {
+        console.error('Error fetching next accession:', error);
       }
+    }
+
+    function validateAccessionField(inputElement, catId, isCopy = false) {
+      if (!inputElement || !catId) return;
+      const selectedCategory = getCategoryById(catId);
+      if (!selectedCategory) return;
+      
+      let prefix = (selectedCategory.legend && String(selectedCategory.legend).trim()) || '';
+      if (!prefix && selectedCategory.name) {
+        prefix = String(selectedCategory.name).replace(/\s+/g, '').slice(0, 3).toUpperCase();
+      }
+      if (!prefix) prefix = 'ACC';
+      if (accessionDashActive) {
+        if (!prefix.endsWith('-')) prefix += '-';
+      } else {
+        if (prefix.endsWith('-')) prefix = prefix.slice(0, -1);
+      }
+
+      const accessions = inputElement.value.split(',').map(s => s.trim()).filter(s => s);
+      let isValid = true;
+      for (const acc of accessions) {
+        if (!acc.startsWith(prefix)) {
+          isValid = false;
+          break;
+        }
+      }
+
+      const errorId = isCopy ? 'copy-accession-error-msg' : 'accession-error-msg';
+      let errorP = document.getElementById(errorId);
+      if (!errorP) {
+        errorP = document.createElement('p');
+        errorP.id = errorId;
+        errorP.className = 'mt-2 text-sm text-red-600 dark:text-red-500 hidden';
+        inputElement.parentNode.appendChild(errorP);
+      }
+      errorP.innerText = `The inputted accession doesn't align with the selected category legend. It must start with '${prefix}'.`;
+
+      const submitBtn = isCopy ? document.querySelector('#copy-book-modal button[type="submit"]') : document.querySelector('form button[type="submit"]');
+
+      if (!isValid && accessions.length > 0) {
+        inputElement.classList.add('border-red-500', 'text-red-900', 'focus:ring-red-500', 'focus:border-red-500', 'dark:text-red-500', 'dark:border-red-500');
+        inputElement.classList.remove('border-gray-300', 'text-gray-900', 'focus:ring-primary-400', 'focus:border-primary-400', 'dark:border-gray-600', 'dark:text-white');
+        errorP.classList.remove('hidden');
+        if (submitBtn) submitBtn.disabled = true;
+      } else {
+        inputElement.classList.remove('border-red-500', 'text-red-900', 'focus:ring-red-500', 'focus:border-red-500', 'dark:text-red-500', 'dark:border-red-500');
+        inputElement.classList.add('border-gray-300', 'text-gray-900', 'focus:ring-primary-400', 'focus:border-primary-400', 'dark:border-gray-600', 'dark:text-white');
+        errorP.classList.add('hidden');
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    }
+
+    const mainAccessionInput = document.getElementById('accession');
+    function validateMainAccessionInput() {
+      if (categorySelect) {
+        validateAccessionField(mainAccessionInput, categorySelect.value, false);
+      }
+    }
+
+    function validateCopyAccessionInput() {
+      const copyAccessionInput = document.getElementById('copy_accession');
+      if (copyCategoryInput) {
+        validateAccessionField(copyAccessionInput, copyCategoryInput.value, true);
+      }
+    }
+
+    if (mainAccessionInput) {
+      mainAccessionInput.addEventListener('input', validateMainAccessionInput);
+    }
+    
+    if (categorySelect) {
+      categorySelect.addEventListener('change', function() {
+        validateMainAccessionInput();
+      });
+    }
+    
+    const copyAccessionInputEl = document.getElementById('copy_accession');
+    if (copyAccessionInputEl) {
+      copyAccessionInputEl.addEventListener('input', validateCopyAccessionInput);
     }
 
     // Prefill when modal button is clicked

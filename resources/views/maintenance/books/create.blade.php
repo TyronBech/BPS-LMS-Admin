@@ -342,33 +342,77 @@
       return prefix + nextNumberStr;
     }
 
-    function prefillAccession() {
+    async function prefillAccession() {
       if (!categorySelect || !accessionInput) return;
-      const selectedCategory = getCategoryById(categorySelect.value);
-      if (!selectedCategory) {
+      const categoryId = categorySelect.value;
+      if (!categoryId) {
         accessionInput.value = '';
+        validateAccessionInput();
         return;
       }
 
-      const lastAccession = selectedCategory.last_accession ? selectedCategory.last_accession.accession_number : null;
-      if (lastAccession) {
-        const next = getNextAccessionFromLast(lastAccession);
-        accessionInput.value = next || '';
-      } else {
-        let prefix = (selectedCategory.legend && String(selectedCategory.legend).trim()) || '';
-        if (!prefix && selectedCategory.name) {
-          prefix = String(selectedCategory.name).replace(/\s+/g, '').slice(0, 3).toUpperCase();
-        }
-        if (!prefix) prefix = 'ACC';
-
-        if (accessionDashActive) {
-          if (!prefix.endsWith('-')) prefix += '-';
-        } else {
-          if (prefix.endsWith('-')) prefix = prefix.slice(0, -1);
-        }
-
-        accessionInput.value = prefix + '000001';
+      try {
+        const response = await fetch(`/admin/maintenance/books/next-accession/${categoryId}`);
+        const data = await response.json();
+        accessionInput.value = data.next_accession || '';
+        validateAccessionInput();
+      } catch (error) {
+        console.error('Error fetching next accession:', error);
       }
+    }
+
+    function validateAccessionInput() {
+      if (!accessionInput || !categorySelect) return;
+      const categoryId = categorySelect.value;
+      const selectedCategory = getCategoryById(categoryId);
+      if (!selectedCategory) return;
+      
+      let prefix = (selectedCategory.legend && String(selectedCategory.legend).trim()) || '';
+      if (!prefix && selectedCategory.name) {
+        prefix = String(selectedCategory.name).replace(/\s+/g, '').slice(0, 3).toUpperCase();
+      }
+      if (!prefix) prefix = 'ACC';
+      if (accessionDashActive) {
+        if (!prefix.endsWith('-')) prefix += '-';
+      } else {
+        if (prefix.endsWith('-')) prefix = prefix.slice(0, -1);
+      }
+
+      const accessions = accessionInput.value.split(',').map(s => s.trim()).filter(s => s);
+      let isValid = true;
+      for (const acc of accessions) {
+        if (!acc.startsWith(prefix)) {
+          isValid = false;
+          break;
+        }
+      }
+
+      let errorP = document.getElementById('accession-error-msg');
+      if (!errorP) {
+        errorP = document.createElement('p');
+        errorP.id = 'accession-error-msg';
+        errorP.className = 'mt-2 text-sm text-red-600 dark:text-red-500 hidden';
+        accessionInput.parentNode.appendChild(errorP);
+      }
+      errorP.innerText = `The inputted accession doesn't align with the selected category legend. It must start with '${prefix}'.`;
+
+      const submitBtn = document.querySelector('form button[type="submit"]');
+
+      if (!isValid && accessions.length > 0) {
+        accessionInput.classList.add('border-red-500', 'text-red-900', 'focus:ring-red-500', 'focus:border-red-500', 'dark:text-red-500', 'dark:border-red-500');
+        accessionInput.classList.remove('border-gray-300', 'text-gray-900', 'focus:ring-primary-400', 'focus:border-primary-400', 'dark:border-gray-600', 'dark:text-white');
+        errorP.classList.remove('hidden');
+        if (submitBtn) submitBtn.disabled = true;
+      } else {
+        accessionInput.classList.remove('border-red-500', 'text-red-900', 'focus:ring-red-500', 'focus:border-red-500', 'dark:text-red-500', 'dark:border-red-500');
+        accessionInput.classList.add('border-gray-300', 'text-gray-900', 'focus:ring-primary-400', 'focus:border-primary-400', 'dark:border-gray-600', 'dark:text-white');
+        errorP.classList.add('hidden');
+        if (submitBtn) submitBtn.disabled = false;
+      }
+    }
+
+    if (accessionInput) {
+      accessionInput.addEventListener('input', validateAccessionInput);
     }
 
     categorySelect.addEventListener('change', function() {
