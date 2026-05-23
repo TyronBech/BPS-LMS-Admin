@@ -188,6 +188,7 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
             Route::match(['get', 'post'], 'upload-students', 'upload')->name('import.upload-students');
             Route::post('store-students', 'store')->name('import.store-students');
             Route::get('students/download-template', 'downloadTemplate')->name('import.download-students-template');
+            Route::get('students/import-status/{id}', 'status')->name('import.status-students');
         });
 
         Route::controller(FacultyStaffImportController::class)->middleware(EmployeeImportAuthentication::class)->group(function () {
@@ -195,6 +196,7 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
             Route::match(['get', 'post'], 'upload-faculties-staffs', 'upload')->name('import.upload-faculties-staffs');
             Route::post('store-faculties-staffs', 'store')->name('import.store-faculties-staffs');
             Route::get('employees/download-template', 'downloadTemplate')->name('import.download-employee-template');
+            Route::get('employees/import-status/{id}', 'status')->name('import.status-employees');
         });
 
         Route::controller(MaterialImportController::class)->middleware(MaterialImportAuthentication::class)->group(function () {
@@ -202,6 +204,7 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
             Route::match(['get', 'post'], 'upload-materials', 'upload')->name('import.upload-materials');
             Route::post('store-materials', 'store')->name('import.store-materials');
             Route::get('materials/download-template', 'downloadTemplate')->name('import.download-materials-template');
+            Route::get('materials/import-status/{id}', 'status')->name('import.status-materials');
         });
     });
 
@@ -231,6 +234,7 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
                 Route::get('export-call-number', 'export_call_numbers')->name('maintenance.export-call-number');
                 Route::delete('delete-book', 'destroy')->name('maintenance.delete-book');
                 Route::delete('bulk-delete-book', 'bulkDelete')->name('maintenance.bulk-delete-book');
+                Route::get('next-accession/{category_id}', 'getNextAccession')->name('maintenance.next-accession');
             });
 
             Route::prefix('categories')->middleware(BookCategoriesAuthentication::class)->controller(CategoryMaintenanceController::class)->group(function () {

@@ -37,6 +37,9 @@ document.addEventListener("DOMContentLoaded", () => {
         "toggleCurrentPassword", // Profile current password toggle
         "toggleNewPassword", // Profile new password toggle
         "toggleConfirmPassword", // Profile confirm password toggle
+        "btn-insert-materials", // Skip loader for insert materials import
+        "btn-insert-students", // Skip loader for insert students import
+        "btn-insert-employees", // Skip loader for insert employees import
     ];
 
     // --- 1️⃣ Handle button clicks ---
@@ -147,6 +150,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const isCategoriesAutocomplete = url.includes("categories/autocomplete");
         const isCategoriesMaintenance = !isCategoriesAutocomplete && url.includes("maintenance/categories");
         const isNonCirculationSearch = url.includes("/report/non-circulation/search-user");
+        const isImportAction = url.includes("/import/");
 
         // Check for custom header to skip loader
         let hasSkipHeader = false;
@@ -165,6 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
             isSubjectAccessCodeSuggestions ||
             isCategoriesAutocomplete || // ALWAYS skip autocomplete suggestions
             isNonCirculationSearch ||
+            isImportAction || // Skip loader for import actions and status polling
             (isCategoriesMaintenance && hasSkipHeader); // Skip maintenance update ONLY if header is present
 
         try {
@@ -198,7 +203,8 @@ document.addEventListener("DOMContentLoaded", () => {
             "maintenance/reservations/stats",
             "subject-access-code-suggestions",
             "maintenance/categories/autocomplete",
-            "/report/non-circulation/search-user"
+            "/report/non-circulation/search-user",
+            "/import/"
         ];
 
         const shouldSkipLoader = urlsToSkip.some((skipUrl) =>

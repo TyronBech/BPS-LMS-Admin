@@ -7,6 +7,22 @@
         <p class="text-sm text-slate-500 mt-1">Bulk import library materials using Excel format.</p>
     </div>
 
+    {{-- Active-import notice banner (shown when another import is running on page load) --}}
+    @if(isset($activeImport) && $activeImport)
+    <div class="max-w-xl mx-auto mb-4 flex items-start gap-3 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 rounded-lg p-4">
+        <svg class="w-5 h-5 text-amber-500 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+        </svg>
+        <div>
+            <p class="text-sm font-semibold text-amber-700 dark:text-amber-300">An import is already in progress</p>
+            <p class="text-xs text-amber-600 dark:text-amber-400 mt-0.5">
+                A <strong>{{ ucfirst($activeImport->type) }}</strong> import is currently running.
+                Please wait for it to complete before starting a new import.
+            </p>
+        </div>
+    </div>
+    @endif
+
     @if(!$showTable)
     <div class="max-w-xl mx-auto">
         <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg shadow-md p-6">
@@ -18,12 +34,12 @@
                     <p class="text-sm font-medium text-slate-700 dark:text-slate-200">Click or drag Excel file here</p>
                     <p id="file-name" class="mt-2 text-xs text-primary-600 font-semibold truncate max-w-full hidden"></p>
                 </div>
-                
+
                 <div class="flex flex-col items-center gap-3 pt-2">
                     <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-2 px-6 rounded-md shadow-sm transition-all focus:ring-2 focus:ring-primary-500 focus:ring-offset-2">
-                        Upload & Preview
+                        Upload &amp; Preview
                     </button>
-                    
+
                     <a href="{{ route('import.download-materials-template') }}" class="skip-loader text-xs text-secondary-600 hover:text-secondary-700 underline font-medium">
                         Download Excel Template
                     </a>
@@ -34,12 +50,18 @@
     @else
     <div class="space-y-4">
         @include('import.materials.table')
-        
+
         <div class="flex justify-center gap-4 py-4">
             <a href="{{ route('import.import-materials') }}" class="px-6 py-2 border border-slate-300 dark:border-slate-600 rounded-md text-sm font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 transition-all">
                 Cancel
             </a>
-            <button type="submit" form="import-form" formaction="{{ route('import.store-materials') }}" class="px-8 py-2 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-md shadow-md transition-all">
+            {{-- "Insert to Database" is now an AJAX submit --}}
+            <button
+                id="btn-insert-materials"
+                type="button"
+                class="px-8 py-2 bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-md shadow-md transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                @if(isset($activeImport) && $activeImport) disabled @endif
+            >
                 Insert to Database
             </button>
         </div>
@@ -47,18 +69,99 @@
     @endif
 </div>
 
+{{-- Progress overlay (only rendered when we have a progress ID to poll) --}}
+@if(isset($activeImport) && $activeImport && $activeImport->isActive())
+    <x-import-progress-overlay
+        :status-url="route('import.status-materials', $activeImport->id)"
+        :index-route="route('import.import-materials')"
+        import-label="Materials"
+    />
+@else
+    {{-- Placeholder overlay — JS fills statusUrl dynamically after dispatch --}}
+    <x-import-progress-overlay
+        status-url=""
+        :index-route="route('import.import-materials')"
+        import-label="Materials"
+    />
+@endif
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const fileInput = document.getElementById('file_input');
-        const fileName = document.getElementById('file-name');
-        if(fileInput) {
-            fileInput.addEventListener('change', function() {
-                if(this.files && this.files[0]) {
-                    fileName.textContent = this.files[0].name;
-                    fileName.classList.remove('hidden');
-                }
+document.addEventListener('DOMContentLoaded', function () {
+    // File-name preview on upload form
+    const fileInput = document.getElementById('file_input');
+    const fileName  = document.getElementById('file-name');
+    if (fileInput) {
+        fileInput.addEventListener('change', function () {
+            if (this.files && this.files[0]) {
+                fileName.textContent = this.files[0].name;
+                fileName.classList.remove('hidden');
+            }
+        });
+    }
+
+    // ─── AJAX "Insert to Database" ───────────────────────────────────
+    const btn = document.getElementById('btn-insert-materials');
+    if (!btn) return;
+
+    btn.addEventListener('click', async function () {
+        btn.disabled = true;
+        btn.textContent = 'Submitting…';
+
+        // Collect any edits visible on the current page from the preview form
+        const form     = document.getElementById('import-form');
+        const formData = form ? new FormData(form) : new FormData();
+        formData.append('_method', 'POST'); // keep it explicit
+
+        // Block editing of all form fields now
+        if (form) {
+            form.querySelectorAll('input, select, textarea').forEach(el => {
+                el.disabled = true;
             });
         }
+
+        try {
+            const response = await fetch('{{ route("import.store-materials") }}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+                    'Accept': 'application/json',
+                },
+                body: formData,
+            });
+
+            const data = await response.json();
+
+            if (data.error) {
+                // Blocked or validation error
+                window.ImportOverlay.showBlocked(data.message);
+                btn.disabled   = false;
+                btn.textContent = 'Insert to Database';
+                if (form) {
+                    form.querySelectorAll('input, select, textarea').forEach(el => {
+                        el.disabled = false;
+                    });
+                }
+                return;
+            }
+
+            // Success — start polling the progress overlay
+            // Patch the status URL into the overlay component's closure
+            if (window.ImportOverlay._setStatusUrl) {
+                window.ImportOverlay._setStatusUrl('{{ url("/admin/import/materials/import-status") }}/' + data.progress_id);
+            }
+            window.ImportOverlay.startPolling(data.progress_id);
+
+        } catch (e) {
+            btn.disabled   = false;
+            btn.textContent = 'Insert to Database';
+            if (form) {
+                form.querySelectorAll('input, select, textarea').forEach(el => {
+                    el.disabled = false;
+                });
+            }
+            alert('An unexpected error occurred. Please try again.');
+        }
     });
+});
 </script>
 @endsection
