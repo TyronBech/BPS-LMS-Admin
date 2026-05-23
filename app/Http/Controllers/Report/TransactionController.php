@@ -385,21 +385,9 @@ class TransactionController extends Controller
                 'book:id,title,accession',
                 'user:id,first_name,middle_name,last_name'
             ])
-            ->select([
-                'id',
-                'book_id',
-                'user_id',
-                'transaction_type as type',
-                'date_borrowed as borrowed',
-                'return_date as returned',
-                'due_date as due',
-                'pickup_deadline as deadline',
-                'reserved_date as reserved',
-                'status'
-            ])
+            ->select('tr_transactions.*')
             ->whereHas('book')
-            ->whereHas('user')
-            ->whereNotNull('date_borrowed');
+            ->whereHas('user');
 
         if (strlen($search) > 0) {
             $query->where(function ($group) use ($search) {
@@ -440,14 +428,13 @@ class TransactionController extends Controller
             ->join('bk_categories as categories', 'books.category_id', '=', 'categories.id')
             ->orderBy('categories.category_type', 'asc')
             ->orderBy('categories.name', 'asc')
-            ->orderBy('books.title', 'asc')
-            ->select('tr_transactions.*');
+            ->orderBy('books.title', 'asc');
         if ($isExport) {
             $data = $query->get();
 
             if ($data->isNotEmpty()) {
-                $max = $data->first()->borrowed;
-                $min = $data->last()->borrowed;
+                $max = $data->first()->date_borrowed;
+                $min = $data->last()->date_borrowed;
 
                 $data->reporting_period = 'From ' . Carbon::parse($min)->format('F j, Y') . ' to ' . Carbon::parse($max)->format('F j, Y');
             } else {
