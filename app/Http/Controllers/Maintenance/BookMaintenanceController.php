@@ -496,6 +496,9 @@ class BookMaintenanceController extends Controller
                     ->orWhereHas('category', function ($q2) use ($search) {
                         $q2->where('name', 'like', '%' . $search . '%')
                             ->orWhere('legend', 'like', '%' . $search . '%');
+                    })
+                    ->orWhereHas('subjectAccessCodes', function ($q) use ($search) {
+                        $q->where('access_code', 'like', '%' . $search . '%');
                     });
             });
         }
