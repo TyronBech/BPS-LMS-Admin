@@ -10,8 +10,11 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Client\ConnectionException;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ReservationMail;
 use App\Models\Transaction;
 use App\Models\Book;
+use Carbon\Carbon;
 use DateTime;
 use Exception;
 
@@ -248,9 +251,56 @@ class TransactionMaintenanceController extends Controller
                     'book_id' => $transaction->book_id,
                     'timestamp' => now(),
                 ]);
-                $transaction->book->update([
-                    'availability_status' => 'Available',
-                ]);
+
+                $reservedTransaction = Transaction::where('book_id', $transaction->book_id)
+                    ->where('transaction_type', 'Reserved')
+                    ->where('status', 'Reserved')
+                    ->orderBy('created_at', 'asc')
+                    ->first();
+                
+                if ($reservedTransaction) {
+                    $newDeadline = now()->addDays(3);
+                    $reservedTransaction->update([
+                        'status' => 'Available for pick up',
+                        'pickup_deadline' => $newDeadline->format('Y-m-d'),
+                        'remarks' => $reservedTransaction->remarks . ' | Book returned, now available for pickup.'
+                    ]);
+                    
+                    $transaction->book->update([
+                        'availability_status' => 'Reserved',
+                    ]);
+
+                    if ($reservedTransaction->user && $reservedTransaction->user->email) {
+                        try {
+                            Mail::to($reservedTransaction->user->email)->send(new ReservationMail(
+                                $reservedTransaction->user,
+                                $transaction->book,
+                                'Good news! The book "' . $transaction->book->title . '" you reserved has been returned by the previous borrower. It is now available for pickup until ' . $newDeadline->format('M d, Y') . '.',
+                                'extended',
+                                $newDeadline,
+                                $transaction->book->book_condition ?? 'Good',
+                                0.00,
+                                'No Penalty',
+                                [
+                                    'subject' => '✅ Reserved Book Available for Pickup',
+                                    'title' => 'Reserved Book Available',
+                                    'greeting' => "Dear {$reservedTransaction->user->first_name} {$reservedTransaction->user->last_name},",
+                                    'approved_msg' => 'The book you reserved is now ready for pickup!',
+                                ]
+                            ));
+                        } catch (\Exception $e) {
+                            Log::error('Transaction Maintenance: Error sending reservation availability email', [
+                                'error' => $e->getMessage(),
+                                'transaction_id' => $reservedTransaction->id
+                            ]);
+                        }
+                    }
+                } else {
+                    $transaction->book->update([
+                        'availability_status' => 'Available',
+                    ]);
+                }
+
                 $transaction->update([
                     'return_date' => now()->format('Y-m-d'),
                 ]);

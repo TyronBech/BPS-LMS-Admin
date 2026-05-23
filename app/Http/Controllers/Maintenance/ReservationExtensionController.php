@@ -134,32 +134,48 @@ class ReservationExtensionController extends Controller
             $book = $transaction->book;
             
             if ($transaction->transaction_type === 'Reserved') {
-                // Book Reservation Approval: Transition transaction status to Available for pick up and transaction type to Borrowed
-                $transaction->transaction_type = 'Borrowed';
-                $transaction->date_borrowed = now();
-                $newDueDate = now()->addDays(7); // Default borrow period of 7 days
-                $transaction->due_date = $newDueDate;
-                $transaction->status = 'Available for pick up';
-                $transaction->remarks = $transaction->remarks . ' | RESERVATION APPROVED by ' . Auth::user()->first_name . ' ' . Auth::user()->last_name . ' on ' . now()->format('F d, Y H:i:s');
-                $transaction->save();
+                // Book Reservation Approval
+                if ($book && $book->availability_status === 'Available') {
+                    // Book is available in library
+                    $transaction->status = 'Available for pick up';
+                    $transaction->reserved_date = now()->format('Y-m-d');
+                    $newDeadline = now()->addDays(3); // 3 days pickup deadline
+                    $transaction->pickup_deadline = $newDeadline->format('Y-m-d');
+                    $transaction->remarks = $transaction->remarks . ' | RESERVATION APPROVED by ' . Auth::user()->first_name . ' ' . Auth::user()->last_name . ' on ' . now()->format('F d, Y H:i:s') . ' (Available for Pickup)';
+                    $transaction->save();
 
-                // Also update the book availability status to Borrowed
-                if ($book) {
-                    $book->update(['availability_status' => 'Borrowed']);
+                    $book->update(['availability_status' => 'Reserved']);
+
+                    $this->sendReservationApprovalEmail($user, $book, $newDeadline, true);
+
+                    Log::info('Reservation Approval: Reservation approved successfully (Available)', [
+                        'user_id' => Auth::guard('admin')->id(),
+                        'transaction_id' => $id,
+                        'book_title' => $book->title,
+                        'requester_email' => $user->email,
+                        'timestamp' => now(),
+                    ]);
+
+                    return redirect()->back()->with('toast-success', 'Reservation request for ' . $book->title . ' has been approved. Status is set to "Available for pick up".');
+                } else {
+                    // Book is currently borrowed
+                    $transaction->status = 'Reserved';
+                    $transaction->reserved_date = now()->format('Y-m-d');
+                    $transaction->remarks = $transaction->remarks . ' | RESERVATION APPROVED by ' . Auth::user()->first_name . ' ' . Auth::user()->last_name . ' on ' . now()->format('F d, Y H:i:s') . ' (Waiting for Return)';
+                    $transaction->save();
+
+                    $this->sendReservationApprovalEmail($user, $book, null, false);
+
+                    Log::info('Reservation Approval: Reservation approved successfully (Waiting)', [
+                        'user_id' => Auth::guard('admin')->id(),
+                        'transaction_id' => $id,
+                        'book_title' => $book->title,
+                        'requester_email' => $user->email,
+                        'timestamp' => now(),
+                    ]);
+
+                    return redirect()->back()->with('toast-success', 'Reservation request for ' . $book->title . ' has been approved. The user is now in line for this book.');
                 }
-
-                $this->sendReservationApprovalEmail($user, $book, $newDueDate);
-
-                Log::info('Reservation Approval: Reservation approved successfully', [
-                    'user_id' => Auth::guard('admin')->id(),
-                    'transaction_id' => $id,
-                    'book_title' => $book->title,
-                    'requester_email' => $user->email,
-                    'new_due_date' => $newDueDate,
-                    'timestamp' => now(),
-                ]);
-
-                return redirect()->back()->with('toast-success', 'Reservation request for ' . $book->title . ' has been approved. Status is set to "Available for pick up" and transaction type to Borrowed.');
             } else {
                 // Extension Request Approval: Update due date
                 $newDueDate = $transaction->requested_due_date;
@@ -349,18 +365,26 @@ class ReservationExtensionController extends Controller
     /**
      * Send reservation approval email to user
      */
-    private function sendReservationApprovalEmail($user, $book, $newDueDate)
+    private function sendReservationApprovalEmail($user, $book, $deadlineDate = null, $isAvailable = true)
     {
         if ($user->email) {
             try {
-                $dueDate = $newDueDate instanceof Carbon ? $newDueDate : Carbon::parse($newDueDate);
+                if ($isAvailable) {
+                    $deadline = $deadlineDate instanceof Carbon ? $deadlineDate : Carbon::parse($deadlineDate);
+                    $message = 'Your book reservation request for "' . $book->title . '" has been approved. The book is now available for pickup until ' . $deadline->format('M d, Y') . '.';
+                    $approvedMsg = 'Good news! Your book reservation request has been approved and is ready for pickup.';
+                } else {
+                    $deadline = now(); // Fallback for the mail layout which requires a date
+                    $message = 'Your book reservation request for "' . $book->title . '" has been approved. The book is currently borrowed by another user. You will be notified once it becomes available for pickup.';
+                    $approvedMsg = 'Good news! Your book reservation request has been approved. You are now in line for this book.';
+                }
 
                 Mail::to($user->email)->send(new ReservationMail(
                     $user,
                     $book,
-                    'Your book reservation request for "' . $book->title . '" has been approved. The book has been marked as Borrowed. Your due date is ' . $dueDate->format('M d, Y'),
+                    $message,
                     'extended',
-                    $dueDate,
+                    $deadline,
                     $book->book_condition ?? 'Good',
                     0.00,
                     'No Penalty',
@@ -368,7 +392,7 @@ class ReservationExtensionController extends Controller
                         'subject' => '✅ Book Reservation Request Approved',
                         'title' => 'Book Reservation Approved',
                         'greeting' => "Dear {$user->first_name} {$user->last_name},",
-                        'approved_msg' => 'Good news! Your book reservation request has been approved and checked out.',
+                        'approved_msg' => $approvedMsg,
                     ]
                 ));
                 Log::info('Reservation: Approval email sent', [
