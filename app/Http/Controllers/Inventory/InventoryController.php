@@ -113,6 +113,10 @@ class InventoryController extends Controller
                 throw new \RuntimeException('Book not found.');
             }
 
+            if ($book->remarks === 'Unreturned') {
+                throw new \RuntimeException('This material is currently Borrowed. Please process its return through Circulation first before scanning.');
+            }
+
             $scanWarning = null;
             $statusLabel = null;
             if ($book->remarks && $book->remarks !== 'On Shelf') {
