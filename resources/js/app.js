@@ -321,4 +321,78 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         }
     }
+
+    // --- 7️⃣ Generic Auto-Search Logic ---
+    document.querySelectorAll('.auto-search-form').forEach(form => {
+        const inputs = form.querySelectorAll('input[type="text"], input[type="search"]');
+        const selects = form.querySelectorAll('select');
+        let debounceTimer;
+
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => {
+                    form.classList.add('skip-loader');
+                    if (input.id) sessionStorage.setItem('autoSearchFocus', input.id);
+                    if (form.requestSubmit) {
+                        form.requestSubmit();
+                    } else {
+                        form.submit();
+                    }
+                }, 500);
+            });
+        });
+
+        selects.forEach(select => {
+            select.addEventListener('change', () => {
+                form.classList.add('skip-loader');
+                if (form.requestSubmit) {
+                    form.requestSubmit();
+                } else {
+                    form.submit();
+                }
+            });
+        });
+        
+        // Handle Clear Filters button if any
+        const clearBtn = form.querySelector('.btn-clear-filters');
+        if (clearBtn) {
+            clearBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                showLoader();
+                
+                // Use data-clear-url if provided (useful for forms with POST search actions)
+                const clearUrl = clearBtn.getAttribute('data-clear-url');
+                if (clearUrl) {
+                    window.location.href = clearUrl;
+                    return;
+                }
+                
+                const url = new URL(form.action || window.location.href);
+                // Keep the 'tab' if it exists in a hidden input
+                const tabInput = form.querySelector('input[name="tab"]');
+                
+                // Clear all search params to default
+                url.search = '';
+                if (tabInput) {
+                    url.searchParams.set('tab', tabInput.value);
+                }
+                
+                window.location.href = url.toString();
+            });
+        }
+    });
+
+    // Restore focus on page load for auto-search
+    const focusId = sessionStorage.getItem('autoSearchFocus');
+    if (focusId) {
+        const el = document.getElementById(focusId);
+        if (el) {
+            el.focus();
+            if (typeof el.selectionStart === 'number') {
+                el.selectionStart = el.selectionEnd = el.value.length;
+            }
+        }
+        sessionStorage.removeItem('autoSearchFocus');
+    }
 });

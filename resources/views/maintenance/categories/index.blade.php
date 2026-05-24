@@ -7,7 +7,7 @@
     <div class="flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0 mb-4">
       <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Categories</h5>
       <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-        <form action="{{ route('maintenance.categories') }}" method="GET" class="flex items-center w-full sm:w-auto relative" id="category-search-form">
+        <form action="{{ route('maintenance.categories') }}" method="GET" class="flex items-center w-full sm:w-auto relative auto-search-form" id="category-search-form">
           <input type="hidden" name="tab" id="categories-tab-input" value="{{ request('tab', 'print') }}" />
           <label for="search-categories" class="sr-only">Search</label>
           <div class="relative w-full">
@@ -23,11 +23,17 @@
               </ul>
             </div>
           </div>
-          <button type="submit" class="p-2.5 ms-2 text-sm font-medium text-white bg-primary-500 rounded-lg border border-primary-500 hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">
+          <button type="submit" class="p-2.5 ms-2 text-sm font-medium text-white bg-primary-500 rounded-lg border border-primary-500 hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500" title="Search">
             <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
             </svg>
             <span class="sr-only">Search</span>
+          </button>
+          <button type="button" class="btn-clear-filters p-2.5 ms-2 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-300 hover:bg-gray-100 hover:text-primary-700 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-700" title="Clear Filters">
+            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+            <span class="sr-only">Clear Filters</span>
           </button>
         </form>
         @can(PermissionsEnum::ADD_CATEGORIES)
@@ -151,8 +157,10 @@
         e.preventDefault();
         const formData = new FormData(searchForm);
         const params = new URLSearchParams(formData);
-        // Manual search: show loader (skipLoader = false)
-        updateTable(`${searchForm.action}?${params.toString()}`, false);
+        const skipLoader = searchForm.classList.contains('skip-loader');
+        // Manual search: show loader (skipLoader = false), auto-search (skipLoader = true)
+        updateTable(`${searchForm.action}?${params.toString()}`, skipLoader);
+        searchForm.classList.remove('skip-loader'); // Reset for next manual submit
       });
     }
 

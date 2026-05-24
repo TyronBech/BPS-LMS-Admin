@@ -3,7 +3,7 @@
 @use('App\Enum\PermissionsEnum')
 <div class="container mx-auto px-4">
   <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Bibliography of Books</h1>
-  <form action="{{ route('report.bibliography-search') }}" method="POST">
+  <form action="{{ route('report.bibliography-search') }}" method="POST" class="auto-search-form">
     @csrf
     <div class="flex flex-col md:flex-row md:flex-wrap md:items-end md:justify-center gap-4 mb-4">
       <div class="relative w-full sm:w-auto">
@@ -34,6 +34,7 @@
       </div>
       <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
         <button type="submit" name="submit" value="find" class="bg-primary-500 hover:bg-primary-400 active:bg-primary-400 text-white font-bold py-2.5 px-4 rounded whitespace-nowrap transition-colors text-sm w-full sm:w-auto dark:bg-primary-400 dark:hover:bg-primary-500 dark:active:bg-primary-500">Find</button>
+        <button type="button" data-clear-url="{{ route('report.bibliography') }}" class="btn-clear-filters bg-white hover:bg-gray-100 text-gray-900 border border-gray-300 font-bold py-2.5 px-4 rounded whitespace-nowrap transition-colors dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-300 dark:border-gray-600 text-sm w-full sm:w-auto" title="Clear Filters">Clear</button>
         @can(PermissionsEnum::CREATE_REPORTS)
         <button type="submit" name="submit" value="pdf" class="bg-red-500 hover:bg-red-700 active:bg-red-900 text-white font-bold py-2.5 px-4 rounded whitespace-nowrap transition-colors text-sm w-full sm:w-auto">PDF</button>
         <button type="submit" name="submit" value="excel" class="bg-green-500 hover:bg-green-700 active:bg-green-900 text-white font-bold py-2.5 px-4 rounded whitespace-nowrap transition-colors text-sm w-full sm:w-auto">Excel</button>

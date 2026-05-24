@@ -97,7 +97,7 @@
     </div>
 
     <!-- Search Form -->
-    <form action="{{ route('maintenance.search-extension') }}" method="GET" class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+    <form action="{{ route('maintenance.search-extension') }}" method="GET" class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4 auto-search-form">
       <input type="hidden" name="tab" value="{{ $activeTab }}">
       <div class="flex-grow w-full md:w-auto">
         <label for="search" class="sr-only">Search</label>
@@ -114,6 +114,9 @@
       <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
         <button type="submit" class="w-full sm:w-auto p-2.5 text-sm font-medium text-white bg-primary-500 rounded-lg border border-primary-500 hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">
           Search
+        </button>
+        <button type="button" class="btn-clear-filters w-full sm:w-auto p-2.5 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-300 hover:bg-gray-100 hover:text-primary-700 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-700" title="Clear Filters">
+          Clear Filters
         </button>
       </div>
     </form>

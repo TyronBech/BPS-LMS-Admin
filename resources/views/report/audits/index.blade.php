@@ -3,7 +3,7 @@
 @use('App\Enum\PermissionsEnum')
 <div class="container mx-auto px-4">
   <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Report Document For Audits</h1>
-  <form action="{{ route('report.audit-trail-search') }}" method="POST">
+  <form action="{{ route('report.audit-trail-search') }}" method="POST" class="auto-search-form">
     @csrf
     <div class="flex flex-col md:flex-row md:flex-wrap md:items-end md:justify-center gap-4 mb-4">
 
@@ -62,6 +62,7 @@
       {{-- Action Buttons --}}
       <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
         <button type="submit" name="submit" value="find" class="bg-primary-500 hover:bg-primary-400 active:bg-primary-400 text-white font-bold py-2.5 px-4 rounded whitespace-nowrap transition-colors text-sm w-full sm:w-auto dark:bg-primary-400 dark:hover:bg-primary-500 dark:active:bg-primary-500">Find</button>
+        <button type="button" data-clear-url="{{ route('report.audit-trail') }}" class="btn-clear-filters bg-white hover:bg-gray-100 text-gray-900 border border-gray-300 font-bold py-2.5 px-4 rounded whitespace-nowrap transition-colors dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-300 dark:border-gray-600 text-sm w-full sm:w-auto" title="Clear Filters">Clear</button>
       </div>
     </div>
   </form>
