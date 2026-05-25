@@ -215,6 +215,9 @@ class MaterialImportController extends Controller
      */
     private function readMaterialsExcel(string $fullPath): array
     {
+        ini_set('memory_limit', '1G');
+        set_time_limit(300);
+
         $reader = new ReaderXlsx();
         $reader->setReadDataOnly(true);
         $spreadsheet = $reader->load($fullPath);
