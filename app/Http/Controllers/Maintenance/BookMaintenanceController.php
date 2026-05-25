@@ -1330,15 +1330,8 @@ class BookMaintenanceController extends Controller
         $prefix = (trim($category->legend) !== '') ? trim($category->legend) : strtoupper(substr(str_replace(' ', '', $category->name), 0, 3));
         if ($prefix === '') $prefix = 'ACC';
 
-        if ($accessionDashActive) {
-            if (!str_ends_with($prefix, '-')) {
-                $prefix .= '-';
-            }
-        } else {
-            if (str_ends_with($prefix, '-')) {
-                $prefix = rtrim($prefix, '-');
-            }
-        }
+        $prefix = strtoupper($prefix);
+        $pattern = '/^' . preg_quote($prefix, '/') . '-\d{6}$/';
 
         $accessions = collect(explode(',', (string) $accessionInput))
             ->map(fn($item) => trim((string) $item))
@@ -1346,8 +1339,8 @@ class BookMaintenanceController extends Controller
             ->values();
 
         foreach ($accessions as $acc) {
-            if (!str_starts_with($acc, $prefix)) {
-                $validator->errors()->add('accession', "The accession number '{$acc}' does not align with the selected category legend. It must start with '{$prefix}'.");
+            if (!preg_match($pattern, $acc)) {
+                $validator->errors()->add('accession', "The accession number '{$acc}' format is invalid. It must be exactly '{$prefix}-' followed by a 6-digit number (e.g., {$prefix}-000001), respecting exact capitalization.");
                 break;
             }
         }

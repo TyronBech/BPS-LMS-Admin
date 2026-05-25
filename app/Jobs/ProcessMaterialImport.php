@@ -368,6 +368,20 @@ class ProcessMaterialImport implements ShouldQueue
             );
         }
 
+        // ── Accession format validation ─────────────────────────────────────
+        $prefix = (trim($category->legend) !== '') ? trim($category->legend) : strtoupper(substr(str_replace(' ', '', $category->name), 0, 3));
+        if ($prefix === '') $prefix = 'ACC';
+
+        $prefix = strtoupper($prefix);
+        $pattern = '/^' . preg_quote($prefix, '/') . '-\d{6}$/';
+
+        if (!preg_match($pattern, $item['accession'])) {
+            throw new \Exception(
+                "Row {$rowNumber} (accession: {$item['accession']}): Accession format is invalid. "
+                . "It must be exactly '{$prefix}-' followed by a 6-digit number (e.g., {$prefix}-000001), respecting exact capitalization."
+            );
+        }
+
         $existingBook = Book::where('accession', $item['accession'])->first();
         $isNew = !$existingBook;
         
