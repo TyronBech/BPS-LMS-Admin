@@ -1327,7 +1327,13 @@ class BookMaintenanceController extends Controller
         $accessionDashActive = SystemSetting::where('key', 'accession_number_dash_active')->first();
         $accessionDashActive = $accessionDashActive ? ($accessionDashActive->value === 'true') : true;
 
-        $prefix = (trim($category->legend) !== '') ? trim($category->legend) : strtoupper(substr(str_replace(' ', '', $category->name), 0, 3));
+        $legend = trim($category->legend);
+        if ($legend !== '') {
+            $prefix = explode('/', $legend)[0];
+            $prefix = trim($prefix);
+        } else {
+            $prefix = strtoupper(substr(str_replace(' ', '', $category->name), 0, 3));
+        }
         if ($prefix === '') $prefix = 'ACC';
 
         $prefix = strtoupper($prefix);
@@ -1353,7 +1359,13 @@ class BookMaintenanceController extends Controller
         $accessionDashActive = SystemSetting::where('key', 'accession_number_dash_active')->first();
         $accessionDashActive = $accessionDashActive ? ($accessionDashActive->value === 'true') : true;
 
-        $prefix = (trim($category->legend) !== '') ? trim($category->legend) : strtoupper(substr(str_replace(' ', '', $category->name), 0, 3));
+        $legend = trim($category->legend);
+        if ($legend !== '') {
+            $prefix = explode('/', $legend)[0];
+            $prefix = trim($prefix);
+        } else {
+            $prefix = strtoupper(substr(str_replace(' ', '', $category->name), 0, 3));
+        }
         if ($prefix === '') $prefix = 'ACC';
 
         if ($accessionDashActive) {

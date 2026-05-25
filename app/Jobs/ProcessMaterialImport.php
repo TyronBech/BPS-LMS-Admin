@@ -369,7 +369,13 @@ class ProcessMaterialImport implements ShouldQueue
         }
 
         // ── Accession format validation ─────────────────────────────────────
-        $prefix = (trim($category->legend) !== '') ? trim($category->legend) : strtoupper(substr(str_replace(' ', '', $category->name), 0, 3));
+        $legend = trim($category->legend);
+        if ($legend !== '') {
+            $prefix = explode('/', $legend)[0];
+            $prefix = trim($prefix);
+        } else {
+            $prefix = strtoupper(substr(str_replace(' ', '', $category->name), 0, 3));
+        }
         if ($prefix === '') $prefix = 'ACC';
 
         $prefix = strtoupper($prefix);

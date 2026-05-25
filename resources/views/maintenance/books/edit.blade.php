@@ -545,7 +545,9 @@
       if (!selectedCategory) return;
       
       let prefix = (selectedCategory.legend && String(selectedCategory.legend).trim()) || '';
-      if (!prefix && selectedCategory.name) {
+      if (prefix !== '') {
+        prefix = prefix.split('/')[0].trim();
+      } else if (selectedCategory.name) {
         prefix = String(selectedCategory.name).replace(/\s+/g, '').slice(0, 3).toUpperCase();
       }
       if (!prefix) prefix = 'ACC';
