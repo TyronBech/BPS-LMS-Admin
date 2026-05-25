@@ -121,7 +121,11 @@
       </div>
     </form>
 
-    @include('maintenance.reservations.table')
+    <div id="table-container">
+
+      @include('maintenance.reservations.table')
+
+    </div>
   </div>
 </div>
 @endsection

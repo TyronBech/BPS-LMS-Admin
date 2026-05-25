@@ -148,7 +148,6 @@ document.addEventListener("DOMContentLoaded", () => {
             "subject-access-code-suggestions",
         );
         const isCategoriesAutocomplete = url.includes("categories/autocomplete");
-        const isCategoriesMaintenance = !isCategoriesAutocomplete && url.includes("maintenance/categories");
         const isNonCirculationSearch = url.includes("/report/non-circulation/search-user");
         const isImportAction = url.includes("/import/");
 
@@ -170,7 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
             isCategoriesAutocomplete || // ALWAYS skip autocomplete suggestions
             isNonCirculationSearch ||
             isImportAction || // Skip loader for import actions and status polling
-            (isCategoriesMaintenance && hasSkipHeader); // Skip maintenance update ONLY if header is present
+            hasSkipHeader; // Skip loader anytime the header is present
 
         try {
             if (!shouldSkip) {
@@ -353,32 +352,105 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
             });
         });
+
+        form.addEventListener('submit', async (e) => {
+            const submitter = e.submitter;
+            const skipAjaxValues = ['pdf', 'excel', 'barcode', 'callNumber'];
+            
+            // Allow normal submission for exports
+            if (submitter && skipAjaxValues.includes(submitter.value)) {
+                return;
+            }
+
+            e.preventDefault();
+            const formData = new FormData(form);
+            const params = new URLSearchParams(formData);
+            const method = form.method.toUpperCase();
+            
+            let url = form.action || window.location.href;
+            let fetchOptions = {
+                headers: { 'X-Skip-Loader': 'true' }
+            };
+
+            if (method === 'GET') {
+                const urlObj = new URL(url);
+                urlObj.search = params.toString();
+                url = urlObj.toString();
+            } else {
+                fetchOptions.method = method;
+                fetchOptions.body = formData;
+            }
+
+            try {
+                const response = await fetch(url, fetchOptions);
+                const html = await response.text();
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                const containerId = 'table-container';
+                const oldContainer = document.getElementById(containerId);
+                const newContainer = doc.getElementById(containerId);
+                
+                if (oldContainer && newContainer) {
+                    oldContainer.innerHTML = newContainer.innerHTML;
+                    if (typeof initFlowbite === 'function') initFlowbite();
+                    if (method === 'GET') {
+                        window.history.pushState({}, '', url);
+                    }
+                } else {
+                    // Fallback if no container found
+                    window.location.href = url;
+                }
+            } catch (error) {
+                console.error('AJAX search failed', error);
+            }
+        });
         
         // Handle Clear Filters button if any
         const clearBtn = form.querySelector('.btn-clear-filters');
         if (clearBtn) {
-            clearBtn.addEventListener('click', (e) => {
+            clearBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
-                showLoader();
                 
-                // Use data-clear-url if provided (useful for forms with POST search actions)
+                // Use data-clear-url if provided
                 const clearUrl = clearBtn.getAttribute('data-clear-url');
+                let url;
+                
                 if (clearUrl) {
-                    window.location.href = clearUrl;
-                    return;
+                    url = new URL(clearUrl, window.location.origin);
+                } else {
+                    url = new URL(form.action || window.location.href);
+                    const tabInput = form.querySelector('input[name="tab"]');
+                    url.search = '';
+                    if (tabInput) {
+                        url.searchParams.set('tab', tabInput.value);
+                    }
                 }
                 
-                const url = new URL(form.action || window.location.href);
-                // Keep the 'tab' if it exists in a hidden input
-                const tabInput = form.querySelector('input[name="tab"]');
-                
-                // Clear all search params to default
-                url.search = '';
-                if (tabInput) {
-                    url.searchParams.set('tab', tabInput.value);
+                try {
+                    const response = await fetch(url.toString(), { headers: { 'X-Skip-Loader': 'true' } });
+                    const html = await response.text();
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(html, 'text/html');
+                    
+                    const oldContainer = document.getElementById('table-container');
+                    const newContainer = doc.getElementById('table-container');
+                    
+                    if (oldContainer && newContainer) {
+                        oldContainer.innerHTML = newContainer.innerHTML;
+                        
+                        // Clear the form inputs visually
+                        form.querySelectorAll('input[type="text"], input[type="search"]').forEach(inp => inp.value = '');
+                        form.querySelectorAll('select').forEach(sel => sel.selectedIndex = 0);
+
+                        if (typeof initFlowbite === 'function') initFlowbite();
+                        window.history.pushState({}, '', url.toString());
+                    } else {
+                        window.location.href = url.toString();
+                    }
+                } catch (error) {
+                    window.location.href = url.toString();
                 }
-                
-                window.location.href = url.toString();
             });
         }
     });

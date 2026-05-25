@@ -11,7 +11,9 @@
       @endcan
     </div>
     <hr class="h-px my-3 bg-gray-200 border-0 dark:bg-gray-700">
-    @include('maintenance.privileges.table')
+    <div id="table-container">
+      @include('maintenance.privileges.table')
+    </div>
   </div>
 </div>
 

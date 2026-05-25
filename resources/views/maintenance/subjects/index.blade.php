@@ -48,7 +48,11 @@
       </div>
     </form>
 
-    @include('maintenance.subjects.table')
+    <div id="table-container">
+
+      @include('maintenance.subjects.table')
+
+    </div>
   </div>
 </div>
 @endsection

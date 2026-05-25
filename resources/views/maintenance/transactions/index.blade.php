@@ -8,7 +8,9 @@
       <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Book Circulations</h5>
     </div>
     <hr class="h-px my-3 bg-gray-200 border-0 dark:bg-gray-700">
-    @include('maintenance.transactions.table')
+    <div id="table-container">
+      @include('maintenance.transactions.table')
+    </div>
   </div>
 </div>
 @endsection

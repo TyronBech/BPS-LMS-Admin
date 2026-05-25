@@ -23,12 +23,6 @@
               </ul>
             </div>
           </div>
-          <button type="submit" class="p-2.5 ms-2 text-sm font-medium text-white bg-primary-500 rounded-lg border border-primary-500 hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500" title="Search">
-            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
-              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
-            </svg>
-            <span class="sr-only">Search</span>
-          </button>
           <button type="button" class="btn-clear-filters p-2.5 ms-2 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-300 hover:bg-gray-100 hover:text-primary-700 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-700" title="Clear Filters">
             <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
@@ -60,20 +54,22 @@
     </div>
 
     <!-- Toggle content -->
-    <div class="space-y-0">
-      <div data-content="print" id="print-section">
-        <div class="overflow-x-auto">
-          @include('maintenance.categories.table', ['categories' => $printCategories, 'perPage' => $perPrintPage, 'type' => 'Print', 'pageParam' => 'print_page'])
+    <div id="table-container">
+      <div class="space-y-0">
+        <div data-content="print" id="print-section">
+          <div class="overflow-x-auto">
+            @include('maintenance.categories.table', ['categories' => $printCategories, 'perPage' => $perPrintPage, 'type' => 'Print', 'pageParam' => 'print_page'])
+          </div>
         </div>
-      </div>
-      <div data-content="non-print" id="non-print-section" class="hidden">
-        <div class="overflow-x-auto">
-          @include('maintenance.categories.table', ['categories' => $nonPrintCategories, 'perPage' => $perNonPrintPage, 'type' => 'Non-print', 'pageParam' => 'non_print_page'])
+        <div data-content="non-print" id="non-print-section" class="hidden">
+          <div class="overflow-x-auto">
+            @include('maintenance.categories.table', ['categories' => $nonPrintCategories, 'perPage' => $perNonPrintPage, 'type' => 'Non-print', 'pageParam' => 'non_print_page'])
+          </div>
         </div>
-      </div>
-      <div data-content="ebooks" id="ebooks-section" class="hidden">
-        <div class="overflow-x-auto">
-          @include('maintenance.categories.table', ['categories' => $ebooksCategories, 'perPage' => $perEbooksPage, 'type' => 'E-books', 'pageParam' => 'ebooks_page'])
+        <div data-content="ebooks" id="ebooks-section" class="hidden">
+          <div class="overflow-x-auto">
+            @include('maintenance.categories.table', ['categories' => $ebooksCategories, 'perPage' => $perEbooksPage, 'type' => 'E-books', 'pageParam' => 'ebooks_page'])
+          </div>
         </div>
       </div>
     </div>
@@ -129,14 +125,13 @@
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
 
-        ['print', 'non-print', 'ebooks'].forEach(tab => {
-          const sectionId = `${tab}-section`;
-          const oldSection = document.getElementById(sectionId);
-          const newSection = doc.getElementById(sectionId);
-          if (oldSection && newSection) {
-            oldSection.innerHTML = newSection.innerHTML;
-          }
-        });
+        const containerId = 'table-container';
+        const oldContainer = document.getElementById(containerId);
+        const newContainer = doc.getElementById(containerId);
+        
+        if (oldContainer && newContainer) {
+            oldContainer.innerHTML = newContainer.innerHTML;
+        }
 
         // Re-initialize Flowbite (important for modals and dropdowns in the new HTML)
         if (typeof initFlowbite === 'function') {
@@ -148,20 +143,6 @@
       } catch (error) {
         console.error('AJAX update failed:', error);
       }
-    }
-
-    // Intercept search form submission (Manual Search)
-    const searchForm = document.getElementById('category-search-form');
-    if (searchForm) {
-      searchForm.addEventListener('submit', e => {
-        e.preventDefault();
-        const formData = new FormData(searchForm);
-        const params = new URLSearchParams(formData);
-        const skipLoader = searchForm.classList.contains('skip-loader');
-        // Manual search: show loader (skipLoader = false), auto-search (skipLoader = true)
-        updateTable(`${searchForm.action}?${params.toString()}`, skipLoader);
-        searchForm.classList.remove('skip-loader'); // Reset for next manual submit
-      });
     }
 
     // Intercept pagination and per-page changes using delegation (Auto Filter)

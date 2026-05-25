@@ -3,7 +3,11 @@
 <div class="container mx-auto px-4">
   <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Summary of {{ $settings->org_initial ?? 'BPS' }} Collections</h1>
 
-  @include('report.categories.table')
+  <div id="table-container">
+
+    @include('report.categories.table')
+
+  </div>
 
   <form action="{{ route('report.summary-update') }}" method="POST">
     @csrf

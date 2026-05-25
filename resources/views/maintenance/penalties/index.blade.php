@@ -11,7 +11,9 @@
       @endcan
     </div>
     <hr class="h-px my-3 bg-gray-200 border-0 dark:bg-gray-700">
-    @include('maintenance.penalties.table')
+    <div id="table-container">
+      @include('maintenance.penalties.table')
+    </div>
   </div>
 </div>
 <div id="add-penalty-rule-modal" data-modal-backdrop="static" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">

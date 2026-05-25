@@ -54,7 +54,6 @@
 
       {{-- Action Buttons --}}
       <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-        <button type="submit" name="submit" value="find" class="bg-primary-500 hover:bg-primary-400 active:bg-primary-400 text-white font-bold py-2.5 px-4 rounded whitespace-nowrap transition-colors dark:bg-primary-400 dark:hover:bg-primary-500 dark:active:bg-primary-500 text-sm">Find</button>
         <button type="button" data-clear-url="{{ route('report.user') }}" class="btn-clear-filters bg-white hover:bg-gray-100 text-gray-900 border border-gray-300 font-bold py-2.5 px-4 rounded whitespace-nowrap transition-colors dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-300 dark:border-gray-600 text-sm" title="Clear Filters">Clear</button>
         @can(PermissionsEnum::CREATE_REPORTS)
         <button type="submit" name="submit" value="pdf" class="bg-red-500 hover:bg-red-700 active:bg-red-900 text-white font-bold py-2.5 px-4 rounded whitespace-nowrap transition-colors text-sm">PDF</button>
@@ -65,8 +64,10 @@
     </div>
   </form>
 
-  <h1 class="text-md font-extrabold">PEAK HOUR: <small class="ms-2 font-semibold text-gray-500">{{ $peak_hour }}</small></h1>
-  @include('report.users.user-logs-table')
+  <div id="table-container">
+    <h1 class="text-md font-extrabold">PEAK HOUR: <small class="ms-2 font-semibold text-gray-500">{{ $peak_hour }}</small></h1>
+    @include('report.users.user-logs-table')
+  </div>
 </div>
 @endsection
 @section('scripts')
