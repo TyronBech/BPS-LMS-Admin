@@ -341,6 +341,7 @@
         switchEl.checked = borrowable;
         wrapper.classList.toggle('hidden', !borrowable);
         input.required = borrowable;
+        input.disabled = !borrowable;
         if (!borrowable) input.value = 0;
         else if (!input.value || Number(input.value) < 1) input.value = 1;
 
@@ -485,7 +486,10 @@
       const borrowable = editModal.hiddenInput.value === '1';
       editModal.switchEl.checked = borrowable;
       if (editModal.durationWrapper) editModal.durationWrapper.classList.toggle('hidden', !borrowable);
-      if (editModal.duration) editModal.duration.required = borrowable;
+      if (editModal.duration) {
+        editModal.duration.required = borrowable;
+        editModal.duration.disabled = !borrowable;
+      }
       if (!borrowable && editModal.duration) editModal.duration.value = 0;
       else if (borrowable && editModal.duration && (!editModal.duration.value || Number(editModal.duration.value) < 1)) editModal.duration.value = 1;
 
