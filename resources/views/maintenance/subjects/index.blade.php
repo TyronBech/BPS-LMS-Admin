@@ -39,10 +39,10 @@
         <input type="hidden" name="sort_by" id="sort_by" value="{{ $sortBy }}">
         <input type="hidden" name="sort_order" id="sort_order" value="{{ $sortOrder }}">
 
-        <button type="submit" class="w-full sm:w-auto p-2.5 text-sm font-medium text-white bg-primary-500 rounded-lg border border-primary-500 hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">
+        <button type="submit" class="whitespace-nowrap w-full sm:w-auto p-2.5 text-sm font-medium text-white bg-primary-500 rounded-lg border border-primary-500 hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">
           Search
         </button>
-        <button type="button" class="btn-clear-filters w-full sm:w-auto p-2.5 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-300 hover:bg-gray-100 hover:text-primary-700 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-700" title="Clear Filters">
+        <button type="button" class="whitespace-nowrap btn-clear-filters w-full sm:w-auto p-2.5 text-sm font-medium text-gray-900 bg-white rounded-lg border border-gray-300 hover:bg-gray-100 hover:text-primary-700 focus:ring-4 focus:outline-none focus:ring-gray-100 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-white dark:hover:bg-gray-700 dark:focus:ring-gray-700" title="Clear Filters">
           Clear Filters
         </button>
       </div>

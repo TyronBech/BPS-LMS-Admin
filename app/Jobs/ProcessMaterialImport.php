@@ -454,7 +454,7 @@ class ProcessMaterialImport implements ShouldQueue
         // ── Subject Access Codes ────────────────────────────────────────────
         $accessCodeIds = [];
         if (!empty($item['subject'])) {
-            $rawSubjects = preg_split('/\s*[;,]\s*/', (string) $item['subject'], -1, PREG_SPLIT_NO_EMPTY);
+            $rawSubjects = preg_split('/\s*;\s*/', (string) $item['subject'], -1, PREG_SPLIT_NO_EMPTY);
             
             foreach ($rawSubjects as $rawName) {
                 $name = trim((string) $rawName);
