@@ -106,16 +106,16 @@ class AdminMaintenanceController extends Controller
             ->select('usr_users.id', 'first_name', 'middle_name', 'last_name', 'email', 'rfid')
             ->where('privileges.user_type', '!=', 'visitor')
             ->where(function ($query) use ($search) {
-                $query->where('first_name', 'like', '%' . $search . '%')
-                    ->orWhere('middle_name', 'like', '%' . $search . '%')
-                    ->orWhere('last_name', 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('concat(first_name, " ", middle_name, " ", last_name)'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('concat(middle_name, " ", last_name, ", ", first_name)'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('concat(last_name, ", ", first_name, " ", middle_name)'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(usr_users.last_name, ", ", usr_users.first_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(usr_users.first_name, " ", usr_users.last_name))'), 'like', '%' . $search . '%')
-                    ->orWhere('email', 'like', '%' . $search . '%')
-                    ->orWhere('rfid', 'like', '%' . $search . '%');
+                $searchTerms = array_filter(explode(' ', $search));
+                foreach ($searchTerms as $term) {
+                    $query->where(function ($sub) use ($term) {
+                        $sub->where('first_name', 'like', '%' . $term . '%')
+                            ->orWhere('middle_name', 'like', '%' . $term . '%')
+                            ->orWhere('last_name', 'like', '%' . $term . '%')
+                            ->orWhere('email', 'like', '%' . $term . '%')
+                            ->orWhere('rfid', 'like', '%' . $term . '%');
+                    });
+                }
             })
             ->doesntHave('roles')
             ->first();
@@ -164,18 +164,19 @@ class AdminMaintenanceController extends Controller
             ->where('roles.guard_name', 'admin')
             ->where('privileges.user_type', '!=', 'visitor')
             ->where(function ($query) use ($search) {
-                $query->where('usr_users.first_name', 'like', '%' . $search . '%')
-                    ->orWhere('usr_users.middle_name', 'like', '%' . $search . '%')
-                    ->orWhere('usr_users.last_name', 'like', '%' . $search . '%')
-                    ->orWhere('usr_users.email', 'like', '%' . $search . '%')
-                    ->orWhere('usr_users.rfid', 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(usr_users.first_name, " ", usr_users.middle_name, " ", usr_users.last_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(usr_users.middle_name, " ", usr_users.last_name, ", ", usr_users.first_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(usr_users.last_name, ", ", usr_users.first_name, " ", usr_users.middle_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(usr_users.last_name, ", ", usr_users.first_name))'), 'like', '%' . $search . '%')
-                    ->orWhere(DB::raw('lower(concat(usr_users.first_name, " ", usr_users.last_name))'), 'like', '%' . $search . '%');
+                $searchTerms = array_filter(explode(' ', $search));
+                $query->where(function ($q1) use ($searchTerms) {
+                    foreach ($searchTerms as $term) {
+                        $q1->where(function ($sub) use ($term) {
+                            $sub->where('usr_users.first_name', 'like', '%' . $term . '%')
+                                ->orWhere('usr_users.middle_name', 'like', '%' . $term . '%')
+                                ->orWhere('usr_users.last_name', 'like', '%' . $term . '%')
+                                ->orWhere('usr_users.email', 'like', '%' . $term . '%')
+                                ->orWhere('usr_users.rfid', 'like', '%' . $term . '%');
+                        });
+                    }
+                })->orWhere('roles.name', 'like', '%' . $search . '%');
             })
-            ->orWhere('roles.name', 'like', '%' . $search . '%')
             ->select('usr_users.*', 'roles.name as role')
             ->paginate($perPage)
             ->appends(['search' => $search, 'perPage' => $perPage]);

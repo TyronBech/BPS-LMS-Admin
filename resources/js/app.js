@@ -81,23 +81,16 @@ document.addEventListener("DOMContentLoaded", () => {
         form.addEventListener("submit", (e) => {
             const submitter = e.submitter;
             if (form.classList.contains("skip-loader") || form.closest(".skip-loader")) return;
-            if (
-                submitter &&
-                (submitter.value === "pdf" || submitter.value === "excel")
-            )
+            
+            const skipAjaxValues = ['pdf', 'excel', 'barcode', 'callNumber'];
+            if (submitter && skipAjaxValues.includes(submitter.value)) {
                 return;
-            if (
-                submitter &&
-                submitter.name === "barcodeBtn" &&
-                submitter.value === "barcode"
-            )
+            }
+
+            if (form.classList.contains('auto-search-form')) {
                 return;
-            if (
-                submitter &&
-                submitter.name === "callNumberBtn" &&
-                submitter.value === "callNumber"
-            )
-                return;
+            }
+
             showLoader();
         });
     });
@@ -323,6 +316,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 7️⃣ Generic Auto-Search Logic ---
     document.querySelectorAll('.auto-search-form').forEach(form => {
+        // Prepend a hidden submit button so that pressing Enter or calling requestSubmit()
+        // without arguments doesn't implicitly use the PDF/Excel buttons.
+        const hiddenSubmit = document.createElement('button');
+        hiddenSubmit.type = 'submit';
+        hiddenSubmit.name = 'auto_search_trigger';
+        hiddenSubmit.style.display = 'none';
+        form.prepend(hiddenSubmit);
+
         const inputs = form.querySelectorAll('input[type="text"], input[type="search"]');
         const selects = form.querySelectorAll('select');
         let debounceTimer;
@@ -334,7 +335,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     form.classList.add('skip-loader');
                     if (input.id) sessionStorage.setItem('autoSearchFocus', input.id);
                     if (form.requestSubmit) {
-                        form.requestSubmit();
+                        form.requestSubmit(hiddenSubmit);
                     } else {
                         form.submit();
                     }
@@ -346,7 +347,7 @@ document.addEventListener("DOMContentLoaded", () => {
             select.addEventListener('change', () => {
                 form.classList.add('skip-loader');
                 if (form.requestSubmit) {
-                    form.requestSubmit();
+                    form.requestSubmit(hiddenSubmit);
                 } else {
                     form.submit();
                 }

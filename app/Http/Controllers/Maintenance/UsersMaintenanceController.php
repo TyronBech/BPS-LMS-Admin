@@ -242,17 +242,19 @@ class UsersMaintenanceController extends Controller
         }
 
         // Common search filter closure
-        $searchFilter = function ($query) use ($search) {
-            $query->where(DB::raw('lower(first_name)'), 'like', "%{$search}%")
-                ->orWhere(DB::raw('lower(middle_name)'), 'like', "%{$search}%")
-                ->orWhere(DB::raw('lower(last_name)'), 'like', "%{$search}%")
-                ->orWhere(DB::raw('lower(concat(first_name, " ", middle_name, " ", last_name))'), 'like', "%{$search}%")
-                ->orWhere(DB::raw('lower(concat(middle_name, " ", last_name, ", ", first_name))'), 'like', "%{$search}%")
-                ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name, " ", middle_name))'), 'like', "%{$search}%")
-                ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name))'), 'like', "%{$search}%")
-                ->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', "%{$search}%")
-                ->orWhere('email', 'like', "%{$search}%")
-                ->orWhere('rfid', 'like', "%{$search}%");
+        $searchTerms = array_filter(explode(' ', $search));
+        $searchFilter = function ($query) use ($searchTerms) {
+            $query->where(function ($q) use ($searchTerms) {
+                foreach ($searchTerms as $term) {
+                    $q->where(function ($sub) use ($term) {
+                        $sub->where(DB::raw('lower(first_name)'), 'like', "%{$term}%")
+                            ->orWhere(DB::raw('lower(middle_name)'), 'like', "%{$term}%")
+                            ->orWhere(DB::raw('lower(last_name)'), 'like', "%{$term}%")
+                            ->orWhere('email', 'like', "%{$term}%")
+                            ->orWhere('rfid', 'like', "%{$term}%");
+                    });
+                }
+            });
         };
 
         // Students query

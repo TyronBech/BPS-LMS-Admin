@@ -714,12 +714,16 @@ class UserLogsController extends Controller
         }
 
         if (strlen($search) > 0) {
-            $query->whereHas('user', function ($q) use ($search) {
-                $q->where(function ($sub) use ($search) {
-                    $sub->whereRaw('LOWER(first_name) LIKE ?', ["%{$search}%"])
-                        ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$search}%"])
-                        ->orWhereRaw('LOWER(CONCAT(first_name, " ", last_name)) LIKE ?', ["%{$search}%"])
-                        ->orWhereRaw('LOWER(CONCAT(last_name, ", ", first_name)) LIKE ?', ["%{$search}%"]);
+            $searchTerms = array_filter(explode(' ', $search));
+            $query->whereHas('user', function ($q) use ($searchTerms) {
+                $q->where(function ($queryWrapper) use ($searchTerms) {
+                    foreach ($searchTerms as $term) {
+                        $queryWrapper->where(function ($sub) use ($term) {
+                            $sub->whereRaw('LOWER(first_name) LIKE ?', ["%{$term}%"])
+                                ->orWhereRaw('LOWER(middle_name) LIKE ?', ["%{$term}%"])
+                                ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$term}%"]);
+                        });
+                    }
                 });
             });
         }

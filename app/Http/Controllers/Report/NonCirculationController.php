@@ -120,12 +120,16 @@ class NonCirculationController extends Controller
         $search = $request->get('term');
         $typeParam = $request->get('type');
         
-        $users = User::where(function($query) use ($search) {
-                $query->where('first_name', 'LIKE', "%{$search}%")
-                      ->orWhere('last_name', 'LIKE', "%{$search}%")
-                      ->orWhereRaw('CONCAT(first_name, " ", last_name) LIKE ?', ["%{$search}%"])
-                      ->orWhereRaw('CONCAT(last_name, ", ", first_name) LIKE ?', ["%{$search}%"]);
-            });
+        $searchTerms = array_filter(explode(' ', $search));
+        $users = User::where(function($query) use ($searchTerms) {
+            foreach ($searchTerms as $term) {
+                $query->where(function ($sub) use ($term) {
+                    $sub->where('first_name', 'LIKE', "%{$term}%")
+                        ->orWhere('middle_name', 'LIKE', "%{$term}%")
+                        ->orWhere('last_name', 'LIKE', "%{$term}%");
+                });
+            }
+        });
 
         if ($typeParam === 'student') {
             $users->has('students');
@@ -324,17 +328,28 @@ class NonCirculationController extends Controller
         }
 
         if (strlen($search) > 0) {
-            $query->where(function($q) use ($search) {
-                $q->whereHas('student.users', function ($sub) use ($search) {
-                    $sub->whereRaw('LOWER(first_name) LIKE ?', ["%{$search}%"])
-                        ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$search}%"])
-                        ->orWhereRaw('LOWER(CONCAT(first_name, " ", last_name)) LIKE ?', ["%{$search}%"])
-                        ->orWhereRaw('LOWER(CONCAT(last_name, ", ", first_name)) LIKE ?', ["%{$search}%"]);
-                })->orWhereHas('faculty.users', function ($sub) use ($search) {
-                    $sub->whereRaw('LOWER(first_name) LIKE ?', ["%{$search}%"])
-                        ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$search}%"])
-                        ->orWhereRaw('LOWER(CONCAT(first_name, " ", last_name)) LIKE ?', ["%{$search}%"])
-                        ->orWhereRaw('LOWER(CONCAT(last_name, ", ", first_name)) LIKE ?', ["%{$search}%"]);
+            $searchTerms = array_filter(explode(' ', $search));
+            $query->where(function($q) use ($searchTerms, $search) {
+                $q->whereHas('student.users', function ($sub) use ($searchTerms) {
+                    $sub->where(function ($queryWrapper) use ($searchTerms) {
+                        foreach ($searchTerms as $term) {
+                            $queryWrapper->where(function ($subQ) use ($term) {
+                                $subQ->whereRaw('LOWER(first_name) LIKE ?', ["%{$term}%"])
+                                    ->orWhereRaw('LOWER(middle_name) LIKE ?', ["%{$term}%"])
+                                    ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$term}%"]);
+                            });
+                        }
+                    });
+                })->orWhereHas('faculty.users', function ($sub) use ($searchTerms) {
+                    $sub->where(function ($queryWrapper) use ($searchTerms) {
+                        foreach ($searchTerms as $term) {
+                            $queryWrapper->where(function ($subQ) use ($term) {
+                                $subQ->whereRaw('LOWER(first_name) LIKE ?', ["%{$term}%"])
+                                    ->orWhereRaw('LOWER(middle_name) LIKE ?', ["%{$term}%"])
+                                    ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$term}%"]);
+                            });
+                        }
+                    });
                 })->orWhereRaw('LOWER(subject) LIKE ?', ["%{$search}%"]);
             });
         }
