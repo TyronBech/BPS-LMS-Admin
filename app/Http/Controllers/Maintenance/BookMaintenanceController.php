@@ -1328,16 +1328,19 @@ class BookMaintenanceController extends Controller
         $accessionDashActive = $accessionDashActive ? ($accessionDashActive->value === 'true') : true;
 
         $legend = trim($category->legend);
+        $prefixes = [];
         if ($legend !== '') {
-            $prefix = explode('/', $legend)[0];
-            $prefix = trim($prefix);
+            $prefixes = array_map('trim', explode('/', $legend));
         } else {
-            $prefix = strtoupper(substr(str_replace(' ', '', $category->name), 0, 3));
+            $prefixes = [strtoupper(substr(str_replace(' ', '', $category->name), 0, 3))];
         }
-        if ($prefix === '') $prefix = 'ACC';
+        $prefixes = array_filter($prefixes, fn($p) => $p !== '');
+        if (empty($prefixes)) $prefixes = ['ACC'];
 
-        $prefix = strtoupper($prefix);
-        $pattern = '/^' . preg_quote($prefix, '/') . '-\d{6}$/';
+        $prefixes = array_map('strtoupper', $prefixes);
+        
+        $escapedPrefixes = array_map(function($p) { return preg_quote($p, '/'); }, $prefixes);
+        $pattern = '/^(' . implode('|', $escapedPrefixes) . ')-\d{6}$/';
 
         $accessions = collect(explode(',', (string) $accessionInput))
             ->map(fn($item) => trim((string) $item))
@@ -1346,7 +1349,8 @@ class BookMaintenanceController extends Controller
 
         foreach ($accessions as $acc) {
             if (!preg_match($pattern, $acc)) {
-                $validator->errors()->add('accession', "The accession number '{$acc}' format is invalid. It must be exactly '{$prefix}-' followed by a 6-digit number (e.g., {$prefix}-000001), respecting exact capitalization.");
+                $prefixListStr = implode("-' or '", $prefixes);
+                $validator->errors()->add('accession', "The accession number '{$acc}' format is invalid. It must start with exactly '{$prefixListStr}-' followed by a 6-digit number (e.g., {$prefixes[0]}-000001), respecting exact capitalization.");
                 break;
             }
         }

@@ -370,21 +370,24 @@ class ProcessMaterialImport implements ShouldQueue
 
         // ── Accession format validation ─────────────────────────────────────
         $legend = trim($category->legend);
+        $prefixes = [];
         if ($legend !== '') {
-            $prefix = explode('/', $legend)[0];
-            $prefix = trim($prefix);
+            $prefixes = array_map('trim', explode('/', $legend));
         } else {
-            $prefix = strtoupper(substr(str_replace(' ', '', $category->name), 0, 3));
+            $prefixes = [strtoupper(substr(str_replace(' ', '', $category->name), 0, 3))];
         }
-        if ($prefix === '') $prefix = 'ACC';
+        $prefixes = array_filter($prefixes, fn($p) => $p !== '');
+        if (empty($prefixes)) $prefixes = ['ACC'];
 
-        $prefix = strtoupper($prefix);
-        $pattern = '/^' . preg_quote($prefix, '/') . '-\d{6}$/';
+        $prefixes = array_map('strtoupper', $prefixes);
+        $escapedPrefixes = array_map(function($p) { return preg_quote($p, '/'); }, $prefixes);
+        $pattern = '/^(' . implode('|', $escapedPrefixes) . ')-\d{6}$/';
 
         if (!preg_match($pattern, $item['accession'])) {
+            $prefixListStr = implode("-' or '", $prefixes);
             throw new \Exception(
                 "Row {$rowNumber} (accession: {$item['accession']}): Accession format is invalid. "
-                . "It must be exactly '{$prefix}-' followed by a 6-digit number (e.g., {$prefix}-000001), respecting exact capitalization."
+                . "It must start with exactly '{$prefixListStr}-' followed by a 6-digit number (e.g., {$prefixes[0]}-000001), respecting exact capitalization."
             );
         }
 
