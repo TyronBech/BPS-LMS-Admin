@@ -253,7 +253,7 @@ class AdminMaintenanceController extends Controller
                 'error_trace' => $e->getTraceAsString(),
                 'timestamp' => now(),
             ]);
-            return redirect()->route('maintenance.create-admin')->with('toast-error', $e->getMessage());
+            return redirect()->route('maintenance.create-admin')->with('toast-error', $this->friendlyErrorMessage($e));
         }
         DB::commit();
         return redirect()->route('maintenance.admins')->with('toast-success', 'Admin created successfully');
@@ -297,7 +297,7 @@ class AdminMaintenanceController extends Controller
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Something went wrong!');
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e));
         }
         return view('maintenance.admins.edit', compact('admin', 'super_admin', 'roles'));
     }
@@ -411,7 +411,7 @@ class AdminMaintenanceController extends Controller
                 'timestamp' => now(),
             ]);
             DB::rollBack();
-            return redirect()->back()->with('toast-error', $e->getMessage());
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e));
         }
 
         DB::commit();
@@ -476,7 +476,7 @@ class AdminMaintenanceController extends Controller
                 'timestamp' => now(),
             ]);
             DB::rollBack();
-            return redirect()->back()->with('toast-error', 'Something went wrong!');
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e));
         }
         DB::commit();
         return redirect()->route('maintenance.admins')->with('toast-success', 'Admin deleted successfully.');

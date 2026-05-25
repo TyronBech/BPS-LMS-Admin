@@ -267,7 +267,7 @@ class CategoriesController extends Controller
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage());
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e));
         }
 
         Log::info('Categories Report: Summary matrix updated successfully', [

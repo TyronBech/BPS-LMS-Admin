@@ -468,7 +468,7 @@ class BackupController extends Controller
                 ]);
             }
 
-            return back()->with('toast-error', 'Backup download failed: ' . $e->getMessage());
+            return back()->with('toast-error', $this->friendlyErrorMessage($e));
         }
     }
 
@@ -539,7 +539,7 @@ class BackupController extends Controller
                 'timestamp' => now(),
             ]);
 
-            return back()->with('toast-error', 'Failed to delete backup: ' . $e->getMessage());
+            return back()->with('toast-error', $this->friendlyErrorMessage($e));
         }
     }
 

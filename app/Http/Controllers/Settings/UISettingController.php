@@ -71,7 +71,7 @@ class UISettingController extends Controller
                 'errors' => $validator->errors()->toArray(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', $validator->errors()->first() ?? 'Something went wrong')->withInput();
+            return redirect()->back()->with('toast-error', $validator->errors()->first() ?? 'An unexpected error occurred during setting update.')->withInput();
         }
         $settings = UISetting::first();
         if (!$settings) {

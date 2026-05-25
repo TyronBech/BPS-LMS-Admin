@@ -125,7 +125,7 @@ class MaterialImportController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Material Import Error: ' . $e->getMessage());
-            return redirect()->route('import.import-materials')->with('toast-error', 'An error occurred: ' . $e->getMessage());
+            return redirect()->route('import.import-materials')->with('toast-error', $this->friendlyErrorMessage($e));
         }
     }
 

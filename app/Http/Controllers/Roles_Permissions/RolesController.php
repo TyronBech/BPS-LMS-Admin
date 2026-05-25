@@ -170,7 +170,7 @@ class RolesController extends Controller
                 'error' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->route('maintenance.roles-and-permissions.management')->with('toast-error', 'Something went wrong');
+            return redirect()->route('maintenance.roles-and-permissions.management')->with('toast-error', $this->friendlyErrorMessage($e));
         }
         DB::commit();
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
@@ -227,7 +227,7 @@ class RolesController extends Controller
                 'error' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Something went wrong');
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e));
         }
         return view('roles_permissions.edit', compact('role', 'permissions'));
     }
@@ -328,7 +328,7 @@ class RolesController extends Controller
                 'error' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Something went wrong');
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e));
         }
         DB::commit();
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
@@ -384,7 +384,7 @@ class RolesController extends Controller
                 'error' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Something went wrong');
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e));
         }
         DB::commit();
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();

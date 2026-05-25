@@ -324,7 +324,7 @@ class TransactionMaintenanceController extends Controller
                 'error_trace' => $e->getTraceAsString(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', $e->getMessage());
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e));
         }
         DB::commit();
         Log::info('Transaction Maintenance: Transaction updated successfully', [

@@ -372,12 +372,12 @@ class UsersMaintenanceController extends Controller
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
-            Log::error('Users Maintenance: Database error during student creation', [
+            Log::error('Users Maintenance: User creation failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'User with RFID or email ' . $request->input('rfid') . ' already exists. Error code: ' . $e->getMessage())->withInput();
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e))->withInput();
         }
         DB::commit();
         try {
@@ -388,7 +388,7 @@ class UsersMaintenanceController extends Controller
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage())->withInput();
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e))->withInput();
         }
         $this->account_notification(User::where('email', $request->input('email'))->first(), $password);
         return redirect()->route('maintenance.users')->with('toast-success', 'User added successfully');
@@ -471,7 +471,7 @@ class UsersMaintenanceController extends Controller
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'User with RFID or email ' . $request->input('rfid') . ' already exists. Error code: ' . $e->getMessage())->withInput();
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e))->withInput();
         }
         DB::commit();
         try {
@@ -482,7 +482,7 @@ class UsersMaintenanceController extends Controller
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage())->withInput();
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e))->withInput();
         }
         $this->account_notification(User::where('email', $request->input('email'))->first(), $password);
         return redirect()->route('maintenance.users')->with('toast-success', 'User added successfully');
@@ -511,7 +511,7 @@ class UsersMaintenanceController extends Controller
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Something went wrong!')->withInput();
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e))->withInput();
         }
         return view('maintenance.users.edit-student', compact('user'));
     }
@@ -542,7 +542,7 @@ class UsersMaintenanceController extends Controller
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Something went wrong!')->withInput();
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e))->withInput();
         }
         return view('maintenance.users.edit-employee', compact('user', 'privileges'));
     }
@@ -570,7 +570,7 @@ class UsersMaintenanceController extends Controller
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Something went wrong!')->withInput();
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e))->withInput();
         }
         return view('maintenance.users.edit-visitor', compact('user'));
     }
@@ -661,7 +661,7 @@ class UsersMaintenanceController extends Controller
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e))->withInput();
         }
         DB::commit();
         Log::info('Users Maintenance: Student updated successfully', [
@@ -756,7 +756,7 @@ class UsersMaintenanceController extends Controller
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e))->withInput();
         }
         DB::commit();
         Log::info('Users Maintenance: Employee updated successfully', [
@@ -840,7 +840,7 @@ class UsersMaintenanceController extends Controller
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', $e->getMessage())->withInput();
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e))->withInput();
         }
         DB::commit();
         Log::info('Users Maintenance: Visitor updated successfully', [
@@ -956,12 +956,12 @@ class UsersMaintenanceController extends Controller
             User::whereIn('id', $ids)->delete();
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
-            Log::error('Users Maintenance: Bulk delete students failed', [
+            Log::error('Users Maintenance: Delete failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Something went wrong!')->withInput();
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e))->withInput();
         }
         DB::commit();
         Log::info('Users Maintenance: Bulk delete students successful', [
@@ -1026,12 +1026,12 @@ class UsersMaintenanceController extends Controller
             User::whereIn('id', $ids)->delete();
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
-            Log::error('Users Maintenance: Bulk delete employees failed', [
+            Log::error('Users Maintenance: Status approval failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Something went wrong!')->withInput();
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e))->withInput();
         }
         DB::commit();
         Log::info('Users Maintenance: Bulk delete employees successful', [
@@ -1078,12 +1078,12 @@ class UsersMaintenanceController extends Controller
             User::whereIn('id', $ids)->delete();
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
-            Log::error('Users Maintenance: Bulk delete visitors failed', [
+            Log::error('Users Maintenance: Restore failed', [
                 'user_id' => Auth::guard('admin')->id(),
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Something went wrong!')->withInput();
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e))->withInput();
         }
         DB::commit();
         Log::info('Users Maintenance: Bulk delete visitors successful', [

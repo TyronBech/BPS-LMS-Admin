@@ -221,7 +221,7 @@ class StudentImportController extends Controller
                 'error_message' => $e->getMessage(),
                 'user_id'       => Auth::id(),
             ]);
-            return redirect()->route('import.import-students')->with('toast-error', 'An error occurred while loading the students: ' . $e->getMessage());
+            return redirect()->route('import.import-students')->with('toast-error', $this->friendlyErrorMessage($e));
         }
 
         return view('import.students.students', compact(

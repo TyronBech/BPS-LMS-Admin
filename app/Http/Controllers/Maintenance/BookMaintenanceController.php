@@ -324,7 +324,7 @@ class BookMaintenanceController extends Controller
             if ($e->getCode() == 23000) {
                 return redirect()->back()->with('toast-error', 'Book with this accession number already exists!')->withInput();
             } else {
-                return redirect()->back()->with('toast-error', $this->sanitizeDatabaseErrorMessage($e->getMessage()))->withInput();
+                return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e))->withInput();
             }
         }
         DB::commit();
@@ -373,7 +373,7 @@ class BookMaintenanceController extends Controller
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Something went wrong!')->withInput();
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e))->withInput();
         }
         $accessionDashActive = SystemSetting::where('key', 'accession_number_dash_active')->first();
         $accessionDashActive = $accessionDashActive ? ($accessionDashActive->value === 'true') : true;
@@ -705,7 +705,7 @@ class BookMaintenanceController extends Controller
                 'cover_image_file' => $coverImageFileName,
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', $this->sanitizeDatabaseErrorMessage($e->getMessage()))->withInput();
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e))->withInput();
         }
         DB::commit();
         Log::info('Book Maintenance: Book updated successfully', [
@@ -861,7 +861,7 @@ class BookMaintenanceController extends Controller
                 'cover_image_file' => $coverImageFileName,
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', $this->sanitizeDatabaseErrorMessage($e->getMessage()))->withInput();
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e))->withInput();
         }
         DB::commit();
         Log::info('Book Maintenance: Book copy created successfully', [
@@ -1093,7 +1093,7 @@ class BookMaintenanceController extends Controller
                 'error_trace' => $e->getTraceAsString(),
                 'timestamp' => now(),
             ]);
-            return redirect()->route('maintenance.books')->with('toast-error', 'Something went wrong!');
+            return redirect()->route('maintenance.books')->with('toast-error', $this->friendlyErrorMessage($e));
         }
         DB::commit();
         Log::info('Book Maintenance: Book deleted successfully', [
@@ -1144,7 +1144,7 @@ class BookMaintenanceController extends Controller
                 'error_trace' => $e->getTraceAsString(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Something went wrong!')->withInput();
+            return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e))->withInput();
         }
         DB::commit();
         Log::info('Book Maintenance: Bulk delete successful', [
