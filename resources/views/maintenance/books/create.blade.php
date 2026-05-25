@@ -380,7 +380,7 @@
         if (prefix.endsWith('-')) prefix = prefix.slice(0, -1);
       }
 
-      const accessions = accessionInput.value.split(',').map(s => s.trim()).filter(s => s);
+      const accessions = accessionInput.value.split(';').map(s => s.trim()).filter(s => s);
       let isValid = true;
       for (const acc of accessions) {
         if (!acc.startsWith(prefix)) {

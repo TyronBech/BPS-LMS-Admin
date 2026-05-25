@@ -240,14 +240,20 @@ class BookMaintenanceController extends Controller
             ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
-        if (Book::where('accession', $request->input('accession'))->exists()) {
+        $accessions = collect(explode(';', (string) $request->input('accession')))
+            ->map(fn($item) => trim((string) $item))
+            ->filter(fn($item) => $item !== '')
+            ->values();
+
+        $existingBooks = Book::whereIn('accession', $accessions)->pluck('accession');
+        if ($existingBooks->isNotEmpty()) {
             Log::warning('Book Maintenance: Creation failed - Accession already exists', [
                 'user_id' => Auth::guard('admin')->id(),
                 'accession' => $request->input('accession'),
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Book with this accession number already exists!')->withInput();
+            return redirect()->back()->with('toast-error', 'Book with accession number(s) ' . $existingBooks->implode(', ') . ' already exists!')->withInput();
         }
         if ($request->hasFile('cover_image')) {
             $image = $request->file('cover_image');
@@ -259,7 +265,7 @@ class BookMaintenanceController extends Controller
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $subjectAccessCodeIds = $request->input('subject_access_codes', []);
-            $accessions = collect(explode(',', (string) $request->input('accession')))
+            $accessions = collect(explode(';', (string) $request->input('accession')))
                 ->map(fn($item) => trim((string) $item))
                 ->filter(fn($item) => $item !== '')
                 ->values();
@@ -300,7 +306,7 @@ class BookMaintenanceController extends Controller
                 );
             }
             // After creating books, update remarks/availability and create inventory entries within the same transaction
-            $importedAccessions = array_map('trim', explode(',', $request->input('accession')));
+            $importedAccessions = array_map('trim', explode(';', $request->input('accession')));
             foreach ($importedAccessions as $acc) {
                 $book = Book::where('accession', $acc)->first();
                 if ($book && $book->book_type !== 'E-books') {
@@ -455,10 +461,10 @@ class BookMaintenanceController extends Controller
             }
         }
         // Check if the search if multiple accession
-        $is_multiple_accessions = preg_match('/,/', $search);
+        $is_multiple_accessions = preg_match('/;/', $search);
         $trimmed_accessions = [];
         if ($is_multiple_accessions) {
-            $accessions = explode(',', $search);
+            $accessions = explode(';', $search);
             $trimmed_accessions = array_map('trim', $accessions);
         }
         // Start query
@@ -796,11 +802,27 @@ class BookMaintenanceController extends Controller
             $base64Image = base64_encode($imageContent);
             $request->merge(['cover_image' => $base64Image]);
         }
+        
+        $accessions = collect(explode(';', (string) $request->input('accession')))
+            ->map(fn($item) => trim((string) $item))
+            ->filter(fn($item) => $item !== '')
+            ->values();
+
+        $existingBooks = Book::whereIn('accession', $accessions)->pluck('accession');
+        if ($existingBooks->isNotEmpty()) {
+            Log::warning('Book Maintenance: Copy failed - Accession already exists', [
+                'user_id' => Auth::guard('admin')->id(),
+                'accession' => $request->input('accession'),
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
+            return redirect()->back()->with('toast-error', 'Book with accession number(s) ' . $existingBooks->implode(', ') . ' already exists!')->withInput();
+        }
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $subjectAccessCodeIds = $request->input('subject_access_codes', []);
-            $accessions = collect(explode(',', (string) $request->input('accession')))
+            $accessions = collect(explode(';', (string) $request->input('accession')))
                 ->map(fn($item) => trim((string) $item))
                 ->filter(fn($item) => $item !== '')
                 ->values();
@@ -840,7 +862,7 @@ class BookMaintenanceController extends Controller
                 $copiedBookIds[] = $copiedBook->id;
             }
             // After copying books, update remarks/availability and create inventory entries within the same transaction
-            $copiedAccessions = array_map('trim', explode(',', $request->input('accession')));
+            $copiedAccessions = array_map('trim', explode(';', $request->input('accession')));
             foreach ($copiedAccessions as $acc) {
                 $book = Book::where('accession', $acc)->first();
                 if ($book) {
@@ -1342,7 +1364,7 @@ class BookMaintenanceController extends Controller
         $escapedPrefixes = array_map(function($p) { return preg_quote($p, '/'); }, $prefixes);
         $pattern = '/^(' . implode('|', $escapedPrefixes) . ')-\d{6}$/';
 
-        $accessions = collect(explode(',', (string) $accessionInput))
+        $accessions = collect(explode(';', (string) $accessionInput))
             ->map(fn($item) => trim((string) $item))
             ->filter(fn($item) => $item !== '')
             ->values();
