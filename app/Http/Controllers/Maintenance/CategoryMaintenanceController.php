@@ -124,6 +124,10 @@ class CategoryMaintenanceController extends Controller
      */
     public function store(Request $request)
     {
+        if ($request->has('legend')) {
+            $request->merge(['legend' => strtoupper($request->input('legend'))]);
+        }
+
         Log::info('Category Maintenance: Attempting to create category', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name,
@@ -201,6 +205,10 @@ class CategoryMaintenanceController extends Controller
      */
     public function update(Request $request)
     {
+        if ($request->has('legend')) {
+            $request->merge(['legend' => strtoupper($request->input('legend'))]);
+        }
+
         Log::info('Category Maintenance: Attempting to update category', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name,

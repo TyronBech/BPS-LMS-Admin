@@ -259,7 +259,7 @@ class ProcessMaterialImport implements ShouldQueue
             }
 
             $data[] = [
-                'accession'            => $this->cleanString($rows[$i][$baseCol] ?? null),
+                'accession'            => $this->capitalizeAccessionLegend($this->cleanString($rows[$i][$baseCol] ?? null)),
                 'title'                => $this->cleanString($rows[$i][$baseCol + 1] ?? null),
                 'authors'              => [
                     'Main author'      => $this->cleanString($rows[$i][$baseCol + 2] ?? null),
@@ -526,5 +526,23 @@ class ProcessMaterialImport implements ShouldQueue
         }
         $val = trim((string) $value);
         return $val === '' ? null : $val;
+    }
+
+    /**
+     * Capitalize the legend part of the accession (before the hyphen).
+     */
+    private function capitalizeAccessionLegend(?string $accession): ?string
+    {
+        if (!$accession) {
+            return null;
+        }
+
+        $parts = explode('-', $accession, 2);
+        if (count($parts) === 2) {
+            $parts[0] = strtoupper($parts[0]);
+            return implode('-', $parts);
+        }
+
+        return strtoupper($accession);
     }
 }
