@@ -67,6 +67,8 @@
       "View Privileges Maintenance": ["Add Privileges", "Edit Privileges", "Delete Privileges"],
       "View Penalty Rules Maintenance": ["Add Penalty Rule", "Edit Penalty Rule", "Delete Penalty Rule"],
       "View Book Circulations Maintenance": ["Edit Book Circulations"],
+      "View Announcements Maintenance": ["Add Announcements", "Edit Announcements", "Delete Announcements"],
+      "View Gallery Maintenance": ["Add Gallery", "Edit Gallery", "Delete Gallery"]
     };
 
     function toggleRestrictions(view, actions) {
