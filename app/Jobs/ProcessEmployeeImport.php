@@ -311,7 +311,7 @@ class ProcessEmployeeImport implements ShouldQueue
             'gender'        => 'required|string|in:' . implode(',', $this->extractEnums($usersModel->getTable(), 'gender')),
             'email'         => 'required|string|email|max:255',
             'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
-            'employee_id'   => 'required|string|max:50|regex:/^[A-Za-z0-9\-\s]+$/u',
+            'employee_id'   => 'required|string|max:50',
         ]);
 
         if ($validator->fails()) {

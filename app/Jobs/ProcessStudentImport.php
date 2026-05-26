@@ -308,7 +308,7 @@ class ProcessStudentImport implements ShouldQueue
             'middle_name' => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'last_name'   => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'suffix'      => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
-            'id_number'   => 'required|string|max:20|regex:/^[A-Za-z0-9\-\s]+$/u',
+            'id_number'   => 'required|string|max:20',
             'grade_level' => 'required|numeric|min:7|max:12',
             'section'     => 'required|string|max:50',
             'gender'      => 'required|string|in:' . implode(',', $this->extractEnums($usersModel->getTable(), 'gender')),
