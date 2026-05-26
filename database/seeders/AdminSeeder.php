@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 
 class AdminSeeder extends Seeder
 {
@@ -19,7 +20,7 @@ class AdminSeeder extends Seeder
             'christiangomelanfog123@gmail.com',
             'princessryanramos29@gmail.com',
         ];
-
+        DB::statement('CALL DistributeStagingUsers()');
         foreach ($emails as $email) {
             $user = User::where('email', $email)->first();
 
