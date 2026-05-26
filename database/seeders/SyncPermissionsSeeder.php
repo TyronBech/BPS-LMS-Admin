@@ -62,14 +62,13 @@ class SyncPermissionsSeeder extends Seeder
 
         // Keep the Super Admin role in sync with every permission so it
         // always has access to newly added capabilities automatically.
-        $superAdminRole = Role::where('name', 'Super Admin')
-            ->where('guard_name', 'admin')
-            ->first();
+        $superAdminRole = Role::firstOrCreate([
+            'name' => 'Super Admin',
+            'guard_name' => 'admin'
+        ]);
 
-        if ($superAdminRole !== null) {
-            $superAdminRole->syncPermissions(Permission::where('guard_name', 'admin')->get());
-            $this->command->info('Super Admin role synced with all permissions.');
-        }
+        $superAdminRole->syncPermissions(Permission::where('guard_name', 'admin')->get());
+        $this->command->info('Super Admin role synced with all permissions.');
 
         // Flush again after changes are committed.
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
