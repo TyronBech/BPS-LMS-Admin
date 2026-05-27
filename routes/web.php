@@ -350,18 +350,45 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
             });
 
             Route::prefix('gallery')->controller(GalleryMaintenanceController::class)->group(function () {
-                Route::get('gallery', 'index')->name('maintenance.library-website.gallery');
-                Route::get('show-folder', 'showFolder')->name('maintenance.library-website.gallery.show-folder');
-                Route::get('add-folder', 'createFolder')->name('maintenance.library-website.gallery.create-folder');
-                Route::post('add-folder', 'storeFolder')->name('maintenance.library-website.gallery.store-folder');
-                Route::get('edit-folder', 'editFolder')->name('maintenance.library-website.gallery.edit-folder');
-                Route::put('edit-folder', 'updateFolder')->name('maintenance.library-website.gallery.update-folder');
-                Route::delete('delete-folder', 'destroyFolder')->name('maintenance.library-website.gallery.delete-folder');
-                Route::get('add-video', 'createVideo')->name('maintenance.library-website.gallery.create-video');
-                Route::post('add-video', 'storeVideo')->name('maintenance.library-website.gallery.store-video');
-                Route::get('edit-video', 'editVideo')->name('maintenance.library-website.gallery.edit-video');
-                Route::put('edit-video', 'updateVideo')->name('maintenance.library-website.gallery.update-video');
-                Route::delete('delete-video', 'destroyVideo')->name('maintenance.library-website.gallery.delete-video');
+                Route::get('/', 'index')->name('maintenance.library-website.gallery');
+                
+                // Photo Albums
+                Route::prefix('photo-albums')->group(function () {
+                    Route::get('create', 'createPhotoAlbum')->name('maintenance.library-website.gallery.create-photo-album');
+                    Route::post('store', 'storePhotoAlbum')->name('maintenance.library-website.gallery.store-photo-album');
+                    Route::get('edit', 'editPhotoAlbum')->name('maintenance.library-website.gallery.edit-photo-album');
+                    Route::put('update', 'updatePhotoAlbum')->name('maintenance.library-website.gallery.update-photo-album');
+                    Route::delete('delete', 'destroyPhotoAlbum')->name('maintenance.library-website.gallery.delete-photo-album');
+                });
+
+                // Video Albums
+                Route::prefix('video-albums')->group(function () {
+                    Route::get('show', 'showVideoAlbum')->name('maintenance.library-website.gallery.show-video-album');
+                    Route::get('create', 'createVideoAlbum')->name('maintenance.library-website.gallery.create-video-album');
+                    Route::post('store', 'storeVideoAlbum')->name('maintenance.library-website.gallery.store-video-album');
+                    Route::get('edit', 'editVideoAlbum')->name('maintenance.library-website.gallery.edit-video-album');
+                    Route::put('update', 'updateVideoAlbum')->name('maintenance.library-website.gallery.update-video-album');
+                    Route::delete('delete', 'destroyVideoAlbum')->name('maintenance.library-website.gallery.delete-video-album');
+                    
+                    // Video Folders
+                    Route::prefix('folders')->group(function () {
+                        Route::get('show', 'showVideoFolder')->name('maintenance.library-website.gallery.show-video-folder');
+                        Route::get('create', 'createVideoFolder')->name('maintenance.library-website.gallery.create-video-folder');
+                        Route::post('store', 'storeVideoFolder')->name('maintenance.library-website.gallery.store-video-folder');
+                        Route::get('edit', 'editVideoFolder')->name('maintenance.library-website.gallery.edit-video-folder');
+                        Route::put('update', 'updateVideoFolder')->name('maintenance.library-website.gallery.update-video-folder');
+                        Route::delete('delete', 'destroyVideoFolder')->name('maintenance.library-website.gallery.delete-video-folder');
+                        
+                        // Video Items
+                        Route::prefix('items')->group(function () {
+                            Route::get('create', 'createVideoItem')->name('maintenance.library-website.gallery.create-video-item');
+                            Route::post('store', 'storeVideoItem')->name('maintenance.library-website.gallery.store-video-item');
+                            Route::get('edit', 'editVideoItem')->name('maintenance.library-website.gallery.edit-video-item');
+                            Route::put('update', 'updateVideoItem')->name('maintenance.library-website.gallery.update-video-item');
+                            Route::delete('delete', 'destroyVideoItem')->name('maintenance.library-website.gallery.delete-video-item');
+                        });
+                    });
+                });
             });
         });
     });
