@@ -88,6 +88,8 @@ class GalleryMaintenanceController extends Controller
             'fb_url' => 'nullable|url|max:500',
             'album_date' => 'nullable|date',
             'sort_order' => 'nullable|integer|min:0',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'is_active' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -101,6 +103,11 @@ class GalleryMaintenanceController extends Controller
             $slug = $originalSlug . '-' . $count++;
         }
 
+        $imageData = null;
+        if ($request->hasFile('thumbnail')) {
+            $imageData = base64_encode(file_get_contents($request->file('thumbnail')->getRealPath()));
+        }
+
         PhotoAlbum::create([
             'name' => $request->name,
             'title' => $request->title,
@@ -109,6 +116,8 @@ class GalleryMaintenanceController extends Controller
             'fb_url' => $request->fb_url,
             'album_date' => $request->album_date,
             'sort_order' => $request->sort_order ?? 0,
+            'thumbnail' => $imageData,
+            'is_active' => $request->has('is_active') ? $request->boolean('is_active') : true,
         ]);
 
         return redirect()->route('maintenance.library-website.gallery', ['tab' => 'photo'])
@@ -140,6 +149,8 @@ class GalleryMaintenanceController extends Controller
             'fb_url' => 'nullable|url|max:500',
             'album_date' => 'nullable|date',
             'sort_order' => 'nullable|integer|min:0',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'is_active' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -153,7 +164,7 @@ class GalleryMaintenanceController extends Controller
             $slug = $originalSlug . '-' . $count++;
         }
 
-        $album->update([
+        $updateData = [
             'name' => $request->name,
             'title' => $request->title,
             'slug' => $slug,
@@ -161,7 +172,14 @@ class GalleryMaintenanceController extends Controller
             'fb_url' => $request->fb_url,
             'album_date' => $request->album_date,
             'sort_order' => $request->sort_order ?? 0,
-        ]);
+            'is_active' => $request->boolean('is_active'),
+        ];
+
+        if ($request->hasFile('thumbnail')) {
+            $updateData['thumbnail'] = base64_encode(file_get_contents($request->file('thumbnail')->getRealPath()));
+        }
+
+        $album->update($updateData);
 
         return redirect()->route('maintenance.library-website.gallery', ['tab' => 'photo'])
             ->with('toast-success', 'Photo Album updated successfully.');
@@ -205,6 +223,8 @@ class GalleryMaintenanceController extends Controller
             'fb_url' => 'nullable|url|max:500',
             'album_date' => 'nullable|date',
             'sort_order' => 'nullable|integer|min:0',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'is_active' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -218,6 +238,11 @@ class GalleryMaintenanceController extends Controller
             $slug = $originalSlug . '-' . $count++;
         }
 
+        $imageData = null;
+        if ($request->hasFile('thumbnail')) {
+            $imageData = base64_encode(file_get_contents($request->file('thumbnail')->getRealPath()));
+        }
+
         VideoAlbum::create([
             'name' => $request->name,
             'title' => $request->title,
@@ -226,6 +251,8 @@ class GalleryMaintenanceController extends Controller
             'fb_url' => $request->fb_url,
             'album_date' => $request->album_date,
             'sort_order' => $request->sort_order ?? 0,
+            'thumbnail' => $imageData,
+            'is_active' => $request->has('is_active') ? $request->boolean('is_active') : true,
         ]);
 
         return redirect()->route('maintenance.library-website.gallery', ['tab' => 'video'])
@@ -269,6 +296,8 @@ class GalleryMaintenanceController extends Controller
             'fb_url' => 'nullable|url|max:500',
             'album_date' => 'nullable|date',
             'sort_order' => 'nullable|integer|min:0',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'is_active' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -282,7 +311,7 @@ class GalleryMaintenanceController extends Controller
             $slug = $originalSlug . '-' . $count++;
         }
 
-        $album->update([
+        $updateData = [
             'name' => $request->name,
             'title' => $request->title,
             'slug' => $slug,
@@ -290,7 +319,14 @@ class GalleryMaintenanceController extends Controller
             'fb_url' => $request->fb_url,
             'album_date' => $request->album_date,
             'sort_order' => $request->sort_order ?? 0,
-        ]);
+            'is_active' => $request->boolean('is_active'),
+        ];
+
+        if ($request->hasFile('thumbnail')) {
+            $updateData['thumbnail'] = base64_encode(file_get_contents($request->file('thumbnail')->getRealPath()));
+        }
+
+        $album->update($updateData);
 
         return redirect()->route('maintenance.library-website.gallery', ['tab' => 'video'])
             ->with('toast-success', 'Video Album updated successfully.');
@@ -333,6 +369,8 @@ class GalleryMaintenanceController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'sort_order' => 'nullable|integer|min:0',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'is_active' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -346,12 +384,19 @@ class GalleryMaintenanceController extends Controller
             $slug = $originalSlug . '-' . $count++;
         }
 
+        $imageData = null;
+        if ($request->hasFile('thumbnail')) {
+            $imageData = base64_encode(file_get_contents($request->file('thumbnail')->getRealPath()));
+        }
+
         VideoFolder::create([
             'album_id' => $request->album_id,
             'name' => $request->name,
             'slug' => $slug,
             'description' => $request->description,
             'sort_order' => $request->sort_order ?? 0,
+            'thumbnail' => $imageData,
+            'is_active' => $request->has('is_active') ? $request->boolean('is_active') : true,
         ]);
 
         return redirect()->route('maintenance.library-website.gallery.show-video-album', ['id' => $request->album_id])
@@ -390,6 +435,8 @@ class GalleryMaintenanceController extends Controller
             'name' => 'required|string|max:255',
             'description' => 'nullable|string',
             'sort_order' => 'nullable|integer|min:0',
+            'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
+            'is_active' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -403,12 +450,19 @@ class GalleryMaintenanceController extends Controller
             $slug = $originalSlug . '-' . $count++;
         }
 
-        $folder->update([
+        $updateData = [
             'name' => $request->name,
             'slug' => $slug,
             'description' => $request->description,
             'sort_order' => $request->sort_order ?? 0,
-        ]);
+            'is_active' => $request->boolean('is_active'),
+        ];
+
+        if ($request->hasFile('thumbnail')) {
+            $updateData['thumbnail'] = base64_encode(file_get_contents($request->file('thumbnail')->getRealPath()));
+        }
+
+        $folder->update($updateData);
 
         return redirect()->route('maintenance.library-website.gallery.show-video-album', ['id' => $folder->album_id])
             ->with('toast-success', 'Video Folder updated successfully.');
@@ -453,6 +507,10 @@ class GalleryMaintenanceController extends Controller
             'url' => 'required|url|max:500',
             'description' => 'nullable|string',
             'sort_order' => 'nullable|integer|min:0',
+            'video_provider' => 'nullable|string|max:100',
+            'thumbnail_url' => 'nullable|url|max:500',
+            'duration' => 'nullable|integer|min:0',
+            'is_featured' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -465,6 +523,10 @@ class GalleryMaintenanceController extends Controller
             'url' => $request->url,
             'description' => $request->description,
             'sort_order' => $request->sort_order ?? 0,
+            'video_provider' => $request->video_provider,
+            'thumbnail_url' => $request->thumbnail_url,
+            'duration' => $request->duration,
+            'is_featured' => $request->boolean('is_featured'),
         ]);
 
         return redirect()->route('maintenance.library-website.gallery.show-video-folder', ['id' => $request->folder_id])
@@ -493,6 +555,10 @@ class GalleryMaintenanceController extends Controller
             'url' => 'required|url|max:500',
             'description' => 'nullable|string',
             'sort_order' => 'nullable|integer|min:0',
+            'video_provider' => 'nullable|string|max:100',
+            'thumbnail_url' => 'nullable|url|max:500',
+            'duration' => 'nullable|integer|min:0',
+            'is_featured' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -504,6 +570,10 @@ class GalleryMaintenanceController extends Controller
             'url' => $request->url,
             'description' => $request->description,
             'sort_order' => $request->sort_order ?? 0,
+            'video_provider' => $request->video_provider,
+            'thumbnail_url' => $request->thumbnail_url,
+            'duration' => $request->duration,
+            'is_featured' => $request->boolean('is_featured'),
         ]);
 
         return redirect()->route('maintenance.library-website.gallery.show-video-folder', ['id' => $item->folder_id])

@@ -54,6 +54,47 @@
           @enderror
         </div>
 
+        {{-- Video Provider --}}
+        <div>
+          <label for="video_provider" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Video Provider</label>
+          <input type="text" id="video_provider" name="video_provider" value="{{ old('video_provider', $item->video_provider) }}"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+            placeholder="e.g. YouTube, Vimeo">
+          @error('video_provider')
+          <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+          @enderror
+        </div>
+
+        {{-- Thumbnail URL --}}
+        <div>
+          <label for="thumbnail_url" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Thumbnail URL</label>
+          <input type="url" id="thumbnail_url" name="thumbnail_url" value="{{ old('thumbnail_url', $item->thumbnail_url) }}"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500"
+            placeholder="https://img.youtube.com/vi/.../0.jpg">
+          @error('thumbnail_url')
+          <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+          @enderror
+        </div>
+
+        {{-- Duration --}}
+        <div>
+          <label for="duration" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Duration (seconds)</label>
+          <input type="number" id="duration" name="duration" value="{{ old('duration', $item->duration) }}" min="0"
+            class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+          @error('duration')
+          <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+          @enderror
+        </div>
+
+        {{-- Featured Status --}}
+        <div class="flex items-center mt-6">
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" name="is_featured" value="1" class="sr-only peer" {{ old('is_featured', $item->is_featured) ? 'checked' : '' }}>
+            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
+            <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Featured Video</span>
+          </label>
+        </div>
+
         {{-- Description --}}
         <div class="md:col-span-2">
           <label for="description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>

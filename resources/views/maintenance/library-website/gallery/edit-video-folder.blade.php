@@ -14,7 +14,7 @@
     </div>
     <hr class="h-px my-3 bg-gray-200 border-0 dark:bg-gray-700">
 
-    <form action="{{ route('maintenance.library-website.gallery.update-video-folder') }}" method="POST" class="max-w-4xl mx-auto">
+    <form action="{{ route('maintenance.library-website.gallery.update-video-folder') }}" method="POST" enctype="multipart/form-data" class="max-w-4xl mx-auto">
       @csrf
       @method('PUT')
       <input type="hidden" name="id" value="{{ $folder->id }}">
@@ -40,6 +40,25 @@
           @error('sort_order')
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
           @enderror
+        </div>
+
+        {{-- Thumbnail --}}
+        <div>
+          <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white" for="thumbnail">Thumbnail Image</label>
+          <input class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 dark:text-gray-400 focus:outline-none dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400" aria-describedby="thumbnail_help" id="thumbnail" name="thumbnail" type="file" accept="image/jpeg,image/png,image/jpg,image/gif,image/webp">
+          <div class="mt-1 text-sm text-gray-500 dark:text-gray-300" id="thumbnail_help">Optional. Upload a new image to replace the current thumbnail.</div>
+          @error('thumbnail')
+          <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+          @enderror
+        </div>
+
+        {{-- Active Status --}}
+        <div class="flex items-center mt-6">
+          <label class="relative inline-flex items-center cursor-pointer">
+            <input type="checkbox" name="is_active" value="1" class="sr-only peer" {{ old('is_active', $folder->is_active ?? true) ? 'checked' : '' }}>
+            <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary-600"></div>
+            <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Active</span>
+          </label>
         </div>
 
         {{-- Description --}}
