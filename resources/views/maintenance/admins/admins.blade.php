@@ -6,8 +6,8 @@
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
       <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Admins</h5>
       <div class="flex flex-col sm:flex-row items-center gap-4 mt-4 sm:mt-0">
-        <form action="{{ route('maintenance.search-admin') }}" method="POST" class="flex items-center w-full sm:w-auto auto-search-form">
-          @csrf
+        <form action="{{ route('maintenance.admins') }}" method="GET" class="flex items-center w-full sm:w-auto auto-search-form">
+          <input type="hidden" name="perPage" value="{{ $perPage }}">
           <label for="search" class="sr-only">Search</label>
           <div class="relative w-full">
             <div class="absolute inset-y-0 start-0 flex items-center ps-3 pointer-events-none">

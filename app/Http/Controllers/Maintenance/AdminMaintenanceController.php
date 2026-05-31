@@ -23,7 +23,7 @@ class AdminMaintenanceController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->input('search', '');
+        $search = trim((string) $request->input('search', ''));
         $perPage = $request->input('perPage', 10);
 
         Log::info('Admin Maintenance: List page accessed', [
@@ -44,13 +44,32 @@ class AdminMaintenanceController extends Controller
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
 
-        $admins = User::join('model_has_roles', 'usr_users.id', '=', 'model_has_roles.model_id')
+        $query = User::join('model_has_roles', 'usr_users.id', '=', 'model_has_roles.model_id')
             ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
             ->where('model_has_roles.model_type', 'App\Models\User')
             ->where('roles.guard_name', 'admin')
-            ->select('usr_users.*', 'roles.name as role')
-            ->paginate($perPage)
+            ->select('usr_users.*', 'roles.name as role');
+
+        if ($search !== '') {
+            $query->where(function ($q) use ($search) {
+                $searchTerms = array_filter(explode(' ', strtolower($search)));
+                $q->where(function ($q1) use ($searchTerms) {
+                    foreach ($searchTerms as $term) {
+                        $q1->where(function ($sub) use ($term) {
+                            $sub->where('usr_users.first_name', 'like', '%' . $term . '%')
+                                ->orWhere('usr_users.middle_name', 'like', '%' . $term . '%')
+                                ->orWhere('usr_users.last_name', 'like', '%' . $term . '%')
+                                ->orWhere('usr_users.email', 'like', '%' . $term . '%')
+                                ->orWhere('usr_users.rfid', 'like', '%' . $term . '%');
+                        });
+                    }
+                })->orWhere('roles.name', 'like', '%' . $search . '%');
+            });
+        }
+
+        $admins = $query->paginate($perPage)
             ->appends(['search' => $search, 'perPage' => $perPage]);
+
         return view('maintenance.admins.admins', compact('admins', 'search', 'perPage'));
     }
     /**
@@ -145,42 +164,22 @@ class AdminMaintenanceController extends Controller
      */
     public function search_admin(Request $request)
     {
-        $users = new User();
-        $search = strtolower($request->input('search'));
+        $search = $request->input('search', '');
         $perPage = $request->input('perPage', 10);
 
-        Log::info('Admin Maintenance: Searching existing admins', [
+        Log::info('Admin Maintenance: Redirecting search query to index', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name,
             'search_query' => $search,
+            'per_page' => $perPage,
             'ip_address' => $request->ip(),
             'timestamp' => now(),
         ]);
 
-        $admins = User::join('model_has_roles', $users->getTable() . '.id', '=', 'model_has_roles.model_id')
-            ->join('roles', 'model_has_roles.role_id', '=', 'roles.id')
-            ->join('privileges', $users->getTable() . '.privilege_id', '=', 'privileges.id')
-            ->where('model_has_roles.model_type', 'App\Models\User')
-            ->where('roles.guard_name', 'admin')
-            ->where('privileges.user_type', '!=', 'visitor')
-            ->where(function ($query) use ($search) {
-                $searchTerms = array_filter(explode(' ', $search));
-                $query->where(function ($q1) use ($searchTerms) {
-                    foreach ($searchTerms as $term) {
-                        $q1->where(function ($sub) use ($term) {
-                            $sub->where('usr_users.first_name', 'like', '%' . $term . '%')
-                                ->orWhere('usr_users.middle_name', 'like', '%' . $term . '%')
-                                ->orWhere('usr_users.last_name', 'like', '%' . $term . '%')
-                                ->orWhere('usr_users.email', 'like', '%' . $term . '%')
-                                ->orWhere('usr_users.rfid', 'like', '%' . $term . '%');
-                        });
-                    }
-                })->orWhere('roles.name', 'like', '%' . $search . '%');
-            })
-            ->select('usr_users.*', 'roles.name as role')
-            ->paginate($perPage)
-            ->appends(['search' => $search, 'perPage' => $perPage]);
-        return view('maintenance.admins.admins', compact('admins', 'search', 'perPage'));
+        return redirect()->route('maintenance.admins', [
+            'search' => $search,
+            'perPage' => $perPage,
+        ]);
     }
     /**
      * Stores a new admin user in the system.
