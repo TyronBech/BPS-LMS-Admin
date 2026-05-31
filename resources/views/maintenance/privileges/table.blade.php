@@ -85,16 +85,16 @@
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
               @enderror
             </div>
-            <div>
+            <div id="max_book_allowed_edit_container">
               <label for="max_book_allowed_update" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Max Books Allowed:</label>
-            <input type="number" id="max_book_allowed_update" name="max_book_allowed_update" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 5" min="0" required>
+              <input type="number" id="max_book_allowed_update" name="max_book_allowed_update" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 5" min="0" required>
               @error('max_book_allowed_update')
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
               @enderror
             </div>
-            <div>
+            <div id="renewal_limit_edit_container">
               <label for="renewal_limit_update" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Renewal Limit:</label>
-            <input type="number" id="renewal_limit_update" name="renewal_limit_update" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 5" min="0" required>
+              <input type="number" id="renewal_limit_update" name="renewal_limit_update" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 5" min="0" required>
               @error('renewal_limit_update')
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
               @enderror
@@ -146,18 +146,40 @@
       category: document.getElementById('edit_category'),
       duration_type: document.getElementById('edit_duration_type'),
       max_book_allowed: document.getElementById('max_book_allowed_update'),
-      renewal_limit: document.getElementById('renewal_limit_update')
+      renewal_limit: document.getElementById('renewal_limit_update'),
+      max_book_container: document.getElementById('max_book_allowed_edit_container'),
+      renewal_limit_container: document.getElementById('renewal_limit_edit_container')
     };
+
+    function updateEditModalFields() {
+      if (!editModal.duration_type) return;
+      const val = editModal.duration_type.value;
+      if (val === 'unlimited' || val === 'none') {
+        if (editModal.max_book_container) editModal.max_book_container.classList.add('hidden');
+        if (editModal.renewal_limit_container) editModal.renewal_limit_container.classList.add('hidden');
+        if (editModal.max_book_allowed) editModal.max_book_allowed.value = 0;
+        if (editModal.renewal_limit) editModal.renewal_limit.value = 0;
+      } else {
+        if (editModal.max_book_container) editModal.max_book_container.classList.remove('hidden');
+        if (editModal.renewal_limit_container) editModal.renewal_limit_container.classList.remove('hidden');
+      }
+    }
+
+    if (editModal.duration_type) {
+      editModal.duration_type.addEventListener('change', updateEditModalFields);
+    }
 
     editButtons.forEach(btn => {
       btn.addEventListener('click', function() {
         const privilege = JSON.parse(this.dataset.privilege);
-        editModal.id.value = privilege.id;
-        editModal.user_type.value = privilege.user_type;
-        editModal.category.value = privilege.category;
-        editModal.duration_type.value = privilege.duration_type;
-        editModal.max_book_allowed.value = privilege.max_book_allowed;
-        editModal.renewal_limit.value = privilege.renewal_limit;
+        if (editModal.id) editModal.id.value = privilege.id;
+        if (editModal.user_type) editModal.user_type.value = privilege.user_type;
+        if (editModal.category) editModal.category.value = privilege.category;
+        if (editModal.duration_type) editModal.duration_type.value = privilege.duration_type;
+        if (editModal.max_book_allowed) editModal.max_book_allowed.value = privilege.max_book_allowed;
+        if (editModal.renewal_limit) editModal.renewal_limit.value = privilege.renewal_limit;
+        
+        updateEditModalFields();
       });
     });
 
@@ -165,7 +187,7 @@
     const deleteInputID = document.getElementById('delete_privilege_id');
     deleteButtons.forEach(btn => {
       btn.addEventListener('click', function() {
-        deleteInputID.value = this.value;
+        if (deleteInputID) deleteInputID.value = this.value;
       });
     });
   });
