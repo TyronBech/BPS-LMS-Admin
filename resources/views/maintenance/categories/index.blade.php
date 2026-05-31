@@ -275,6 +275,18 @@
             <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
             @enderror
           </div>
+          <div>
+            <label for="educational_level" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Educational Level:</label>
+            <select id="educational_level" name="educational_level" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
+              <option value="">-- Select Educational Level --</option>
+              <option value="elementary" {{ old('educational_level') === 'elementary' ? 'selected' : '' }}>Elementary</option>
+              <option value="junior high school" {{ old('educational_level') === 'junior high school' ? 'selected' : '' }}>Junior High School</option>
+              <option value="senior high school" {{ old('educational_level') === 'senior high school' ? 'selected' : '' }}>Senior High School</option>
+            </select>
+            @error('educational_level')
+            <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+            @enderror
+          </div>
           <div class="flex w-full items-center space-x-4">
             <div class="flex items-center space-x-2">
               <input type="hidden" name="can_borrow" id="can_borrow_add_input" value="{{ old('can_borrow', '1') }}">
@@ -386,6 +398,15 @@
               <option value="E-books">E-books</option>
             </select>
           </div>
+          <div>
+            <label for="edit_educational_level" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Educational Level:</label>
+            <select name="educational_level" id="edit_educational_level" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
+              <option value="">-- Select Educational Level --</option>
+              <option value="elementary">Elementary</option>
+              <option value="junior high school">Junior High School</option>
+              <option value="senior high school">Senior High School</option>
+            </select>
+          </div>
           <div class="flex w-full items-center space-x-4">
             <div class="flex items-center space-x-2">
               <input type="hidden" name="can_borrow_edit" id="can_borrow_edit_input" value="1">
@@ -454,6 +475,7 @@
       legend: document.getElementById('edit_legend'),
       name: document.getElementById('edit_name'),
       categoryType: document.getElementById('edit_category_type'),
+      educationalLevel: document.getElementById('edit_educational_level'),
       duration: document.getElementById('borrow_duration_days_edit'),
       hiddenInput: document.getElementById('can_borrow_edit_input'),
       switchEl: document.getElementById('can_borrow_edit_switch'),
@@ -507,6 +529,7 @@
         editModal.legend.value = category.legend;
         editModal.name.value = category.name;
         if (editModal.categoryType) editModal.categoryType.value = category.category_type ?? 'Print';
+        if (editModal.educationalLevel) editModal.educationalLevel.value = category.educational_level ?? '';
         if (editModal.hiddenInput) editModal.hiddenInput.value = isBorrowable ? '1' : '0';
         if (editModal.duration) editModal.duration.value = isBorrowable ? categoryDuration : 0;
         updateEditSwitchUI();

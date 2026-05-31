@@ -55,6 +55,8 @@
 </div>
 <form action="{{ route('report.summary-export') }}" method="POST">
   @csrf
+  <input type="hidden" name="educational_level" value="{{ $educationalLevel }}">
+  <input type="hidden" name="category_type" value="{{ $categoryType }}">
   @if(auth()->user()->can(PermissionsEnum::CREATE_REPORTS))
   <div class="flex flex-col sm:flex-row justify-end gap-2 mt-4">
     <button type="submit" name="submit" value="pdf" class="w-full sm:w-auto bg-red-500 hover:bg-red-700 active:bg-red-900 text-white font-bold py-2 px-4 rounded">PDF</button>

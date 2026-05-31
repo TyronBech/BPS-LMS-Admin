@@ -23,7 +23,7 @@ class Category extends Model
         'newly_acquired',
         'present_inventory',
         'borrow_duration_days',
-
+        'educational_level',
     ];
 
     public function books(): HasMany

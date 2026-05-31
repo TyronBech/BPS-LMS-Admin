@@ -185,8 +185,7 @@
     // Dismiss overlay click handler
     if (btnDismiss) {
         btnDismiss.addEventListener('click', function () {
-            overlay.classList.add('hidden');
-            reEnablePage();
+            window.location.href = INDEX_ROUTE;
         });
     }
 

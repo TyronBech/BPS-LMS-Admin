@@ -27,17 +27,22 @@ class CategoriesController extends Controller
      * @param  Request $request
      * @return \Illuminate\Contracts\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
+        $educationalLevel = $request->input('educational_level', 'All');
+        $categoryType     = $request->input('category_type', 'All');
+
         Log::info('Categories Report: Page accessed', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'educational_level' => $educationalLevel,
+            'category_type' => $categoryType,
             'ip_address' => request()->ip(),
             'timestamp' => now(),
         ]);
 
-        $data = $this->getSummaryCollectionData();
-        return view('report.categories.categories', compact('data'));
+        $data = $this->getSummaryCollectionData($educationalLevel, $categoryType);
+        return view('report.categories.categories', compact('data', 'educationalLevel', 'categoryType'));
     }
     /**
      * Handles the export request for categories report.
@@ -51,20 +56,25 @@ class CategoriesController extends Controller
      */
     public function export(Request $request)
     {
+        $educationalLevel = $request->input('educational_level', 'All');
+        $categoryType     = $request->input('category_type', 'All');
+
         Log::info('Categories Report: Export requested', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
             'export_type' => $request->input('submit'),
+            'educational_level' => $educationalLevel,
+            'category_type' => $categoryType,
             'ip_address' => $request->ip(),
             'timestamp' => now(),
         ]);
 
-        $data = $this->getSummaryCollectionData();
+        $data = $this->getSummaryCollectionData($educationalLevel, $categoryType);
         if ($request->input('submit') == 'pdf') {
-            $this->generatePDF($data);
+            $this->generatePDF($data, $educationalLevel, $categoryType);
             return redirect()->back()->with('toast-success', 'PDF generated successfully');
         } else if ($request->input('submit') == 'excel') {
-            $this->exportExcel($data);
+            $this->exportExcel($data, $educationalLevel, $categoryType);
             return redirect()->back()->with('toast-success', 'Excel generated successfully');
         }
 
@@ -82,14 +92,26 @@ class CategoriesController extends Controller
      *
      * @return void
      */
-    private function generatePDF(Collection $data)
+    private function generatePDF(Collection $data, $educationalLevel = 'All', $categoryType = 'All')
     {
         ini_set('memory_limit', '2048M');
         ini_set('max_execution_time', 300);
 
         $settings = UISetting::first() ?? new UISetting();
+        $titlePrefix = 'Summary of ' . ($settings->org_initial ?? 'BPS') . ' Collections Report';
+        if ($educationalLevel !== 'All' || $categoryType !== 'All') {
+            $filters = [];
+            if ($educationalLevel !== 'All') {
+                $filters[] = 'Level: ' . ucwords($educationalLevel);
+            }
+            if ($categoryType !== 'All') {
+                $filters[] = 'Type: ' . $categoryType;
+            }
+            $titlePrefix .= ' (' . implode(', ', $filters) . ')';
+        }
+
         $items = [
-            'title'         => 'Summary of ' . ($settings->org_initial ?? 'BPS') . ' Collections Report',
+            'title'         => $titlePrefix,
             'school'        => $settings->org_name ?? "Bicutan Parochial School, Inc.",
             'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
@@ -115,7 +137,7 @@ class CategoriesController extends Controller
      * @param  Illuminate\Database\Eloquent\Collection $data The data to be exported.
      * @return void
      */
-    private function exportExcel(Collection $data)
+    private function exportExcel(Collection $data, $educationalLevel = 'All', $categoryType = 'All')
     {
         $spreadsheet    = new Spreadsheet();
         $logo           = new Drawing();
@@ -141,7 +163,18 @@ class CategoriesController extends Controller
         $sheet->getPageSetup()->setFitToWidth(1);
         $sheet->getPageSetup()->setFitToHeight(0);
         $sheet->mergeCells('A6:J6');
-        $sheet->setCellValue('A6', 'Summary of ' . ($settings->org_initial ?? 'BPS') . ' Collections Report');
+        $titlePrefix = 'Summary of ' . ($settings->org_initial ?? 'BPS') . ' Collections Report';
+        if ($educationalLevel !== 'All' || $categoryType !== 'All') {
+            $filters = [];
+            if ($educationalLevel !== 'All') {
+                $filters[] = 'Level: ' . ucwords($educationalLevel);
+            }
+            if ($categoryType !== 'All') {
+                $filters[] = 'Type: ' . $categoryType;
+            }
+            $titlePrefix .= ' (' . implode(', ', $filters) . ')';
+        }
+        $sheet->setCellValue('A6', $titlePrefix);
         $sheet->getStyle('A6:J6')->getFont()->setBold(true);
         $sheet->getStyle('A6:J6')->getFont()->setSize(14);
         $sheet->getStyle('A6:J6')->getAlignment()->setHorizontal('center');
@@ -282,9 +315,9 @@ class CategoriesController extends Controller
      *
      * @return \Illuminate\Database\Eloquent\Collection
      */
-    private function getSummaryCollectionData(): Collection
+    private function getSummaryCollectionData($educationalLevel = 'All', $categoryType = 'All'): Collection
     {
-        return Category::query()
+        $query = Category::query()
             ->select([
                 'bk_categories.legend',
                 'bk_categories.name',
@@ -326,7 +359,15 @@ class CategoriesController extends Controller
                     ->whereNull('bk_books.deleted_at')
                     ->whereColumn('bk_books.category_id', 'bk_categories.id')
                     ->whereRaw('LOWER(bk_books.remarks) = ?', ['discarded']);
-            }, 'discarded')
-            ->get();
+            }, 'discarded');
+
+        if ($educationalLevel !== 'All') {
+            $query->where('bk_categories.educational_level', $educationalLevel);
+        }
+        if ($categoryType !== 'All') {
+            $query->where('bk_categories.category_type', $categoryType);
+        }
+
+        return $query->get();
     }
 }

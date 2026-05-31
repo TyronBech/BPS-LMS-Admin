@@ -15,6 +15,7 @@
         <th scope="col" class="px-6 py-3">Name</th>
         <th scope="col" class="px-6 py-3 hidden sm:table-cell">Legend</th>
         <th scope="col" class="px-6 py-3 hidden md:table-cell">Category Type</th>
+        <th scope="col" class="px-6 py-3 hidden lg:table-cell">Educational Level</th>
         <th scope="col" class="px-6 py-3 hidden md:table-cell">Duration of Borrow (Days)</th>
         <th scope="col" class="px-6 py-3">Borrowable</th>
         <th scope="col" class="px-6 py-3">Actions</th>
@@ -31,6 +32,11 @@
         <td class="px-6 py-4 hidden md:table-cell">
           <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
             {{ $item->category_type ?? 'Print' }}
+          </span>
+        </td>
+        <td class="px-6 py-4 hidden lg:table-cell">
+          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 uppercase">
+            {{ $item->educational_level ?? 'N/A' }}
           </span>
         </td>
         <td class="px-6 py-4 hidden md:table-cell">{{ (int) $item->borrow_duration_days === 0 ? 'Cannot be borrowed' : $item->borrow_duration_days }}</td>
@@ -54,7 +60,7 @@
       </tr>
       @empty
       <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-        <td colspan="5" class="px-6 py-4 text-center">No categories found.</td>
+        <td colspan="7" class="px-6 py-4 text-center">No categories found.</td>
       </tr>
       @endforelse
     </tbody>

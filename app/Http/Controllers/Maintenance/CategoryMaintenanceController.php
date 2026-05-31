@@ -141,6 +141,7 @@ class CategoryMaintenanceController extends Controller
             'name'                      => 'required|string|max:50',
             'legend'                    => 'required|string|max:255',
             'category_type'             => 'required|in:Print,Non-print,E-books',
+            'educational_level'         => 'required|in:elementary,junior high school,senior high school',
             'can_borrow'                => 'sometimes|boolean',
             'borrow_duration_days_add'  => 'required_if:can_borrow,1|nullable|integer|min:1|max:999',
         ]);
@@ -172,6 +173,7 @@ class CategoryMaintenanceController extends Controller
                 'legend'                => $request->input('legend'),
                 'category_type'         => $request->input('category_type'),
                 'borrow_duration_days'  => $borrowDurationDays,
+                'educational_level'     => $request->input('educational_level'),
             ]);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
@@ -222,6 +224,7 @@ class CategoryMaintenanceController extends Controller
             'name'                      => 'required|string|max:50',
             'legend'                    => 'required|string|max:255',
             'category_type'             => 'required|in:Print,Non-print,E-books',
+            'educational_level'         => 'required|in:elementary,junior high school,senior high school',
             'can_borrow_edit'           => 'sometimes|boolean',
             'borrow_duration_days_edit' => 'required_if:can_borrow_edit,1|nullable|integer|min:1|max:999',
         ]);
@@ -244,6 +247,7 @@ class CategoryMaintenanceController extends Controller
             $category->legend               = $request->input('legend');
             $category->category_type        = $request->input('category_type');
             $category->borrow_duration_days = $borrowDurationDays;
+            $category->educational_level    = $request->input('educational_level');
             $category->save();
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
