@@ -69,7 +69,7 @@ class BookMaintenanceController extends Controller
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
 
-        $categories = Category::select('id', 'name')->get();
+        $categories = Category::select('id', 'name')->orderBy('name')->get();
         $book_types = $this->extract_enums((new Book())->getTable(), 'book_type');
         $booksQuery = Book::with(['category', 'subjectAccessCodes']);
 
@@ -130,6 +130,7 @@ class BookMaintenanceController extends Controller
         $books = new Book();
         $categories     = Category::select('id', 'name', 'legend', 'category_type')
             ->with(['lastAccession'])
+            ->orderBy('name')
             ->get();
         $condition      = $this->extract_enums($books->getTable(), 'condition_status');
         $availability   = $this->extract_enums($books->getTable(), 'availability_status');
@@ -447,7 +448,7 @@ class BookMaintenanceController extends Controller
             $this->export_call_numbers($request);
         }
         // Fetch categories for dropdown
-        $categories = Category::select('id', 'name')->get();
+        $categories = Category::select('id', 'name')->orderBy('name')->get();
         $book_types = $this->extract_enums((new Book())->getTable(), 'book_type');
 
         // Validate category only if present

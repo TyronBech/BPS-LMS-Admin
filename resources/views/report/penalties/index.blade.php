@@ -57,7 +57,7 @@
           <option value="All" {{ ($subjectId ?? 'All') == 'All' ? 'selected' : '' }}>All Subjects</option>
           @foreach($subjects as $subject)
           <option value="{{ $subject->id }}" {{ ($subjectId ?? '') == $subject->id ? 'selected' : '' }}>
-            {{ $subject->access_code }} - {{ $subject->description }}
+            {{ $subject->access_code }}{{ $subject->description ? ' - ' . $subject->description : '' }}
           </option>
           @endforeach
         </select>

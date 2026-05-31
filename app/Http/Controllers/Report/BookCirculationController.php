@@ -59,7 +59,7 @@ class BookCirculationController extends Controller
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
 
-        $categories     = Category::all();
+        $categories     = Category::orderBy('name')->get();
         $subjects       = SubjectAccessCode::orderBy('access_code')->get();
         $books          = new Book();
         $availability   = $this->extract_enums($books->getTable(), 'availability_status');
@@ -132,7 +132,7 @@ class BookCirculationController extends Controller
             return redirect()->route('report.accession-list')->with('toast-success', 'Successfully exported to Excel');
         }
         $data = $this->generateData($request, $books, false);
-        $categories = Category::all();
+        $categories = Category::orderBy('name')->get();
         $subjects = SubjectAccessCode::orderBy('access_code')->get();
         $availability = $this->extract_enums($books->getTable(), 'availability_status');
         if (!count($data)) {
