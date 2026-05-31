@@ -395,6 +395,7 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
 
     Route::prefix('backup')->middleware(BackupAuthentication::class)->controller(BackupController::class)->group(function () {
         Route::get('backup', 'index')->name('backup.index');
+        Route::get('status', 'status')->name('backup.status');
         Route::post('create', 'create')->name('backup.create');
         Route::post('download', 'download')->name('backup.download');
         Route::delete('delete', 'destroy')->name('backup.destroy');

@@ -5,6 +5,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 
 class DatabaseBackup extends Command
 {
@@ -27,8 +28,16 @@ class DatabaseBackup extends Command
      */
     public function handle()
     {
+        if (Cache::get('backup_in_progress')) {
+            $this->warn('A backup is already in progress. Scheduled backup skipped.');
+            Log::warning('Automated backup skipped: another backup is currently running.');
+            return 1;
+        }
+
         $this->info('Starting database and logs backup...');
         Log::info('Automated backup started (DB + Logs).');
+
+        Cache::put('backup_in_progress', true, 600);
 
         try {
             Artisan::call('backup:custom');
@@ -49,6 +58,8 @@ class DatabaseBackup extends Command
 
             $this->error('Backup failed: ' . $e->getMessage());
             return 1;
+        } finally {
+            Cache::forget('backup_in_progress');
         }
     }
 }

@@ -15,6 +15,8 @@ use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Cache;
+use App\Jobs\CreateBackupJob;
 use ZipArchive;
 
 class BackupController extends Controller
@@ -123,6 +125,15 @@ class BackupController extends Controller
             return back()->with('toast-error', 'Invalid request!');
         }
 
+        // Check if backup is already in progress
+        if (Cache::get('backup_in_progress')) {
+            Log::warning('Backup: Attempted to start backup while another was in progress', [
+                'user_id' => Auth::guard('admin')->id(),
+                'ip_address' => $request->ip(),
+            ]);
+            return back()->with('toast-warning', 'A system backup is already in progress. Please wait.');
+        }
+
         // Ensure backup target directory exists
         $dir = storage_path('app/backups/');
         if (!is_dir($dir)) {
@@ -136,50 +147,31 @@ class BackupController extends Controller
         }
 
         try {
-            Log::info('Backup: Starting system backup process (DB + Logs)', [
-                'user_id' => Auth::guard('admin')->id(),
-                'timestamp' => now(),
-            ]);
-
-            Artisan::call('backup:custom');
-            $output = Artisan::output();
-
-            Log::debug('Backup: Artisan backup command output', [
-                'output' => $output,
-                'user_id' => Auth::guard('admin')->id(),
-            ]);
-
-            if (str_contains($output, 'Backup failed') || str_contains($output, 'failed')) {
-                Log::error('Backup: System backup failed', [
-                    'output' => $output,
-                    'user_id' => Auth::guard('admin')->id(),
-                    'timestamp' => now(),
-                ]);
-
-                throw new Exception($output);
-            }
-
             $admin = Auth::guard('admin')->user();
-            Notification::send($admin, new \App\Notifications\BackupSucceeded($admin->first_name . ' ' . $admin->last_name));
 
-            Log::info('Backup: System backup completed successfully', [
+            Log::info('Backup: Dispatching CreateBackupJob to queue', [
                 'user_id' => $admin->id,
                 'user_name' => $admin->full_name,
-                'notification_sent' => true,
                 'timestamp' => now(),
             ]);
 
-            return back()->with('toast-success', 'System backup created successfully!');
+            // Set the cache lock immediately so subsequent clicks are disabled
+            Cache::put('backup_in_progress', true, 600);
+
+            CreateBackupJob::dispatch($admin->id);
+
+            return back()->with('toast-success', 'System backup job has been queued! You will receive an email once it is complete.');
 
         } catch (Exception $e) {
-            Log::error('Backup: System backup failed with exception', [
+            Cache::forget('backup_in_progress');
+            Log::error('Backup: Failed to dispatch backup job', [
                 'error_message' => $e->getMessage(),
                 'error_trace' => $e->getTraceAsString(),
                 'user_id' => Auth::guard('admin')->id(),
                 'timestamp' => now(),
             ]);
 
-            return back()->with('toast-error', 'Backup failed!');
+            return back()->with('toast-error', 'Failed to queue backup job.');
         }
     }
 
@@ -541,6 +533,16 @@ class BackupController extends Controller
 
             return back()->with('toast-error', $this->friendlyErrorMessage($e));
         }
+    }
+
+    /**
+     * Get the current backup progress status.
+     */
+    public function status()
+    {
+        return response()->json([
+            'in_progress' => (bool) Cache::get('backup_in_progress')
+        ]);
     }
 
     /**

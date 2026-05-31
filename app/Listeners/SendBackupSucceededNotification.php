@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Notification;
 use Spatie\Backup\Events\BackupWasSuccessful;
 use App\Notifications\BackupSucceeded;
 use Illuminate\Support\Facades\Auth;
-use App\Models\Admin;
+use App\Models\User;
 
 class SendBackupSucceededNotification
 {
@@ -14,7 +14,7 @@ class SendBackupSucceededNotification
     {
         $admin = Auth::guard('admin')->user();
 
-        if (!$admin || !($admin instanceof Admin)) {
+        if (!$admin || !($admin instanceof User)) {
             return;
         }
 

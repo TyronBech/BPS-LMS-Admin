@@ -64,7 +64,7 @@ return [
             'engine' => null,
             'dump' => [
                 'dump_binary_path' => env('MYSQL_DUMP_PATH', ''),
-                'use_single_transaction',
+                'use_single_transaction' => true,
                 'timeout' => 60 * 5,
                 'add_extra_options' => '--routines --triggers --events',
             ],

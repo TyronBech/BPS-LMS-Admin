@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Maintenance;
 
 use App\Http\Controllers\Controller;
+use App\Enum\RolesEnum;
 use App\Models\Reservation;
 use App\Models\SystemSetting;
 use Illuminate\Http\Request;
@@ -51,12 +52,12 @@ class ReservationStatus extends Controller
     {
         $user = Auth::guard('admin')->user();
 
-        // 1. Authorization Check (Privilege ID 1 = Admin, 2 = Superadmin)
-        if (!$user || ($user->privilege_id !== 1 && $user->privilege_id !== 2)) {
+        // 1. Authorization Check — use Spatie role system (consistent with the rest of the app)
+        if (!$user || (!$user->hasRole(RolesEnum::SUPER_ADMIN) && !$user->hasRole(RolesEnum::ADMIN))) {
             Log::warning('Reservation Status: Unauthorized toggle attempt', [
                 'user_id' => $user ? $user->id : 'guest',
                 'user_name' => $user ? ($user->full_name ?? $user->first_name) : 'guest',
-                'privilege_id' => $user ? $user->privilege_id : null,
+                'roles' => $user ? $user->getRoleNames() : [],
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);

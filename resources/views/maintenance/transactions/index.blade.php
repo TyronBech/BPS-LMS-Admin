@@ -5,7 +5,7 @@
   <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Maintenance</h1>
   <div class="w-full p-4 sm:p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
-      <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Book Circulations</h5>
+      <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Material Circulations</h5>
     </div>
     <hr class="h-px my-3 bg-gray-200 border-0 dark:bg-gray-700">
     <div id="table-container">
