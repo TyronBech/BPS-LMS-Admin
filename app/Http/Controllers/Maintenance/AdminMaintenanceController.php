@@ -24,7 +24,8 @@ class AdminMaintenanceController extends Controller
     public function index(Request $request)
     {
         $search = trim((string) $request->input('search', ''));
-        $perPage = $request->input('perPage', 10);
+        $perPage = $request->input('perPage');
+        $perPage = (is_numeric($perPage) && $perPage > 0) ? (int) $perPage : 10;
 
         Log::info('Admin Maintenance: List page accessed', [
             'user_id' => Auth::guard('admin')->id(),
@@ -103,9 +104,10 @@ class AdminMaintenanceController extends Controller
     public function search_user(Request $request)
     {
         $search = strtolower($request->input('user-info'));
-        $perPage = $request->input('perPage', 10);
+        $perPage = $request->input('perPage');
+        $perPage = (is_numeric($perPage) && $perPage > 0) ? (int) $perPage : 10;
 
-        Log::info('Admin Maintenance: Searching for user to promote', [
+        Log::info('Admin Maintenance: Searching for users to promote', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name,
             'search_query' => $search,
@@ -122,7 +124,7 @@ class AdminMaintenanceController extends Controller
         }
 
         $searched = User::join('privileges', 'usr_users.privilege_id', '=', 'privileges.id')
-            ->select('usr_users.id', 'first_name', 'middle_name', 'last_name', 'email', 'rfid')
+            ->select('usr_users.id', 'first_name', 'middle_name', 'last_name', 'email', 'rfid', 'privileges.category', 'privileges.user_type')
             ->where('privileges.user_type', '!=', 'visitor')
             ->where(function ($query) use ($search) {
                 $searchTerms = array_filter(explode(' ', $search));
@@ -137,7 +139,8 @@ class AdminMaintenanceController extends Controller
                 }
             })
             ->doesntHave('roles')
-            ->first();
+            ->limit(20)
+            ->get();
         $roles = Role::where('guard_name', 'admin')->get();
         return view('maintenance.admins.create', compact('searched', 'roles', 'perPage'));
     }
