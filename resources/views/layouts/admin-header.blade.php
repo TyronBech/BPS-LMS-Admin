@@ -181,6 +181,17 @@
                   </a>
                 </li>
                 @endcan
+                @can(PermissionsEnum::IMPORT_USERS)
+                <li>
+                  <a href="{{ route('import.import-user-images') }}" class="flex pl-2 py-2 hover:bg-tertiary-100 dark:text-white dark:hover:bg-tertiary-700">
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                      <path fill-rule="evenodd" d="M13 10a1 1 0 0 1 1-1h.01a1 1 0 1 1 0 2H14a1 1 0 0 1-1-1Z" clip-rule="evenodd"/>
+                      <path fill-rule="evenodd" d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6Zm6.979 3.979a1 1 0 0 0-1.292.293L4 15.618V17a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.382l-3.294-4.603a1 1 0 0 0-1.625.001L12.218 15l-2.24-3.022a1 1 0 0 0-.999-.999Z" clip-rule="evenodd"/>
+                    </svg>
+                    <span class="ms-2">User Images</span>
+                  </a>
+                </li>
+                @endcan
               </ul>
             </div>
           </li>

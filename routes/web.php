@@ -12,6 +12,7 @@ use App\Http\Controllers\Report\BookCirculationController;
 use App\Http\Controllers\Import\StudentImportController;
 use App\Http\Controllers\Import\MaterialImportController;
 use App\Http\Controllers\Import\FacultyStaffImportController;
+use App\Http\Controllers\Import\UserImageImportController;
 use App\Http\Controllers\Maintenance\AdminMaintenanceController;
 use App\Http\Controllers\Maintenance\BookMaintenanceController;
 use App\Http\Controllers\Maintenance\SubjectMaintenanceController;
@@ -205,6 +206,13 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
             Route::post('store-materials', 'store')->name('import.store-materials');
             Route::get('materials/download-template', 'downloadTemplate')->name('import.download-materials-template');
             Route::get('materials/import-status/{id}', 'status')->name('import.status-materials');
+        });
+
+        Route::controller(UserImageImportController::class)->middleware(StudentImportAuthentication::class)->group(function () {
+            Route::get('user-images', 'index')->name('import.import-user-images');
+            Route::match(['get', 'post'], 'upload-user-images', 'upload')->name('import.upload-user-images');
+            Route::post('store-user-images', 'store')->name('import.store-user-images');
+            Route::get('user-images/import-status/{id}', 'status')->name('import.status-user-images');
         });
     });
 
