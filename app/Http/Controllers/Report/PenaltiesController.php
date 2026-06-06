@@ -645,8 +645,8 @@ class PenaltiesController extends Controller
         // Paid collectible is what was collected (paid + discounted totals)
         $summary['paid_collectible'] = $summary['paid_amount'];
 
-        // Unpaid collectible per your rule: waived + unpaid + discount amount
-        $summary['unpaid_collectible'] = round($summary['waived_amount'] + $summary['unpaid_amount'] + $summary['discounted_amount'], 2);
+        // Unpaid collectible is the remaining outstanding amount (Total Collectible - Paid Collectible)
+        $summary['unpaid_collectible'] = round($summary['total_collectible'] - $summary['paid_collectible'], 2);
 
         // Keep other_amount separate; non-paid related total may include other amounts if desired
         $summary['non_paid_related_total'] = round($summary['unpaid_collectible'] + $summary['other_amount'], 2);

@@ -91,6 +91,10 @@
           </div>
 
           <div class="grid grid-cols-2 py-2 border-b border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white mt-1">
+            <span class="text-base sm:text-lg font-semibold">Total Collectible</span>
+            <span class="text-base sm:text-lg font-semibold text-right">₱ {{ number_format($summary['total_collectible'] ?? 0, 2) }}</span>
+          </div>
+          <div class="grid grid-cols-2 py-2 border-b border-gray-200 dark:border-gray-700 text-gray-900 dark:text-white">
             <span class="text-base sm:text-lg font-semibold">Paid Collectible</span>
             <span class="text-base sm:text-lg font-semibold text-right">₱ {{ number_format($summary['paid_collectible'] ?? 0, 2) }}</span>
           </div>

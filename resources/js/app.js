@@ -329,7 +329,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let debounceTimer;
 
         inputs.forEach(input => {
-            input.addEventListener('input', () => {
+            const triggerSearch = () => {
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(() => {
                     form.classList.add('skip-loader');
@@ -340,7 +340,11 @@ document.addEventListener("DOMContentLoaded", () => {
                         form.submit();
                     }
                 }, 500);
-            });
+            };
+
+            input.addEventListener('input', triggerSearch);
+            input.addEventListener('change', triggerSearch);
+            input.addEventListener('changeDate', triggerSearch);
         });
 
         selects.forEach(select => {
@@ -440,8 +444,21 @@ document.addEventListener("DOMContentLoaded", () => {
                     if (oldContainer && newContainer) {
                         oldContainer.innerHTML = newContainer.innerHTML;
                         
-                        // Clear the form inputs visually
-                        form.querySelectorAll('input[type="text"], input[type="search"]').forEach(inp => inp.value = '');
+                        // Clear the form inputs visually and reset datepicker instances
+                        form.querySelectorAll('input[type="text"], input[type="search"]').forEach(inp => {
+                            inp.value = '';
+                            if (inp._datepicker) {
+                                inp._datepicker.clearSelection();
+                            }
+                        });
+
+                        // Clear any date-rangepickers
+                        form.querySelectorAll('[date-rangepicker]').forEach(el => {
+                            if (el._dateRangePicker) {
+                                el._dateRangePicker.clearSelection();
+                            }
+                        });
+
                         form.querySelectorAll('select').forEach(sel => sel.selectedIndex = 0);
 
                         if (typeof initFlowbite === 'function') initFlowbite();
@@ -455,6 +472,22 @@ document.addEventListener("DOMContentLoaded", () => {
             });
         }
     });
+
+    // Global listener to clear datepicker selection when input is cleared manually.
+    // Flowbite Datepicker restores the old date on blur if the instance is not cleared.
+    const clearDatepickerIfEmpty = (e) => {
+        const input = e.target;
+        if (input && (input.hasAttribute('datepicker') || input.closest('[date-rangepicker]'))) {
+            if (input.value.trim() === '') {
+                if (input._datepicker) {
+                    input._datepicker.clearSelection();
+                }
+            }
+        }
+    };
+    document.addEventListener('input', clearDatepickerIfEmpty);
+    document.addEventListener('change', clearDatepickerIfEmpty);
+    document.addEventListener('blur', clearDatepickerIfEmpty, true);
 
     // Restore focus on page load for auto-search
     const focusId = sessionStorage.getItem('autoSearchFocus');
