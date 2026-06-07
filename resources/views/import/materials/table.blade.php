@@ -33,6 +33,10 @@
                         <td class="p-2 space-y-1 align-top">
                             <input type="text" name="materials[{{ $itemIndex }}][accession]" value="{{ $item['accession'] ?? '' }}" class="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7 font-mono" placeholder="Accession">
                             <textarea name="materials[{{ $itemIndex }}][title]" rows="2" class="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 leading-tight" placeholder="Title">{{ $item['title'] ?? '' }}</textarea>
+                            <div>
+                                <label class="text-[9px] font-bold text-slate-400">Parallel Title</label>
+                                <input type="text" name="materials[{{ $itemIndex }}][parallel_title]" value="{{ $item['parallel_title'] ?? '' }}" class="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7" placeholder="Parallel Title">
+                            </div>
                         </td>
 
                         <!-- Authors Group -->
@@ -86,6 +90,10 @@
                                             <input type="text" name="materials[{{ $itemIndex }}][description][Acc Material]" value="{{ $item['description']['Acc Material'] ?? '' }}" class="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7">
                                         </div>
                                     </div>
+                                </div>
+                                <div class="col-span-3">
+                                    <label class="text-[9px] font-bold text-slate-400">Series</label>
+                                    <input type="text" name="materials[{{ $itemIndex }}][description][Series]" value="{{ $item['description']['Series'] ?? '' }}" class="w-full bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 rounded text-[11px] p-1 h-7" placeholder="Series">
                                 </div>
                             </div>
                         </td>

@@ -71,7 +71,20 @@
               <h6 class="text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">Basic Information</h6>
             </div>
             <div class="p-6">
-              <h5 class="text-2xl font-extrabold text-gray-900 dark:text-white mb-6 break-words leading-tight">{{ $book->title }}</h5>
+              <h5 class="text-2xl font-extrabold text-gray-900 dark:text-white mb-2 break-words leading-tight">{{ $book->title }}</h5>
+              @if(!empty($book->parallel_title))
+                <div class="flex flex-wrap gap-2 mb-6">
+                  @foreach(explode(';', $book->parallel_title) as $pTitle)
+                    @if(trim($pTitle) !== '')
+                      <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300 border border-blue-200 dark:border-blue-800">
+                        {{ trim($pTitle) }}
+                      </span>
+                    @endif
+                  @endforeach
+                </div>
+              @else
+                <div class="mb-6"></div>
+              @endif
               <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
                 <div class="flex flex-col">
                   <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Accession Number</span>
@@ -177,7 +190,7 @@
                       <span class="text-base text-gray-900 dark:text-white break-words">{{ $book->description['Description'] }}</span>
                     </div>
                   @endif
-                  @foreach(['Extent', 'Acc Material'] as $key)
+                  @foreach(['Extent', 'Acc Material', 'Series'] as $key)
                     @if(!empty($book->description[$key]))
                       @php $hasDesc = true; @endphp
                       <div class="flex flex-col">

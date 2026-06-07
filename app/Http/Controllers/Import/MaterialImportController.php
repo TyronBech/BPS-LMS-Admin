@@ -240,7 +240,7 @@ class MaterialImportController extends Controller
 
         for ($i = 18; $i < count($rows); $i++) {
             $isEmptyRow = true;
-            for ($col = $baseCol; $col <= $baseCol + 23; $col++) {
+            for ($col = $baseCol; $col <= $baseCol + 25; $col++) {
                 if (isset($rows[$i][$col]) && trim((string) $rows[$i][$col]) !== '') {
                     $isEmptyRow = false;
                     break;
@@ -254,6 +254,7 @@ class MaterialImportController extends Controller
             $data[] = [
                 'accession'            => isset($rows[$i][$baseCol]) ? trim((string) $rows[$i][$baseCol]) : null,
                 'title'                => isset($rows[$i][$baseCol + 1]) ? trim((string) $rows[$i][$baseCol + 1]) : null,
+                'parallel_title'       => isset($rows[$i][$baseCol + 24]) ? trim((string) $rows[$i][$baseCol + 24]) : null,
                 'authors'              => [
                     'Main author'      => isset($rows[$i][$baseCol + 2]) ? trim((string) $rows[$i][$baseCol + 2]) : null,
                     'Corporate author' => isset($rows[$i][$baseCol + 3]) ? trim((string) $rows[$i][$baseCol + 3]) : null,
@@ -270,6 +271,7 @@ class MaterialImportController extends Controller
                     'Reviews'       => isset($rows[$i][$baseCol + 12]) ? trim((string) $rows[$i][$baseCol + 12]) : null,
                     'Extent'        => isset($rows[$i][$baseCol + 13]) ? trim((string) $rows[$i][$baseCol + 13]) : null,
                     'Acc Material'  => isset($rows[$i][$baseCol + 14]) ? trim((string) $rows[$i][$baseCol + 14]) : null,
+                    'Series'        => isset($rows[$i][$baseCol + 25]) ? trim((string) $rows[$i][$baseCol + 25]) : null,
                 ],
                 'place_of_publication' => isset($rows[$i][$baseCol + 15]) ? trim((string) $rows[$i][$baseCol + 15]) : null,
                 'publisher'            => isset($rows[$i][$baseCol + 16]) ? trim((string) $rows[$i][$baseCol + 16]) : null,

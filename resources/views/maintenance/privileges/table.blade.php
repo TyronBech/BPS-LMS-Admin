@@ -25,8 +25,8 @@
         </th>
         <td class="px-6 py-4 hidden sm:table-cell">{{ $item->category }}</td>
         <td class="px-6 py-4 hidden md:table-cell">{{ $item->duration_type }}</td>
-        <td class="px-6 py-4 hidden lg:table-cell">{{ $item->max_book_allowed }}</td>
-        <td class="px-6 py-4 hidden lg:table-cell">{{ $item->renewal_limit }}</td>
+        <td class="px-6 py-4 hidden lg:table-cell">{{ $item->max_book_allowed == 0 ? '-' : $item->max_book_allowed }}</td>
+        <td class="px-6 py-4 hidden lg:table-cell">{{ $item->renewal_limit == 0 ? '-' : $item->renewal_limit }}</td>
         <td class="px-6 py-4">
           <div class="flex items-center space-x-2">
             @can(PermissionsEnum::EDIT_PRIVILEGES)

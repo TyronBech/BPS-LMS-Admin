@@ -247,7 +247,7 @@ class ProcessMaterialImport implements ShouldQueue
 
         for ($i = 18; $i < count($rows); $i++) {
             $isEmptyRow = true;
-            for ($col = $baseCol; $col <= $baseCol + 23; $col++) {
+            for ($col = $baseCol; $col <= $baseCol + 25; $col++) {
                 if (isset($rows[$i][$col]) && trim((string) $rows[$i][$col]) !== '') {
                     $isEmptyRow = false;
                     break;
@@ -261,6 +261,7 @@ class ProcessMaterialImport implements ShouldQueue
             $data[] = [
                 'accession'            => $this->capitalizeAccessionLegend($this->cleanString($rows[$i][$baseCol] ?? null)),
                 'title'                => $this->cleanString($rows[$i][$baseCol + 1] ?? null),
+                'parallel_title'       => $this->cleanString($rows[$i][$baseCol + 24] ?? null),
                 'authors'              => [
                     'Main author'      => $this->cleanString($rows[$i][$baseCol + 2] ?? null),
                     'Corporate author' => $this->cleanString($rows[$i][$baseCol + 3] ?? null),
@@ -277,6 +278,7 @@ class ProcessMaterialImport implements ShouldQueue
                     'Reviews'       => $this->cleanString($rows[$i][$baseCol + 12] ?? null),
                     'Extent'        => $this->cleanString($rows[$i][$baseCol + 13] ?? null),
                     'Acc Material'  => $this->cleanString($rows[$i][$baseCol + 14] ?? null),
+                    'Series'        => $this->cleanString($rows[$i][$baseCol + 25] ?? null),
                 ],
                 'place_of_publication' => $this->cleanString($rows[$i][$baseCol + 15] ?? null),
                 'publisher'            => $this->cleanString($rows[$i][$baseCol + 16] ?? null),
@@ -396,6 +398,7 @@ class ProcessMaterialImport implements ShouldQueue
         
         $fillData = [
             'title'                => $item['title'],
+            'parallel_title'       => $item['parallel_title'] ?? null,
             'authors'              => $item['authors'],
             'description'          => $item['description'],
             'edition'              => $item['edition'] ?? null,

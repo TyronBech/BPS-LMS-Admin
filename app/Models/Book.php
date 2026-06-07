@@ -19,6 +19,7 @@ class Book extends Model
         'accession',
         'call_number',
         'title',
+        'parallel_title',
         'authors',
         'description',
         'edition',

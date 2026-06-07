@@ -30,6 +30,11 @@
               <input type="text" id="title" name="title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Material Title" value="{{ old('title', $book->title) }}" required>
               @error('title') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
+            <div class="md:col-span-2 lg:col-span-12">
+              <label for="parallel_title" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Parallel Title:</label>
+              <input type="text" id="parallel_title" name="parallel_title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Title 1; Title 2 (separated by semicolon)" value="{{ old('parallel_title', $book->parallel_title) }}">
+              @error('parallel_title') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
+            </div>
             <div class="lg:col-span-4">
               <label for="book_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Material Type:</label>
               <select id="book_type" name="book_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
@@ -138,28 +143,32 @@
             <h6 class="text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">Material Description</h6>
           </div>
           <div class="p-5 space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="md:col-span-2">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div class="md:col-span-3">
                 <label for="desc_description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Physical Description:</label>
                 <textarea id="desc_description" name="description[Description]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Physical characteristics">{{ old('description.Description', is_array($book->description['Description'] ?? '') ? implode(', ', $book->description['Description']) : ($book->description['Description'] ?? '')) }}</textarea>
               </div>
               <div>
-                <label for="desc_extent" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Extent (Required):</label>
+                <label for="desc_extent" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Extent: <span class="text-red-500">*</span></label>
                 <input type="text" id="desc_extent" name="description[Extent]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., 200 pages" value="{{ old('description.Extent', is_array($book->description['Extent'] ?? '') ? implode(', ', $book->description['Extent']) : ($book->description['Extent'] ?? '')) }}">
               </div>
               <div>
                 <label for="desc_acc_material" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Acc Material:</label>
                 <input type="text" id="desc_acc_material" name="description[Acc Material]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Accompanying material" value="{{ old('description.Acc Material', is_array($book->description['Acc Material'] ?? '') ? implode(', ', $book->description['Acc Material']) : ($book->description['Acc Material'] ?? '')) }}">
               </div>
-              <div class="md:col-span-2">
+              <div>
+                <label for="desc_series" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Series:</label>
+                <input type="text" id="desc_series" name="description[Series]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Harry Potter Series" value="{{ old('description.Series', is_array($book->description['Series'] ?? '') ? implode(', ', $book->description['Series']) : ($book->description['Series'] ?? '')) }}">
+              </div>
+              <div class="md:col-span-3">
                 <label for="desc_content_notes" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Content Notes:</label>
                 <textarea id="desc_content_notes" name="description[Content notes]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Table of contents, etc.">{{ old('description.Content notes', is_array($book->description['Content notes'] ?? '') ? implode(', ', $book->description['Content notes']) : ($book->description['Content notes'] ?? '')) }}</textarea>
               </div>
-              <div class="md:col-span-2">
+              <div class="md:col-span-3">
                 <label for="desc_abstract" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Abstract:</label>
                 <textarea id="desc_abstract" name="description[Abstract]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Summary or abstract">{{ old('description.Abstract', is_array($book->description['Abstract'] ?? '') ? implode(', ', $book->description['Abstract']) : ($book->description['Abstract'] ?? '')) }}</textarea>
               </div>
-              <div class="md:col-span-2">
+              <div class="md:col-span-3">
                 <label for="desc_reviews" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Reviews:</label>
                 <textarea id="desc_reviews" name="description[Reviews]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Material reviews">{{ old('description.Reviews', is_array($book->description['Reviews'] ?? '') ? implode(', ', $book->description['Reviews']) : ($book->description['Reviews'] ?? '')) }}</textarea>
               </div>
@@ -321,6 +330,7 @@
               </select>
             </div>
             <input type="hidden" name="title" value="{{ $book->title }}">
+            <input type="hidden" name="parallel_title" value="{{ $book->parallel_title }}">
             <input type="hidden" name="book_type" value="{{ $book->book_type }}">
             <input type="hidden" name="edition" value="{{ $book->edition }}">
             @foreach($linkedSubjectIds as $subjectId)

@@ -77,6 +77,7 @@ class BookMaintenanceController extends Controller
             $booksQuery->where(function ($query) use ($search) {
                 $query->where('accession', 'like', "%{$search}%")
                     ->orWhere('title', 'like', "%{$search}%")
+                    ->orWhere('parallel_title', 'like', "%{$search}%")
                     ->orWhere('authors->Main author', 'like', "%{$search}%")
                     ->orWhere('authors->Added authors', 'like', "%{$search}%")
                     ->orWhere('authors->Contributors', 'like', "%{$search}%")
@@ -199,6 +200,7 @@ class BookMaintenanceController extends Controller
             'call_number'       => 'nullable|string|max:50',
             'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:150',
+            'parallel_title'    => 'nullable|string',
             'subject_access_codes' => 'nullable|array',
             'subject_access_codes.*' => 'integer|exists:bk_subject_access_codes,id,deleted_at,NULL',
             'authors'           => 'nullable|array',
@@ -208,6 +210,7 @@ class BookMaintenanceController extends Controller
             'authors.Corporate author' => 'nullable|string',
             'description'       => 'nullable|array',
             'description.Description'    => 'nullable|string',
+            'description.Series'         => 'nullable|string',
             'description.Content notes' => 'nullable|string',
             'description.Abstract'      => 'nullable|string',
             'description.Reviews'       => 'nullable|string',
@@ -280,6 +283,7 @@ class BookMaintenanceController extends Controller
                     'isbn'                  => $request->input('isbn') ?? null,
                     'barcode'               => $barcode->getBarcodeJPG($accession, 'C39', 2, 80, array(0, 0, 0, 0), false),
                     'title'                 => $request->input('title'),
+                    'parallel_title'        => $request->input('parallel_title') ?? null,
                     'authors'               => $request->input('authors') ?? null,
                     'description'           => $request->input('description') ?? null,
                     'edition'               => $request->input('edition') ?? null,
@@ -488,6 +492,7 @@ class BookMaintenanceController extends Controller
             $booksQuery->where(function ($q) use ($search) {
                 $q->where('accession', 'like', '%' . $search . '%')
                     ->orWhere('title', 'like', '%' . $search . '%')
+                    ->orWhere('parallel_title', 'like', '%' . $search . '%')
                     ->orWhere('authors->Main author', 'like', '%' . $search . '%')
                     ->orWhere('authors->Added authors', 'like', '%' . $search . '%')
                     ->orWhere('authors->Contributors', 'like', '%' . $search . '%')
@@ -616,6 +621,7 @@ class BookMaintenanceController extends Controller
             'call_number'       => 'nullable|string|max:50',
             'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:150',
+            'parallel_title'    => 'nullable|string',
             'subject_access_codes' => 'nullable|array',
             'subject_access_codes.*' => 'integer|exists:bk_subject_access_codes,id,deleted_at,NULL',
             'authors'           => 'nullable|array',
@@ -625,6 +631,7 @@ class BookMaintenanceController extends Controller
             'authors.Corporate author' => 'nullable|string',
             'description'       => 'nullable|array',
             'description.Description'    => 'nullable|string',
+            'description.Series'         => 'nullable|string',
             'description.Content notes' => 'nullable|string',
             'description.Abstract'      => 'nullable|string',
             'description.Reviews'       => 'nullable|string',
@@ -678,6 +685,7 @@ class BookMaintenanceController extends Controller
                 'isbn'                  => $request->input('isbn'),
                 'barcode'               => $barcode->getBarcodeJPG($request->input('accession'), 'C39', 2, 80, array(0, 0, 0, 0), false),
                 'title'                 => $request->input('title'),
+                'parallel_title'        => $request->input('parallel_title'),
                 'authors'               => $request->input('authors'),
                 'description'           => $request->input('description'),
                 'edition'               => $request->input('edition'),
@@ -757,6 +765,7 @@ class BookMaintenanceController extends Controller
             'call_number'       => 'nullable|string|max:50',
             'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:150',
+            'parallel_title'    => 'nullable|string',
             'subject_access_codes' => 'nullable|array',
             'subject_access_codes.*' => 'integer|exists:bk_subject_access_codes,id,deleted_at,NULL',
             'authors'           => 'nullable|array',
@@ -766,6 +775,7 @@ class BookMaintenanceController extends Controller
             'authors.Corporate author' => 'nullable|string',
             'description'       => 'nullable|array',
             'description.Description'    => 'nullable|string',
+            'description.Series'         => 'nullable|string',
             'description.Content notes' => 'nullable|string',
             'description.Abstract'      => 'nullable|string',
             'description.Reviews'       => 'nullable|string',
@@ -837,6 +847,7 @@ class BookMaintenanceController extends Controller
                     'isbn'                  => $request->input('isbn') ?? null,
                     'barcode'               => $barcode->getBarcodeJPG($accession, 'C39', 2, 80, array(0, 0, 0, 0), false),
                     'title'                 => $request->input('title'),
+                    'parallel_title'        => $request->input('parallel_title') ?? null,
                     'authors'               => $request->input('authors') ?? null,
                     'description'           => $request->input('description') ?? null,
                     'edition'               => $request->input('edition') ?? null,
