@@ -35,9 +35,19 @@
           </span>
         </td>
         <td class="px-6 py-4 hidden lg:table-cell">
-          <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 uppercase">
-            {{ $item->educational_level ?? 'N/A' }}
-          </span>
+          @if(is_array($item->educational_level) && count($item->educational_level) > 0)
+            <div class="flex flex-wrap gap-1">
+              @foreach($item->educational_level as $level)
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 uppercase whitespace-nowrap">
+                  {{ $level }}
+                </span>
+              @endforeach
+            </div>
+          @else
+            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200 uppercase">
+              {{ is_array($item->educational_level) ? 'N/A' : ($item->educational_level ?? 'N/A') }}
+            </span>
+          @endif
         </td>
         <td class="px-6 py-4 hidden md:table-cell">{{ (int) $item->borrow_duration_days === 0 ? 'Cannot be borrowed' : $item->borrow_duration_days }}</td>
         <td class="px-6 py-4">

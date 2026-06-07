@@ -362,7 +362,7 @@ class CategoriesController extends Controller
             }, 'discarded');
 
         if ($educationalLevel !== 'All') {
-            $query->where('bk_categories.educational_level', $educationalLevel);
+            $query->whereJsonContains('bk_categories.educational_level', $educationalLevel);
         }
         if ($categoryType !== 'All') {
             $query->where('bk_categories.category_type', $categoryType);

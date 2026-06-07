@@ -10,9 +10,9 @@
         <label for="educational_level" class="block text-xs font-medium mb-1 text-gray-500 dark:text-gray-400">Educational Level</label>
         <select id="educational_level" name="educational_level" onchange="this.form.submit()" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
           <option value="All" {{ $educationalLevel == 'All' ? 'selected' : '' }}>All Levels</option>
-          <option value="elementary" {{ $educationalLevel == 'elementary' ? 'selected' : '' }}>Elementary</option>
-          <option value="junior high school" {{ $educationalLevel == 'junior high school' ? 'selected' : '' }}>Junior High School</option>
-          <option value="senior high school" {{ $educationalLevel == 'senior high school' ? 'selected' : '' }}>Senior High School</option>
+          <option value="Elementary" {{ $educationalLevel == 'Elementary' ? 'selected' : '' }}>Elementary</option>
+          <option value="Junior High School" {{ $educationalLevel == 'Junior High School' ? 'selected' : '' }}>Junior High School</option>
+          <option value="Senior High School" {{ $educationalLevel == 'Senior High School' ? 'selected' : '' }}>Senior High School</option>
         </select>
       </div>
 

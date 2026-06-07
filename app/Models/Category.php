@@ -26,6 +26,10 @@ class Category extends Model
         'educational_level',
     ];
 
+    protected $casts = [
+        'educational_level' => 'array',
+    ];
+
     public function books(): HasMany
     {
         return $this->hasMany(Book::class, 'category_id', 'id');

@@ -276,13 +276,21 @@
             @enderror
           </div>
           <div>
-            <label for="educational_level" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Educational Level:</label>
-            <select id="educational_level" name="educational_level" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
-              <option value="">-- Select Educational Level --</option>
-              <option value="elementary" {{ old('educational_level') === 'elementary' ? 'selected' : '' }}>Elementary</option>
-              <option value="junior high school" {{ old('educational_level') === 'junior high school' ? 'selected' : '' }}>Junior High School</option>
-              <option value="senior high school" {{ old('educational_level') === 'senior high school' ? 'selected' : '' }}>Senior High School</option>
-            </select>
+            <span class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Educational Level:</span>
+            <div class="flex flex-col gap-2 mt-1">
+              <label class="inline-flex items-center text-sm text-gray-900 dark:text-gray-300">
+                <input type="checkbox" name="educational_level[]" value="Elementary" class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" {{ is_array(old('educational_level')) && in_array('Elementary', old('educational_level')) ? 'checked' : '' }}>
+                <span class="ms-2">Elementary</span>
+              </label>
+              <label class="inline-flex items-center text-sm text-gray-900 dark:text-gray-300">
+                <input type="checkbox" name="educational_level[]" value="Junior High School" class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" {{ is_array(old('educational_level')) && in_array('Junior High School', old('educational_level')) ? 'checked' : '' }}>
+                <span class="ms-2">Junior High School</span>
+              </label>
+              <label class="inline-flex items-center text-sm text-gray-900 dark:text-gray-300">
+                <input type="checkbox" name="educational_level[]" value="Senior High School" class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600" {{ is_array(old('educational_level')) && in_array('Senior High School', old('educational_level')) ? 'checked' : '' }}>
+                <span class="ms-2">Senior High School</span>
+              </label>
+            </div>
             @error('educational_level')
             <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
             @enderror
@@ -399,13 +407,24 @@
             </select>
           </div>
           <div>
-            <label for="edit_educational_level" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Educational Level:</label>
-            <select name="educational_level" id="edit_educational_level" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
-              <option value="">-- Select Educational Level --</option>
-              <option value="elementary">Elementary</option>
-              <option value="junior high school">Junior High School</option>
-              <option value="senior high school">Senior High School</option>
-            </select>
+            <span class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Educational Level:</span>
+            <div class="flex flex-col gap-2 mt-1">
+              <label class="inline-flex items-center text-sm text-gray-900 dark:text-gray-300">
+                <input type="checkbox" name="educational_level[]" value="Elementary" class="edit_educational_level_checkbox w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                <span class="ms-2">Elementary</span>
+              </label>
+              <label class="inline-flex items-center text-sm text-gray-900 dark:text-gray-300">
+                <input type="checkbox" name="educational_level[]" value="Junior High School" class="edit_educational_level_checkbox w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                <span class="ms-2">Junior High School</span>
+              </label>
+              <label class="inline-flex items-center text-sm text-gray-900 dark:text-gray-300">
+                <input type="checkbox" name="educational_level[]" value="Senior High School" class="edit_educational_level_checkbox w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+                <span class="ms-2">Senior High School</span>
+              </label>
+            </div>
+            @error('educational_level')
+            <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
+            @enderror
           </div>
           <div class="flex w-full items-center space-x-4">
             <div class="flex items-center space-x-2">
@@ -475,7 +494,6 @@
       legend: document.getElementById('edit_legend'),
       name: document.getElementById('edit_name'),
       categoryType: document.getElementById('edit_category_type'),
-      educationalLevel: document.getElementById('edit_educational_level'),
       duration: document.getElementById('borrow_duration_days_edit'),
       hiddenInput: document.getElementById('can_borrow_edit_input'),
       switchEl: document.getElementById('can_borrow_edit_switch'),
@@ -529,7 +547,16 @@
         editModal.legend.value = category.legend;
         editModal.name.value = category.name;
         if (editModal.categoryType) editModal.categoryType.value = category.category_type ?? 'Print';
-        if (editModal.educationalLevel) editModal.educationalLevel.value = category.educational_level ?? '';
+        
+        // Handle checkboxes for educational_level
+        const selectedLevels = Array.isArray(category.educational_level) 
+          ? category.educational_level 
+          : (category.educational_level ? [category.educational_level] : []);
+        
+        document.querySelectorAll('.edit_educational_level_checkbox').forEach(cb => {
+          cb.checked = selectedLevels.includes(cb.value);
+        });
+
         if (editModal.hiddenInput) editModal.hiddenInput.value = isBorrowable ? '1' : '0';
         if (editModal.duration) editModal.duration.value = isBorrowable ? categoryDuration : 0;
         updateEditSwitchUI();
