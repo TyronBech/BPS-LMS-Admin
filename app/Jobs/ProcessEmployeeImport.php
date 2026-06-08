@@ -167,7 +167,9 @@ class ProcessEmployeeImport implements ShouldQueue
 
                     if ($result === 'new') {
                         $newCount++;
-                        $stagedUsers[] = $item['email'];
+                        if (!empty($item['email'])) {
+                            $stagedUsers[] = $item['email'];
+                        }
                     } elseif ($result === 'updated') {
                         $updatedCount++;
                     }
@@ -309,7 +311,7 @@ class ProcessEmployeeImport implements ShouldQueue
             'last_name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|string|in:' . implode(',', $this->extractEnums($usersModel->getTable(), 'gender')),
-            'email'         => 'required|string|email|max:255',
+            'email'         => 'nullable|string|email|max:255',
             'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
             'employee_id'   => 'required|string|max:50',
         ]);
@@ -360,7 +362,7 @@ class ProcessEmployeeImport implements ShouldQueue
         }
 
         // New employee — guard against duplicates
-        if (StagingUser::where('email', $item['email'])->exists()) {
+        if (!empty($item['email']) && StagingUser::where('email', $item['email'])->exists()) {
             throw new \Exception(
                 'Email already exists for user: '
                 . $item['first_name'] . ' ' . $item['last_name']

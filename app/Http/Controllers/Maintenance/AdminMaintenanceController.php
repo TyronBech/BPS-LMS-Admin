@@ -329,7 +329,7 @@ class AdminMaintenanceController extends Controller
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
-            'email'         => 'required|email|unique:' . $user->getTable() . ',email,' . $request->input('id'),
+            'email'         => 'nullable|email|unique:' . $user->getTable() . ',email,' . $request->input('id'),
             'role'          => [
                 'required',
                 function ($attribute, $value, $fail) {
@@ -491,6 +491,11 @@ class AdminMaintenanceController extends Controller
      */
     private function notification(User $user, $role)
     {
+        if (!$user || !$user->email) {
+            Log::info('Admin Maintenance: Skip sending role notification email - no email address');
+            return;
+        }
+
         Log::info('Admin Maintenance: Sending role notification email', [
             'sender_id' => Auth::guard('admin')->id(),
             'recipient_email' => $user->email,

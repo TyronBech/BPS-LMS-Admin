@@ -114,7 +114,7 @@ class UsersMaintenanceController extends Controller
         })
             ->with('students')
             ->first();
-        if(!$student) {
+        if (!$student) {
             Log::warning('Users Maintenance: Student not found', ['student_id_number' => $studentID]);
             return redirect()->back()->with('toast-error', 'Student not found.')->withInput();
         }
@@ -153,7 +153,7 @@ class UsersMaintenanceController extends Controller
         })
             ->with('employees')
             ->first();
-        if(!$employee) {
+        if (!$employee) {
             Log::warning('Users Maintenance: Employee not found', ['employee_id' => $employeeID]);
             return redirect()->back()->with('toast-error', 'Employee not found.')->withInput();
         }
@@ -259,11 +259,13 @@ class UsersMaintenanceController extends Controller
 
         // Students query
         $students = User::whereHas('students')
-            ->where(function ($q) use ($searchFilter) { $searchFilter($q); })
+            ->where(function ($q) use ($searchFilter) {
+                $searchFilter($q);
+            })
             ->orWhereHas('students', function ($q) use ($search) {
                 $q->where('id_number', 'like', "%{$search}%")
-                  ->orWhere('level', 'like', "%{$search}%")
-                  ->orWhere('section', 'like', "%{$search}%");
+                    ->orWhere('level', 'like', "%{$search}%")
+                    ->orWhere('section', 'like', "%{$search}%");
             })
             ->orderBy('id', 'asc')
             ->paginate($perStudentPage, ['*'], 'students_page')
@@ -274,7 +276,9 @@ class UsersMaintenanceController extends Controller
 
         // Employees query
         $employees = User::whereHas('employees')
-            ->where(function ($q) use ($searchFilter) { $searchFilter($q); })
+            ->where(function ($q) use ($searchFilter) {
+                $searchFilter($q);
+            })
             ->orWhereHas('employees', function ($q) use ($search) {
                 $q->where('employee_id', 'like', "%{$search}%");
             })
@@ -287,10 +291,12 @@ class UsersMaintenanceController extends Controller
 
         // Visitors query
         $visitors = User::whereHas('visitors')
-            ->where(function ($q) use ($searchFilter) { $searchFilter($q); })
+            ->where(function ($q) use ($searchFilter) {
+                $searchFilter($q);
+            })
             ->orWhereHas('visitors', function ($q) use ($search) {
                 $q->where('school_org', 'like', "%{$search}%")
-                  ->orWhere('purpose', 'like', "%{$search}%");
+                    ->orWhere('purpose', 'like', "%{$search}%");
             })
             ->orderBy('id', 'asc')
             ->paginate($perVisitorPage, ['*'], 'visitors_page')
@@ -332,7 +338,7 @@ class UsersMaintenanceController extends Controller
             'id_number'     => 'required|string|min:12',
             'level'         => 'required|numeric|min:7|max:12',
             'section'       => 'required|max:50',
-            'email'         => 'required|string|email|unique:' . $users->getTable() . ',email',
+            'email'         => 'nullable|string|email|unique:' . $users->getTable() . ',email',
         ], [
             'email.unique' => 'The email has already been registered.',
         ]);
@@ -416,21 +422,24 @@ class UsersMaintenanceController extends Controller
             'timestamp' => now(),
         ]);
 
-        $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|min:10',
-            'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
-            'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
-            'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
-            'suffix'        => 'nullable|string|max:10||regex:/^[\pL\s\-\'\.]+$/u',
-            'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
-            'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'employee_id'   => 'required|string|min:6|max:12',
-            'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
-            'email'         => 'required|string|email|unique:' . $users->getTable() . ',email',
-        ],
-        [
-            'email.unique' => 'The email has already been registered.',
-        ]);
+        $validator = Validator::make(
+            $request->all(),
+            [
+                'rfid'          => 'required|string|min:10',
+                'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+                'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+                'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+                'suffix'        => 'nullable|string|max:10||regex:/^[\pL\s\-\'\.]+$/u',
+                'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
+                'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
+                'employee_id'   => 'required|string|min:6|max:12',
+                'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
+                'email'         => 'nullable|string|email|unique:' . $users->getTable() . ',email',
+            ],
+            [
+                'email.unique' => 'The email has already been registered.',
+            ]
+        );
         if ($validator->fails()) {
             Log::warning('Users Maintenance: Employee creation validation failed', [
                 'user_id' => Auth::guard('admin')->id(),
@@ -611,7 +620,7 @@ class UsersMaintenanceController extends Controller
             'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'level'         => 'required|numeric|min:7|max:12',
             'section'       => 'required|max:50',
-            'email'         => 'required|string|email',
+            'email'         => 'nullable|string|email',
         ]);
         if ($validator->fails()) {
             Log::warning('Users Maintenance: Student update validation failed', [
@@ -703,7 +712,7 @@ class UsersMaintenanceController extends Controller
             'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'employee_id'   => 'required|string|min:6|max:12',
             'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
-            'email'         => 'required|string|email',
+            'email'         => 'nullable|string|email',
         ]);
         if ($validator->fails()) {
             Log::warning('Users Maintenance: Employee update validation failed', [
@@ -794,7 +803,7 @@ class UsersMaintenanceController extends Controller
             'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
             'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'email'         => 'required|string|email',
+            'email'         => 'nullable|string|email',
             'school_org'   => 'required|string|max:100',
         ]);
         if ($validator->fails()) {
@@ -1101,11 +1110,16 @@ class UsersMaintenanceController extends Controller
      */
     private function account_notification($user, $password)
     {
+        if (!$user || !$user->email) {
+            Log::info('Users Maintenance: Skip sending account notification email - no email address');
+            return;
+        }
+
         Log::info('Users Maintenance: Sending account notification email', [
             'recipient_email' => $user->email,
             'timestamp' => now(),
         ]);
-        try{
+        try {
             Mail::to($user->email)->send(new AccountEmailMessage($user, $password));
             Log::info('Users Maintenance: Account notification email sent', [
                 'recipient_email' => $user->email,

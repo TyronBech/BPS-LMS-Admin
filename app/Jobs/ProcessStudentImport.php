@@ -167,7 +167,9 @@ class ProcessStudentImport implements ShouldQueue
 
                     if ($result === 'new') {
                         $newCount++;
-                        $stagedUsers[] = $item['email'];
+                        if (!empty($item['email'])) {
+                            $stagedUsers[] = $item['email'];
+                        }
                     } elseif ($result === 'updated') {
                         $updatedCount++;
                     }
@@ -312,7 +314,7 @@ class ProcessStudentImport implements ShouldQueue
             'grade_level' => 'required|numeric|min:7|max:12',
             'section'     => 'required|string|max:50',
             'gender'      => 'required|string|in:' . implode(',', $this->extractEnums($usersModel->getTable(), 'gender')),
-            'email'       => 'required|string|email',
+            'email'       => 'nullable|string|email',
         ]);
 
         if ($validator->fails()) {
@@ -363,7 +365,7 @@ class ProcessStudentImport implements ShouldQueue
         }
 
         // New student — check for duplicate email / RFID first
-        if (User::where('email', $item['email'])->exists()) {
+        if (!empty($item['email']) && User::where('email', $item['email'])->exists()) {
             throw new \Exception(
                 'Email already exists for student: '
                 . $item['first_name'] . ' ' . $item['last_name']

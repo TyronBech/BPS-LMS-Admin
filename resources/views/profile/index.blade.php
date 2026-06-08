@@ -127,7 +127,7 @@
                  {{-- View Mode --}}
                  <p class="view-field text-base font-medium text-gray-900 dark:text-white py-2 border-b border-transparent">{{ $user->email }}</p>
                  {{-- Edit Mode --}}
-                 <input type="email" name="email" id="email" class="edit-field hidden py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400" placeholder=" " value="{{ old('email', $user->email) }}" required />
+                 <input type="email" name="email" id="email" class="edit-field hidden py-2.5 px-0 w-full text-sm text-gray-900 bg-transparent border-0 border-b-2 border-gray-300 appearance-none dark:text-white dark:border-gray-600 dark:focus:border-primary-500 focus:outline-none focus:ring-0 focus:border-primary-400" placeholder=" " value="{{ old('email', $user->email) }}" />
                  @error('email') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
 

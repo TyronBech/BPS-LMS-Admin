@@ -55,7 +55,7 @@ class ProfileController extends Controller
             'middle_name'   => ['nullable', 'string', 'max:50'],
             'last_name'     => ['required', 'string', 'max:50'],
             'suffix'        => ['nullable', 'string', 'max:10'],
-            'email'         => ['required', 'string', 'max:50', 'email'],
+            'email'         => ['nullable', 'string', 'max:50', 'email'],
             'user_id'       => ['required', 'string', 'max:50'],
             'profile_image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:5120'],
         ];
@@ -259,6 +259,13 @@ class ProfileController extends Controller
      */
     private function changePasswordMail($user)
     {
+        if (!$user->email) {
+            Log::info('Profile: Skip sending password change email - no email address', [
+                'user_id' => $user->id,
+            ]);
+            return;
+        }
+
         Log::info('Profile: Sending password change email', [
             'user_id' => $user->id,
             'email' => $user->email,
