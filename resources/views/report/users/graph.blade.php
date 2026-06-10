@@ -12,6 +12,17 @@
         <option value="yearly">Yearly</option>
       </select>
     </div>
+
+    {{-- User Type Select for Graph --}}
+    <div class="w-full md:w-auto flex flex-col">
+      <label for="graph_user_type" class="block text-xs font-medium mb-1 text-gray-500 dark:text-gray-400">User Type</label>
+      <select id="graph_user_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+        <option value="all" selected>All</option>
+        <option value="student">Students</option>
+        <option value="employee">Faculties & Staff</option>
+        <option value="visitor">Visitors</option>
+      </select>
+    </div>
     
     {{-- Date Range Picker --}}
     <div id="date-range-picker-graph" date-rangepicker class="flex flex-col sm:flex-row items-end justify-center gap-2 w-full md:w-auto">
@@ -186,6 +197,13 @@
     let type = $('#type').val();
     let start_date = $('#datepicker-range-graph-start').val();
     let end_date = $('#datepicker-range-graph-end').val();
+    let user_type = $('#graph_user_type').val();
+
+    // Fallback to page-level date filters if graph dates are empty
+    if (!start_date && !end_date) {
+      start_date = $('#datepicker-range-start').val() || $('#summary-datepicker-start').val() || '';
+      end_date = $('#datepicker-range-end').val() || $('#summary-datepicker-end').val() || '';
+    }
 
     $.ajax({
       url: "{{ route('report.user-graph') }}",
@@ -193,7 +211,8 @@
       data: {
         type: type,
         start_date: start_date,
-        end_date: end_date
+        end_date: end_date,
+        user_type: user_type
       },
       success: function(response) {
         let ctx = document.getElementById('logsChart').getContext('2d');
@@ -285,6 +304,11 @@
       loadGraph();
     });
 
+    // Auto reload on user type change
+    $('#graph_user_type').on('change', function() {
+      loadGraph();
+    });
+
     // Auto reload on date changes (when user picks start or end)
     $('#datepicker-range-graph-start, #datepicker-range-graph-end').on('change blur', function() {
       loadGraph();
@@ -295,6 +319,15 @@
   $('#downloadPDF').click(function() {
     let chartImage = document.getElementById('logsChart').toDataURL("image/png");
 
+    // Fallback to page-level date filters if graph dates are empty
+    let start_date = $('#datepicker-range-graph-start').val();
+    let end_date = $('#datepicker-range-graph-end').val();
+    
+    if (!start_date && !end_date) {
+      start_date = $('#datepicker-range-start').val() || $('#summary-datepicker-start').val() || '';
+      end_date = $('#datepicker-range-end').val() || $('#summary-datepicker-end').val() || '';
+    }
+
     $.ajax({
       url: "{{ route('report.graph-export-pdf') }}",
       type: "POST",
@@ -302,8 +335,9 @@
         _token: "{{ csrf_token() }}",
         chart: chartImage,
         type: $('#type').val(),
-        start_date: $('#datepicker-range-graph-start').val(),
-        end_date: $('#datepicker-range-graph-end').val()
+        start_date: start_date,
+        end_date: end_date,
+        user_type: $('#graph_user_type').val()
       },
       xhrFields: {
         responseType: 'blob'
