@@ -31,7 +31,8 @@
           || auth()->user()->can(PermissionsEnum::VIEW_INVENTORY_REPORTS)
           || auth()->user()->can(PermissionsEnum::VIEW_TRANSACTION_REPORTS)
           || auth()->user()->can(PermissionsEnum::VIEW_BOOK_CIRCULATION_REPORTS)
-          || auth()->user()->can(PermissionsEnum::VIEW_NON_CIRCULATION_REPORTS))
+          || auth()->user()->can(PermissionsEnum::VIEW_NON_CIRCULATION_REPORTS)
+          || auth()->user()->can(PermissionsEnum::VIEW_PRINTING_REPORTS))
           <li>
             <button id="dropdownNavbarLink" data-dropdown-toggle="navbarReport" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:bg-tertiary-500 lg:hover:bg-transparent lg:border-0 lg:hover:text-tertiary-500 lg:p-0 lg:w-auto dark:text-white lg:dark:hover:text-tertiary-500 dark:hover:bg-tertiary-500 dark:hover:text-white lg:dark:hover:bg-transparent">Reports <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
@@ -95,6 +96,16 @@
                       <path fill-rule="evenodd" d="M8 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1h2a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2Zm6 1h-4v2H9a1 1 0 0 0 0 2h6a1 1 0 1 0 0-2h-1V4Zm-3 8a1 1 0 0 1 1-1h3a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1Zm-2-1a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H9Zm2 5a1 1 0 0 1 1-1h3a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1Zm-2-1a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H9Z" clip-rule="evenodd" />
                     </svg>
                     <span class="ms-2">Non-Circulation Records</span>
+                  </a>
+                </li>
+                @endcan
+                @can(PermissionsEnum::VIEW_PRINTING_REPORTS)
+                <li>
+                  <a href="{{ route('report.printing') }}" class="flex pl-2 py-2 hover:bg-tertiary-100 dark:text-white dark:hover:bg-tertiary-700">
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                      <path fill-rule="evenodd" d="M8 3a2 2 0 0 0-2 2v3h12V5a2 2 0 0 0-2-2H8Zm-3 7a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h1v-4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v4h1a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H5Zm4 11a1 1 0 0 1-1-1v-4h8v4a1 1 0 0 1-1 1H9Z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="ms-2">Printing/Photocopy Records</span>
                   </a>
                 </li>
                 @endcan
@@ -185,8 +196,8 @@
                 <li>
                   <a href="{{ route('import.import-user-images') }}" class="flex pl-2 py-2 hover:bg-tertiary-100 dark:text-white dark:hover:bg-tertiary-700">
                     <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
-                      <path fill-rule="evenodd" d="M13 10a1 1 0 0 1 1-1h.01a1 1 0 1 1 0 2H14a1 1 0 0 1-1-1Z" clip-rule="evenodd"/>
-                      <path fill-rule="evenodd" d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6Zm6.979 3.979a1 1 0 0 0-1.292.293L4 15.618V17a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1.382l-3.294-4.603a1 1 0 0 0-1.625.001L12.218 15l-2.24-3.022a1 1 0 0 0-.999-.999Z" clip-rule="evenodd"/>
+                      <path fill-rule="evenodd" d="M13 10a1 1 0 0 1 1-1h.01a1 1 0 1 1 0 2H14a1 1 0 0 1-1-1Z" clip-rule="evenodd" />
+                      <path fill-rule="evenodd" d="M2 6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v12c0 .556-.227 1.06-.593 1.422A.999.999 0 0 1 20.5 20H4a2.002 2.002 0 0 1-2-2V6Zm6.892 12 3.833-5.356-3.99-4.322a1 1 0 0 0-1.549.097L4 12.879V6h16v9.95l-3.257-3.619a1 1 0 0 0-1.557.088L11.2 18H8.892Z" clip-rule="evenodd" />
                     </svg>
                     <span class="ms-2">User Images</span>
                   </a>

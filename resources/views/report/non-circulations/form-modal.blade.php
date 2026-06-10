@@ -86,7 +86,11 @@
         }
 
         debounceTimer = setTimeout(() => {
-          fetch(`{{ route('report.non-circulation-search-user') }}?term=${encodeURIComponent(query)}&type=${type}`)
+          fetch(`{{ route('report.non-circulation-search-user') }}?term=${encodeURIComponent(query)}&type=${type}`, {
+            headers: {
+              'X-Skip-Loader': 'true'
+            }
+          })
             .then(response => response.json())
             .then(data => {
               suggestionsBox.innerHTML = '';

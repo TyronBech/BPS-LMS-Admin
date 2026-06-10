@@ -58,4 +58,6 @@ enum PermissionsEnum: string
     case DELETE_GALLERY                     = 'Delete Gallery';
     case CREATE_NON_CIRCULATION_ENTRY       = 'Create Non-Circulation Entry';
     case VIEW_NON_CIRCULATION_REPORTS       = 'View Non-Circulation Reports';
+    case CREATE_PRINTING_ENTRY              = 'Create Printing Entry';
+    case VIEW_PRINTING_REPORTS              = 'View Printing Reports';
 }

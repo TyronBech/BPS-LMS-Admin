@@ -151,6 +151,13 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
             Route::get('non-circulation/search-user', 'searchUser')->name('report.non-circulation-search-user');
         });
 
+        Route::controller(\App\Http\Controllers\Report\PrintingController::class)->group(function () {
+            Route::get('printing', 'index')->name('report.printing');
+            Route::post('printing', 'search')->name('report.printing-search');
+            Route::post('printing/store', 'store')->name('report.printing-store');
+            Route::get('printing/search-user', 'searchUser')->name('report.printing-search-user');
+        });
+
         Route::controller(BibliographyController::class)->middleware(ViewBibliographyMiddleware::class)->group(function () {
             Route::get('bibliography', 'index')->name('report.bibliography');
             Route::post('bibliography', 'search')->name('report.bibliography-search');

@@ -142,6 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
         );
         const isCategoriesAutocomplete = url.includes("categories/autocomplete");
         const isNonCirculationSearch = url.includes("/report/non-circulation/search-user");
+        const isPrintingSearch = url.includes("/report/printing/search-user");
         const isImportAction = url.includes("/import/");
 
         // Check for custom header to skip loader
@@ -161,6 +162,7 @@ document.addEventListener("DOMContentLoaded", () => {
             isSubjectAccessCodeSuggestions ||
             isCategoriesAutocomplete || // ALWAYS skip autocomplete suggestions
             isNonCirculationSearch ||
+            isPrintingSearch ||
             isImportAction || // Skip loader for import actions and status polling
             hasSkipHeader; // Skip loader anytime the header is present
 
@@ -196,6 +198,7 @@ document.addEventListener("DOMContentLoaded", () => {
             "subject-access-code-suggestions",
             "maintenance/categories/autocomplete",
             "/report/non-circulation/search-user",
+            "/report/printing/search-user",
             "/import/"
         ];
 
