@@ -1,7 +1,7 @@
 <div id="tabular" class="container mx-auto mt-2 mb-4">
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md">
     <div class="p-4">
-      <h2 class="text-center mb-4 font-semibold text-2xl dark:text-white">Report Table for Computer Use</h2>
+      <h2 class="text-center mb-4 font-semibold text-2xl dark:text-white">Online Research Report</h2>
       <form method="GET" class="flex items-center">
         <label for="perPage" class="mr-2 text-xs font-medium text-gray-500 dark:text-gray-400">Show</label>
         <input type="hidden" name="search" value="{{ old('search', request('search')) }}">
