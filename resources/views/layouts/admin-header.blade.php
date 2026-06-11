@@ -313,6 +313,17 @@
                   </a>
                 </li>
                 <li>
+                  <a href="{{ route('maintenance.class-reservations') }}" class="flex justify-between items-center pl-2 py-2 hover:bg-tertiary-100 dark:text-white dark:hover:bg-tertiary-700">
+                    <div class="flex items-center">
+                      <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                        <path fill-rule="evenodd" d="M4 4a1 1 0 0 1 1-1h14a1 1 0 1 1 0 2v14a1 1 0 1 1 0 2H5a1 1 0 1 1 0-2V5a1 1 0 0 1-1-1Zm5 2a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1H9Zm5 0a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1V7a1 1 0 0 0-1-1h-1Zm-5 4a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1H9Zm5 0a1 1 0 0 0-1 1v1a1 1 0 0 0 1 1h1a1 1 0 0 0 1-1v-1a1 1 0 0 0-1-1h-1Zm-3 4a2 2 0 0 0-2 2v3h2v-3h2v3h2v-3a2 2 0 0 0-2-2h-2Z" clip-rule="evenodd" />
+                      </svg>
+                      <span class="ms-2">Class Room Approvals</span>
+                    </div>
+                    <span id="class-reservation-notification-badge" class="hidden me-2 bg-red-500 text-white text-xs font-semibold px-2 py-0.5 rounded-full"></span>
+                  </a>
+                </li>
+                <li>
                   <a href="{{ route('maintenance.toggle') }}" class="flex justify-between items-center pl-2 py-2 hover:bg-tertiary-100 dark:text-white dark:hover:bg-tertiary-700">
                     <div class="flex items-center">
                       <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
@@ -477,38 +488,58 @@
 @can(PermissionsEnum::RESERVATION_APPROVALS)
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    function fetchPendingExtensionCount() {
-      console.log('Fetching pending extension count...');
-      fetch('{{ route("maintenance.pending-extensions") }}')
-        .then(response => response.json())
-        .then(data => {
-          const count = data.pending_extension_count;
-          const maintenanceBadge = document.getElementById('maintenance-notification-badge');
-          const reservationBadge = document.getElementById('reservation-notification-badge');
+    function updateBadges() {
+      console.log('Fetching pending counts...');
+      Promise.all([
+        fetch('{{ route("maintenance.pending-extensions") }}').then(r => r.json()).catch(() => ({
+          pending_extension_count: 0
+        })),
+        fetch('{{ route("maintenance.class-reservations.pending-count") }}').then(r => r.json()).catch(() => ({
+          pending_count: 0
+        }))
+      ]).then(([extensionsData, classData]) => {
+        const extCount = extensionsData.pending_extension_count || 0;
+        const classCount = classData.pending_count || 0;
+        const totalCount = extCount + classCount;
 
-          if (count > 0) {
-            if (maintenanceBadge) {
-              maintenanceBadge.textContent = count;
-              maintenanceBadge.classList.remove('hidden');
-            }
-            if (reservationBadge) {
-              reservationBadge.textContent = count;
-              reservationBadge.classList.remove('hidden');
-            }
+        const maintenanceBadge = document.getElementById('maintenance-notification-badge');
+        const reservationBadge = document.getElementById('reservation-notification-badge');
+        const classReservationBadge = document.getElementById('class-reservation-notification-badge');
+
+        // Main Maintenance Badge
+        if (maintenanceBadge) {
+          if (totalCount > 0) {
+            maintenanceBadge.textContent = totalCount;
+            maintenanceBadge.classList.remove('hidden');
           } else {
-            if (maintenanceBadge) {
-              maintenanceBadge.classList.add('hidden');
-            }
-            if (reservationBadge) {
-              reservationBadge.classList.add('hidden');
-            }
+            maintenanceBadge.classList.add('hidden');
           }
-        })
-        .catch(error => console.error('Error fetching pending extension count:', error));
+        }
+
+        // Material Reservations Badge
+        if (reservationBadge) {
+          if (extCount > 0) {
+            reservationBadge.textContent = extCount;
+            reservationBadge.classList.remove('hidden');
+          } else {
+            reservationBadge.classList.add('hidden');
+          }
+        }
+
+        // Class Reservations Badge
+        if (classReservationBadge) {
+          if (classCount > 0) {
+            classReservationBadge.textContent = classCount;
+            classReservationBadge.classList.remove('hidden');
+          } else {
+            classReservationBadge.classList.add('hidden');
+          }
+        }
+      }).catch(error => console.error('Error fetching pending counts:', error));
     }
 
-    fetchPendingExtensionCount();
-    setInterval(fetchPendingExtensionCount, 10000);
+    updateBadges();
+    setInterval(updateBadges, 10000);
   });
 </script>
 @endcan

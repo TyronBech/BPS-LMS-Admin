@@ -32,6 +32,7 @@ use App\Http\Controllers\Auth\NewPasswordController;
 use App\Http\Controllers\Backup\BackupController;
 use App\Http\Controllers\Maintenance\PenaltyRuleController;
 use App\Http\Controllers\Maintenance\ReservationExtensionController;
+use App\Http\Controllers\Maintenance\LibraryClassReservationController;
 use App\Http\Controllers\Maintenance\ReservationStatus;
 use App\Http\Controllers\Maintenance\TransactionMaintenanceController;
 use App\Http\Controllers\Maintenance\AnnouncementMaintenanceController;
@@ -320,6 +321,14 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
                 Route::post('approve-extension/{id}', 'approve')->name('maintenance.approve-extension');
                 Route::post('reject-extension/{id}', 'reject')->name('maintenance.reject-extension');
                 Route::get('search', 'search')->name('maintenance.search-extension');
+            });
+
+            Route::controller(LibraryClassReservationController::class)->group(function () {
+                Route::get('class-reservations', 'index')->name('maintenance.class-reservations');
+                Route::get('class-reservations/pending-count', 'pendingCount')->name('maintenance.class-reservations.pending-count');
+                Route::post('class-reservations/approve/{id}', 'approve')->name('maintenance.class-reservations.approve');
+                Route::post('class-reservations/reject/{id}', 'reject')->name('maintenance.class-reservations.reject');
+                Route::get('class-reservations/search', 'search')->name('maintenance.class-reservations.search');
             });
 
             Route::controller(ReservationStatus::class)->group(function () {
