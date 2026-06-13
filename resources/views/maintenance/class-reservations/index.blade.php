@@ -91,13 +91,17 @@
         <a href="{{ route('maintenance.class-reservations', ['tab' => 'Rejected', 'search' => request('search')]) }}" class="px-4 py-2 text-sm font-medium focus:outline-none {{ $activeTab === 'Rejected' ? 'bg-primary-500 text-white dark:bg-primary-400' : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600' }} border-r border-gray-200 dark:border-gray-700">
           Rejected
         </a>
-        <a href="{{ route('maintenance.class-reservations', ['tab' => 'Cancelled', 'search' => request('search')]) }}" class="px-4 py-2 text-sm font-medium rounded-r-md focus:outline-none {{ $activeTab === 'Cancelled' ? 'bg-primary-500 text-white dark:bg-primary-400' : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600' }}">
+        <a href="{{ route('maintenance.class-reservations', ['tab' => 'Cancelled', 'search' => request('search')]) }}" class="px-4 py-2 text-sm font-medium focus:outline-none {{ $activeTab === 'Cancelled' ? 'bg-primary-500 text-white dark:bg-primary-400' : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600' }} border-r border-gray-200 dark:border-gray-700">
           Cancelled
+        </a>
+        <a href="{{ route('maintenance.class-reservations', ['tab' => 'Calendar']) }}" class="px-4 py-2 text-sm font-medium rounded-r-md focus:outline-none {{ $activeTab === 'Calendar' ? 'bg-primary-500 text-white dark:bg-primary-400' : 'bg-white text-gray-700 hover:bg-gray-50 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600' }}">
+          Calendar
         </a>
       </div>
     </div>
 
     <!-- Search Form -->
+    @if($activeTab !== 'Calendar')
     <form action="{{ route('maintenance.class-reservations.search') }}" method="GET" class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4 auto-search-form">
       <input type="hidden" name="tab" value="{{ $activeTab }}">
       <div class="flex-grow w-full md:w-auto">
@@ -121,9 +125,14 @@
         </button>
       </div>
     </form>
+    @endif
 
     <div id="table-container">
-      @include('maintenance.class-reservations.table')
+      @if($activeTab === 'Calendar')
+        @include('maintenance.class-reservations.calendar')
+      @else
+        @include('maintenance.class-reservations.table')
+      @endif
     </div>
   </div>
 </div>

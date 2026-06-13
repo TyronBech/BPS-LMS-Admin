@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ClassReservationMail;
 
 class LibraryClassReservationController extends Controller
 {
@@ -20,7 +22,7 @@ class LibraryClassReservationController extends Controller
         $perPage = $request->input('perPage', 10);
         $activeTab = $request->input('tab', 'Pending');
         
-        if (!in_array($activeTab, ['Pending', 'Approved', 'Rejected', 'Cancelled'])) {
+        if (!in_array($activeTab, ['Pending', 'Approved', 'Rejected', 'Cancelled', 'Calendar'])) {
             $activeTab = 'Pending';
         }
 
@@ -35,22 +37,39 @@ class LibraryClassReservationController extends Controller
 
         $validator = Validator::make($request->all(), [
             'perPage' => 'sometimes|integer|min:1|max:500',
-            'tab' => 'sometimes|string|in:Pending,Approved,Rejected,Cancelled',
+            'tab' => 'sometimes|string|in:Pending,Approved,Rejected,Cancelled,Calendar',
         ]);
         if ($validator->fails()) {
             return redirect()->route('maintenance.class-reservations')->with('toast-warning', $validator->errors()->first())->withInput();
         }
 
-        // Query class reservations
-        $query = LibraryClassReservation::where('status', $activeTab);
+        $calendarReservations = collect();
 
-        $reservations = $query->with(['user', 'faculty', 'approver'])
-            ->orderBy('updated_at', 'desc')
-            ->paginate($perPage)
-            ->appends([
-                'perPage' => $perPage,
-                'tab' => $activeTab
-            ]);
+        if ($activeTab === 'Calendar') {
+            $calendarReservations = LibraryClassReservation::whereIn('status', ['Approved', 'Pending'])
+                ->with(['user', 'faculty'])
+                ->orderBy('reservation_date')
+                ->orderBy('start_time')
+                ->get();
+
+            $reservations = LibraryClassReservation::where('id', 0)
+                ->paginate($perPage)
+                ->appends([
+                    'perPage' => $perPage,
+                    'tab' => $activeTab
+                ]);
+        } else {
+            // Query class reservations
+            $query = LibraryClassReservation::where('status', $activeTab);
+
+            $reservations = $query->with(['user', 'faculty', 'approver'])
+                ->orderBy('updated_at', 'desc')
+                ->paginate($perPage)
+                ->appends([
+                    'perPage' => $perPage,
+                    'tab' => $activeTab
+                ]);
+        }
 
         // Get counts for statistics
         $pendingCount = LibraryClassReservation::where('status', 'Pending')->count();
@@ -65,7 +84,8 @@ class LibraryClassReservationController extends Controller
             'rejectedCount',
             'cancelledCount',
             'perPage',
-            'activeTab'
+            'activeTab',
+            'calendarReservations'
         ));
     }
 
@@ -76,7 +96,7 @@ class LibraryClassReservationController extends Controller
     {
         $perPage = $request->input('perPage', 10);
         $activeTab = $request->input('tab', 'Pending');
-        if (!in_array($activeTab, ['Pending', 'Approved', 'Rejected', 'Cancelled'])) {
+        if (!in_array($activeTab, ['Pending', 'Approved', 'Rejected', 'Cancelled', 'Calendar'])) {
             $activeTab = 'Pending';
         }
 
@@ -91,7 +111,7 @@ class LibraryClassReservationController extends Controller
         $validator = Validator::make($request->all(), [
             'search' => 'required|string|max:255',
             'perPage' => 'sometimes|integer|min:1|max:500',
-            'tab' => 'sometimes|string|in:Pending,Approved,Rejected,Cancelled',
+            'tab' => 'sometimes|string|in:Pending,Approved,Rejected,Cancelled,Calendar',
         ]);
         if ($validator->fails()) {
             return redirect()->route('maintenance.class-reservations')->with('toast-warning', $validator->errors()->first())->withInput();
@@ -129,6 +149,15 @@ class LibraryClassReservationController extends Controller
         $rejectedCount = LibraryClassReservation::where('status', 'Rejected')->count();
         $cancelledCount = LibraryClassReservation::where('status', 'Cancelled')->count();
 
+        $calendarReservations = collect();
+        if ($activeTab === 'Calendar') {
+            $calendarReservations = LibraryClassReservation::whereIn('status', ['Approved', 'Pending'])
+                ->with(['user', 'faculty'])
+                ->orderBy('reservation_date')
+                ->orderBy('start_time')
+                ->get();
+        }
+
         return view('maintenance.class-reservations.index', compact(
             'reservations',
             'pendingCount',
@@ -136,7 +165,8 @@ class LibraryClassReservationController extends Controller
             'rejectedCount',
             'cancelledCount',
             'perPage',
-            'activeTab'
+            'activeTab',
+            'calendarReservations'
         ));
     }
 
@@ -175,6 +205,9 @@ class LibraryClassReservationController extends Controller
             $reservation->save();
             
             DB::commit();
+
+            // Notify the requester
+            $this->sendReservationEmail($reservation->user, $reservation, 'Approved', $remarks);
 
             Log::info('Library Class Reservation Approval: Approved successfully', [
                 'user_id' => Auth::guard('admin')->id(),
@@ -229,6 +262,9 @@ class LibraryClassReservationController extends Controller
             
             DB::commit();
 
+            // Notify the requester
+            $this->sendReservationEmail($reservation->user, $reservation, 'Rejected', $validated['rejection_reason']);
+
             Log::info('Library Class Reservation Rejection: Rejected successfully', [
                 'user_id' => Auth::guard('admin')->id(),
                 'reservation_id' => $id,
@@ -256,5 +292,42 @@ class LibraryClassReservationController extends Controller
     {
         $count = LibraryClassReservation::where('status', 'Pending')->count();
         return response()->json(['pending_count' => $count]);
+    }
+
+    /**
+     * Send email notification for class room reservation status.
+     */
+    private function sendReservationEmail($user, $reservation, $status, $remarks = null)
+    {
+        if ($user && $user->email) {
+            try {
+                $statusMessage = $status === 'Approved'
+                    ? 'Your class room reservation request has been approved. Please find the reservation details below.'
+                    : 'Your class room reservation request has been rejected. Reason: ' . ($remarks ?? 'No reason provided') . '.';
+
+                Mail::to($user->email)->send(new ClassReservationMail(
+                    $user,
+                    $reservation,
+                    $statusMessage,
+                    $status,
+                    $remarks
+                ));
+
+                Log::info('Library Class Reservation: Status email sent', [
+                    'recipient_email' => $user->email,
+                    'reservation_id' => $reservation->id,
+                    'status' => $status,
+                    'timestamp' => now(),
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Library Class Reservation: Failed to send status email', [
+                    'recipient_email' => $user->email,
+                    'reservation_id' => $reservation->id,
+                    'status' => $status,
+                    'error_message' => $e->getMessage(),
+                    'timestamp' => now(),
+                ]);
+            }
+        }
     }
 }

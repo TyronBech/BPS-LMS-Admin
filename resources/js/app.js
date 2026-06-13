@@ -21,198 +21,72 @@ document.addEventListener("DOMContentLoaded", () => {
         loader.classList.add("hidden");
     }
 
-    // IDs or classes you want to skip loader for
-    const skipButtonIds = [
-        "dropdownNavbarLink", // dropdown
-        "doubleDropdownButton", // another dropdown
-        "decrement-button", // number input decrement
-        "increment-button", // number input increment
-        "createCopy", // create book copy button
-        "exportBarcodeBtn", // export barcode button
-        "exportBarcode", // export barcode button (books page)
-        "exportCallNumberBtn", // export call number button
-        "toggleBtn", // maintenance status toggle button
-        "toggleModalPassword", // 2FA modal password toggle
-        "togglePassword", // Login password toggle
-        "toggleCurrentPassword", // Profile current password toggle
-        "toggleNewPassword", // Profile new password toggle
-        "toggleConfirmPassword", // Profile confirm password toggle
-        "btn-insert-materials", // Skip loader for insert materials import
-        "btn-insert-students", // Skip loader for insert students import
-        "btn-insert-employees", // Skip loader for insert employees import
-    ];
-
-    // --- 1️⃣ Handle button clicks ---
-    document.querySelectorAll('button, input[type="submit"]').forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-            const name = btn.getAttribute("name");
-            const value = btn.getAttribute("value");
-            const id = btn.id;
-            const form = btn.closest("form");
-
-            // 🧩 Skip these cases
-            if (
-                skipButtonIds.includes(id) || // dropdowns
-                (name === "submit" && (value === "pdf" || value === "excel")) || // PDF export
-                (name === "barcodeBtn" && value === "barcode") || // Barcode export
-                (name === "callNumberBtn" && value === "callNumber") || // Call number export
-                (name === "toggleBtn" && value === "toggle") || // Maintenance toggle
-                btn.disabled || // disabled
-                btn.offsetParent === null || // hidden
-                btn.closest(".dashboard-card") ||
-                btn.classList.contains("skip-loader") || // skip-loader class
-                btn.closest(".skip-loader") || // skip-loader parent
-                btn.hasAttribute("data-modal-toggle") || // modal toggle
-                btn.hasAttribute("data-modal-hide") || // modal hide
-                (form && !form.checkValidity()) || // form is invalid
-                (!form && // not inside a form...
-                    id !== "refresh" && // ...and not refresh
-                    id !== "timeout-all-users") // ...and not timeout
-            ) {
-                return;
-            }
-
-            showLoader();
-        });
-    });
-
-    // --- 2️⃣ Handle form submissions ---
+    // --- 1️⃣ Handle form submissions (standard page changes) ---
     document.querySelectorAll("form").forEach((form) => {
         form.addEventListener("submit", (e) => {
             const submitter = e.submitter;
-            if (form.classList.contains("skip-loader") || form.closest(".skip-loader")) return;
-            
-            const skipAjaxValues = ['pdf', 'excel', 'barcode', 'callNumber'];
-            if (submitter && skipAjaxValues.includes(submitter.value)) {
-                return;
-            }
 
-            if (form.classList.contains('auto-search-form')) {
-                return;
-            }
+            // Wait a tick to check if the submission was prevented by client-side or AJAX logic
+            setTimeout(() => {
+                if (e.defaultPrevented) return;
 
-            showLoader();
+                if (
+                    form.classList.contains("skip-loader") || 
+                    form.closest(".skip-loader") ||
+                    form.target === "_blank"
+                ) {
+                    return;
+                }
+                
+                const skipAjaxValues = ['pdf', 'excel', 'barcode', 'callNumber'];
+                if (submitter && skipAjaxValues.includes(submitter.value)) {
+                    return;
+                }
+
+                if (form.classList.contains('auto-search-form')) {
+                    return;
+                }
+
+                showLoader();
+            }, 0);
         });
     });
 
-    // --- 3️⃣ Handle anchor (<a>) clicks ---
+    // --- 2️⃣ Handle anchor (<a>) clicks (standard navigation) ---
     document.querySelectorAll("a[href]").forEach((link) => {
         link.addEventListener("click", (e) => {
-            const href = link.getAttribute("href");
+            // Wait a tick to check if navigation was prevented by a custom click handler
+            setTimeout(() => {
+                if (e.defaultPrevented) return;
 
-            // Skip internal anchors, new tabs, JS voids, or dropdown triggers
-            if (
-                !href ||
-                href.startsWith("#") ||
-                href.startsWith("javascript:") ||
-                link.id === "dropdownNavbarLink" ||
-                link.closest("#dropdownNavbarLink") || // nested inside dropdown button
-                link.target === "_blank" ||
-                link.classList.contains("skip-loader") || // skip-loader class
-                link.closest(".skip-loader") // skip-loader parent
-            ) {
-                return;
-            }
+                const href = link.getAttribute("href");
 
-            showLoader();
+                // Skip internal anchors, new tabs, JS voids, or dropdown triggers
+                if (
+                    !href ||
+                    href.startsWith("#") ||
+                    href.startsWith("javascript:") ||
+                    link.id === "dropdownNavbarLink" ||
+                    link.closest("#dropdownNavbarLink") || // nested inside dropdown button
+                    link.target === "_blank" ||
+                    link.classList.contains("skip-loader") || // skip-loader class
+                    link.closest(".skip-loader") // skip-loader parent
+                ) {
+                    return;
+                }
+
+                showLoader();
+            }, 0);
         });
+    });
+
+    // --- 3️⃣ Handle page unload (direct location change / refresh / reload) ---
+    window.addEventListener("beforeunload", () => {
+        showLoader();
     });
 
     // --- 4️⃣ Hide loader when page reloads or back navigation happens ---
     window.addEventListener("pageshow", hideLoader);
-
-    // --- 5️⃣ Intercept AJAX (fetch + XHR) ---
-    const originalFetch = window.fetch;
-    window.fetch = async (...args) => {
-        const url = args[0] instanceof Request ? args[0].url : String(args[0]);
-
-        // Skip loader for dashboard analytics fetches and pending extensions
-        const isDashboardAnalytics =
-            url.includes("/analytics/most-visited-students") ||
-            url.includes("/analytics/most-borrowed-students");
-        const isPendingExtensions =
-            url.includes("/maintenance/reservations/show-reservations") ||
-            url.includes("maintenance.pending-extensions");
-        const isMaintenanceStatus =
-            url.includes("maintenance/reservations/status") ||
-            url.includes("maintenance/reservations/toggle") ||
-            url.includes("maintenance/reservations/stats");
-        const isSubjectAccessCodeSuggestions = url.includes(
-            "subject-access-code-suggestions",
-        );
-        const isCategoriesAutocomplete = url.includes("categories/autocomplete");
-        const isNonCirculationSearch = url.includes("/report/non-circulation/search-user");
-        const isPrintingSearch = url.includes("/report/printing/search-user");
-        const isImportAction = url.includes("/import/");
-
-        // Check for custom header to skip loader
-        let hasSkipHeader = false;
-        if (args[1] && args[1].headers) {
-            if (args[1].headers instanceof Headers) {
-                hasSkipHeader = args[1].headers.has("X-Skip-Loader");
-            } else {
-                hasSkipHeader = !!args[1].headers["X-Skip-Loader"];
-            }
-        }
-
-        const shouldSkip =
-            isDashboardAnalytics ||
-            isPendingExtensions ||
-            isMaintenanceStatus ||
-            isSubjectAccessCodeSuggestions ||
-            isCategoriesAutocomplete || // ALWAYS skip autocomplete suggestions
-            isNonCirculationSearch ||
-            isPrintingSearch ||
-            isImportAction || // Skip loader for import actions and status polling
-            hasSkipHeader; // Skip loader anytime the header is present
-
-        try {
-            if (!shouldSkip) {
-                showLoader();
-            }
-            const response = await originalFetch(...args);
-            if (!shouldSkip) {
-                hideLoader();
-            }
-            return response;
-        } catch (error) {
-            if (!shouldSkip) {
-                hideLoader();
-            }
-            throw error;
-        }
-    };
-
-    const originalXHR = window.XMLHttpRequest.prototype.open;
-    window.XMLHttpRequest.prototype.open = function (...args) {
-        const url = String(args[1] || ""); // Get the URL from the 'open' arguments
-
-        // Define URLs to skip the loader for
-        const urlsToSkip = [
-            "/report/user-graph",
-            "/maintenance/reservations/show-reservations",
-            "maintenance.pending-extensions",
-            "maintenance/reservations/status",
-            "maintenance/reservations/toggle",
-            "maintenance/reservations/stats",
-            "subject-access-code-suggestions",
-            "maintenance/categories/autocomplete",
-            "/report/non-circulation/search-user",
-            "/report/printing/search-user",
-            "/import/"
-        ];
-
-        const shouldSkipLoader = urlsToSkip.some((skipUrl) =>
-            url.includes(skipUrl),
-        );
-
-        if (!shouldSkipLoader) {
-            showLoader();
-            this.addEventListener("loadend", hideLoader, { once: true });
-        }
-
-        return originalXHR.apply(this, args);
-    };
 
     // --- 6️⃣ Maintenance Forms Standard Validation ---
     if (
