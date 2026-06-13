@@ -126,6 +126,7 @@
         <tr>
           <th>Date</th>
           <th>Time</th>
+          <th>RFID</th>
           <th>User Name</th>
           <th>Grade & Section / Role</th>
           <th>Type</th>
@@ -140,6 +141,15 @@
         <tr>
           <td>{{ \Carbon\Carbon::parse($item->printed_at)->format('M j, Y') }}</td>
           <td>{{ \Carbon\Carbon::parse($item->printed_at)->format('g:i A') }}</td>
+          <td>
+            @if($item->student && $item->student->users)
+              {{ $item->student->users->rfid ?? 'N/A' }}
+            @elseif($item->faculty && $item->faculty->users && !$item->student)
+              {{ $item->faculty->users->rfid ?? 'N/A' }}
+            @else
+              N/A
+            @endif
+          </td>
           <td>
             @if($item->student && $item->student->users)
               {{ $item->student->users->last_name }}, {{ $item->student->users->first_name }} {{ $item->student->users->middle_name }}
@@ -172,7 +182,7 @@
         </tr>
         @empty
         <tr>
-          <td colspan="9" style="text-align: center;">No printing/photocopy entries found.</td>
+          <td colspan="10" style="text-align: center;">No printing/photocopy entries found.</td>
         </tr>
         @endforelse
       </tbody>

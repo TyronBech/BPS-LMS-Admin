@@ -126,6 +126,7 @@
         <tr>
           <th>Date</th>
           <th>Time</th>
+          <th>RFID</th>
           <th>User Name</th>
           <th>Grade & Section / Role</th>
           <th>Subject</th>
@@ -137,6 +138,15 @@
         <tr>
           <td>{{ \Carbon\Carbon::parse($item->borrowed_at)->format('M j, Y') }}</td>
           <td>{{ \Carbon\Carbon::parse($item->borrowed_at)->format('g:i A') }}</td>
+          <td>
+            @if($item->student && $item->student->users)
+              {{ $item->student->users->rfid ?? 'N/A' }}
+            @elseif($item->faculty && $item->faculty->users && !$item->student)
+              {{ $item->faculty->users->rfid ?? 'N/A' }}
+            @else
+              N/A
+            @endif
+          </td>
           <td>
             @if($item->student && $item->student->users)
               {{ $item->student->users->last_name }}, {{ $item->student->users->first_name }} {{ $item->student->users->middle_name }}
@@ -166,7 +176,7 @@
         </tr>
         @empty
         <tr>
-          <td colspan="6" style="text-align: center;">No non-circulation entries found.</td>
+          <td colspan="7" style="text-align: center;">No non-circulation entries found.</td>
         </tr>
         @endforelse
       </tbody>

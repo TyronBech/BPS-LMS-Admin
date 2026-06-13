@@ -82,10 +82,11 @@ class NonCirculationController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'student_id' => 'nullable|exists:usr_users,id',
-            'faculty_id' => 'required|exists:usr_users,id',
-            'subject' => 'required|string|max:255',
-            'borrowed_at' => 'nullable|date'
+            'modal_user_type' => 'required|in:student,faculty',
+            'student_id'      => 'required_if:modal_user_type,student|nullable|exists:usr_users,id',
+            'faculty_id'      => 'required_if:modal_user_type,faculty|nullable|exists:usr_users,id',
+            'subject'         => 'required|string|max:255',
+            'borrowed_at'     => 'nullable|date'
         ]);
 
         if ($validator->fails()) {
@@ -96,19 +97,21 @@ class NonCirculationController extends Controller
         $nonCirculation->subject = $request->subject;
         $nonCirculation->borrowed_at = $request->borrowed_at ?? now();
 
-        if ($request->filled('student_id')) {
+        if ($request->modal_user_type === 'student') {
             $studentUser = User::with('students')->find($request->student_id);
             if (!$studentUser || !$studentUser->students) {
                 return redirect()->back()->with('toast-warning', 'Invalid student selected.')->withInput();
             }
             $nonCirculation->student_id = $studentUser->students->id;
+            $nonCirculation->faculty_id = null;
+        } else {
+            $facultyUser = User::with('employees')->find($request->faculty_id);
+            if (!$facultyUser || !$facultyUser->employees) {
+                return redirect()->back()->with('toast-warning', 'Invalid faculty/staff selected.')->withInput();
+            }
+            $nonCirculation->faculty_id = $facultyUser->employees->id;
+            $nonCirculation->student_id = null;
         }
-
-        $facultyUser = User::with('employees')->find($request->faculty_id);
-        if (!$facultyUser || !$facultyUser->employees) {
-            return redirect()->back()->with('toast-warning', 'Invalid faculty/staff selected.')->withInput();
-        }
-        $nonCirculation->faculty_id = $facultyUser->employees->id;
 
         $nonCirculation->save();
 
@@ -154,6 +157,42 @@ class NonCirculationController extends Controller
         }
 
         return response()->json($formatted_users);
+    }
+
+    public function lookupRfid(Request $request)
+    {
+        $rfid = $request->get('rfid');
+        if (empty($rfid)) {
+            return response()->json(['success' => false, 'message' => 'RFID is empty.']);
+        }
+
+        $user = User::with(['students', 'employees'])->where('rfid', $rfid)->first();
+
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'User not found.']);
+        }
+
+        $type = null;
+        $details = null;
+        if ($user->students) {
+            $type = 'student';
+            $details = $user->students->level . ' - ' . $user->students->section;
+        } elseif ($user->employees) {
+            $type = 'faculty';
+            $details = $user->employees->employee_role;
+        }
+
+        if (!$type) {
+            return response()->json(['success' => false, 'message' => 'User has no student or employee profile.']);
+        }
+
+        return response()->json([
+            'success' => true,
+            'id' => $user->id,
+            'name' => trim($user->first_name . ' ' . ($user->middle_name ? $user->middle_name . ' ' : '') . $user->last_name . ($user->suffix ? ' ' . $user->suffix : '')),
+            'type' => $type,
+            'details' => $details,
+        ]);
     }
 
     private function generatePDF(Collection $data)
@@ -209,66 +248,76 @@ class NonCirculationController extends Controller
         $sheet->getPageSetup()->setFitToWidth(1);
         $sheet->getPageSetup()->setFitToHeight(0);
 
-        $sheet->mergeCells('A6:F6');
-        $sheet->getStyle('A6:F6')->getFont()->setBold(true);
-        $sheet->getStyle('A6:F6')->getFont()->setSize(14);
-        $sheet->getStyle('A6:F6')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('A6:F6')->getAlignment()->setVertical('center');
+        $sheet->mergeCells('A6:G6');
+        $sheet->getStyle('A6:G6')->getFont()->setBold(true);
+        $sheet->getStyle('A6:G6')->getFont()->setSize(14);
+        $sheet->getStyle('A6:G6')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A6:G6')->getAlignment()->setVertical('center');
         $sheet->setCellValue('A6', 'Non-Circulation Report');
 
         $sheet->getColumnDimension('A')->setWidth(15); // Date
         $sheet->getColumnDimension('B')->setWidth(15); // Time
-        $sheet->getColumnDimension('C')->setWidth(30); // Student/Faculty
-        $sheet->getColumnDimension('D')->setWidth(20); // Grade & Section / Role
-        $sheet->getColumnDimension('E')->setWidth(30); // Subject
-        $sheet->getColumnDimension('F')->setWidth(30); // Teacher
+        $sheet->getColumnDimension('C')->setWidth(20); // RFID
+        $sheet->getColumnDimension('D')->setWidth(30); // User Name
+        $sheet->getColumnDimension('E')->setWidth(20); // Grade & Section / Role
+        $sheet->getColumnDimension('F')->setWidth(30); // Subject
+        $sheet->getColumnDimension('G')->setWidth(30); // Teacher
         
-        $sheet->mergeCells('A7:F7');
-        $sheet->mergeCells('A8:F8');
+        $sheet->mergeCells('A7:G7');
+        $sheet->mergeCells('A8:G8');
         
         $sheet->setCellValue('A8', 'Report Generated On: ' . date('F j, Y'));
         
-        $sheet->getStyle('A7:F8')->getFont()->setBold(true);
-        $sheet->getStyle('A7:F8')->getFont()->setSize(10);
-        $sheet->getStyle('A7:F8')->getAlignment()->setHorizontal('left');
-        $sheet->getStyle('A7:F8')->getAlignment()->setVertical('left');
-        $sheet->getStyle('A7:F8')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A10:F10')->getFont()->setSize(10);
-        $sheet->getStyle('A10:F10')->getFont()->setBold(true);
-        $sheet->getStyle('A10:F10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A10:F10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+        $sheet->getStyle('A7:G8')->getFont()->setBold(true);
+        $sheet->getStyle('A7:G8')->getFont()->setSize(10);
+        $sheet->getStyle('A7:G8')->getAlignment()->setHorizontal('left');
+        $sheet->getStyle('A7:G8')->getAlignment()->setVertical('left');
+        $sheet->getStyle('A7:G8')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A10:G10')->getFont()->setSize(10);
+        $sheet->getStyle('A10:G10')->getFont()->setBold(true);
+        $sheet->getStyle('A10:G10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A10:G10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
 
         $sheet->setCellValue('A10', 'Date');
         $sheet->setCellValue('B10', 'Time');
-        $sheet->setCellValue('C10', 'User Name');
-        $sheet->setCellValue('D10', 'Grade & Section / Role');
-        $sheet->setCellValue('E10', 'Subject');
-        $sheet->setCellValue('F10', 'Teacher');
+        $sheet->setCellValue('C10', 'RFID');
+        $sheet->setCellValue('D10', 'User Name');
+        $sheet->setCellValue('E10', 'Grade & Section / Role');
+        $sheet->setCellValue('F10', 'Subject');
+        $sheet->setCellValue('G10', 'Teacher');
         
         $row = 11;
         foreach ($data as $item) {
             $sheet->setCellValue('A' . $row, Carbon::parse($item->borrowed_at)->format('M j, Y'));
             $sheet->setCellValue('B' . $row, Carbon::parse($item->borrowed_at)->format('g:i A'));
             
+            $rfid = 'N/A';
             if ($item->student && $item->student->users) {
-                $sheet->setCellValue('C' . $row, $item->student->users->last_name . ', ' . $item->student->users->first_name . ' ' . $item->student->users->middle_name);
-                $sheet->setCellValue('D' . $row, $item->student->level . ' - ' . $item->student->section);
+                $rfid = $item->student->users->rfid ?? 'N/A';
+                $sheet->setCellValue('D' . $row, $item->student->users->last_name . ', ' . $item->student->users->first_name . ' ' . $item->student->users->middle_name);
+                $sheet->setCellValue('E' . $row, $item->student->level . ' - ' . $item->student->section);
                 if ($item->faculty && $item->faculty->users) {
-                    $sheet->setCellValue('F' . $row, $item->faculty->users->last_name . ', ' . $item->faculty->users->first_name);
+                    $sheet->setCellValue('G' . $row, $item->faculty->users->last_name . ', ' . $item->faculty->users->first_name);
                 } else {
-                    $sheet->setCellValue('F' . $row, 'N/A');
+                    $sheet->setCellValue('G' . $row, 'N/A');
                 }
             } elseif ($item->faculty && $item->faculty->users) {
-                $sheet->setCellValue('C' . $row, $item->faculty->users->last_name . ', ' . $item->faculty->users->first_name . ' ' . $item->faculty->users->middle_name);
-                $sheet->setCellValue('D' . $row, $item->faculty->employee_role);
-                $sheet->setCellValue('F' . $row, 'N/A');
+                $rfid = $item->faculty->users->rfid ?? 'N/A';
+                $sheet->setCellValue('D' . $row, $item->faculty->users->last_name . ', ' . $item->faculty->users->first_name . ' ' . $item->faculty->users->middle_name);
+                $sheet->setCellValue('E' . $row, $item->faculty->employee_role);
+                $sheet->setCellValue('G' . $row, 'N/A');
+            } else {
+                $sheet->setCellValue('D' . $row, 'N/A');
+                $sheet->setCellValue('E' . $row, 'N/A');
+                $sheet->setCellValue('G' . $row, 'N/A');
             }
             
-            $sheet->setCellValue('E' . $row, $item->subject);
+            $sheet->setCellValue('C' . $row, $rfid);
+            $sheet->setCellValue('F' . $row, $item->subject);
 
-            $sheet->getStyle('A' . $row . ':F' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-            $sheet->getStyle('A' . $row . ':F' . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
-            $sheet->getStyle('A' . $row . ':F' . $row)->getAlignment()->setWrapText(true);
+            $sheet->getStyle('A' . $row . ':G' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle('A' . $row . ':G' . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+            $sheet->getStyle('A' . $row . ':G' . $row)->getAlignment()->setWrapText(true);
             $row++;
         }
 
@@ -279,13 +328,13 @@ class NonCirculationController extends Controller
                 ],
             ],
         ];
-        $sheet->getStyle('A10:F' . ($row - 1))->applyFromArray($styleArray);
+        $sheet->getStyle('A10:G' . ($row - 1))->applyFromArray($styleArray);
 
         $row += 2;
-        $sheet->mergeCells('A' . $row . ':F' . $row);
+        $sheet->mergeCells('A' . $row . ':G' . $row);
         $sheet->setCellValue('A' . $row, 'Report Generated By: ' . Auth::user()->first_name . ' ' . Auth::user()->last_name);
 
-        $styleRange = 'A' . $row . ':F' . $row;
+        $styleRange = 'A' . $row . ':G' . $row;
         $sheet->getStyle($styleRange)->getFont()->setBold(true);
         $sheet->getStyle($styleRange)->getFont()->setSize(10);
         $sheet->getStyle($styleRange)->getAlignment()->setHorizontal('left');

@@ -31,6 +31,21 @@
         @csrf
         <div class="p-4 md:p-6">
           
+          {{-- RFID Selection --}}
+          <div class="mb-4">
+            <label for="rfid_scan" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Scan RFID</label>
+            <div class="relative">
+              <input type="text" id="rfid_scan" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Scan or type RFID number..." autocomplete="off">
+              <span id="rfid_loading" class="absolute right-3 top-3 hidden">
+                <svg class="animate-spin h-5 w-5 text-primary-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+              </span>
+            </div>
+            <p id="rfid_status" class="mt-1 text-xs hidden"></p>
+          </div>
+
           {{-- User Type Selection --}}
           <div class="mb-4">
             <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">User Type</label>
@@ -130,6 +145,80 @@
     const titleContainer = document.getElementById('title_container');
     const titleInput = document.getElementById('title_of_material');
 
+    const rfidInput = document.getElementById('rfid_scan');
+    const rfidLoading = document.getElementById('rfid_loading');
+    const rfidStatus = document.getElementById('rfid_status');
+
+    function performRfidLookup(rfidValue) {
+      const rfid = rfidValue.trim();
+      if (!rfid) return;
+
+      rfidLoading.classList.remove('hidden');
+      rfidStatus.classList.add('hidden');
+
+      fetch(`{{ route('report.lookup-rfid') }}?rfid=${encodeURIComponent(rfid)}`, {
+        headers: {
+          'X-Skip-Loader': 'true'
+        }
+      })
+        .then(response => response.json())
+        .then(data => {
+          rfidLoading.classList.add('hidden');
+          rfidStatus.classList.remove('hidden');
+
+          if (data.success) {
+            rfidStatus.textContent = `User found: ${data.name} (${data.type === 'student' ? 'Student' : 'Faculty/Staff'})`;
+            rfidStatus.className = 'mt-1 text-xs text-green-600 dark:text-green-400';
+
+            const radioToSelect = document.querySelector(`input[name="modal_user_type"][value="${data.type}"]`);
+            if (radioToSelect) {
+              radioToSelect.checked = true;
+              radioToSelect.dispatchEvent(new Event('change'));
+            }
+
+            if (data.type === 'student') {
+              studentSearchInput.value = data.name;
+              studentIdInput.value = data.id;
+              studentSuggestionsBox.classList.add('hidden');
+            } else if (data.type === 'faculty') {
+              facultySearchInput.value = data.name;
+              facultyIdInput.value = data.id;
+              facultySuggestionsBox.classList.add('hidden');
+            }
+          } else {
+            rfidStatus.textContent = data.message || 'RFID not found.';
+            rfidStatus.className = 'mt-1 text-xs text-red-600 dark:text-red-400';
+          }
+        })
+        .catch(err => {
+          rfidLoading.classList.add('hidden');
+          rfidStatus.classList.remove('hidden');
+          rfidStatus.textContent = 'An error occurred during lookup.';
+          rfidStatus.className = 'mt-1 text-xs text-red-600 dark:text-red-400';
+          console.error(err);
+        });
+    }
+
+    if (rfidInput) {
+      rfidInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          performRfidLookup(this.value);
+        }
+      });
+
+      let rfidTimer;
+      rfidInput.addEventListener('input', function() {
+        clearTimeout(rfidTimer);
+        const val = this.value.trim();
+        if (val.length >= 8) {
+          rfidTimer = setTimeout(() => {
+            performRfidLookup(val);
+          }, 400);
+        }
+      });
+    }
+
     // Toggle Photocopy specific fields
     typeSelect.addEventListener('change', function() {
       if (this.value === 'photocopy') {
@@ -178,6 +267,23 @@
         facultySearchInput.setAttribute('required', 'required');
         studentSearchInput.removeAttribute('required');
       }
+    }
+
+    // Auto-focus RFID input when opening modal
+    const openModalBtn = document.querySelector('[data-modal-target="PrintingModal"]');
+    if (openModalBtn) {
+      openModalBtn.addEventListener('click', function() {
+        setTimeout(() => {
+          if (rfidInput) {
+            rfidInput.focus();
+            rfidInput.value = '';
+            if (rfidStatus) {
+              rfidStatus.classList.add('hidden');
+              rfidStatus.textContent = '';
+            }
+          }
+        }, 300);
+      });
     }
 
     function setupAutoSuggest(searchInput, idInput, suggestionsBox, type) {

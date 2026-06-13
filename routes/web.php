@@ -150,6 +150,7 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
             Route::post('non-circulation', 'search')->name('report.non-circulation-search');
             Route::post('non-circulation/store', 'store')->name('report.non-circulation-store');
             Route::get('non-circulation/search-user', 'searchUser')->name('report.non-circulation-search-user');
+            Route::get('lookup-rfid', 'lookupRfid')->name('report.lookup-rfid');
         });
 
         Route::controller(\App\Http\Controllers\Report\PrintingController::class)->group(function () {

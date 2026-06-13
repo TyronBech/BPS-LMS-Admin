@@ -4,6 +4,7 @@
       <tr>
         <th scope="col" class="px-6 py-3 whitespace-nowrap">Date</th>
         <th scope="col" class="px-6 py-3 whitespace-nowrap">Time</th>
+        <th scope="col" class="px-6 py-3 whitespace-nowrap">RFID</th>
         <th scope="col" class="px-6 py-3 whitespace-nowrap">User Name</th>
         <th scope="col" class="px-6 py-3 whitespace-nowrap">
           @if ($userType == 'students')
@@ -27,6 +28,15 @@
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
           {{ \Carbon\Carbon::parse($item->printed_at)->format('g:i A') }}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap">
+          @if($item->student && $item->student->users)
+            {{ $item->student->users->rfid ?? 'N/A' }}
+          @elseif($item->faculty && $item->faculty->users && !$item->student)
+            {{ $item->faculty->users->rfid ?? 'N/A' }}
+          @else
+            N/A
+          @endif
         </td>
         <td class="px-6 py-4 whitespace-nowrap">
           @if($item->student && $item->student->users)
@@ -72,7 +82,7 @@
       </tr>
       @empty
       <tr>
-        <td colspan="9" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+        <td colspan="10" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
           No printing/photocopy entries found.
         </td>
       </tr>
