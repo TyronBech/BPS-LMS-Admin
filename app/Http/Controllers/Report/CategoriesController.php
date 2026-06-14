@@ -16,6 +16,7 @@ use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class CategoriesController extends Controller
 {
@@ -42,7 +43,9 @@ class CategoriesController extends Controller
         ]);
 
         $data = $this->getSummaryCollectionData($educationalLevel, $categoryType);
-        return view('report.categories.categories', compact('data', 'educationalLevel', 'categoryType'));
+        $hasRollback = Storage::disk('local')->exists('private/categories_rollback_timestamp.txt');
+
+        return view('report.categories.categories', compact('data', 'educationalLevel', 'categoryType', 'hasRollback'));
     }
     /**
      * Handles the export request for categories report.
@@ -294,12 +297,20 @@ class CategoriesController extends Controller
 
         try {
             DB::statement('CALL update_summary_matrix()');
+            $latestArchivedAt = DB::table('archive_categories')->max('archived_at');
+            if ($latestArchivedAt) {
+                Storage::disk('local')->put('private/categories_rollback_timestamp.txt', $latestArchivedAt);
+            }
         } catch (\Illuminate\Database\QueryException $e) {
             Log::error('Categories Report: Database error during update', [
                 'user_id' => Auth::guard('admin')->id(),
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
             ]);
+            // Clean up any stale rollback token file if update fails
+            if (Storage::disk('local')->exists('private/categories_rollback_timestamp.txt')) {
+                Storage::disk('local')->delete('private/categories_rollback_timestamp.txt');
+            }
             return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e));
         }
 
@@ -309,6 +320,80 @@ class CategoriesController extends Controller
         ]);
         return redirect()->back()->with('toast-success', 'Successfully updated');
     }
+
+    /**
+     * Rolls back the summary matrix to its previous state using archive_categories records.
+     *
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function rollback()
+    {
+        Log::info('Categories Report: Attempting to rollback summary matrix', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
+            'ip_address' => request()->ip(),
+            'timestamp' => now(),
+        ]);
+
+        if (!Storage::disk('local')->exists('private/categories_rollback_timestamp.txt')) {
+            Log::warning('Categories Report: Rollback attempt failed - no rollback token found', [
+                'user_id' => Auth::guard('admin')->id(),
+                'timestamp' => now(),
+            ]);
+            return redirect()->back()->with('toast-warning', 'No rollback data available.');
+        }
+
+        $latestArchivedAt = Storage::disk('local')->get('private/categories_rollback_timestamp.txt');
+
+        $archives = DB::table('archive_categories')
+            ->where('archived_at', $latestArchivedAt)
+            ->get();
+
+        if ($archives->isEmpty()) {
+            Storage::disk('local')->delete('private/categories_rollback_timestamp.txt');
+            Log::warning('Categories Report: Rollback attempt failed - archive records not found', [
+                'user_id' => Auth::guard('admin')->id(),
+                'archived_at' => $latestArchivedAt,
+                'timestamp' => now(),
+            ]);
+            return redirect()->back()->with('toast-warning', 'No matching archive data found to rollback.');
+        }
+
+        try {
+            DB::transaction(function () use ($archives, $latestArchivedAt) {
+                foreach ($archives as $archive) {
+                    Category::withTrashed()->where('id', $archive->category_id)->update([
+                        'previous_inventory' => $archive->previous_inventory,
+                        'newly_acquired'     => $archive->newly_acquired,
+                        'discarded'          => $archive->discarded,
+                        'present_inventory'  => $archive->present_inventory,
+                    ]);
+                }
+
+                // Delete the rolled back archive records
+                DB::table('archive_categories')
+                    ->where('archived_at', $latestArchivedAt)
+                    ->delete();
+            });
+
+            Storage::disk('local')->delete('private/categories_rollback_timestamp.txt');
+        } catch (\Exception $e) {
+            Log::error('Categories Report: Error during rollback', [
+                'user_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
+            return redirect()->back()->with('toast-error', 'An error occurred during rollback.');
+        }
+
+        Log::info('Categories Report: Summary matrix rolled back successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'timestamp' => now(),
+        ]);
+
+        return redirect()->back()->with('toast-success', 'Successfully rolled back to the previous version.');
+    }
+
 
     /**
      * Builds summary report data with remark-based counters per category.

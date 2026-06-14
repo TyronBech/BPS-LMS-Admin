@@ -174,6 +174,7 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
             Route::get('summary', 'index')->name('report.summary');
             Route::post('summary', 'export')->name('report.summary-export');
             Route::post('update-summary', 'update')->name('report.summary-update');
+            Route::post('rollback-summary', 'rollback')->name('report.summary-rollback');
         });
 
         Route::controller(InventoriesController::class)->middleware(ViewInventoryReportsMiddleware::class)->group(function () {
