@@ -113,7 +113,7 @@ class InventoryController extends Controller
                 throw new \RuntimeException('Book not found.');
             }
 
-            if ($book->remarks === 'Unreturned') {
+            if ($book->availability_status === 'Borrowed') {
                 throw new \RuntimeException('This material is currently Borrowed. Please process its return through Circulation first before scanning.');
             }
 
@@ -549,7 +549,6 @@ class InventoryController extends Controller
             $newRemarks = $remarks[$bookId] ?? $book->remarks;
             $availabilityMap = [
                 'On Shelf' => 'Available',
-                'Unreturned' => 'Borrowed',
                 'Lost and Replaced' => 'Available',
             ];
             $newAvailability = $availabilityMap[$newRemarks] ?? 'Unavailable';

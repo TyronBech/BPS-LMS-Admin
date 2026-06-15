@@ -54,7 +54,10 @@ class InventoryTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user, 'admin');
 
-        $book = Book::factory()->create(['accession' => 'ABC123']);
+        $book = Book::factory()->create([
+            'accession' => 'ABC123',
+            'availability_status' => 'Available',
+        ]);
 
         $response = $this->post(route('inventory.search'), [
             'barcode' => 'ABC123',
@@ -76,7 +79,10 @@ class InventoryTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user, 'admin');
 
-        $book = Book::factory()->create(['accession' => 'ABC123']);
+        $book = Book::factory()->create([
+            'accession' => 'ABC123',
+            'availability_status' => 'Available',
+        ]);
         Inventory::factory()->create([
             'book_id' => $book->id,
             'is_scanned' => true,
@@ -99,7 +105,10 @@ class InventoryTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user, 'admin');
 
-        $book = Book::factory()->create(['accession' => 'ABC123']);
+        $book = Book::factory()->create([
+            'accession' => 'ABC123',
+            'availability_status' => 'Available',
+        ]);
         Inventory::factory()->create([
             'book_id' => $book->id,
             'is_scanned' => true,
@@ -127,7 +136,10 @@ class InventoryTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user, 'admin');
         
-        $book = Book::factory()->create(['accession' => 'ABC123']);
+        $book = Book::factory()->create([
+            'accession' => 'ABC123',
+            'availability_status' => 'Available',
+        ]);
         $inventory = Inventory::factory()->create([
             'book_id' => $book->id,
             'is_scanned' => true,
@@ -143,5 +155,26 @@ class InventoryTest extends TestCase
             'id' => $inventory->id,
             'is_scanned' => 0,
         ]);
+    }
+
+    #[Test]
+    public function it_throws_error_if_book_is_currently_borrowed(): void
+    {
+        // Arrange
+        $this->withoutMiddleware(\App\Http\Middleware\InventoryAuthentication::class);
+        $user = User::factory()->create();
+        $this->actingAs($user, 'admin');
+
+        $book = Book::factory()->create([
+            'accession' => 'ABC123',
+            'availability_status' => 'Borrowed',
+        ]);
+
+        $response = $this->post(route('inventory.search'), [
+            'barcode' => 'ABC123',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('toast-warning', 'This material is currently Borrowed. Please process its return through Circulation first before scanning.');
     }
 }

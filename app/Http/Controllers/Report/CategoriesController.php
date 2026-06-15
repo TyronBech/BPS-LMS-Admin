@@ -296,13 +296,13 @@ class CategoriesController extends Controller
         ]);
 
         try {
-            DB::statement('CALL update_summary_matrix()');
+            $this->performUpdateMatrix();
             $latestArchivedAt = DB::table('archive_categories')->max('archived_at');
             if ($latestArchivedAt) {
                 Storage::disk('local')->put('private/categories_rollback_timestamp.txt', $latestArchivedAt);
             }
-        } catch (\Illuminate\Database\QueryException $e) {
-            Log::error('Categories Report: Database error during update', [
+        } catch (\Exception $e) {
+            Log::error('Categories Report: Error during update', [
                 'user_id' => Auth::guard('admin')->id(),
                 'error_message' => $e->getMessage(),
                 'timestamp' => now(),
@@ -319,6 +319,55 @@ class CategoriesController extends Controller
             'timestamp' => now(),
         ]);
         return redirect()->back()->with('toast-success', 'Successfully updated');
+    }
+
+    /**
+     * Performs the summary matrix update by archiving the current categories
+     * and rolling over counts to the next period.
+     *
+     * @return void
+     */
+    private function performUpdateMatrix()
+    {
+        DB::transaction(function () {
+            // 1. Fetch all categories including soft-deleted ones
+            $categories = Category::withTrashed()->get();
+
+            $now = now();
+
+            // 2. Archive the current state of all categories
+            $archiveData = $categories->map(function ($category) use ($now) {
+                return [
+                    'category_id'        => $category->id,
+                    'legend'             => $category->legend,
+                    'name'               => $category->name,
+                    'previous_inventory' => $category->previous_inventory,
+                    'newly_acquired'     => $category->newly_acquired,
+                    'discarded'          => $category->discarded,
+                    'present_inventory'  => $category->present_inventory,
+                    'created_at'         => $category->created_at,
+                    'updated_at'         => $category->updated_at,
+                    'deleted_at'         => $category->deleted_at,
+                    'archived_at'        => $now,
+                ];
+            })->toArray();
+
+            DB::table('archive_categories')->insert($archiveData);
+
+            // 3. Update the category summary matrix:
+            // - The present inventory of the current period becomes the previous inventory of the new period.
+            // - Reset newly acquired and discarded counters to 0 for the new period.
+            foreach ($categories as $category) {
+                DB::table('bk_categories')
+                    ->where('id', $category->id)
+                    ->update([
+                        'previous_inventory' => $category->present_inventory,
+                        'newly_acquired'     => 0,
+                        'discarded'          => 0,
+                        'updated_at'         => $now,
+                    ]);
+            }
+        });
     }
 
     /**
@@ -408,6 +457,7 @@ class CategoriesController extends Controller
                 'bk_categories.name',
                 'bk_categories.previous_inventory',
                 'bk_categories.newly_acquired',
+                'bk_categories.discarded',
                 'bk_categories.present_inventory',
             ])
             ->selectSub(function ($query) {
@@ -429,7 +479,7 @@ class CategoriesController extends Controller
                     ->selectRaw('COUNT(*)')
                     ->whereNull('bk_books.deleted_at')
                     ->whereColumn('bk_books.category_id', 'bk_categories.id')
-                    ->whereRaw('LOWER(bk_books.remarks) = ?', ['unreturned']);
+                    ->where('bk_books.availability_status', 'Borrowed');
             }, 'unreturned')
             ->selectSub(function ($query) {
                 $query->from('bk_books')
@@ -437,14 +487,7 @@ class CategoriesController extends Controller
                     ->whereNull('bk_books.deleted_at')
                     ->whereColumn('bk_books.category_id', 'bk_categories.id')
                     ->whereRaw('LOWER(bk_books.remarks) = ?', ['missing']);
-            }, 'missing')
-            ->selectSub(function ($query) {
-                $query->from('bk_books')
-                    ->selectRaw('COUNT(*)')
-                    ->whereNull('bk_books.deleted_at')
-                    ->whereColumn('bk_books.category_id', 'bk_categories.id')
-                    ->whereRaw('LOWER(bk_books.remarks) = ?', ['discarded']);
-            }, 'discarded');
+            }, 'missing');
 
         if ($educationalLevel !== 'All') {
             $query->whereJsonContains('bk_categories.educational_level', $educationalLevel);
