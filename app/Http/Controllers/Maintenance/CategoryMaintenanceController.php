@@ -141,8 +141,8 @@ class CategoryMaintenanceController extends Controller
             'name'                      => 'required|string|max:50',
             'legend'                    => 'required|string|max:255',
             'category_type'             => 'required|in:Print,Non-print,E-books',
-            'educational_level'         => 'required|array|min:1',
-            'educational_level.*'       => 'required|string|in:Elementary,Junior High School,Senior High School',
+            'educational_level'         => 'nullable|array',
+            'educational_level.*'       => 'string|in:Elementary,Junior High School,Senior High School',
             'can_borrow'                => 'sometimes|boolean',
             'borrow_duration_days_add'  => 'required_if:can_borrow,1|nullable|integer|min:1|max:999',
         ]);
@@ -225,8 +225,8 @@ class CategoryMaintenanceController extends Controller
             'name'                      => 'required|string|max:50',
             'legend'                    => 'required|string|max:255',
             'category_type'             => 'required|in:Print,Non-print,E-books',
-            'educational_level'         => 'required|array|min:1',
-            'educational_level.*'       => 'required|string|in:Elementary,Junior High School,Senior High School',
+            'educational_level'         => 'nullable|array',
+            'educational_level.*'       => 'string|in:Elementary,Junior High School,Senior High School',
             'can_borrow_edit'           => 'sometimes|boolean',
             'borrow_duration_days_edit' => 'required_if:can_borrow_edit,1|nullable|integer|min:1|max:999',
         ]);
