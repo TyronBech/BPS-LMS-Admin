@@ -187,6 +187,26 @@ class LibraryClassReservationController extends Controller
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
+
+            // 1. Check if there is an already approved overlapping reservation
+            $overlappingApproved = LibraryClassReservation::where('status', 'Approved')
+                ->where('reservation_date', $reservation->reservation_date)
+                ->where(function ($query) use ($reservation) {
+                    $endTime = $reservation->end_time ?? $reservation->start_time;
+                    $query->where('start_time', '<', $endTime)
+                          ->where(DB::raw('COALESCE(end_time, start_time)'), '>', $reservation->start_time);
+                })
+                ->exists();
+
+            if ($overlappingApproved) {
+                DB::rollBack();
+                Log::warning('Library Class Reservation Approval: Conflict detected', [
+                    'user_id' => Auth::guard('admin')->id(),
+                    'reservation_id' => $id,
+                    'timestamp' => now(),
+                ]);
+                return redirect()->back()->with('toast-warning', 'Cannot approve this reservation because an overlapping reservation has already been approved.');
+            }
             
             $remarks = $request->input('remarks');
             $admin = Auth::guard('admin')->user();
@@ -203,15 +223,39 @@ class LibraryClassReservationController extends Controller
             
             $reservation->remarks = $reservation->remarks ? ($reservation->remarks . ' || ' . $appendRemarks) : $appendRemarks;
             $reservation->save();
+
+            // 2. Automatically cancel other pending overlapping reservations in database
+            $overlappingPending = LibraryClassReservation::where('status', 'Pending')
+                ->where('id', '!=', $reservation->id)
+                ->where('reservation_date', $reservation->reservation_date)
+                ->where(function ($query) use ($reservation) {
+                    $endTime = $reservation->end_time ?? $reservation->start_time;
+                    $query->where('start_time', '<', $endTime)
+                          ->where(DB::raw('COALESCE(end_time, start_time)'), '>', $reservation->start_time);
+                })
+                ->get();
+
+            foreach ($overlappingPending as $other) {
+                $other->status = 'Cancelled';
+                $appendOtherRemarks = 'CANCELLED automatically due to overlapping approved reservation #' . $reservation->id . ' on ' . now()->format('F d, Y H:i:s');
+                $other->remarks = $other->remarks ? ($other->remarks . ' || ' . $appendOtherRemarks) : $appendOtherRemarks;
+                $other->save();
+            }
             
             DB::commit();
 
             // Notify the requester
             $this->sendReservationEmail($reservation->user, $reservation, 'Approved', $remarks);
 
-            Log::info('Library Class Reservation Approval: Approved successfully', [
+            // Notify each of the cancelled reservation requesters
+            foreach ($overlappingPending as $other) {
+                $this->sendReservationEmail($other->user, $other, 'Cancelled', 'Cancelled due to overlapping reservation approval.');
+            }
+
+            Log::info('Library Class Reservation Approval: Approved successfully and cancelled conflicts', [
                 'user_id' => Auth::guard('admin')->id(),
                 'reservation_id' => $id,
+                'cancelled_ids' => $overlappingPending->pluck('id')->toArray(),
                 'timestamp' => now(),
             ]);
 

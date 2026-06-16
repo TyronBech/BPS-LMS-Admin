@@ -21,6 +21,11 @@ class FetchDataTest extends TestCase
         $user = User::factory()->create();
         $this->actingAs($user, 'admin');
 
+        $initialActiveCount = \App\Models\Log::where('time_in', '!=', null)
+            ->where('time_out', null)
+            ->whereDate('time_in', Carbon::today())
+            ->count();
+
         Log::factory()->create([
             'user_id'       => $user->id,
             'computer_use'  => 'Yes',
@@ -45,6 +50,6 @@ class FetchDataTest extends TestCase
 
         // Assert
         $response->assertOk()
-                 ->assertJson(['active_count' => 1]); // only 1 user matches
+                 ->assertJson(['active_count' => $initialActiveCount + 1]); // increases by 1
     }
 }
