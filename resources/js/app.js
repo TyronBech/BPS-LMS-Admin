@@ -21,13 +21,40 @@ document.addEventListener("DOMContentLoaded", () => {
         loader.classList.add("hidden");
     }
 
+    // Track the last clicked submit button as a fallback/polyfill for e.submitter
+    let isExporting = false;
+    let activeSubmitter = null;
+    document.addEventListener("click", (e) => {
+        const target = e.target.closest("button[type='submit'], input[type='submit']");
+        if (target) {
+            activeSubmitter = target;
+
+            // Set exporting flag if the clicked button is for PDF/Excel export
+            const skipAjaxValues = ['pdf', 'excel', 'barcode', 'callNumber'];
+            if (
+                skipAjaxValues.includes(target.value) ||
+                target.name === 'submit' ||
+                target.classList.contains('btn-export') ||
+                target.id === 'downloadPDF'
+            ) {
+                isExporting = true;
+                setTimeout(() => {
+                    isExporting = false;
+                }, 2000);
+            }
+        }
+    }, true);
+
     // --- 1️⃣ Handle form submissions (standard page changes) ---
     document.querySelectorAll("form").forEach((form) => {
         form.addEventListener("submit", (e) => {
-            const submitter = e.submitter;
+            const submitter = e.submitter || activeSubmitter;
 
             // Wait a tick to check if the submission was prevented by client-side or AJAX logic
             setTimeout(() => {
+                // Clear activeSubmitter reference after event loop tick
+                activeSubmitter = null;
+
                 if (e.defaultPrevented) return;
 
                 if (
@@ -39,7 +66,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 }
                 
                 const skipAjaxValues = ['pdf', 'excel', 'barcode', 'callNumber'];
-                if (submitter && skipAjaxValues.includes(submitter.value)) {
+                if (
+                    (submitter && skipAjaxValues.includes(submitter.value)) ||
+                    (submitter && (submitter.name === 'submit' || submitter.classList.contains('btn-export')))
+                ) {
                     return;
                 }
 
@@ -61,7 +91,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
                 const href = link.getAttribute("href");
 
-                // Skip internal anchors, new tabs, JS voids, or dropdown triggers
+                // Skip internal anchors, new tabs, JS voids, file downloads, or dropdown triggers
                 if (
                     !href ||
                     href.startsWith("#") ||
@@ -70,8 +100,17 @@ document.addEventListener("DOMContentLoaded", () => {
                     link.closest("#dropdownNavbarLink") || // nested inside dropdown button
                     link.target === "_blank" ||
                     link.classList.contains("skip-loader") || // skip-loader class
-                    link.closest(".skip-loader") // skip-loader parent
+                    link.closest(".skip-loader") || // skip-loader parent
+                    link.hasAttribute("download") || // download attribute
+                    href.toLowerCase().includes("export") ||
+                    href.toLowerCase().includes("download") ||
+                    /\.(pdf|xlsx|xls|csv)$/i.test(href)
                 ) {
+                    // Set exporting flag to skip beforeunload loader
+                    isExporting = true;
+                    setTimeout(() => {
+                        isExporting = false;
+                    }, 2000);
                     return;
                 }
 
@@ -82,7 +121,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // --- 3️⃣ Handle page unload (direct location change / refresh / reload) ---
     window.addEventListener("beforeunload", () => {
-        showLoader();
+        if (!isExporting) {
+            showLoader();
+        }
     });
 
     // --- 4️⃣ Hide loader when page reloads or back navigation happens ---
@@ -236,11 +277,14 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         form.addEventListener('submit', async (e) => {
-            const submitter = e.submitter;
+            const submitter = e.submitter || activeSubmitter;
             const skipAjaxValues = ['pdf', 'excel', 'barcode', 'callNumber'];
             
             // Allow normal submission for exports
-            if (submitter && skipAjaxValues.includes(submitter.value)) {
+            if (
+                (submitter && skipAjaxValues.includes(submitter.value)) ||
+                (submitter && (submitter.name === 'submit' || submitter.classList.contains('btn-export')))
+            ) {
                 return;
             }
 
