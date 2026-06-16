@@ -154,29 +154,43 @@
       $('#average_display_metric').text(formattedAverage);
     }
 
+    function bindSummaryDatePickerEvents() {
+      const startInput = document.getElementById('summary-datepicker-start');
+      const endInput = document.getElementById('summary-datepicker-end');
+      
+      const handleDateChange = function() {
+        const startStr = $('#summary-datepicker-start').val();
+        const endStr = $('#summary-datepicker-end').val();
+        if (startStr && endStr) {
+          const startParts = startStr.split('/');
+          const endParts = endStr.split('/');
+          if (startParts.length === 3 && endParts.length === 3) {
+            const startDate = new Date(startParts[2], startParts[0] - 1, startParts[1]);
+            const endDate = new Date(endParts[2], endParts[0] - 1, endParts[1]);
+            if (startDate <= endDate) {
+              $('#summary-filter-form').submit();
+            }
+          }
+        }
+      };
+
+      if (startInput) {
+        startInput.addEventListener('changeDate', handleDateChange);
+        startInput.addEventListener('change', handleDateChange);
+      }
+      if (endInput) {
+        endInput.addEventListener('changeDate', handleDateChange);
+        endInput.addEventListener('change', handleDateChange);
+      }
+    }
+
     // Calculate initial average
     calculateAverage();
+    bindSummaryDatePickerEvents();
 
     // Re-calculate on dropdown change
     $(document).on('change', '#hours_day', function() {
       calculateAverage();
-    });
-
-    // Auto-submit form on date change
-    $(document).on('changeDate change', '#summary-datepicker-start, #summary-datepicker-end', function() {
-      const startStr = $('#summary-datepicker-start').val();
-      const endStr = $('#summary-datepicker-end').val();
-      if (startStr && endStr) {
-        const startParts = startStr.split('/');
-        const endParts = endStr.split('/');
-        if (startParts.length === 3 && endParts.length === 3) {
-          const startDate = new Date(startParts[2], startParts[0] - 1, startParts[1]);
-          const endDate = new Date(endParts[2], endParts[0] - 1, endParts[1]);
-          if (startDate <= endDate) {
-            $('#summary-filter-form').submit();
-          }
-        }
-      }
     });
 
     // Handle AJAX form submission for the summary card filter
@@ -213,7 +227,17 @@
           $('#datepicker-range-start').val(newStartVal);
           $('#datepicker-range-end').val(newEndVal);
           
-          // 2. Update the summary card HTML content
+          // 2. Clean up the old date range picker instance and its associated popup elements
+          const oldPickerEl = document.getElementById('date-range-picker-summary');
+          if (oldPickerEl && oldPickerEl._dateRangePicker) {
+            try {
+              oldPickerEl._dateRangePicker.destroy();
+            } catch (err) {
+              console.warn('Failed to destroy summary date range picker:', err);
+            }
+          }
+
+          // Update the summary card HTML content
           const oldSummaryContent = document.getElementById('summary-card');
           const newSummaryContent = doc.getElementById('summary-card');
           if (oldSummaryContent && newSummaryContent) {
@@ -234,6 +258,7 @@
           if (typeof initFlowbite === 'function') {
             initFlowbite();
           }
+          bindSummaryDatePickerEvents();
           
           // 6. Reload chart/graph with the new dates
           if (typeof loadGraph === 'function') {

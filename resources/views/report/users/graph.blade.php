@@ -34,7 +34,7 @@
               <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
             </svg>
           </div>
-          <input id="datepicker-range-graph-start" name="graph-start" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 cursor-not-allowed bg-gray-100 dark:bg-gray-800 opacity-60" placeholder="Select date start" disabled>
+          <input id="datepicker-range-graph-start" name="graph-start" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 cursor-not-allowed opacity-60" placeholder="Select date start" disabled>
         </div>
       </div>
       <span class="mx-2 text-gray-500 hidden sm:block mb-3">to</span>
@@ -46,7 +46,7 @@
               <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
             </svg>
           </div>
-          <input id="datepicker-range-graph-end" name="graph-end" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 cursor-not-allowed bg-gray-100 dark:bg-gray-800 opacity-60" placeholder="Select date end" disabled>
+          <input id="datepicker-range-graph-end" name="graph-end" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 cursor-not-allowed opacity-60" placeholder="Select date end" disabled>
         </div>
       </div>
     </div>
@@ -276,10 +276,11 @@
 
   function updateDatePickerState() {
     const isTypeSelected = $('#type').val() !== '';
+    const hasCustomDates = $('#datepicker-range-graph-start').val() !== '' || $('#datepicker-range-graph-end').val() !== '';
     const dateStart = $('#datepicker-range-graph-start');
     const dateEnd = $('#datepicker-range-graph-end');
 
-    if (isTypeSelected) {
+    if (isTypeSelected || hasCustomDates) {
       dateStart.removeAttr('disabled').removeClass('cursor-not-allowed bg-gray-100 dark:bg-gray-800 opacity-60');
       dateEnd.removeAttr('disabled').removeClass('cursor-not-allowed bg-gray-100 dark:bg-gray-800 opacity-60');
     } else {
@@ -310,7 +311,10 @@
     });
 
     // Auto reload on date changes (when user picks start or end)
-    $('#datepicker-range-graph-start, #datepicker-range-graph-end').on('change blur', function() {
+    $('#datepicker-range-graph-start, #datepicker-range-graph-end').on('changeDate change blur', function() {
+      // Clear the type select field when date is selected
+      $('#type').val('');
+      updateDatePickerState();
       loadGraph();
     });
   });
