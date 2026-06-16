@@ -65,7 +65,15 @@
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <p class="font-semibold text-gray-900 dark:text-white">Penalty:</p>
-          <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">{{ $transaction->penalty_total }}</p>
+          <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">
+            @if($transaction->discount > 0)
+              <span class="line-through text-gray-500">₱ {{ number_format($transaction->penalty_total, 2) }}</span>
+              <span class="font-semibold text-green-600 dark:text-green-400 ms-2">₱ {{ number_format($transaction->penalty_total * (1 - $transaction->discount), 2) }}</span>
+              <span class="text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300 px-2.5 py-0.5 rounded-full ms-2">{{ rtrim(rtrim(number_format($transaction->discount * 100, 2), '0'), '.') }}% discount</span>
+            @else
+              ₱ {{ number_format($transaction->penalty_total, 2) }}
+            @endif
+          </p>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <p class="font-semibold text-gray-900 dark:text-white">Penalty Status:</p>

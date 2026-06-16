@@ -144,7 +144,7 @@ class TransactionMaintenanceController extends Controller
             'timestamp' => now(),
         ]);
 
-        if ($request->input('penalty_status') === 'Discounted') {
+        if (in_array($request->input('penalty_status'), ['Discounted', 'Paid'])) {
             $discountInput = $request->input('discount');
             if ($discountInput !== null && $discountInput !== '' && is_numeric($discountInput)) {
                 $normalizedDiscount = (float) $discountInput;
@@ -226,7 +226,7 @@ class TransactionMaintenanceController extends Controller
             }
 
             $normalizedDiscount = null;
-            if ($request->input('penalty_status') === 'Discounted') {
+            if (in_array($request->input('penalty_status'), ['Discounted', 'Paid'])) {
                 $discountInput = $request->input('discount');
                 if ($discountInput !== null && $discountInput !== '') {
                     $normalizedDiscount = round(max(0, min((float) $discountInput, 1)), 2);

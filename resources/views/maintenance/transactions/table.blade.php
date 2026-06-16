@@ -247,7 +247,7 @@
 
             document.getElementById('book_condition').value = transaction.book_condition || '';
             document.getElementById('penalty_total').value = transaction.penalty_total || '';
-            // discount: show only when penalty_status is 'Discounted'
+            // discount: show only when penalty_status is 'Discounted' or 'Paid'
             const discountEl = document.getElementById('discount');
             if (discountEl) {
               const rawDiscount = Number(transaction.discount ?? '');
@@ -258,9 +258,9 @@
                 ? null
                 : (Math.max(0, Math.min(normalizedDiscount, 1)) * 100);
               discountEl.value = displayDiscount === null ? '' : Number(displayDiscount.toFixed(2));
-              if ((transaction.penalty_status || '') === 'Discounted') {
+              if ((transaction.penalty_status || '') === 'Discounted' || (transaction.penalty_status || '') === 'Paid') {
                 discountEl.classList.remove('hidden');
-                discountEl.required = true;
+                discountEl.required = ((transaction.penalty_status || '') === 'Discounted');
               } else {
                 discountEl.classList.add('hidden');
                 discountEl.required = false;
@@ -272,10 +272,10 @@
             const penaltyStatusEl = document.getElementById('penalty_status');
             if (penaltyStatusEl) {
               penaltyStatusEl.addEventListener('change', function() {
-                if (this.value === 'Discounted') {
+                if (this.value === 'Discounted' || this.value === 'Paid') {
                   if (discountEl) {
                     discountEl.classList.remove('hidden');
-                    discountEl.required = true;
+                    discountEl.required = (this.value === 'Discounted');
                   }
                 } else {
                   if (discountEl) {
@@ -299,12 +299,12 @@
       editTransactionForm.addEventListener('submit', function() {
         const penaltyStatusEl = document.getElementById('penalty_status');
         const discountEl = document.getElementById('discount');
-        if (!discountEl || !penaltyStatusEl || penaltyStatusEl.value !== 'Discounted') {
+        if (!discountEl || !penaltyStatusEl || (penaltyStatusEl.value !== 'Discounted' && penaltyStatusEl.value !== 'Paid')) {
           return;
         }
 
         const uiDiscount = Number(discountEl.value);
-        if (!Number.isFinite(uiDiscount)) {
+        if (!Number.isFinite(uiDiscount) || discountEl.value === '') {
           return;
         }
 

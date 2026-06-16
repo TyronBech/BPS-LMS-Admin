@@ -563,9 +563,9 @@ class PenaltiesController extends Controller
             ->values()
             ->implode(', ');
 
-        $resolvedTotal = (float) ($transaction->penalties_amount_sum ?? 0);
+        $resolvedTotal = (float) ($transaction->penalty_total ?? 0);
         if ($resolvedTotal <= 0) {
-            $resolvedTotal = (float) ($transaction->penalty_total ?? 0);
+            $resolvedTotal = (float) ($transaction->penalties_amount_sum ?? 0);
         }
         $discountRate = $this->normalizeDiscountRate($transaction->discount ?? 0);
         $discountedTotal = $discountRate > 0
