@@ -61,32 +61,72 @@ class MailPreviewController extends Controller
                 'description' => 'Preview the password change confirmation email.',
                 'factory' => fn() => new ChangePasswordMail($this->sampleUser()),
             ],
-            'reservation-approved' => [
-                'label' => 'Reservation Approved',
-                'description' => 'Preview the approved reservation extension email.',
+            'extension-approved' => [
+                'label' => 'Extension Approved',
+                'description' => 'Preview the approved book extension email.',
                 'factory' => fn() => new ReservationMail(
                     $this->sampleUser(),
                     $this->sampleBook(),
-                    'Your extension request has been approved. Please return the book on or before the new due date shown below.',
+                    'Your book extension request has been approved by the library. Your new due date is ' . now()->addDays(7)->format('M d, Y'),
                     'extended',
                     now()->addDays(7),
                     'Good',
                     '0.00',
-                    'Paid'
+                    'No Penalty'
                 ),
             ],
-            'reservation-rejected' => [
-                'label' => 'Reservation Rejected',
-                'description' => 'Preview the rejected reservation extension email.',
+            'reservation-available' => [
+                'label' => 'Reservation Ready for Pickup',
+                'description' => 'Preview the approved reservation email when book is available.',
                 'factory' => fn() => new ReservationMail(
                     $this->sampleUser(),
                     $this->sampleBook(),
-                    'Your extension request could not be approved at this time. Please return the book on the original due date or coordinate with the library staff.',
+                    'Your book reservation request for "' . $this->sampleBook()->title . '" has been approved. The book is now available for pickup until ' . now()->addDays(3)->format('M d, Y') . '.',
+                    'reserved_available',
+                    now()->addDays(3),
+                    'Good',
+                    '0.00',
+                    'No Penalty',
+                    [
+                        'subject' => '✅ Book Reservation Ready for Pickup',
+                        'title' => 'Book Reservation Approved',
+                        'greeting' => "Dear Juan Dela Cruz,",
+                        'approved_msg' => 'Good news! Your book reservation request has been approved and is ready for pickup.',
+                    ]
+                ),
+            ],
+            'reservation-queued' => [
+                'label' => 'Reservation Placed in Queue',
+                'description' => 'Preview the approved reservation email when book is currently borrowed.',
+                'factory' => fn() => new ReservationMail(
+                    $this->sampleUser(),
+                    $this->sampleBook(),
+                    'Your book reservation request for "' . $this->sampleBook()->title . '" has been approved. The book is currently borrowed by another user. You will be notified once it becomes available for pickup.',
+                    'reserved_queued',
+                    now(),
+                    'Good',
+                    '0.00',
+                    'No Penalty',
+                    [
+                        'subject' => '📌 Book Reservation Approved & Placed in Queue',
+                        'title' => 'Book Reservation Approved (In Queue)',
+                        'greeting' => "Dear Juan Dela Cruz,",
+                        'approved_msg' => 'Good news! Your book reservation request has been approved. You are now in line for this book.',
+                    ]
+                ),
+            ],
+            'reservation-rejected' => [
+                'label' => 'Reservation / Extension Rejected',
+                'description' => 'Preview the rejected reservation or extension email.',
+                'factory' => fn() => new ReservationMail(
+                    $this->sampleUser(),
+                    $this->sampleBook(),
+                    'Your request could not be approved at this time. Reason: Material is reserved for another transaction. Please contact the library staff for more information.',
                     'rejected',
                     now()->addDays(2),
                     'Good',
-                    '25.00',
-                    'Unpaid'
+                    '0.00',
+                    'Pending'
                 ),
             ],
             'role-update' => [

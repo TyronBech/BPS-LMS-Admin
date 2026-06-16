@@ -18,10 +18,55 @@
             Are you sure you want to approve this book reservation request for
             <strong class="text-gray-900 dark:text-white">{{ $request->user->first_name }} {{ $request->user->last_name }}</strong>?
           </h3>
-          <p class="mb-5 text-sm text-gray-600 dark:text-gray-400 px-2">
-            Book: <strong class="break-words">{{ $request->book->title }}</strong><br>
-            Action: <strong>The book will be checked out and marked as Borrowed. Default borrow period of 7 days will be applied.</strong>
+          <p class="mb-3 text-sm text-gray-600 dark:text-gray-400 px-2">
+            Book: <strong class="break-words text-gray-900 dark:text-white">{{ $request->book->title }}</strong>
           </p>
+          
+          @if($request->book->availability_status === 'Available')
+            <!-- Flow for Available -->
+            <div class="mb-5 p-3.5 bg-green-50 border border-green-200 rounded-xl dark:bg-green-900/10 dark:border-green-800">
+              <div class="flex items-center justify-between gap-2">
+                <div class="text-left">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-green-700 dark:text-green-400 block">Current State</span>
+                  <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">Available</p>
+                </div>
+                <div class="text-gray-400 dark:text-gray-600">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"></path>
+                  </svg>
+                </div>
+                <div class="text-right">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-green-700 dark:text-green-400 block">System Result</span>
+                  <p class="text-sm font-semibold text-green-700 dark:text-green-400">Ready for Pickup</p>
+                </div>
+              </div>
+              <p class="mt-2.5 text-xs text-left text-gray-500 dark:text-gray-400 border-t border-green-200/50 dark:border-green-800/50 pt-2 font-normal">
+                This material is available in the library. Approval will mark it as <span class="font-semibold text-green-700 dark:text-green-400">"Available for pick up"</span>, giving the user 3 days to collect it.
+              </p>
+            </div>
+          @else
+            <!-- Flow for Unavailable -->
+            <div class="mb-5 p-3.5 bg-amber-50 border border-amber-200 rounded-xl dark:bg-amber-900/10 dark:border-amber-800">
+              <div class="flex items-center justify-between gap-2">
+                <div class="text-left">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 block">Current State</span>
+                  <p class="text-sm font-semibold text-gray-800 dark:text-gray-200">Borrowed/Unavailable</p>
+                </div>
+                <div class="text-gray-400 dark:text-gray-600">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"></path>
+                  </svg>
+                </div>
+                <div class="text-right">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-amber-700 dark:text-amber-400 block">System Result</span>
+                  <p class="text-sm font-semibold text-amber-700 dark:text-amber-400">Placed in Queue</p>
+                </div>
+              </div>
+              <p class="mt-2.5 text-xs text-left text-gray-500 dark:text-gray-400 border-t border-amber-200/50 dark:border-amber-800/50 pt-2 font-normal">
+                This material is currently borrowed. Approval will place the user in the <span class="font-semibold text-amber-700 dark:text-amber-400">Reservation Queue</span>. They will be notified automatically when it becomes available.
+              </p>
+            </div>
+          @endif
         @else
           <h3 class="mb-5 text-base md:text-lg font-normal text-gray-500 dark:text-gray-400 px-2">
             Are you sure you want to approve this extension request for

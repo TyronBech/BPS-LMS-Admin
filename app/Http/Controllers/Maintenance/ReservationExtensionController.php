@@ -383,14 +383,14 @@ class ReservationExtensionController extends Controller
                     $user,
                     $book,
                     $message,
-                    'extended',
+                    $isAvailable ? 'reserved_available' : 'reserved_queued',
                     $deadline,
                     $book->book_condition ?? 'Good',
                     0.00,
                     'No Penalty',
                     [
-                        'subject' => '✅ Book Reservation Request Approved',
-                        'title' => 'Book Reservation Approved',
+                        'subject' => $isAvailable ? '✅ Book Reservation Ready for Pickup' : '📌 Book Reservation Approved & Placed in Queue',
+                        'title' => $isAvailable ? 'Book Reservation Approved' : 'Book Reservation Approved (In Queue)',
                         'greeting' => "Dear {$user->first_name} {$user->last_name},",
                         'approved_msg' => $approvedMsg,
                     ]

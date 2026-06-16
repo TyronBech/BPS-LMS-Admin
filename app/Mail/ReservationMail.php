@@ -53,21 +53,40 @@ class ReservationMail extends Mailable
         $this->defaultLogoPath = public_path('img/OwlQuery.png');
         $brandName = trim(($settings->org_initial ?? '') . ' ' . config('app.name'));
 
-        $subjectText = $transactionType === 'extended'
-            ? '✅ Book Extension Request Approved'
-            : '❌ Book Extension Request Rejected';
+        $subjectText = '❌ Book Extension Request Rejected';
+        $titleText = 'Extension Request Rejected';
+        $approvedMsgText = 'Good news! Your extension request has been approved.';
+        $rejectedMsgText = 'Unfortunately, your extension request has been rejected.';
+        $dueDateLabel = 'New Due Date';
+
+        if ($transactionType === 'extended') {
+            $subjectText = '✅ Book Extension Request Approved';
+            $titleText = 'Extension Request Approved';
+            $approvedMsgText = 'Good news! Your extension request has been approved.';
+            $dueDateLabel = 'New Due Date';
+        } elseif ($transactionType === 'reserved_available') {
+            $subjectText = '✅ Book Reservation Ready for Pickup';
+            $titleText = 'Book Reservation Approved';
+            $approvedMsgText = 'Good news! Your book reservation request has been approved and is ready for pickup.';
+            $dueDateLabel = 'Pickup Deadline';
+        } elseif ($transactionType === 'reserved_queued') {
+            $subjectText = '📌 Book Reservation Approved & Placed in Queue';
+            $titleText = 'Book Reservation Approved (In Queue)';
+            $approvedMsgText = 'Good news! Your book reservation request has been approved and you have been placed in the waiting queue.';
+            $dueDateLabel = 'Queue Status';
+        }
 
         $this->msg = array_replace([
             'brand_name'      => $brandName,
             // 'brand_logo' removed
             'brand_logo_alt'  => ($settings->org_initial ?? '') . ' Logo',
             'subject'         => $subjectText,
-            'title'           => $transactionType === 'extended' ? 'Extension Request Approved' : 'Extension Request Rejected',
+            'title'           => $titleText,
             'greeting'        => "Dear {$displayName},",
-            'approved_msg'    => 'Good news! Your extension request has been approved.',
-            'rejected_msg'    => 'Unfortunately, your extension request has been rejected.',
+            'approved_msg'    => $approvedMsgText,
+            'rejected_msg'    => $rejectedMsgText,
             'book_title_label'     => 'Book Title',
-            'new_due_date_label'   => 'New Due Date',
+            'new_due_date_label'   => $dueDateLabel,
             'condition_label'      => 'Book Condition',
             'penalty_label'        => 'Penalty',
             'penalty_status_label' => 'Penalty Status',

@@ -188,11 +188,7 @@
 <body>
   <!-- Preheader -->
   <div style="display:none; overflow:hidden; line-height:1px; opacity:0; max-height:0; max-width:0;">
-    @if($transactionType === 'extended')
-    Your book extension request has been approved
-    @else
-    Your book extension request has been rejected
-    @endif
+    {{ $msg['subject'] ?? 'Notification from ' . ($msg['brand_name'] ?? config('app.name')) }}
   </div>
 
   <center role="article" aria-roledescription="email" lang="en" style="width:100%; background:#f4f6f8;">
@@ -230,6 +226,10 @@
                 <div style="margin-bottom: 20px;">
                   @if($transactionType === 'extended')
                   <span class="badge-success">✓ APPROVED</span>
+                  @elseif($transactionType === 'reserved_available')
+                  <span class="badge-success">✓ READY FOR PICKUP</span>
+                  @elseif($transactionType === 'reserved_queued')
+                  <span class="badge-warning">✓ IN QUEUE</span>
                   @else
                   <span class="badge-danger">✗ REJECTED</span>
                   @endif
@@ -244,16 +244,22 @@
                 </p>
 
                 <!-- Alert Box -->
-                @if($transactionType === 'extended')
+                @if(in_array($transactionType, ['extended', 'reserved_available']))
                 <div class="alert-success">
                   <p style="margin:0; color:#166534; font-weight:600;">
-                    {{ $msg['approved_msg'] ?? 'Good news! Your extension request has been approved.' }}
+                    {{ $msg['approved_msg'] ?? 'Good news! Your request has been approved.' }}
+                  </p>
+                </div>
+                @elseif($transactionType === 'reserved_queued')
+                <div class="panel" style="border-left: 4px solid <?php echo $tertiaryColor; ?>; padding: 16px; margin: 16px 0; background: <?php echo $tertiaryColor; ?>20; border-radius: 6px;">
+                  <p style="margin:0; color:#92400e; font-weight:600;">
+                    {{ $msg['approved_msg'] ?? 'Good news! Your reservation request has been approved and placed in the queue.' }}
                   </p>
                 </div>
                 @else
                 <div class="alert-danger">
                   <p style="margin:0; color:#991b1b; font-weight:600;">
-                    {{ $msg['rejected_msg'] ?? 'Your extension request has been rejected.' }}
+                    {{ $msg['rejected_msg'] ?? 'Your request has been rejected.' }}
                   </p>
                 </div>
                 @endif
@@ -291,6 +297,20 @@
                       {{ \Carbon\Carbon::parse($dueDate)->format('F j, Y') }}
                     </td>
                   </tr>
+                  @elseif($transactionType === 'reserved_available')
+                  <tr>
+                    <td class="panel-td muted" width="180" style="font-weight:600;">{{ $msg['new_due_date_label'] ?? 'Pickup Deadline' }}:</td>
+                    <td class="panel-td" style="font-weight:600; color:#16a34a;">
+                      {{ \Carbon\Carbon::parse($dueDate)->format('F j, Y') }}
+                    </td>
+                  </tr>
+                  @elseif($transactionType === 'reserved_queued')
+                  <tr>
+                    <td class="panel-td muted" width="180" style="font-weight:600;">{{ $msg['new_due_date_label'] ?? 'Queue Status' }}:</td>
+                    <td class="panel-td" style="font-weight:600; color:#92400e;">
+                      Placed in Queue (Unavailable)
+                    </td>
+                  </tr>
                   @else
                   <tr>
                     <td class="panel-td muted" width="180" style="font-weight:600;">Original Due Date:</td>
@@ -304,6 +324,10 @@
                     <td class="panel-td">
                       @if($transactionType === 'extended')
                       <span class="badge-success" style="font-size:12px; padding:4px 8px;">Extended</span>
+                      @elseif($transactionType === 'reserved_available')
+                      <span class="badge-success" style="font-size:12px; padding:4px 8px;">Ready for Pickup</span>
+                      @elseif($transactionType === 'reserved_queued')
+                      <span class="badge-warning" style="font-size:12px; padding:4px 8px;">In Queue</span>
                       @else
                       <span class="badge-danger" style="font-size:12px; padding:4px 8px;">Rejected</span>
                       @endif
@@ -319,6 +343,24 @@
                   </p>
                   <p style="margin:8px 0 0; color:#92400e; font-size:14px;">
                     Please return the book on or before the new due date to avoid penalties. Late returns may result in suspension of borrowing privileges.
+                  </p>
+                </div>
+                @elseif($transactionType === 'reserved_available')
+                <div style="background:<?php echo $tertiaryColor; ?>20; border-left:4px solid <?php echo $tertiaryColor; ?>; padding:16px; border-radius:6px; margin:16px 0;">
+                  <p style="margin:0; color:#92400e; font-weight:600; font-size:14px;">
+                    ⚠️ Pickup Information
+                  </p>
+                  <p style="margin:8px 0 0; color:#92400e; font-size:14px;">
+                    Please visit the library to claim your reserved book on or before the pickup deadline. Unclaimed books will be returned to circulation.
+                  </p>
+                </div>
+                @elseif($transactionType === 'reserved_queued')
+                <div style="background:<?php echo $tertiaryColor; ?>20; border-left:4px solid <?php echo $tertiaryColor; ?>; padding:16px; border-radius:6px; margin:16px 0;">
+                  <p style="margin:0; color:#92400e; font-weight:600; font-size:14px;">
+                    📌 Reservation Queue Info
+                  </p>
+                  <p style="margin:8px 0 0; color:#92400e; font-size:14px;">
+                    The book you requested is currently checked out by another user. You have been placed in the waiting queue and will be notified via email immediately when the book is returned and ready for pickup.
                   </p>
                 </div>
                 @else
