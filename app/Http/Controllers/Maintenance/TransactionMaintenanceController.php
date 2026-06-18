@@ -268,6 +268,7 @@ class TransactionMaintenanceController extends Controller
                     
                     $transaction->book->update([
                         'availability_status' => 'Reserved',
+                        'remarks' => 'On Shelf',
                     ]);
 
                     if ($reservedTransaction->user && $reservedTransaction->user->email) {
@@ -298,11 +299,17 @@ class TransactionMaintenanceController extends Controller
                 } else {
                     $transaction->book->update([
                         'availability_status' => 'Available',
+                        'remarks' => 'On Shelf',
                     ]);
                 }
 
                 $transaction->update([
                     'return_date' => now()->format('Y-m-d'),
+                ]);
+            } elseif ($request->input('transaction_type') == 'Borrowed' && $request->input('status') == 'Borrowed') {
+                $transaction->book->update([
+                    'availability_status' => 'Borrowed',
+                    'remarks' => 'Unreturned',
                 ]);
             }
             if (!$transaction->book) {

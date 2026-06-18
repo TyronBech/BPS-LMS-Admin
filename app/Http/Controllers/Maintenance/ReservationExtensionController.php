@@ -135,7 +135,7 @@ class ReservationExtensionController extends Controller
             
             if ($transaction->transaction_type === 'Reserved') {
                 // Book Reservation Approval
-                if ($book && $book->availability_status === 'Available') {
+                if ($book && $book->availability_status === 'Available' && $book->remarks === 'On Shelf') {
                     // Book is available in library
                     $transaction->status = 'Available for pick up';
                     $transaction->reserved_date = now()->format('Y-m-d');

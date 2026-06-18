@@ -33,6 +33,7 @@ class BookReservationNotificationTest extends TestCase
     {
         $user = User::factory()->create();
         $book = Book::factory()->create([
+            'remarks' => 'On Shelf',
             'availability_status' => 'Available',
             'condition_status' => 'Good',
         ]);
@@ -71,6 +72,7 @@ class BookReservationNotificationTest extends TestCase
     {
         $user = User::factory()->create();
         $book = Book::factory()->create([
+            'remarks' => 'Unreturned',
             'availability_status' => 'Borrowed',
             'condition_status' => 'Good',
         ]);

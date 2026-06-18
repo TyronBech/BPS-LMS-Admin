@@ -18,7 +18,7 @@ class BookMaintenanceSeeder extends Seeder
         $types = ['Print', 'Non-print', 'E-books'];
         $availabilityStatuses = ['Available', 'Unavailable', 'Borrowed', 'In Use', 'Reserved'];
         $conditionStatuses = ['New', 'Good', 'Fair', 'Poor'];
-        $remarksList = ['On Shelf', 'Missing', 'Lost', 'Discarded', 'Lost And Paid For', 'Lost And Replaced'];
+        $remarksList = ['On Shelf', 'Unreturned', 'Missing', 'Lost', 'Discarded', 'Lost And Paid For', 'Lost And Replaced'];
 
         $barcodeGenerator = new DNS1D();
 

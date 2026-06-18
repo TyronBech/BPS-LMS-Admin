@@ -217,9 +217,9 @@ class CategoriesCountAutomationTest extends TestCase
         $this->assertEquals(0, $catData->lost_and_replaced);
         $this->assertEquals(1, $catData->lost_and_paid_for);
 
-        // 5. Update availability status to 'Borrowed'
+        // 5. Update availability status to 'Borrowed' and remarks to 'Unreturned'
         $book->update([
-            'remarks' => 'On Shelf',
+            'remarks' => 'Unreturned',
             'availability_status' => 'Borrowed',
         ]);
 

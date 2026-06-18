@@ -175,6 +175,27 @@ class InventoryTest extends TestCase
         ]);
 
         $response->assertRedirect();
-        $response->assertSessionHas('toast-warning', 'This material is currently Borrowed. Please process its return through Circulation first before scanning.');
+        $response->assertSessionHas('toast-warning', 'This material is currently Borrowed/Unreturned. Please process its return through Circulation first before scanning.');
+    }
+
+    #[Test]
+    public function it_throws_error_if_book_has_unreturned_remarks(): void
+    {
+        // Arrange
+        $this->withoutMiddleware(\App\Http\Middleware\InventoryAuthentication::class);
+        $user = User::factory()->create();
+        $this->actingAs($user, 'admin');
+
+        $book = Book::factory()->create([
+            'accession' => 'ABC123',
+            'remarks' => 'Unreturned',
+        ]);
+
+        $response = $this->post(route('inventory.search'), [
+            'barcode' => 'ABC123',
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('toast-warning', 'This material is currently Borrowed/Unreturned. Please process its return through Circulation first before scanning.');
     }
 }

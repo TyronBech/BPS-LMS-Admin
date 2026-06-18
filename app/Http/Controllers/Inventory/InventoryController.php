@@ -113,8 +113,8 @@ class InventoryController extends Controller
                 throw new \RuntimeException('Book not found.');
             }
 
-            if ($book->availability_status === 'Borrowed') {
-                throw new \RuntimeException('This material is currently Borrowed. Please process its return through Circulation first before scanning.');
+            if ($book->remarks === 'Unreturned' || $book->availability_status === 'Borrowed') {
+                throw new \RuntimeException('This material is currently Borrowed/Unreturned. Please process its return through Circulation first before scanning.');
             }
 
             $scanWarning = null;
@@ -486,7 +486,7 @@ class InventoryController extends Controller
                 $bookRollbackPayload[] = [
                     'id' => $record->book_id,
                     'remarks' => $record->remarks,
-                    'availability_status' => $record->remarks === 'On Shelf' ? 'Available' : 'Unavailable',
+                    'availability_status' => $record->remarks === 'On Shelf' ? 'Available' : ($record->remarks === 'Unreturned' ? 'Borrowed' : 'Unavailable'),
                     'updated_at' => $timestamp,
                 ];
             }
@@ -549,6 +549,8 @@ class InventoryController extends Controller
             $newRemarks = $remarks[$bookId] ?? $book->remarks;
             $availabilityMap = [
                 'On Shelf' => 'Available',
+                'Unreturned' => 'Borrowed',
+                'Lost And Replaced' => 'Available',
                 'Lost and Replaced' => 'Available',
             ];
             $newAvailability = $availabilityMap[$newRemarks] ?? 'Unavailable';

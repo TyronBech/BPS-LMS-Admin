@@ -479,7 +479,7 @@ class CategoriesController extends Controller
                     ->selectRaw('COUNT(*)')
                     ->whereNull('bk_books.deleted_at')
                     ->whereColumn('bk_books.category_id', 'bk_categories.id')
-                    ->where('bk_books.availability_status', 'Borrowed');
+                    ->whereRaw('LOWER(bk_books.remarks) = ?', ['unreturned']);
             }, 'unreturned')
             ->selectSub(function ($query) {
                 $query->from('bk_books')
