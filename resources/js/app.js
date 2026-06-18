@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 isExporting = true;
                 setTimeout(() => {
                     isExporting = false;
-                }, 2000);
+                }, 10000);
             }
         }
     }, true);
@@ -110,7 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     isExporting = true;
                     setTimeout(() => {
                         isExporting = false;
-                    }, 2000);
+                    }, 10000);
                     return;
                 }
 

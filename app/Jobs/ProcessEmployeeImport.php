@@ -59,6 +59,9 @@ class ProcessEmployeeImport implements ShouldQueue
         // Prevent Laravel from keeping all executed queries in memory
         DB::disableQueryLog();
 
+        // Set current user ID for audit triggers
+        DB::statement('SET @current_user_id = ?', [$this->initiatedBy]);
+
         /** @var ImportProgress $progress */
         $progress = ImportProgress::findOrFail($this->progressId);
         $progress->update(['status' => 'processing']);
@@ -302,8 +305,31 @@ class ProcessEmployeeImport implements ShouldQueue
      * @return string
      * @throws \Exception
      */
-    private function processRow(array $item, User $usersModel): string
+    private function processRow(array &$item, User $usersModel): string
     {
+        $employeeRole = trim($item['employee_role'] ?? '');
+        if ($employeeRole !== '') {
+            $privilegeExists = UserGroup::withTrashed()
+                ->where('user_type', 'employee')
+                ->where(DB::raw('LOWER(category)'), strtolower($employeeRole))
+                ->first();
+
+            if (!$privilegeExists) {
+                UserGroup::create([
+                    'user_type'        => 'employee',
+                    'category'         => $employeeRole,
+                    'max_book_allowed' => 0,
+                    'duration_type'    => 'unlimited',
+                    'renewal_limit'    => 0,
+                ]);
+            } else {
+                if ($privilegeExists->trashed()) {
+                    $privilegeExists->restore();
+                }
+                $item['employee_role'] = $privilegeExists->category;
+            }
+        }
+
         $validator = Validator::make($item, [
             'rfid'          => 'nullable|string|min:10|regex:/^[0-9]+$/u',
             'first_name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',

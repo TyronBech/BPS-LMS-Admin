@@ -42,7 +42,7 @@
             Upload &amp; Preview
           </button>
 
-          <a href="{{ route('import.download-students-template') }}" class="skip-loader text-xs text-secondary-600 hover:text-secondary-700 underline font-medium">
+          <a href="{{ route('import.download-students-template') }}" download class="skip-loader text-xs text-secondary-600 hover:text-secondary-700 underline font-medium">
             Download Student Excel Template
           </a>
         </div>
