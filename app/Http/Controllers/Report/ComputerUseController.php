@@ -206,7 +206,7 @@ class ComputerUseController extends Controller
 
         $settings = UISetting::first() ?? new UISetting();
         $items = [
-            'title'         => 'Online Research Report',
+            'title'         => 'Tabular Presentation of Online Research Report',
             'school'        => $settings->org_name ?? "Bicutan Parochial School, Inc.",
             'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
@@ -214,6 +214,7 @@ class ComputerUseController extends Controller
             'date'          => "as of " . date('F j, Y'),
             'data'          => $data,
             'totalCount'    => $data->count(),
+            'schoolYear'    => \App\Helpers\ReportHelper::getSchoolYear(request('start'), request('end'), $data, 'start')
         ];
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
@@ -440,14 +441,7 @@ class ComputerUseController extends Controller
 
         if ($isExport) {
             $data = $query->get();
-
-            if ($data->isNotEmpty()) {
-                $min = $data->last()->start;
-                $max = $data->first()->start;
-                $data->reporting_period = 'From ' . Carbon::parse($min)->format('M j, Y') . ' to ' . Carbon::parse($max)->format('M j, Y');
-            } else {
-                $data->reporting_period = 'N/A';
-            }
+            $data->reporting_period = \App\Helpers\ReportHelper::buildReportingPeriod($data, 'start', 'M j, Y');
             return $data;
         }
 

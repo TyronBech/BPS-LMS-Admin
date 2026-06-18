@@ -101,7 +101,7 @@ class CategoriesController extends Controller
         ini_set('max_execution_time', 300);
 
         $settings = UISetting::first() ?? new UISetting();
-        $titlePrefix = 'Summary of ' . ($settings->org_initial ?? 'BPS') . ' Collections Report';
+        $titlePrefix = 'Tabular Presentation of Summary of ' . ($settings->org_initial ?? 'BPS') . ' Collections Report';
         if ($educationalLevel !== 'All' || $categoryType !== 'All') {
             $filters = [];
             if ($educationalLevel !== 'All') {
@@ -122,6 +122,7 @@ class CategoriesController extends Controller
             'date'          => "as of " . date('F j, Y'),
             'data'          => $data,
             'totalCount'    => $data->count(),
+            'schoolYear'    => \App\Helpers\ReportHelper::getSchoolYear(null, null, $data, 'created_at')
         ];
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);

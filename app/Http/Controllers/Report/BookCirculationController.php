@@ -158,7 +158,7 @@ class BookCirculationController extends Controller
 
         $settings = UISetting::first() ?? new UISetting();
         $items = [
-            'title'         => 'Book Records',
+            'title'         => 'Tabular Presentation of Book Records',
             'school'        => $settings->org_name ?? "Bicutan Parochial School, Inc.",
             'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents(public_path('img/BPSLogoFull.png'))),
@@ -166,6 +166,7 @@ class BookCirculationController extends Controller
             'date'          => "as of " . date('F j, Y'),
             'data'          => $data,
             'totalCount'    => $data->count(),
+            'schoolYear'    => \App\Helpers\ReportHelper::getSchoolYear(null, null, $data, 'created_at')
         ];
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);

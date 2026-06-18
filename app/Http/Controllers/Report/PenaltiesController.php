@@ -195,7 +195,7 @@ class PenaltiesController extends Controller
 
         $settings = UISetting::first() ?? new UISetting();
         $items = [
-            'title'         => 'Overdue Fines Report',
+            'title'         => 'Tabular Presentation of Overdue Fines Report',
             'school'        => $settings->org_name ?? "Bicutan Parochial School, Inc.",
             'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
@@ -205,6 +205,7 @@ class PenaltiesController extends Controller
             'summary'       => $summary,
             'reporting_period' => $reportingPeriod,
             'totalCount'    => $data->count(),
+            'schoolYear'    => \App\Helpers\ReportHelper::getSchoolYear(request('start'), request('end'), $data, 'created_at')
         ];
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
@@ -391,27 +392,8 @@ class PenaltiesController extends Controller
 
     private function buildReportingPeriodLabel(Collection $data): string
     {
-        $dueDates = $data->map(function ($item) {
-            $rawDueDate = $item->due_date ?? null;
-
-            if (!$rawDueDate) {
-                return null;
-            }
-
-            try {
-                return Carbon::parse($rawDueDate);
-            } catch (\Throwable $e) {
-                return null;
-            }
-        })->filter();
-
-        if ($dueDates->isNotEmpty()) {
-            $earliest = $dueDates->sortBy(fn($date) => $date->timestamp)->first()->format('F j, Y');
-            $latest = $dueDates->sortByDesc(fn($date) => $date->timestamp)->first()->format('F j, Y');
-            return 'Reporting Period: ' . $earliest . ' to ' . $latest;
-        }
-
-        return 'Reporting Period: Due Date Not Available';
+        $period = \App\Helpers\ReportHelper::buildReportingPeriod($data, 'due_date');
+        return 'Reporting Period: ' . ($period === 'N/A' ? 'Due Date Not Available' : $period);
     }
     /**
      * Generates data for the penalties report.

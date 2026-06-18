@@ -183,7 +183,7 @@ class PrintingController extends Controller
 
         $settings = UISetting::first() ?? new UISetting();
         $items = [
-            'title'         => 'Printing & Photocopy Report',
+            'title'         => 'Tabular Presentation of Printing & Photocopy Report',
             'school'        => $settings->org_name ?? "Bicutan Parochial School, Inc.",
             'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
@@ -191,6 +191,7 @@ class PrintingController extends Controller
             'date'          => "as of " . date('F j, Y'),
             'data'          => $data,
             'totalCount'    => $data->count(),
+            'schoolYear'    => \App\Helpers\ReportHelper::getSchoolYear(request('start'), request('end'), $data, 'printed_at')
         ];
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);

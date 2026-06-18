@@ -153,7 +153,7 @@ class BibliographyController extends Controller
 
         $settings = UISetting::first() ?? new UISetting();
         $items = [
-            'title' => 'Bibliography of Books',
+            'title' => 'Tabular Presentation of Bibliography of Books',
             'school' => $settings->org_name ?? 'Bicutan Parochial School, Inc.',
             'address' => $settings->org_address ?? 'Manuel L. Quezon St., Lower Bicutan, Taguig City',
             'logo' => $this->resolveLogoBase64($settings),
@@ -161,6 +161,7 @@ class BibliographyController extends Controller
             'date' => 'as of ' . date('F j, Y'),
             'data' => $data,
             'totalCount' => $data->count(),
+            'schoolYear' => \App\Helpers\ReportHelper::getSchoolYear(null, null, $data, 'created_at')
         ];
 
         $options = new Options();

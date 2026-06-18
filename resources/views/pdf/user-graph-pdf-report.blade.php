@@ -82,6 +82,9 @@
   </header>
 
   <div class="title">{{ $title }}</div>
+  @if(isset($schoolYear))
+    <div style="text-align: center; font-size: 11px; font-weight: bold; margin-top: -2px; margin-bottom: 8px;">School Year {{ $schoolYear }}</div>
+  @endif
   <div class="generated-date">{{ $date }}</div>
   
   <p style="text-align: center; font-size: 10px; font-weight: bold;">{{ $range }}</p>
@@ -103,7 +106,10 @@
     <hr>
   </header>
 
-  <div class="title">Attendance Monitoring Summary (Hourly Breakdown)</div>
+  <div class="title">Tabular Presentation of Attendance Monitoring Summary (Hourly Breakdown)</div>
+  @if(isset($schoolYear))
+    <div style="text-align: center; font-size: 11px; font-weight: bold; margin-top: -2px; margin-bottom: 8px;">School Year {{ $schoolYear }}</div>
+  @endif
   <div class="generated-date">{{ $date }}</div>
   
   <p style="text-align: center; font-size: 10px; font-weight: bold;">{{ $range }}</p>

@@ -161,7 +161,7 @@ class TransactionController extends Controller
 
         $settings = UISetting::first() ?? new UISetting();
         $items = [
-            'title'         => 'Book Circulation Report',
+            'title'         => 'Tabular Presentation of Book Circulation Report',
             'school'        => $settings->org_name ?? "Bicutan Parochial School, Inc.",
             'type'          => $type,
             'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
@@ -170,6 +170,7 @@ class TransactionController extends Controller
             'date'          => "as of " . date('F j, Y'),
             'data'          => $data,
             'totalCount'    => $data->count(),
+            'schoolYear'    => \App\Helpers\ReportHelper::getSchoolYear(request('start'), request('end'), $data, 'date_borrowed')
         ];
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
@@ -437,16 +438,7 @@ class TransactionController extends Controller
             ->orderBy('books.title', 'asc');
         if ($isExport) {
             $data = $query->get();
-
-            if ($data->isNotEmpty()) {
-                $max = $data->first()->date_borrowed;
-                $min = $data->last()->date_borrowed;
-
-                $data->reporting_period = 'From ' . Carbon::parse($min)->format('F j, Y') . ' to ' . Carbon::parse($max)->format('F j, Y');
-            } else {
-                $data->reporting_period = 'N/A';
-            }
-
+            $data->reporting_period = \App\Helpers\ReportHelper::buildReportingPeriod($data, 'date_borrowed');
             $data->makeHidden(['id', 'book_id', 'user_id']);
             return $data;
         }

@@ -658,7 +658,7 @@ class UserLogsController extends Controller
 
             $settings = UISetting::first() ?? new UISetting();
             $items = [
-                'title'       => 'Attendance Monitoring Report Graph',
+                'title'       => 'Graphical Presentation of Library Attendance Monitoring Report',
                 'school'      => $settings->org_name ?? "Bicutan Parochial School, Inc.",
                 'address'     => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
                 'logo'        => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
@@ -667,7 +667,8 @@ class UserLogsController extends Controller
                 'chart'       => $chart,
                 'range'       => $range,
                 'hourlyData'  => $hourlyData,
-                'settings'    => $settings
+                'settings'    => $settings,
+                'schoolYear'  => \App\Helpers\ReportHelper::getSchoolYear($start, $end, $hourlyData, 'start')
             ];
 
             $options = new Options();
@@ -698,7 +699,7 @@ class UserLogsController extends Controller
     {
         $settings = UISetting::first() ?? new UISetting();
         $items = [
-            'title'         => 'Attendance Monitoring Report',
+            'title'         => 'Tabular Presentation of Library Attendance Monitoring Report',
             'school'        => $settings->org_name ?? "Bicutan Parochial School, Inc.",
             'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents(public_path('img/BPSLogoFull.png'))),
@@ -706,6 +707,7 @@ class UserLogsController extends Controller
             'date'          => "as of " . date('F j, Y'),
             'data'          => $data,
             'totalCount'    => $data->count(),
+            'schoolYear'    => \App\Helpers\ReportHelper::getSchoolYear(request('start'), request('end'), $data, 'start')
         ];
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
@@ -878,14 +880,7 @@ class UserLogsController extends Controller
 
         if ($isExport) {
             $data = $query->get();
-            if ($data->isNotEmpty()) {
-                $min = $data->first()->start;
-                $max = $data->last()->start;
-                $data->reporting_period = 'From ' . Carbon::parse($max)->format('F j, Y') . ' to ' . Carbon::parse($min)->format('F j, Y');
-            } else {
-                $data->reporting_period = 'N/A';
-            }
-
+            $data->reporting_period = \App\Helpers\ReportHelper::buildReportingPeriod($data, 'start');
             return $data->makeHidden(['id', 'user_id']);
         }
 

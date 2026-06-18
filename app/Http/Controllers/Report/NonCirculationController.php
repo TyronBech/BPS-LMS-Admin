@@ -202,7 +202,7 @@ class NonCirculationController extends Controller
 
         $settings = UISetting::first() ?? new UISetting();
         $items = [
-            'title'         => 'Non-Circulation Report',
+            'title'         => 'Tabular Presentation of Non-Circulation Book Report',
             'school'        => $settings->org_name ?? "Bicutan Parochial School, Inc.",
             'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
@@ -210,6 +210,7 @@ class NonCirculationController extends Controller
             'date'          => "as of " . date('F j, Y'),
             'data'          => $data,
             'totalCount'    => $data->count(),
+            'schoolYear'    => \App\Helpers\ReportHelper::getSchoolYear(request('start'), request('end'), $data, 'borrowed_at')
         ];
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);

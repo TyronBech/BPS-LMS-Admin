@@ -125,7 +125,7 @@ class InventoriesController extends Controller
 
         $settings = UISetting::first() ?? new UISetting();
         $items = [
-            'title' => 'Material Inventory Report',
+            'title' => 'Tabular Presentation of Material Inventory Report',
             'school' => $settings->org_name ?? 'Bicutan Parochial School, Inc.',
             'address' => $settings->org_address ?? 'Manuel L. Quezon St., Lower Bicutan, Taguig City',
             'logo' => $settings->org_logo_full ?? base64_encode(file_get_contents(public_path('img/BPSLogoFull.png'))),
@@ -133,6 +133,7 @@ class InventoriesController extends Controller
             'date' => 'as of ' . date('F j, Y'),
             'data' => $data,
             'totalCount' => $data->count(),
+            'schoolYear' => \App\Helpers\ReportHelper::getSchoolYear(request('start'), request('end'), $data, 'created_at')
         ];
 
         $options = new Options();
@@ -331,11 +332,9 @@ class InventoriesController extends Controller
 
     private function buildReportingPeriod(Request $request, bool $inventoryActive): string
     {
-        if ($request->filled('start') && $request->filled('end')) {
-            $startDate = Carbon::parse($request->input('start'))->format('F j, Y');
-            $endDate = Carbon::parse($request->input('end'))->format('F j, Y');
-
-            return 'Checked between ' . $startDate . ' and ' . $endDate;
+        $period = \App\Helpers\ReportHelper::buildReportingPeriod(collect(), 'created_at');
+        if ($period !== 'N/A') {
+            return str_replace('From ', 'Checked between ', str_replace(' to ', ' and ', $period));
         }
 
         return $inventoryActive
