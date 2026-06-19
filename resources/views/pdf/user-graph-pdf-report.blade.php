@@ -87,8 +87,6 @@
   @endif
   <div class="generated-date">{{ $date }}</div>
   
-  <p style="text-align: center; font-size: 10px; font-weight: bold;">{{ $range }}</p>
-  
   <div style="text-align: center;">
     <img class="chart" src="{{ $chart }}" alt="Chart">
   </div>
@@ -111,8 +109,6 @@
     <div style="text-align: center; font-size: 11px; font-weight: bold; margin-top: -2px; margin-bottom: 8px;">School Year {{ $schoolYear }}</div>
   @endif
   <div class="generated-date">{{ $date }}</div>
-  
-  <p style="text-align: center; font-size: 10px; font-weight: bold;">{{ $range }}</p>
 
   <table>
     <thead>

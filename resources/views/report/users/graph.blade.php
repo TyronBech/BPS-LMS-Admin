@@ -4,11 +4,10 @@
     <div class="w-full md:w-auto flex flex-col">
       <label for="type" class="block text-xs font-medium mb-1 text-gray-500 dark:text-gray-400">Type</label>
       <select id="type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-        <option value="" selected disabled>Choose a type</option>
         <option value="hourly">Hourly</option>
         <option value="daily">Daily</option>
         <option value="weekly">Weekly</option>
-        <option value="monthly">Monthly</option>
+        <option value="monthly" selected>Monthly</option>
         <option value="yearly">Yearly</option>
       </select>
     </div>
@@ -24,7 +23,7 @@
       </select>
     </div>
     
-    {{-- Date Range Picker --}}
+    {{-- Date Range Picker (always enabled, optional custom override) --}}
     <div id="date-range-picker-graph" date-rangepicker class="flex flex-col sm:flex-row items-end justify-center gap-2 w-full md:w-auto">
       <div class="flex flex-col w-full sm:w-auto">
         <label class="block text-xs font-medium mb-1 text-gray-500 dark:text-gray-400">Start Date</label>
@@ -34,7 +33,7 @@
               <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
             </svg>
           </div>
-          <input id="datepicker-range-graph-start" name="graph-start" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 cursor-not-allowed opacity-60" placeholder="Select date start" disabled>
+          <input id="datepicker-range-graph-start" name="graph-start" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Select date start">
         </div>
       </div>
       <span class="mx-2 text-gray-500 hidden sm:block mb-3">to</span>
@@ -46,9 +45,16 @@
               <path d="M20 4a2 2 0 0 0-2-2h-2V1a1 1 0 0 0-2 0v1h-3V1a1 1 0 0 0-2 0v1H6V1a1 1 0 0 0-2 0v1H2a2 2 0 0 0-2 2v2h20V4ZM0 18a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V8H0v10Zm5-8h10a1 1 0 0 1 0 2H5a1 1 0 0 1 0-2Z" />
             </svg>
           </div>
-          <input id="datepicker-range-graph-end" name="graph-end" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500 cursor-not-allowed opacity-60" placeholder="Select date end" disabled>
+          <input id="datepicker-range-graph-end" name="graph-end" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Select date end">
         </div>
       </div>
+    </div>
+
+    {{-- Clear Dates Button --}}
+    <div class="w-full md:w-auto flex items-end">
+      <button type="button" id="clearGraphDates" class="bg-white hover:bg-gray-100 text-gray-900 border border-gray-300 font-bold py-2.5 px-4 rounded whitespace-nowrap transition-colors dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-300 dark:border-gray-600 text-sm" title="Clear custom dates and use type defaults">
+        Clear Dates
+      </button>
     </div>
 
     {{-- PDF Button --}}
@@ -62,7 +68,8 @@
 
 <div class="container mx-auto w-full md:w-[90%] p-4">
   <div class="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-md">
-    <h2 class="text-center mb-4 font-semibold text-2xl dark:text-white">Graph Data for Users</h2>
+    <h2 class="text-center mb-1 font-semibold text-2xl dark:text-white">Graph Data for Users</h2>
+    <p id="graph-reporting-period" class="text-center text-sm text-gray-500 dark:text-gray-400 mb-4"></p>
     <div id="validation-warning" class="hidden w-full max-w-2xl mx-auto mb-4"></div>
     <div class="relative h-[300px]">
       <canvas id="logsChart"></canvas>
@@ -73,137 +80,49 @@
 <script type="module">
   let chartInstance = null;
 
-  function parseDate(str) {
-    if (!str) return null;
-    const parts = str.split('/');
-    if (parts.length === 3) {
-      return new Date(parts[2], parts[0] - 1, parts[1]);
-    }
-    return null;
-  }
-
-  function validateGraphRange() {
-    const type = $('#type').val();
-    const startStr = $('#datepicker-range-graph-start').val();
-    const endStr = $('#datepicker-range-graph-end').val();
-
-    // If dates are not set, validation warning is cleared, but don't query if one is empty
-    if (!startStr && !endStr) {
-      $('#validation-warning').addClass('hidden').html('');
-      $('#downloadPDF').removeAttr('disabled').removeClass('opacity-50 cursor-not-allowed');
-      return true;
-    }
-
-    if (!startStr || !endStr) {
-      // Wait for both dates to be selected
-      return false;
-    }
-
-    const start = parseDate(startStr);
-    const end = parseDate(endStr);
-
-    if (!start || !end) {
-      return false;
-    }
-
-    // Check if start date is after end date
-    if (start > end) {
-      $('#validation-warning').removeClass('hidden').html(`
-        <div class="flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800" role="alert">
-          <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 14a1 1 0 0 1-1 1H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 1 1Z"/>
-          </svg>
-          <span class="sr-only">Warning</span>
-          <div>
-            <span class="font-medium">Invalid Range:</span> Start date must be before or equal to the end date.
-          </div>
-        </div>
-      `);
-      $('#downloadPDF').attr('disabled', 'disabled').addClass('opacity-50 cursor-not-allowed');
-      if (chartInstance) {
-        chartInstance.destroy();
-        chartInstance = null;
-      }
-      return false;
-    }
-
-    const diffTime = Math.abs(end - start);
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-
-    let isValid = true;
-    let warningMsg = '';
-
-    if (type === 'hourly') {
-      if (diffDays > 0 && startStr !== endStr) {
-        isValid = false;
-        warningMsg = 'Hourly reports are only available for a single day. Please select the same start and end date.';
-      }
-    } else if (type === 'daily') {
-      if (diffDays > 7) {
-        isValid = false;
-        warningMsg = 'Daily reports can show a maximum of 7 days. For longer periods, please choose Weekly or Monthly.';
-      }
-    } else if (type === 'weekly') {
-      if (diffDays < 7) {
-        isValid = false;
-        warningMsg = 'Weekly reports require a date range of at least 7 days.';
-      } else if (diffDays > 35) {
-        isValid = false;
-        warningMsg = 'Weekly reports can show a maximum of 5 weeks (35 days). For longer periods, please choose Monthly.';
-      }
-    } else if (type === 'monthly') {
-      if (diffDays < 30) {
-        isValid = false;
-        warningMsg = 'Monthly reports require a date range of at least 30 days.';
-      } else if (diffDays > 366) {
-        isValid = false;
-        warningMsg = 'Monthly reports can show a maximum of 1 year (365 days). For longer periods, please choose Yearly.';
-      }
-    } else if (type === 'yearly') {
-      if (diffDays < 365) {
-        isValid = false;
-        warningMsg = 'Yearly reports require a date range of at least 1 year (365 days).';
-      }
-    }
-
-    if (!isValid) {
-      $('#validation-warning').removeClass('hidden').html(`
-        <div class="flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800" role="alert">
-          <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 14a1 1 0 0 1-1 1H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 1 1Z"/>
-          </svg>
-          <span class="sr-only">Warning</span>
-          <div>
-            <span class="font-medium">Invalid Range:</span> ${warningMsg}
-          </div>
-        </div>
-      `);
-      $('#downloadPDF').attr('disabled', 'disabled').addClass('opacity-50 cursor-not-allowed');
-      if (chartInstance) {
-        chartInstance.destroy();
-        chartInstance = null;
-      }
-      return false;
-    } else {
-      $('#validation-warning').addClass('hidden').html('');
-      $('#downloadPDF').removeAttr('disabled').removeClass('opacity-50 cursor-not-allowed');
-      return true;
-    }
-  }
-
   function loadGraph() {
-    if (!validateGraphRange()) return;
-
     let type = $('#type').val();
     let start_date = $('#datepicker-range-graph-start').val();
     let end_date = $('#datepicker-range-graph-end').val();
     let user_type = $('#graph_user_type').val();
 
-    // Fallback to page-level date filters if graph dates are empty
-    if (!start_date && !end_date) {
-      start_date = $('#datepicker-range-start').val() || $('#summary-datepicker-start').val() || '';
-      end_date = $('#datepicker-range-end').val() || $('#summary-datepicker-end').val() || '';
+    // If only one date is filled, wait for both
+    if ((start_date && !end_date) || (!start_date && end_date)) {
+      return;
     }
+
+    // Validate: start must be before or equal to end
+    if (start_date && end_date) {
+      const startParts = start_date.split('/');
+      const endParts = end_date.split('/');
+      if (startParts.length === 3 && endParts.length === 3) {
+        const s = new Date(startParts[2], startParts[0] - 1, startParts[1]);
+        const e = new Date(endParts[2], endParts[0] - 1, endParts[1]);
+        if (s > e) {
+          $('#validation-warning').removeClass('hidden').html(`
+            <div class="flex items-center p-4 mb-4 text-sm text-red-800 border border-red-300 rounded-lg bg-red-50 dark:bg-gray-800 dark:text-red-400 dark:border-red-800" role="alert">
+              <svg class="flex-shrink-0 inline w-4 h-4 me-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM9.5 4a1.5 1.5 0 1 1 0 3 1.5 1.5 0 0 1 0-3ZM12 14a1 1 0 0 1-1 1H8a1 1 0 0 1 0-2h1v-3H8a1 1 0 0 1 0-2h2a1 1 0 0 1 1 1v4h1a1 1 0 0 1 1 1Z"/>
+              </svg>
+              <span class="sr-only">Warning</span>
+              <div>
+                <span class="font-medium">Invalid Range:</span> Start date must be before or equal to the end date.
+              </div>
+            </div>
+          `);
+          $('#downloadPDF').attr('disabled', 'disabled').addClass('opacity-50 cursor-not-allowed');
+          if (chartInstance) {
+            chartInstance.destroy();
+            chartInstance = null;
+          }
+          return;
+        }
+      }
+    }
+
+    // Clear previous warnings
+    $('#validation-warning').addClass('hidden').html('');
+    $('#downloadPDF').removeAttr('disabled').removeClass('opacity-50 cursor-not-allowed');
 
     $.ajax({
       url: "{{ route('report.user-graph') }}",
@@ -216,21 +135,18 @@
       },
       success: function(response) {
         let ctx = document.getElementById('logsChart').getContext('2d');
-        let chartTitle = 'User Logs';
-        if (type === 'daily') {
-          chartTitle = 'User Logs (7AM - 5PM)';
-        } else if (type === 'weekly') {
-          chartTitle = 'User Logs (Mon - Fri)';
-        } else if (type === 'monthly') {
-          chartTitle = 'User Logs (Monthly Totals)';
-        } else if (type === 'yearly') {
-          chartTitle = 'User Logs (Yearly Totals)';
-        }
         if (chartInstance) {
           chartInstance.destroy();
           chartInstance = null;
         }
-        console.log(response);
+
+        // Update the reporting period header
+        if (response.reporting_period) {
+          $('#graph-reporting-period').text(response.reporting_period).show();
+        } else {
+          $('#graph-reporting-period').text('').hide();
+        }
+
         chartInstance = new Chart(ctx, {
           type: 'bar',
           data: {
@@ -253,7 +169,6 @@
               datalabels: false,
               legend: {
                 display: false,
-
               },
               title: {
                 display: true,
@@ -274,47 +189,38 @@
     });
   }
 
-  function updateDatePickerState() {
-    const isTypeSelected = $('#type').val() !== '';
-    const hasCustomDates = $('#datepicker-range-graph-start').val() !== '' || $('#datepicker-range-graph-end').val() !== '';
-    const dateStart = $('#datepicker-range-graph-start');
-    const dateEnd = $('#datepicker-range-graph-end');
-
-    if (isTypeSelected || hasCustomDates) {
-      dateStart.removeAttr('disabled').removeClass('cursor-not-allowed bg-gray-100 dark:bg-gray-800 opacity-60');
-      dateEnd.removeAttr('disabled').removeClass('cursor-not-allowed bg-gray-100 dark:bg-gray-800 opacity-60');
-    } else {
-      dateStart.attr('disabled', 'disabled').addClass('cursor-not-allowed bg-gray-100 dark:bg-gray-800 opacity-60');
-      dateEnd.attr('disabled', 'disabled').addClass('cursor-not-allowed bg-gray-100 dark:bg-gray-800 opacity-60');
-    }
-  }
-
   $(document).ready(function() {
-    updateDatePickerState(); // Update dates picker state based on initial type (e.g. disabled if empty)
-    loadGraph(); // load initial graph
+    // Load initial graph with default type (monthly = school year)
+    loadGraph();
 
-    // Auto reload on type change
+    // Type change: reload graph, keep custom dates if set
     $('#type').on('change', function() {
+      loadGraph();
+    });
+
+    // User type change: reload graph
+    $('#graph_user_type').on('change', function() {
+      loadGraph();
+    });
+
+    // Date change: if a type is already selected, reload with that type
+    // If no type somehow, default to monthly
+    $('#datepicker-range-graph-start, #datepicker-range-graph-end').on('changeDate change blur', function() {
+      const currentType = $('#type').val();
+      if (!currentType) {
+        $('#type').val('monthly');
+      }
+      loadGraph();
+    });
+
+    // Clear dates button: remove custom dates and reload with type defaults
+    $('#clearGraphDates').on('click', function() {
       $('#datepicker-range-graph-start').val('');
       $('#datepicker-range-graph-end').val('');
       const datepickerEl = document.getElementById('date-range-picker-graph');
       if (datepickerEl && datepickerEl._dateRangePicker) {
         datepickerEl._dateRangePicker.clearSelection();
       }
-      updateDatePickerState();
-      loadGraph();
-    });
-
-    // Auto reload on user type change
-    $('#graph_user_type').on('change', function() {
-      loadGraph();
-    });
-
-    // Auto reload on date changes (when user picks start or end)
-    $('#datepicker-range-graph-start, #datepicker-range-graph-end').on('changeDate change blur', function() {
-      // Clear the type select field when date is selected
-      $('#type').val('');
-      updateDatePickerState();
       loadGraph();
     });
   });
@@ -322,15 +228,8 @@
   // Export chart to PDF
   $('#downloadPDF').click(function() {
     let chartImage = document.getElementById('logsChart').toDataURL("image/png");
-
-    // Fallback to page-level date filters if graph dates are empty
     let start_date = $('#datepicker-range-graph-start').val();
     let end_date = $('#datepicker-range-graph-end').val();
-    
-    if (!start_date && !end_date) {
-      start_date = $('#datepicker-range-start').val() || $('#summary-datepicker-start').val() || '';
-      end_date = $('#datepicker-range-end').val() || $('#summary-datepicker-end').val() || '';
-    }
 
     $.ajax({
       url: "{{ route('report.graph-export-pdf') }}",
