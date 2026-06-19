@@ -184,58 +184,79 @@ class ProcessEmployeeImport implements ShouldQueue
 
             foreach ($chunks as $chunkIndex => $chunk) {
                 DB::beginTransaction();
+                $stagedUsersInChunk = [];
 
-                foreach ($chunk as $item) {
-                    if (empty(array_filter($item))) {
-                        $processedRows++;
-                        continue;
-                    }
-
-                    $result = $this->processRow($item, $users);
-
-                    if ($result === 'new') {
-                        $newCount++;
-                        if (!empty($item['email'])) {
-                            $stagedUsers[] = $item['email'];
+                try {
+                    foreach ($chunk as $item) {
+                        if (empty(array_filter($item))) {
+                            $processedRows++;
+                            continue;
                         }
-                    } elseif ($result === 'updated') {
-                        $updatedCount++;
+
+                        $result = $this->processRow($item, $users);
+
+                        if ($result === 'new') {
+                            $newCount++;
+                            if (!empty($item['email'])) {
+                                $stagedUsersInChunk[] = $item['email'];
+                            }
+                        } elseif ($result === 'updated') {
+                            $updatedCount++;
+                        }
+
+                        $processedRows++;
                     }
 
-                    $processedRows++;
-                }
+                    DB::commit();
 
-                DB::commit();
+                    // Distribute staging users for this chunk immediately
+                    DB::statement('CALL DistributeStagingUsers()');
 
-                $progress->update([
-                    'processed_rows' => $processedRows,
-                    'new_count'      => $newCount,
-                    'updated_count'  => $updatedCount,
-                ]);
+                    // Send account notification emails for this chunk
+                    foreach ($stagedUsersInChunk as $email) {
+                        $employee = User::where('email', $email)->first();
+                        if ($employee) {
+                            $this->sendAccountNotification($employee);
+                        }
+                    }
 
-                // Release Eloquent model memory between chunks
-                gc_collect_cycles();
-
-                Log::debug('ProcessEmployeeImport: Chunk committed', [
-                    'progress_id'    => $this->progressId,
-                    'chunk_index'    => $chunkIndex,
-                    'processed_rows' => $processedRows,
-                ]);
-            }
-
-            // Run stored procedure to move staged users to their permanent tables
-            DB::statement('CALL DistributeStagingUsers()');
-
-            // Send account notification emails
-            foreach ($stagedUsers as $email) {
-                $employee = User::where('email', $email)->first();
-                if (!$employee) {
-                    Log::warning('ProcessEmployeeImport: Employee not found after distribution', [
-                        'email' => $email,
+                    $progress->update([
+                        'processed_rows' => $processedRows,
+                        'new_count'      => $newCount,
+                        'updated_count'  => $updatedCount,
                     ]);
-                    continue;
+
+                    // Release Eloquent model memory between chunks
+                    gc_collect_cycles();
+
+                    Log::debug('ProcessEmployeeImport: Chunk committed', [
+                        'progress_id'    => $this->progressId,
+                        'chunk_index'    => $chunkIndex,
+                        'processed_rows' => $processedRows,
+                    ]);
+                } catch (\Throwable $chunkError) {
+                    DB::rollBack();
+
+                    $failedRow = $processedRows + 1;
+                    $errorContext = "Row ~{$failedRow}: " . $chunkError->getMessage();
+
+                    $progress->update([
+                        'status'         => 'failed',
+                        'processed_rows' => $processedRows,
+                        'new_count'      => $newCount,
+                        'error_message'  => $errorContext,
+                    ]);
+
+                    Log::error('ProcessEmployeeImport: Chunk failed — job stopped', [
+                        'progress_id'    => $this->progressId,
+                        'chunk_index'    => $chunkIndex,
+                        'processed_rows' => $processedRows,
+                        'error_message'  => $errorContext,
+                        'trace'          => $chunkError->getTraceAsString(),
+                    ]);
+
+                    return;
                 }
-                $this->sendAccountNotification($employee);
             }
 
             $progress->update([
@@ -357,13 +378,13 @@ class ProcessEmployeeImport implements ShouldQueue
 
         $validator = Validator::make($item, [
             'rfid'          => 'nullable|string|min:10|regex:/^[0-9]+$/u',
-            'first_name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
-            'middle_name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
-            'last_name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
-            'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
+            'first_name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
+            'middle_name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
+            'last_name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
+            'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
             'gender'        => 'required|string|in:' . implode(',', $this->extractEnums($usersModel->getTable(), 'gender')),
             'email'         => 'nullable|string|email|max:255',
-            'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
+            'employee_role' => ['required', 'string', \Illuminate\Validation\Rule::in(UserGroup::pluck('category')->toArray())],
             'employee_id'   => 'required|string|max:50',
         ]);
 

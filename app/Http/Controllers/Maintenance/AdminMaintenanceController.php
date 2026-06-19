@@ -326,9 +326,9 @@ class AdminMaintenanceController extends Controller
 
         $user = new User();
         $request->validate([
-            'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
-            'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
-            'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
+            'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
+            'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
+            'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
             'email'         => 'nullable|email|unique:' . $user->getTable() . ',email,' . $request->input('id'),
             'role'          => [
                 'required',

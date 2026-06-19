@@ -181,58 +181,79 @@ class ProcessStudentImport implements ShouldQueue
 
             foreach ($chunks as $chunkIndex => $chunk) {
                 DB::beginTransaction();
+                $stagedUsersInChunk = [];
 
-                foreach ($chunk as $item) {
-                    if (empty(array_filter($item))) {
-                        $processedRows++;
-                        continue;
-                    }
-
-                    $result = $this->processRow($item, $users);
-
-                    if ($result === 'new') {
-                        $newCount++;
-                        if (!empty($item['email'])) {
-                            $stagedUsers[] = $item['email'];
+                try {
+                    foreach ($chunk as $item) {
+                        if (empty(array_filter($item))) {
+                            $processedRows++;
+                            continue;
                         }
-                    } elseif ($result === 'updated') {
-                        $updatedCount++;
+
+                        $result = $this->processRow($item, $users);
+
+                        if ($result === 'new') {
+                            $newCount++;
+                            if (!empty($item['email'])) {
+                                $stagedUsersInChunk[] = $item['email'];
+                            }
+                        } elseif ($result === 'updated') {
+                            $updatedCount++;
+                        }
+
+                        $processedRows++;
                     }
 
-                    $processedRows++;
-                }
+                    DB::commit();
 
-                DB::commit();
+                    // Distribute staging users for this chunk immediately
+                    DB::statement('CALL DistributeStagingUsers()');
 
-                $progress->update([
-                    'processed_rows' => $processedRows,
-                    'new_count'      => $newCount,
-                    'updated_count'  => $updatedCount,
-                ]);
+                    // Send account notification emails for this chunk
+                    foreach ($stagedUsersInChunk as $email) {
+                        $student = User::where('email', $email)->first();
+                        if ($student) {
+                            $this->sendAccountNotification($student);
+                        }
+                    }
 
-                // Release Eloquent model memory between chunks
-                gc_collect_cycles();
-
-                Log::debug('ProcessStudentImport: Chunk committed', [
-                    'progress_id'    => $this->progressId,
-                    'chunk_index'    => $chunkIndex,
-                    'processed_rows' => $processedRows,
-                ]);
-            }
-
-            // Run the stored procedure to distribute staged users to their final tables
-            DB::statement('CALL DistributeStagingUsers()');
-
-            // Send account notification emails to newly created students
-            foreach ($stagedUsers as $email) {
-                $student = User::where('email', $email)->first();
-                if (!$student) {
-                    Log::warning('ProcessStudentImport: Student not found after distribution', [
-                        'email' => $email,
+                    $progress->update([
+                        'processed_rows' => $processedRows,
+                        'new_count'      => $newCount,
+                        'updated_count'  => $updatedCount,
                     ]);
-                    continue;
+
+                    // Release Eloquent model memory between chunks
+                    gc_collect_cycles();
+
+                    Log::debug('ProcessStudentImport: Chunk committed', [
+                        'progress_id'    => $this->progressId,
+                        'chunk_index'    => $chunkIndex,
+                        'processed_rows' => $processedRows,
+                    ]);
+                } catch (\Throwable $chunkError) {
+                    DB::rollBack();
+
+                    $failedRow = $processedRows + 1;
+                    $errorContext = "Row ~{$failedRow}: " . $chunkError->getMessage();
+
+                    $progress->update([
+                        'status'         => 'failed',
+                        'processed_rows' => $processedRows,
+                        'new_count'      => $newCount,
+                        'error_message'  => $errorContext,
+                    ]);
+
+                    Log::error('ProcessStudentImport: Chunk failed — job stopped', [
+                        'progress_id'    => $this->progressId,
+                        'chunk_index'    => $chunkIndex,
+                        'processed_rows' => $processedRows,
+                        'error_message'  => $errorContext,
+                        'trace'          => $chunkError->getTraceAsString(),
+                    ]);
+
+                    return;
                 }
-                $this->sendAccountNotification($student);
             }
 
             $progress->update([
@@ -330,10 +351,10 @@ class ProcessStudentImport implements ShouldQueue
     {
         $validator = Validator::make($item, [
             'rfid'        => 'nullable|string|min:10|regex:/^[0-9]+$/u',
-            'first_name'  => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
-            'middle_name' => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
-            'last_name'   => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
-            'suffix'      => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
+            'first_name'  => 'required|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
+            'middle_name' => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
+            'last_name'   => 'required|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
+            'suffix'      => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
             'id_number'   => 'required|string|max:20',
             'grade_level' => 'required|string|max:50',
             'section'     => 'required|string|max:255',
