@@ -25,12 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('usr_staging_users', function (Blueprint $table) {
-            $table->string('employee_role', 45)->nullable()->change();
-            $table->string('section', 100)->nullable()->change();
-        });
-        Schema::table('usr_employee_details', function (Blueprint $table) {
-            $table->string('employee_role', 45)->nullable()->change();
-        });
+        //
     }
 };
