@@ -247,7 +247,6 @@ class ProcessStudentImport implements ShouldQueue
                 'new_count'    => $newCount,
                 'updated_count' => $updatedCount,
             ]);
-
         } catch (\Throwable $e) {
             DB::rollBack();
 
@@ -336,8 +335,8 @@ class ProcessStudentImport implements ShouldQueue
             'last_name'   => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'suffix'      => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
             'id_number'   => 'required|string|max:20',
-            'grade_level' => 'required|numeric|min:7|max:12',
-            'section'     => 'required|string|max:50',
+            'grade_level' => 'required|string|max:12',
+            'section'     => 'required|string|max:255',
             'gender'      => 'required|string|in:' . implode(',', $this->extractEnums($usersModel->getTable(), 'gender')),
             'email'       => 'nullable|string|email',
         ]);
@@ -345,9 +344,9 @@ class ProcessStudentImport implements ShouldQueue
         if ($validator->fails()) {
             throw new \Exception(
                 'Validation error: '
-                . $validator->errors()->first()
-                . ' for student: '
-                . ($item['first_name'] ?? '') . ' ' . ($item['last_name'] ?? '')
+                    . $validator->errors()->first()
+                    . ' for student: '
+                    . ($item['first_name'] ?? '') . ' ' . ($item['last_name'] ?? '')
             );
         }
 
@@ -393,14 +392,14 @@ class ProcessStudentImport implements ShouldQueue
         if (!empty($item['email']) && User::where('email', $item['email'])->exists()) {
             throw new \Exception(
                 'Email already exists for student: '
-                . $item['first_name'] . ' ' . $item['last_name']
+                    . $item['first_name'] . ' ' . $item['last_name']
             );
         }
 
         if (!empty($item['rfid']) && User::where('rfid', $item['rfid'])->exists()) {
             throw new \Exception(
                 'RFID already exists for student: '
-                . $item['first_name'] . ' ' . $item['last_name']
+                    . $item['first_name'] . ' ' . $item['last_name']
             );
         }
 
