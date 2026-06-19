@@ -71,7 +71,7 @@ class PrivilegeMaintenanceController extends Controller
 
         $validator = Validator::make($request->all(), [
             'user_type'                 => 'required|string|max:50|in:employee,student,visitor',
-            'category'                  => 'required|string|max:50',
+            'category'                  => 'required|string|max:255',
             'max_book_allowed_add'      => 'required|integer|min:0|max:999',
             'renewal_limit_add'         => 'required|integer|min:0|max:999',
             'duration_type'             => 'required|string|max:50|in:'.implode(',', $this->extract_enums((new UserGroup)->getTable(), 'duration_type')),

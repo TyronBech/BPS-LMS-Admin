@@ -336,8 +336,8 @@ class UsersMaintenanceController extends Controller
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
             'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'id_number'     => 'required|string|min:12',
-            'level'         => 'required|numeric|min:7|max:12',
-            'section'       => 'required|max:50',
+            'level'         => 'required|string|max:50',
+            'section'       => 'required|string|max:255',
             'email'         => 'nullable|string|email|unique:' . $users->getTable() . ',email',
         ], [
             'email.unique' => 'The email has already been registered.',
@@ -618,8 +618,8 @@ class UsersMaintenanceController extends Controller
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
             'id_number'     => 'required|string|min:12',
             'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'level'         => 'required|numeric|min:7|max:12',
-            'section'       => 'required|max:50',
+            'level'         => 'required|string|max:50',
+            'section'       => 'required|string|max:255',
             'email'         => 'nullable|string|email',
         ]);
         if ($validator->fails()) {
