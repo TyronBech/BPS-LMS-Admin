@@ -150,9 +150,19 @@
 /**
  * Import Progress Overlay Controller
  * Polls the status endpoint every 1.5 s and updates the UI accordingly.
+ *
+ * Safety mechanisms:
+ *   - HTTP error handling: non-200 responses are treated as errors, not silently retried.
+ *   - Consecutive error limit: after MAX_CONSECUTIVE_ERRORS poll failures, the overlay
+ *     stops polling and shows a generic error so it never spins forever.
+ *   - Staleness detection: if the job stays in 'pending' with zero progress for
+ *     STALE_THRESHOLD_MS, the overlay assumes the queue worker is dead and shows an error.
  */
 (function () {
-    const POLL_INTERVAL_MS  = 1500;
+    const POLL_INTERVAL_MS        = 1500;
+    const MAX_CONSECUTIVE_ERRORS  = 5;
+    const STALE_THRESHOLD_MS      = 2 * 60 * 1000; // 2 minutes
+
     let STATUS_URL          = @json($statusUrl);
     const INDEX_ROUTE       = @json($indexRoute);
     const IMPORT_LABEL      = @json($importLabel);
@@ -179,8 +189,12 @@
     const btnOk             = document.getElementById('overlay-btn-ok');
     const btnDismiss        = document.getElementById('overlay-btn-dismiss');
 
-    let pollTimer = null;
-    let progressId = null;
+    let pollTimer           = null;
+    let progressId          = null;
+    let consecutiveErrors   = 0;
+    let pollingStartedAt    = null;
+    let lastProcessedRows   = -1;
+    let lastProgressChangeAt = null;
 
     // Dismiss overlay click handler
     if (btnDismiss) {
@@ -226,6 +240,10 @@
          */
         startPolling(id) {
             progressId = id;
+            consecutiveErrors    = 0;
+            pollingStartedAt     = Date.now();
+            lastProcessedRows    = -1;
+            lastProgressChangeAt = Date.now();
             resetToProcessing();
             overlay.classList.remove('hidden');
             poll();
@@ -281,19 +299,69 @@
         fetch(STATUS_URL, {
             headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         })
-        .then(r => r.json())
-        .then(data => {
+        .then(function (r) {
+            if (!r.ok) {
+                // Server returned a non-2xx status — treat as a poll error
+                throw new Error('HTTP ' + r.status);
+            }
+            return r.json();
+        })
+        .then(function (data) {
+            // Successful poll — reset consecutive error counter
+            consecutiveErrors = 0;
+
             updateUI(data);
 
             if (data.status === 'completed' || data.status === 'failed') {
                 stopPolling();
+                if (data.status === 'failed') {
+                    reEnablePage();
+                }
                 return;
+            }
+
+            // ─── Staleness detection ───
+            // Track if progress is actually changing
+            const currentProcessed = Number(data.processed_rows ?? 0);
+            if (currentProcessed !== lastProcessedRows) {
+                lastProcessedRows    = currentProcessed;
+                lastProgressChangeAt = Date.now();
+            }
+
+            // If the job is still 'pending' (never started processing) and
+            // has been that way for longer than the threshold, assume the
+            // queue worker crashed or the job was killed externally.
+            if (data.status === 'pending' && pollingStartedAt) {
+                const elapsed = Date.now() - pollingStartedAt;
+                if (elapsed > STALE_THRESHOLD_MS) {
+                    handleFailed({
+                        error_message: 'The import job appears to have stalled. '
+                            + 'The queue worker may not be running or the job failed to start. '
+                            + 'Please check the server logs and try again.'
+                    });
+                    stopPolling();
+                    reEnablePage();
+                    return;
+                }
             }
 
             pollTimer = setTimeout(poll, POLL_INTERVAL_MS);
         })
-        .catch(() => {
-            // Network hiccup — keep polling
+        .catch(function () {
+            consecutiveErrors++;
+
+            if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
+                // Too many consecutive failures — stop and show error
+                handleFailed({
+                    error_message: 'Lost connection to the server while checking import status. '
+                        + 'The import may have failed. Please refresh the page and check the results.'
+                });
+                stopPolling();
+                reEnablePage();
+                return;
+            }
+
+            // Retry with backoff
             pollTimer = setTimeout(poll, POLL_INTERVAL_MS * 2);
         });
     }
@@ -394,6 +462,8 @@
 
     // Auto-start polling if statusUrl was passed at render time (e.g. active import exists on page load)
     if (STATUS_URL && STATUS_URL.trim() !== '') {
+        pollingStartedAt     = Date.now();
+        lastProgressChangeAt = Date.now();
         overlay.classList.remove('hidden');
         poll();
     }

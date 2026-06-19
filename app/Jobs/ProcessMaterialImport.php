@@ -57,6 +57,31 @@ class ProcessMaterialImport implements ShouldQueue
     ) {}
 
     /**
+     * Called by the queue worker when the job is permanently failed.
+     *
+     * This is a safety net: if the try-catch inside handle() does not run
+     * (e.g., timeout, OOM kill, or serialization error), this method
+     * ensures the ImportProgress record is still marked as failed.
+     *
+     * @param \Throwable $exception
+     */
+    public function failed(\Throwable $exception): void
+    {
+        $progress = ImportProgress::find($this->progressId);
+        if ($progress && $progress->isActive()) {
+            $progress->update([
+                'status'        => 'failed',
+                'error_message' => $progress->error_message ?: $exception->getMessage(),
+            ]);
+        }
+
+        Log::error('ProcessMaterialImport: Job permanently failed', [
+            'progress_id'   => $this->progressId,
+            'error_message' => $exception->getMessage(),
+        ]);
+    }
+
+    /**
      * Execute the import job.
      *
      * Strategy:
@@ -158,7 +183,6 @@ class ProcessMaterialImport implements ShouldQueue
                     // instances, and any GD image resources created during this chunk.
                     unset($chunk);
                     gc_collect_cycles();
-
                 } catch (\Throwable $chunkError) {
                     // Rollback ONLY the current chunk
                     DB::rollBack();
@@ -201,7 +225,6 @@ class ProcessMaterialImport implements ShouldQueue
                 'updated_count' => $updatedCount,
                 'skipped_count' => $skippedCount,
             ]);
-
         } catch (\Throwable $e) {
             // Catch-all for parsing errors or unexpected failures before chunks start
             $progress->update([
@@ -337,8 +360,8 @@ class ProcessMaterialImport implements ShouldQueue
         if ($validator->fails()) {
             throw new \Exception(
                 "Row {$rowNumber} (accession: "
-                . ($item['accession'] ?? 'Unknown')
-                . '): ' . $validator->errors()->first()
+                    . ($item['accession'] ?? 'Unknown')
+                    . '): ' . $validator->errors()->first()
             );
         }
 
@@ -365,8 +388,8 @@ class ProcessMaterialImport implements ShouldQueue
         if ($category->category_type !== $finalType) {
             throw new \Exception(
                 "Row {$rowNumber} (accession: {$item['accession']}): "
-                . "Category '{$category->name}' is '{$category->category_type}', "
-                . "but material type is '{$finalType}'."
+                    . "Category '{$category->name}' is '{$category->category_type}', "
+                    . "but material type is '{$finalType}'."
             );
         }
 
@@ -382,20 +405,22 @@ class ProcessMaterialImport implements ShouldQueue
         if (empty($prefixes)) $prefixes = ['ACC'];
 
         $prefixes = array_map('strtoupper', $prefixes);
-        $escapedPrefixes = array_map(function($p) { return preg_quote($p, '/'); }, $prefixes);
+        $escapedPrefixes = array_map(function ($p) {
+            return preg_quote($p, '/');
+        }, $prefixes);
         $pattern = '/^(' . implode('|', $escapedPrefixes) . ')-\d{6}$/';
 
         if (!preg_match($pattern, $item['accession'])) {
             $prefixListStr = implode("-' or '", $prefixes);
             throw new \Exception(
                 "Row {$rowNumber} (accession: {$item['accession']}): Accession format is invalid. "
-                . "It must start with exactly '{$prefixListStr}-' followed by a 6-digit number (e.g., {$prefixes[0]}-000001), respecting exact capitalization."
+                    . "It must start with exactly '{$prefixListStr}-' followed by a 6-digit number (e.g., {$prefixes[0]}-000001), respecting exact capitalization."
             );
         }
 
         $existingBook = Book::where('accession', $item['accession'])->first();
         $isNew = !$existingBook;
-        
+
         $fillData = [
             'title'                => $item['title'],
             'parallel_title'       => $item['parallel_title'] ?? null,
@@ -420,13 +445,13 @@ class ProcessMaterialImport implements ShouldQueue
         if ($isNew) {
             // Include fields only needed during creation
             $barcodeData = (new DNS1D())->getBarcodeJPG($item['accession'], 'C39', 2, 80, [0, 0, 0, 0], false);
-            
+
             $fillData['accession'] = $item['accession'];
             $fillData['barcode'] = $barcodeData;
             $fillData['remarks'] = 'On Shelf';
             $fillData['availability_status'] = 'Available';
             $fillData['condition_status'] = 'New';
-            
+
             $targetBook = Book::create($fillData);
             unset($barcodeData);
         } else {
@@ -450,7 +475,7 @@ class ProcessMaterialImport implements ShouldQueue
             }
 
             $targetBook->fill($fillData);
-            
+
             if ($targetBook->isDirty()) {
                 $isModelDirty = true;
                 $targetBook->save();
@@ -461,7 +486,7 @@ class ProcessMaterialImport implements ShouldQueue
         $accessCodeIds = [];
         if (!empty($item['subject'])) {
             $rawSubjects = preg_split('/\s*;\s*/', (string) $item['subject'], -1, PREG_SPLIT_NO_EMPTY);
-            
+
             foreach ($rawSubjects as $rawName) {
                 $name = trim((string) $rawName);
                 $name = preg_replace('/\s+/', ' ', $name);
@@ -514,11 +539,11 @@ class ProcessMaterialImport implements ShouldQueue
         if ($isNew) {
             return 'new';
         }
-        
+
         if ($isModelDirty || $subjectChanged) {
             return 'updated';
         }
-        
+
         return 'skipped';
     }
 

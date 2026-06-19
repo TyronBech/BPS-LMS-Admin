@@ -291,6 +291,10 @@ class MaterialImportController extends Controller
     /**
      * Returns the current progress of an import job as JSON.
      * Polled by the frontend every 1.5 seconds.
+     *
+     * Cross-references the `failed_jobs` table to detect jobs that were
+     * killed by the queue worker (timeout, OOM) before the try-catch
+     * inside handle() could update the progress record.
      */
     public function status(Request $request, int $id)
     {
@@ -298,6 +302,27 @@ class MaterialImportController extends Controller
 
         if (!$progress) {
             return response()->json(['error' => true, 'message' => 'Import record not found.'], 404);
+        }
+
+        // Safety net: if the progress record is still active but the
+        // underlying queue job has already been moved to failed_jobs,
+        // mark the import as failed so the frontend can stop polling.
+        if ($progress->isActive()) {
+            $failedJob = \Illuminate\Support\Facades\DB::table('failed_jobs')
+                ->where('payload', 'like', '%"progressId":' . $id . '%')
+                ->orWhere('payload', 'like', '%"progressId";i:' . $id . '%')
+                ->latest('failed_at')
+                ->first();
+
+            if ($failedJob) {
+                $errorSnippet = \Illuminate\Support\Str::limit($failedJob->exception, 200);
+
+                $progress->update([
+                    'status'        => 'failed',
+                    'error_message' => $progress->error_message
+                        ?: 'The import job failed unexpectedly: ' . $errorSnippet,
+                ]);
+            }
         }
 
         return response()->json([

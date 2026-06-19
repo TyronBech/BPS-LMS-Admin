@@ -49,6 +49,31 @@ class ProcessEmployeeImport implements ShouldQueue
     ) {}
 
     /**
+     * Called by the queue worker when the job is permanently failed.
+     *
+     * This is a safety net: if the try-catch inside handle() does not run
+     * (e.g., timeout, OOM kill, or serialization error), this method
+     * ensures the ImportProgress record is still marked as failed.
+     *
+     * @param \Throwable $exception
+     */
+    public function failed(\Throwable $exception): void
+    {
+        $progress = ImportProgress::find($this->progressId);
+        if ($progress && $progress->isActive()) {
+            $progress->update([
+                'status'        => 'failed',
+                'error_message' => $progress->error_message ?: $exception->getMessage(),
+            ]);
+        }
+
+        Log::error('ProcessEmployeeImport: Job permanently failed', [
+            'progress_id'   => $this->progressId,
+            'error_message' => $exception->getMessage(),
+        ]);
+    }
+
+    /**
      * Execute the employee/faculty-staff import.
      */
     public function handle(): void
