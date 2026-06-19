@@ -163,7 +163,10 @@ document.addEventListener('DOMContentLoaded', function () {
   const btn = document.getElementById('btn-import-user-images');
   if (!btn) return;
 
+  let isSubmitting = false;
   btn.addEventListener('click', async function () {
+    if (isSubmitting) return;
+    isSubmitting = true;
     btn.disabled    = true;
     btn.textContent = 'Submitting…';
 
@@ -182,6 +185,7 @@ document.addEventListener('DOMContentLoaded', function () {
         window.ImportOverlay.showBlocked(data.message);
         btn.disabled    = false;
         btn.textContent = 'Import to Database';
+        isSubmitting = false;
         return;
       }
 
@@ -193,6 +197,7 @@ document.addEventListener('DOMContentLoaded', function () {
     } catch (e) {
       btn.disabled    = false;
       btn.textContent = 'Import to Database';
+      isSubmitting = false;
       alert('An unexpected error occurred. Please try again.');
     }
   });

@@ -103,7 +103,10 @@ document.addEventListener('DOMContentLoaded', function () {
     const btn = document.getElementById('btn-insert-materials');
     if (!btn) return;
 
+    let isSubmitting = false;
     btn.addEventListener('click', async function () {
+        if (isSubmitting) return;
+        isSubmitting = true;
         btn.disabled = true;
         btn.textContent = 'Submitting…';
 
@@ -136,6 +139,7 @@ document.addEventListener('DOMContentLoaded', function () {
                 window.ImportOverlay.showBlocked(data.message);
                 btn.disabled   = false;
                 btn.textContent = 'Insert to Database';
+                isSubmitting = false;
                 if (form) {
                     form.querySelectorAll('input, select, textarea').forEach(el => {
                         el.disabled = false;
@@ -154,6 +158,7 @@ document.addEventListener('DOMContentLoaded', function () {
         } catch (e) {
             btn.disabled   = false;
             btn.textContent = 'Insert to Database';
+            isSubmitting = false;
             if (form) {
                 form.querySelectorAll('input, select, textarea').forEach(el => {
                     el.disabled = false;
