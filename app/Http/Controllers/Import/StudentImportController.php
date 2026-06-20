@@ -300,11 +300,12 @@ class StudentImportController extends Controller
 
         $existingIdNumbers = [];
         if (!empty($idNumbers)) {
-            $existingIdNumbers = array_flip(
-                StudentDetail::whereIn('id_number', $idNumbers)
-                    ->pluck('id_number')
-                    ->toArray()
-            );
+            $dbIdNumbers = StudentDetail::whereIn('id_number', $idNumbers)
+                ->pluck('id_number')
+                ->toArray();
+            $existingIdNumbers = array_flip(array_map(function ($val) {
+                return strtolower(trim($val));
+            }, $dbIdNumbers));
         }
 
         for ($i = 18; $i < count($rows); $i++) {
@@ -330,7 +331,8 @@ class StudentImportController extends Controller
                 'section'     => $rows[$i][8],
             ];
 
-            if (isset($existingIdNumbers[$temp['id_number']])) {
+            $lookupId = strtolower(trim($temp['id_number']));
+            if (isset($existingIdNumbers[$lookupId])) {
                 $existingData[] = $temp;
             } else {
                 $newData[] = $temp;

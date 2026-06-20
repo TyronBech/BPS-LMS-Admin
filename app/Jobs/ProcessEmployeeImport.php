@@ -134,11 +134,12 @@ class ProcessEmployeeImport implements ShouldQueue
 
             $existingEmpIds = [];
             if (!empty($employeeIds)) {
-                $existingEmpIds = array_flip(
-                    EmployeeDetail::whereIn('employee_id', $employeeIds)
-                        ->pluck('employee_id')
-                        ->toArray()
-                );
+                $dbEmpIds = EmployeeDetail::whereIn('employee_id', $employeeIds)
+                    ->pluck('employee_id')
+                    ->toArray();
+                $existingEmpIds = array_flip(array_map(function ($val) {
+                    return strtolower(trim($val));
+                }, $dbEmpIds));
             }
 
             for ($i = 18; $i < count($rows); $i++) {
@@ -163,7 +164,8 @@ class ProcessEmployeeImport implements ShouldQueue
                     'employee_role' => $rows[$i][7],
                 ];
 
-                if (isset($existingEmpIds[$temp['employee_id']])) {
+                $lookupId = strtolower(trim($temp['employee_id']));
+                if (isset($existingEmpIds[$lookupId])) {
                     $existingData[] = $temp;
                 } else {
                     $newData[] = $temp;
@@ -227,7 +229,7 @@ class ProcessEmployeeImport implements ShouldQueue
                     $existingUsers = User::whereHas('employees', function ($query) use ($chunkEmployeeIds) {
                         $query->whereIn('employee_id', $chunkEmployeeIds);
                     })->with('employees')->get()->keyBy(function ($user) {
-                        return $user->employees->employee_id;
+                        return strtolower(trim($user->employees->employee_id));
                     })->all();
                 }
 
@@ -262,7 +264,8 @@ class ProcessEmployeeImport implements ShouldQueue
                             continue;
                         }
 
-                        $existingEmployee = $existingUsers[$item['employee_id']] ?? null;
+                        $lookupKey = strtolower(trim($item['employee_id']));
+                        $existingEmployee = $existingUsers[$lookupKey] ?? null;
                         $result = $this->processRow($item, $users, $allRoles, $genderEnums, $existingEmails, $existingRfids, $existingEmployee);
 
                         if ($result === 'new') {
@@ -418,6 +421,23 @@ class ProcessEmployeeImport implements ShouldQueue
         array $existingRfids,
         ?User $existingEmployee = null
     ): string {
+        if ($existingEmployee) {
+            if (
+                $existingEmployee->rfid                       == $item['rfid']
+                && $existingEmployee->first_name              == $item['first_name']
+                && $existingEmployee->middle_name             == $item['middle_name']
+                && $existingEmployee->last_name               == $item['last_name']
+                && $existingEmployee->suffix                  == $item['suffix']
+                && $existingEmployee->gender                  == $item['gender']
+                && $existingEmployee->email                   == $item['email']
+                && $existingEmployee->employees
+                && $existingEmployee->employees->employee_role == $item['employee_role']
+                && $existingEmployee->employees->employee_id  == $item['employee_id']
+            ) {
+                return 'skipped';
+            }
+        }
+
         $employeeRole = trim($item['employee_role'] ?? '');
         if ($employeeRole !== '') {
             $matchedRole = null;
@@ -477,20 +497,6 @@ class ProcessEmployeeImport implements ShouldQueue
         }
 
         if ($existingEmployee) {
-            if (
-                $existingEmployee->rfid                       == $item['rfid']
-                && $existingEmployee->first_name              == $item['first_name']
-                && $existingEmployee->middle_name             == $item['middle_name']
-                && $existingEmployee->last_name               == $item['last_name']
-                && $existingEmployee->suffix                  == $item['suffix']
-                && $existingEmployee->gender                  == $item['gender']
-                && $existingEmployee->email                   == $item['email']
-                && $existingEmployee->employees->employee_role == $item['employee_role']
-                && $existingEmployee->employees->employee_id  == $item['employee_id']
-            ) {
-                return 'skipped';
-            }
-
             $existingEmployee->update([
                 'first_name'  => $item['first_name'],
                 'middle_name' => $item['middle_name'],

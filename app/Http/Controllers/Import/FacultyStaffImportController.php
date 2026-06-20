@@ -301,11 +301,12 @@ class FacultyStaffImportController extends Controller
 
         $existingEmpIds = [];
         if (!empty($employeeIds)) {
-            $existingEmpIds = array_flip(
-                EmployeeDetail::whereIn('employee_id', $employeeIds)
-                    ->pluck('employee_id')
-                    ->toArray()
-            );
+            $dbEmpIds = EmployeeDetail::whereIn('employee_id', $employeeIds)
+                ->pluck('employee_id')
+                ->toArray();
+            $existingEmpIds = array_flip(array_map(function ($val) {
+                return strtolower(trim($val));
+            }, $dbEmpIds));
         }
 
         for ($i = 18; $i < count($rows); $i++) {
@@ -330,7 +331,8 @@ class FacultyStaffImportController extends Controller
                 'employee_role' => $rows[$i][7],
             ];
 
-            if (isset($existingEmpIds[$temp['employee_id']])) {
+            $lookupId = strtolower(trim($temp['employee_id']));
+            if (isset($existingEmpIds[$lookupId])) {
                 $existingData[] = $temp;
             } else {
                 $newData[] = $temp;

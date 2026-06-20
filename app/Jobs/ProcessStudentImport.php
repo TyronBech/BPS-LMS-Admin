@@ -130,11 +130,12 @@ class ProcessStudentImport implements ShouldQueue
 
             $existingIdNumbers = [];
             if (!empty($idNumbers)) {
-                $existingIdNumbers = array_flip(
-                    StudentDetail::whereIn('id_number', $idNumbers)
-                        ->pluck('id_number')
-                        ->toArray()
-                );
+                $dbIdNumbers = StudentDetail::whereIn('id_number', $idNumbers)
+                    ->pluck('id_number')
+                    ->toArray();
+                $existingIdNumbers = array_flip(array_map(function ($val) {
+                    return strtolower(trim($val));
+                }, $dbIdNumbers));
             }
 
             for ($i = 18; $i < count($rows); $i++) {
@@ -160,7 +161,8 @@ class ProcessStudentImport implements ShouldQueue
                     'section'     => $rows[$i][8],
                 ];
 
-                if (isset($existingIdNumbers[$temp['id_number']])) {
+                $lookupId = strtolower(trim($temp['id_number']));
+                if (isset($existingIdNumbers[$lookupId])) {
                     $existingData[] = $temp;
                 } else {
                     $newData[] = $temp;
@@ -221,7 +223,7 @@ class ProcessStudentImport implements ShouldQueue
                     $existingUsers = User::whereHas('students', function ($query) use ($chunkIdNumbers) {
                         $query->whereIn('id_number', $chunkIdNumbers);
                     })->with('students')->get()->keyBy(function ($user) {
-                        return $user->students->id_number;
+                        return strtolower(trim($user->students->id_number));
                     })->all();
                 }
 
@@ -256,7 +258,8 @@ class ProcessStudentImport implements ShouldQueue
                             continue;
                         }
 
-                        $existingStudent = $existingUsers[$item['id_number']] ?? null;
+                        $lookupKey = strtolower(trim($item['id_number']));
+                        $existingStudent = $existingUsers[$lookupKey] ?? null;
                         $result = $this->processRow($item, $users, $genderEnums, $existingEmails, $existingRfids, $existingStudent);
 
                         if ($result === 'new') {
@@ -410,6 +413,24 @@ class ProcessStudentImport implements ShouldQueue
         array $existingRfids,
         ?User $existingStudent = null
     ): string {
+        if ($existingStudent) {
+            // Check if anything actually changed
+            if (
+                $existingStudent->rfid        == $item['rfid']
+                && $existingStudent->first_name   == $item['first_name']
+                && $existingStudent->middle_name  == $item['middle_name']
+                && $existingStudent->last_name    == $item['last_name']
+                && $existingStudent->suffix       == $item['suffix']
+                && $existingStudent->gender       == $item['gender']
+                && $existingStudent->email        == $item['email']
+                && $existingStudent->students
+                && $existingStudent->students->level   == $item['grade_level']
+                && $existingStudent->students->section == $item['section']
+            ) {
+                return 'skipped';
+            }
+        }
+
         $validator = Validator::make($item, [
             'rfid'        => 'nullable|string|min:10|regex:/^[0-9]+$/u',
             'first_name'  => 'required|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
@@ -433,21 +454,6 @@ class ProcessStudentImport implements ShouldQueue
         }
 
         if ($existingStudent) {
-            // Check if anything actually changed
-            if (
-                $existingStudent->rfid        == $item['rfid']
-                && $existingStudent->first_name   == $item['first_name']
-                && $existingStudent->middle_name  == $item['middle_name']
-                && $existingStudent->last_name    == $item['last_name']
-                && $existingStudent->suffix       == $item['suffix']
-                && $existingStudent->gender       == $item['gender']
-                && $existingStudent->email        == $item['email']
-                && $existingStudent->students->level   == $item['grade_level']
-                && $existingStudent->students->section == $item['section']
-            ) {
-                return 'skipped';
-            }
-
             $existingStudent->update([
                 'rfid'        => $item['rfid'],
                 'first_name'  => $item['first_name'],
