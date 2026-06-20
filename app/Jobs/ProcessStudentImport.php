@@ -287,6 +287,10 @@ class ProcessStudentImport implements ShouldQueue
 
                     DB::commit();
 
+                    if (!app()->environment('testing')) {
+                        DB::statement('CALL DistributeStagingUsers()');
+                    }
+
                     $progress->update([
                         'processed_rows' => $processedRows,
                         'new_count'      => $newCount,
@@ -537,6 +541,9 @@ class ProcessStudentImport implements ShouldQueue
             ]);
             return;
         }
+
+        // Set short timeout to prevent slow mail server from stalling the import job
+        config(['mail.mailers.smtp.timeout' => 3]);
 
         try {
             Mail::to($student->email)->send(new AccountEmailMessage($student, $password));
