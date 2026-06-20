@@ -191,6 +191,9 @@ class ProcessStudentImport implements ShouldQueue
             $newEmails      = [];
             $users          = new User();
 
+            // Fetch gender enums once to avoid N+1 SHOW COLUMNS queries
+            $genderEnums = $this->extractEnums($users->getTable(), 'gender');
+
             // Free the spreadsheet from memory
             $spreadsheet->disconnectWorksheets();
             unset($spreadsheet, $sheet, $rows, $existingIdNumbers, $idNumbers);
@@ -201,10 +204,11 @@ class ProcessStudentImport implements ShouldQueue
                 'total_rows'  => count($students),
             ]);
 
-            $chunkIndex = 0;
-            while (!empty($students)) {
-                $chunk = array_splice($students, 0, self::CHUNK_SIZE);
+            $chunks = array_chunk($students, self::CHUNK_SIZE);
+            unset($students);
+            gc_collect_cycles();
 
+            foreach ($chunks as $chunkIndex => $chunk) {
                 $progress->refresh();
                 if ($progress->status === 'cancelled') {
                     return;
@@ -221,6 +225,28 @@ class ProcessStudentImport implements ShouldQueue
                     })->all();
                 }
 
+                // Bulk-fetch duplicate check targets for emails and RFIDs in this chunk to avoid N+1 queries
+                $chunkEmails = array_filter(array_column($chunk, 'email'));
+                $chunkRfids = array_filter(array_column($chunk, 'rfid'));
+
+                $existingEmails = [];
+                if (!empty($chunkEmails)) {
+                    $dbEmails = array_merge(
+                        User::whereIn('email', $chunkEmails)->pluck('email')->toArray(),
+                        StagingUser::whereIn('email', $chunkEmails)->pluck('email')->toArray()
+                    );
+                    $existingEmails = array_flip(array_map('strtolower', $dbEmails));
+                }
+
+                $existingRfids = [];
+                if (!empty($chunkRfids)) {
+                    $dbRfids = array_merge(
+                        User::whereIn('rfid', $chunkRfids)->pluck('rfid')->toArray(),
+                        StagingUser::whereIn('rfid', $chunkRfids)->pluck('rfid')->toArray()
+                    );
+                    $existingRfids = array_flip($dbRfids);
+                }
+
                 DB::beginTransaction();
 
                 try {
@@ -231,7 +257,7 @@ class ProcessStudentImport implements ShouldQueue
                         }
 
                         $existingStudent = $existingUsers[$item['id_number']] ?? null;
-                        $result = $this->processRow($item, $users, $existingStudent);
+                        $result = $this->processRow($item, $users, $genderEnums, $existingEmails, $existingRfids, $existingStudent);
 
                         if ($result === 'new') {
                             $newCount++;
@@ -254,7 +280,8 @@ class ProcessStudentImport implements ShouldQueue
                     ]);
 
                     // Release memory explicitly
-                    unset($chunk, $existingUsers, $chunkIdNumbers);
+                    unset($chunk, $existingUsers, $chunkIdNumbers, $chunkEmails, $chunkRfids, $existingEmails, $existingRfids);
+                    unset($chunks[$chunkIndex]);
                     gc_collect_cycles();
 
                     Log::debug('ProcessStudentImport: Chunk committed', [
@@ -262,7 +289,6 @@ class ProcessStudentImport implements ShouldQueue
                         'chunk_index'    => $chunkIndex,
                         'processed_rows' => $processedRows,
                     ]);
-                    $chunkIndex++;
                 } catch (\Throwable $chunkError) {
                     if (DB::transactionLevel() > 0) {
                         DB::rollBack();
@@ -304,7 +330,7 @@ class ProcessStudentImport implements ShouldQueue
 
             $progress->update([
                 'status'         => 'completed',
-                'processed_rows' => count($students),
+                'processed_rows' => $processedRows,
                 'new_count'      => $newCount,
                 'updated_count'  => $updatedCount,
             ]);
@@ -376,8 +402,14 @@ class ProcessStudentImport implements ShouldQueue
      * @return string
      * @throws \Exception
      */
-    private function processRow(array $item, User $usersModel, ?User $existingStudent = null): string
-    {
+    private function processRow(
+        array $item,
+        User $usersModel,
+        array $genderEnums,
+        array $existingEmails,
+        array $existingRfids,
+        ?User $existingStudent = null
+    ): string {
         $validator = Validator::make($item, [
             'rfid'        => 'nullable|string|min:10|regex:/^[0-9]+$/u',
             'first_name'  => 'required|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
@@ -387,7 +419,7 @@ class ProcessStudentImport implements ShouldQueue
             'id_number'   => 'required|string|max:20',
             'grade_level' => 'required|string|max:50',
             'section'     => 'required|string|max:255',
-            'gender'      => 'required|string|in:' . implode(',', $this->extractEnums($usersModel->getTable(), 'gender')),
+            'gender'      => 'required|string|in:' . implode(',', $genderEnums),
             'email'       => 'nullable|string|email',
         ]);
 
@@ -435,14 +467,14 @@ class ProcessStudentImport implements ShouldQueue
         }
 
         // New student — check for duplicate email / RFID first
-        if (!empty($item['email']) && User::where('email', $item['email'])->exists()) {
+        if (!empty($item['email']) && isset($existingEmails[strtolower($item['email'])])) {
             throw new \Exception(
                 'Email already exists for student: '
                     . $item['first_name'] . ' ' . $item['last_name']
             );
         }
 
-        if (!empty($item['rfid']) && User::where('rfid', $item['rfid'])->exists()) {
+        if (!empty($item['rfid']) && isset($existingRfids[$item['rfid']])) {
             throw new \Exception(
                 'RFID already exists for student: '
                     . $item['first_name'] . ' ' . $item['last_name']

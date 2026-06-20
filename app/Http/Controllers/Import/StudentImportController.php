@@ -67,6 +67,16 @@ class StudentImportController extends Controller
         // --- Global one-active-import-at-a-time lock ---
         $activeImport = ImportProgress::whereIn('status', ['pending', 'processing'])->first();
         if ($activeImport) {
+            // Check if this is the SAME user starting the SAME import type and it was created very recently (e.g. within 2 mins)
+            // This handles proxy timeouts and automatic retries gracefully.
+            if ($activeImport->type === 'students' && $activeImport->initiated_by === Auth::id() && $activeImport->created_at->gt(now()->subMinutes(2))) {
+                return response()->json([
+                    'success'     => true,
+                    'progress_id' => $activeImport->id,
+                    'total_rows'  => $activeImport->total_rows,
+                ]);
+            }
+
             $label = ucfirst($activeImport->type);
             return response()->json([
                 'error'       => true,

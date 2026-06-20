@@ -194,6 +194,9 @@ class ProcessEmployeeImport implements ShouldQueue
             $newEmails     = [];
             $users         = new User();
 
+            // Fetch gender enums once to avoid N+1 SHOW COLUMNS queries
+            $genderEnums = $this->extractEnums($users->getTable(), 'gender');
+
             // Pre-fetch all user roles (category) to avoid N+1 validation queries
             $allRoles = UserGroup::pluck('category')->toArray();
 
@@ -207,10 +210,11 @@ class ProcessEmployeeImport implements ShouldQueue
                 'total_rows'  => count($employees),
             ]);
 
-            $chunkIndex = 0;
-            while (!empty($employees)) {
-                $chunk = array_splice($employees, 0, self::CHUNK_SIZE);
+            $chunks = array_chunk($employees, self::CHUNK_SIZE);
+            unset($employees);
+            gc_collect_cycles();
 
+            foreach ($chunks as $chunkIndex => $chunk) {
                 $progress->refresh();
                 if ($progress->status === 'cancelled') {
                     return;
@@ -227,6 +231,28 @@ class ProcessEmployeeImport implements ShouldQueue
                     })->all();
                 }
 
+                // Bulk-fetch duplicate check targets for emails and RFIDs in this chunk to avoid N+1 queries
+                $chunkEmails = array_filter(array_column($chunk, 'email'));
+                $chunkRfids = array_filter(array_column($chunk, 'rfid'));
+
+                $existingEmails = [];
+                if (!empty($chunkEmails)) {
+                    $dbEmails = array_merge(
+                        User::whereIn('email', $chunkEmails)->pluck('email')->toArray(),
+                        StagingUser::whereIn('email', $chunkEmails)->pluck('email')->toArray()
+                    );
+                    $existingEmails = array_flip(array_map('strtolower', $dbEmails));
+                }
+
+                $existingRfids = [];
+                if (!empty($chunkRfids)) {
+                    $dbRfids = array_merge(
+                        User::whereIn('rfid', $chunkRfids)->pluck('rfid')->toArray(),
+                        StagingUser::whereIn('rfid', $chunkRfids)->pluck('rfid')->toArray()
+                    );
+                    $existingRfids = array_flip($dbRfids);
+                }
+
                 DB::beginTransaction();
 
                 try {
@@ -237,7 +263,7 @@ class ProcessEmployeeImport implements ShouldQueue
                         }
 
                         $existingEmployee = $existingUsers[$item['employee_id']] ?? null;
-                        $result = $this->processRow($item, $users, $allRoles, $existingEmployee);
+                        $result = $this->processRow($item, $users, $allRoles, $genderEnums, $existingEmails, $existingRfids, $existingEmployee);
 
                         if ($result === 'new') {
                             $newCount++;
@@ -260,7 +286,8 @@ class ProcessEmployeeImport implements ShouldQueue
                     ]);
 
                     // Release memory explicitly
-                    unset($chunk, $existingUsers, $chunkEmployeeIds);
+                    unset($chunk, $existingUsers, $chunkEmployeeIds, $chunkEmails, $chunkRfids, $existingEmails, $existingRfids);
+                    unset($chunks[$chunkIndex]);
                     gc_collect_cycles();
 
                     Log::debug('ProcessEmployeeImport: Chunk committed', [
@@ -268,7 +295,6 @@ class ProcessEmployeeImport implements ShouldQueue
                         'chunk_index'    => $chunkIndex,
                         'processed_rows' => $processedRows,
                     ]);
-                    $chunkIndex++;
                 } catch (\Throwable $chunkError) {
                     if (DB::transactionLevel() > 0) {
                         DB::rollBack();
@@ -310,7 +336,7 @@ class ProcessEmployeeImport implements ShouldQueue
 
             $progress->update([
                 'status'         => 'completed',
-                'processed_rows' => count($employees),
+                'processed_rows' => $processedRows,
                 'new_count'      => $newCount,
                 'updated_count'  => $updatedCount,
             ]);
@@ -383,8 +409,15 @@ class ProcessEmployeeImport implements ShouldQueue
      * @return string
      * @throws \Exception
      */
-    private function processRow(array &$item, User $usersModel, array &$allRoles, ?User $existingEmployee = null): string
-    {
+    private function processRow(
+        array &$item,
+        User $usersModel,
+        array &$allRoles,
+        array $genderEnums,
+        array $existingEmails,
+        array $existingRfids,
+        ?User $existingEmployee = null
+    ): string {
         $employeeRole = trim($item['employee_role'] ?? '');
         if ($employeeRole !== '') {
             $matchedRole = null;
@@ -428,7 +461,7 @@ class ProcessEmployeeImport implements ShouldQueue
             'middle_name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
             'last_name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
             'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
-            'gender'        => 'required|string|in:' . implode(',', $this->extractEnums($usersModel->getTable(), 'gender')),
+            'gender'        => 'required|string|in:' . implode(',', $genderEnums),
             'email'         => 'nullable|string|email|max:255',
             'employee_role' => ['required', 'string', \Illuminate\Validation\Rule::in($allRoles)],
             'employee_id'   => 'required|string|max:50',
@@ -476,14 +509,14 @@ class ProcessEmployeeImport implements ShouldQueue
         }
 
         // New employee — guard against duplicates
-        if (!empty($item['email']) && StagingUser::where('email', $item['email'])->exists()) {
+        if (!empty($item['email']) && isset($existingEmails[strtolower($item['email'])])) {
             throw new \Exception(
                 'Email already exists for user: '
                 . $item['first_name'] . ' ' . $item['last_name']
             );
         }
 
-        if (!empty($item['rfid']) && StagingUser::where('rfid', $item['rfid'])->exists()) {
+        if (!empty($item['rfid']) && isset($existingRfids[$item['rfid']])) {
             throw new \Exception(
                 'RFID already exists for user: '
                 . $item['first_name'] . ' ' . $item['last_name']
