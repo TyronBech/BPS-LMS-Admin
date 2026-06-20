@@ -1,5 +1,29 @@
 <?php
 
+// Detect current web request URL if available
+$requestHost = isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : null;
+$requestScheme = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https' : 'http';
+$requestBaseUrl = $requestHost ? "{$requestScheme}://{$requestHost}" : null;
+
+$resolvedAppUrl = env('APP_URL', 'http://localhost');
+if ($requestBaseUrl && str_contains($resolvedAppUrl, 'localhost') && !str_contains($requestHost, 'localhost')) {
+    $resolvedAppUrl = $requestBaseUrl;
+}
+
+$resolvedELibraryUrl = env('E_LIBRARY_URL', env('LIBRARY_URL'));
+if (!$resolvedELibraryUrl) {
+    $resolvedELibraryUrl = $resolvedAppUrl;
+} elseif ($requestBaseUrl && str_contains($resolvedELibraryUrl, 'localhost') && !str_contains($requestHost, 'localhost')) {
+    if (str_contains($requestHost, 'library-admin')) {
+        $eLibraryHost = str_contains($requestHost, 'sncstaguig')
+            ? str_replace('library-admin', 'library', $requestHost)
+            : str_replace('library-admin', 'e-library', $requestHost);
+        $resolvedELibraryUrl = "{$requestScheme}://{$eLibraryHost}";
+    } else {
+        $resolvedELibraryUrl = $requestBaseUrl;
+    }
+}
+
 return [
 
     /*
@@ -52,9 +76,11 @@ return [
     |
     */
 
-    'url' => env('APP_URL', 'http://localhost'),
+    'url' => $resolvedAppUrl,
 
-    'e_library_url' => env('E_LIBRARY_URL', env('APP_URL', 'http://localhost')),
+    'e_library_url' => $resolvedELibraryUrl,
+
+    'library_url' => (env('LIBRARY_URL') && !str_contains(env('LIBRARY_URL'), 'localhost')) ? env('LIBRARY_URL') : $resolvedAppUrl,
 
     /*
     |--------------------------------------------------------------------------
