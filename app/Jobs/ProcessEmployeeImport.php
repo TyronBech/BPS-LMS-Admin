@@ -94,6 +94,9 @@ class ProcessEmployeeImport implements ShouldQueue
         }
         $progress->update(['status' => 'processing']);
 
+        // Empty staging table to prevent orphaned data from previous failed/killed runs
+        DB::table('usr_staging_users')->delete();
+
         $fullPath = \Illuminate\Support\Facades\Storage::path($this->filePath);
 
         Log::info('ProcessEmployeeImport: Job started', [
@@ -258,6 +261,7 @@ class ProcessEmployeeImport implements ShouldQueue
                 DB::beginTransaction();
 
                 try {
+                    $stagingInserts = [];
                     foreach ($chunk as &$item) {
                         if (empty(array_filter($item))) {
                             $processedRows++;
@@ -266,18 +270,25 @@ class ProcessEmployeeImport implements ShouldQueue
 
                         $lookupKey = strtolower(trim($item['employee_id']));
                         $existingEmployee = $existingUsers[$lookupKey] ?? null;
-                        $result = $this->processRow($item, $users, $allRoles, $genderEnums, $existingEmails, $existingRfids, $existingEmployee);
+                        [$result, $stagingData] = $this->processRow($item, $users, $allRoles, $genderEnums, $existingEmails, $existingRfids, $existingEmployee);
 
                         if ($result === 'new') {
                             $newCount++;
                             if (!empty($item['email'])) {
                                 $newEmails[] = $item['email'];
                             }
+                            if ($stagingData) {
+                                $stagingInserts[] = $stagingData;
+                            }
                         } elseif ($result === 'updated') {
                             $updatedCount++;
                         }
 
                         $processedRows++;
+                    }
+
+                    if (!empty($stagingInserts)) {
+                        StagingUser::insert($stagingInserts);
                     }
 
                     DB::commit();
@@ -420,7 +431,7 @@ class ProcessEmployeeImport implements ShouldQueue
         array $existingEmails,
         array $existingRfids,
         ?User $existingEmployee = null
-    ): string {
+    ): array {
         if ($existingEmployee) {
             if (
                 $existingEmployee->rfid                       == $item['rfid']
@@ -434,7 +445,7 @@ class ProcessEmployeeImport implements ShouldQueue
                 && $existingEmployee->employees->employee_role == $item['employee_role']
                 && $existingEmployee->employees->employee_id  == $item['employee_id']
             ) {
-                return 'skipped';
+                return ['skipped', null];
             }
         }
 
@@ -511,7 +522,7 @@ class ProcessEmployeeImport implements ShouldQueue
                 'employee_id'   => $item['employee_id'],
             ]);
 
-            return 'updated';
+            return ['updated', null];
         }
 
         // New employee — guard against duplicates
@@ -531,7 +542,12 @@ class ProcessEmployeeImport implements ShouldQueue
 
         $password = Str::password(8, true, true, true, false);
 
-        StagingUser::create([
+        if (!empty($item['email'])) {
+            cache()->put("import_employee_pwd_{$item['email']}", $password, now()->addHour());
+        }
+
+        $now = now();
+        $stagingData = [
             'rfid'          => $item['rfid'],
             'first_name'    => $item['first_name'],
             'middle_name'   => $item['middle_name'],
@@ -543,11 +559,11 @@ class ProcessEmployeeImport implements ShouldQueue
             'employee_id'   => $item['employee_id'],
             'employee_role' => $item['employee_role'],
             'user_type'     => 'employee',
-        ]);
+            'created_at'    => $now,
+            'updated_at'    => $now,
+        ];
 
-        cache()->put("import_employee_pwd_{$item['email']}", $password, now()->addHour());
-
-        return 'new';
+        return ['new', $stagingData];
     }
 
     /**

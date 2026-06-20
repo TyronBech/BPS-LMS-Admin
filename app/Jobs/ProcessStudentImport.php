@@ -90,6 +90,9 @@ class ProcessStudentImport implements ShouldQueue
         }
         $progress->update(['status' => 'processing']);
 
+        // Empty staging table to prevent orphaned data from previous failed/killed runs
+        DB::table('usr_staging_users')->delete();
+
         $fullPath = \Illuminate\Support\Facades\Storage::path($this->filePath);
 
         Log::info('ProcessStudentImport: Job started', [
@@ -252,6 +255,7 @@ class ProcessStudentImport implements ShouldQueue
                 DB::beginTransaction();
 
                 try {
+                    $stagingInserts = [];
                     foreach ($chunk as $item) {
                         if (empty(array_filter($item))) {
                             $processedRows++;
@@ -260,18 +264,25 @@ class ProcessStudentImport implements ShouldQueue
 
                         $lookupKey = strtolower(trim($item['id_number']));
                         $existingStudent = $existingUsers[$lookupKey] ?? null;
-                        $result = $this->processRow($item, $users, $genderEnums, $existingEmails, $existingRfids, $existingStudent);
+                        [$result, $stagingData] = $this->processRow($item, $users, $genderEnums, $existingEmails, $existingRfids, $existingStudent);
 
                         if ($result === 'new') {
                             $newCount++;
                             if (!empty($item['email'])) {
                                 $newEmails[] = $item['email'];
                             }
+                            if ($stagingData) {
+                                $stagingInserts[] = $stagingData;
+                            }
                         } elseif ($result === 'updated') {
                             $updatedCount++;
                         }
 
                         $processedRows++;
+                    }
+
+                    if (!empty($stagingInserts)) {
+                        StagingUser::insert($stagingInserts);
                     }
 
                     DB::commit();
@@ -412,7 +423,7 @@ class ProcessStudentImport implements ShouldQueue
         array $existingEmails,
         array $existingRfids,
         ?User $existingStudent = null
-    ): string {
+    ): array {
         if ($existingStudent) {
             // Check if anything actually changed
             if (
@@ -427,7 +438,7 @@ class ProcessStudentImport implements ShouldQueue
                 && $existingStudent->students->level   == $item['grade_level']
                 && $existingStudent->students->section == $item['section']
             ) {
-                return 'skipped';
+                return ['skipped', null];
             }
         }
 
@@ -469,7 +480,7 @@ class ProcessStudentImport implements ShouldQueue
                 'section' => $item['section'],
             ]);
 
-            return 'updated';
+            return ['updated', null];
         }
 
         // New student — check for duplicate email / RFID first
@@ -489,7 +500,12 @@ class ProcessStudentImport implements ShouldQueue
 
         $password = Str::password(8, true, true, true, false);
 
-        StagingUser::create([
+        if (!empty($item['email'])) {
+            cache()->put("import_student_pwd_{$item['email']}", $password, now()->addHour());
+        }
+
+        $now = now();
+        $stagingData = [
             'rfid'        => $item['rfid'],
             'first_name'  => $item['first_name'],
             'middle_name' => $item['middle_name'],
@@ -502,14 +518,11 @@ class ProcessStudentImport implements ShouldQueue
             'level'       => $item['grade_level'],
             'section'     => $item['section'],
             'user_type'   => 'student',
-        ]);
+            'created_at'  => $now,
+            'updated_at'  => $now,
+        ];
 
-        // Store plain password temporarily on the model instance so we can email it later.
-        // We attach it to a transient property that won't be persisted.
-        // This is safe because the StagingUser row is consumed by the stored procedure.
-        cache()->put("import_student_pwd_{$item['email']}", $password, now()->addHour());
-
-        return 'new';
+        return ['new', $stagingData];
     }
 
     /**
