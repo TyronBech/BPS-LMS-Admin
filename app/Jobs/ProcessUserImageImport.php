@@ -81,6 +81,9 @@ class ProcessUserImageImport implements ShouldQueue
 
         /** @var ImportProgress $progress */
         $progress = ImportProgress::findOrFail($this->progressId);
+        if ($progress->status === 'cancelled') {
+            return;
+        }
         $progress->update(['status' => 'processing']);
 
         Log::info('ProcessUserImageImport: Job started', [
@@ -96,6 +99,11 @@ class ProcessUserImageImport implements ShouldQueue
             $chunks        = array_chunk($this->matchedFiles, self::CHUNK_SIZE);
 
             foreach ($chunks as $chunkIndex => $chunk) {
+                $progress->refresh();
+                if ($progress->status === 'cancelled') {
+                    return;
+                }
+
                 DB::beginTransaction();
 
                 foreach ($chunk as $fileInfo) {
@@ -207,12 +215,17 @@ class ProcessUserImageImport implements ShouldQueue
             ]);
 
         } catch (\Throwable $e) {
-            DB::rollBack();
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
 
-            $progress->update([
-                'status'        => 'failed',
-                'error_message' => $e->getMessage(),
-            ]);
+            $progress->refresh();
+            if ($progress->status !== 'cancelled') {
+                $progress->update([
+                    'status'        => 'failed',
+                    'error_message' => $e->getMessage(),
+                ]);
+            }
 
             Log::error('ProcessUserImageImport: Job failed', [
                 'progress_id'   => $this->progressId,

@@ -89,6 +89,9 @@ class ProcessEmployeeImport implements ShouldQueue
 
         /** @var ImportProgress $progress */
         $progress = ImportProgress::findOrFail($this->progressId);
+        if ($progress->status === 'cancelled') {
+            return;
+        }
         $progress->update(['status' => 'processing']);
 
         $fullPath = \Illuminate\Support\Facades\Storage::path($this->filePath);
@@ -167,7 +170,7 @@ class ProcessEmployeeImport implements ShouldQueue
             $newCount      = 0;
             $updatedCount  = 0;
             $processedRows = 0;
-            $stagedUsers   = [];
+            $newEmails     = [];
             $chunks        = array_chunk($employees, self::CHUNK_SIZE);
             $users         = new User();
 
@@ -183,8 +186,12 @@ class ProcessEmployeeImport implements ShouldQueue
             ]);
 
             foreach ($chunks as $chunkIndex => $chunk) {
+                $progress->refresh();
+                if ($progress->status === 'cancelled') {
+                    return;
+                }
+
                 DB::beginTransaction();
-                $stagedUsersInChunk = [];
 
                 try {
                     foreach ($chunk as $item) {
@@ -198,7 +205,7 @@ class ProcessEmployeeImport implements ShouldQueue
                         if ($result === 'new') {
                             $newCount++;
                             if (!empty($item['email'])) {
-                                $stagedUsersInChunk[] = $item['email'];
+                                $newEmails[] = $item['email'];
                             }
                         } elseif ($result === 'updated') {
                             $updatedCount++;
@@ -208,17 +215,6 @@ class ProcessEmployeeImport implements ShouldQueue
                     }
 
                     DB::commit();
-
-                    // Distribute staging users for this chunk immediately
-                    DB::statement('CALL DistributeStagingUsers()');
-
-                    // Send account notification emails for this chunk
-                    foreach ($stagedUsersInChunk as $email) {
-                        $employee = User::where('email', $email)->first();
-                        if ($employee) {
-                            $this->sendAccountNotification($employee);
-                        }
-                    }
 
                     $progress->update([
                         'processed_rows' => $processedRows,
@@ -235,10 +231,13 @@ class ProcessEmployeeImport implements ShouldQueue
                         'processed_rows' => $processedRows,
                     ]);
                 } catch (\Throwable $chunkError) {
-                    DB::rollBack();
+                    if (DB::transactionLevel() > 0) {
+                        DB::rollBack();
+                    }
 
                     $failedRow = $processedRows + 1;
-                    $errorContext = "Row ~{$failedRow}: " . $chunkError->getMessage();
+                    $friendlyMsg = $this->getFriendlyErrorMessage($chunkError);
+                    $errorContext = "Row ~{$failedRow}: " . $friendlyMsg;
 
                     $progress->update([
                         'status'         => 'failed',
@@ -259,6 +258,17 @@ class ProcessEmployeeImport implements ShouldQueue
                 }
             }
 
+            // Distribute staging users once at the end
+            DB::statement('CALL DistributeStagingUsers()');
+
+            // Send account notification emails for new employees
+            foreach ($newEmails as $email) {
+                $employee = User::where('email', $email)->first();
+                if ($employee) {
+                    $this->sendAccountNotification($employee);
+                }
+            }
+
             $progress->update([
                 'status'         => 'completed',
                 'processed_rows' => count($employees),
@@ -273,12 +283,17 @@ class ProcessEmployeeImport implements ShouldQueue
             ]);
 
         } catch (\Throwable $e) {
-            DB::rollBack();
+            if (DB::transactionLevel() > 0) {
+                DB::rollBack();
+            }
 
-            $progress->update([
-                'status'        => 'failed',
-                'error_message' => $e->getMessage(),
-            ]);
+            $progress->refresh();
+            if ($progress->status !== 'cancelled') {
+                $progress->update([
+                    'status'        => 'failed',
+                    'error_message' => $this->getFriendlyErrorMessage($e),
+                ]);
+            }
 
             Log::error('ProcessEmployeeImport: Job failed', [
                 'progress_id'   => $this->progressId,
@@ -300,45 +315,23 @@ class ProcessEmployeeImport implements ShouldQueue
      */
     private function extractNameParts(string $fullName): array
     {
-        $suffixes     = ['Jr', 'Jr.', 'Sr', 'Sr.', 'II', 'III', 'IV', 'V', 'PhD', 'MD', 'Esq'];
-        $normSuffixes = array_map(fn($s) => strtolower(rtrim($s, '.')), $suffixes);
-
         $parts      = explode(',', $fullName, 2);
-        $lastName   = trim($parts[0] ?? '');
-        $otherParts = trim($parts[1] ?? '');
+        $lastName   = preg_replace('/\s+/', ' ', trim($parts[0] ?? ''));
+        $otherParts = preg_replace('/\s+/', ' ', trim($parts[1] ?? ''));
 
         if ($otherParts === '') {
             return ['first_name' => '', 'middle_name' => '', 'last_name' => $lastName, 'suffix' => ''];
         }
 
-        $namePieces  = preg_split('/\s+/', $otherParts);
-        $firstName   = '';
-        $middleName  = '';
-        $suffix      = '';
-        $suffixIndex = null;
-
-        for ($i = 1; $i < count($namePieces); $i++) {
-            $normalized = strtolower(rtrim($namePieces[$i], '.'));
-            if (in_array($normalized, $normSuffixes, true)) {
-                $suffixIndex = $i;
-                $suffix      = $namePieces[$i];
-                break;
-            }
-        }
-
-        if ($suffixIndex !== null) {
-            $firstName  = implode(' ', array_slice($namePieces, 0, $suffixIndex));
-            $middleName = implode(' ', array_slice($namePieces, $suffixIndex + 1));
-        } else {
-            $firstName  = $namePieces[0] ?? '';
-            $middleName = count($namePieces) > 1 ? implode(' ', array_slice($namePieces, 1)) : '';
-        }
+        $namePieces = preg_split('/\s+/', $otherParts, -1, PREG_SPLIT_NO_EMPTY);
+        $middleName = count($namePieces) > 1 ? array_pop($namePieces) : '';
+        $firstName  = implode(' ', $namePieces);
 
         return [
             'first_name'  => $firstName,
             'middle_name' => $middleName,
             'last_name'   => $lastName,
-            'suffix'      => $suffix,
+            'suffix'      => '',
         ];
     }
 
@@ -510,5 +503,47 @@ class ProcessEmployeeImport implements ShouldQueue
         }
         preg_match('/enum\((.*)\)$/', $column[0]->Type, $matches);
         return isset($matches[1]) ? str_getcsv($matches[1], ',', "'") : ['N/A'];
+    }
+
+    /**
+     * Translate database exceptions or general errors into user-friendly messages.
+     */
+    private function getFriendlyErrorMessage(\Throwable $e): string
+    {
+        if ($e instanceof \Illuminate\Database\QueryException) {
+            $errorCode = $e->errorInfo[1] ?? null;
+            $sqlMessage = $e->getMessage();
+
+            if ($errorCode == 1062) {
+                if (preg_match("/Duplicate entry '(.+?)' for key '(.+?)'/", $sqlMessage, $matches)) {
+                    $entry = $matches[1];
+                    $key = strtolower($matches[2]);
+
+                    if (str_contains($key, 'email')) {
+                        return "The email address '{$entry}' already exists.";
+                    }
+                    if (str_contains($key, 'rfid')) {
+                        return "The RFID '{$entry}' already exists.";
+                    }
+                    if (str_contains($key, 'employee_id')) {
+                        return "The employee ID '{$entry}' already exists.";
+                    }
+                    if (str_contains($key, 'id_number')) {
+                        return "The ID number '{$entry}' already exists.";
+                    }
+
+                    return "Duplicate entry detected: '{$entry}'.";
+                }
+                return "A duplicate entry was detected.";
+            }
+
+            if ($errorCode == 1451 || $errorCode == 1452) {
+                return "This record refers to or is referenced by a value that does not exist in our database.";
+            }
+
+            return "A database error occurred: " . ($e->errorInfo[2] ?? $e->getMessage());
+        }
+
+        return $e->getMessage();
     }
 }

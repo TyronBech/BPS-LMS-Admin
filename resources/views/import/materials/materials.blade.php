@@ -73,6 +73,7 @@
 @if(isset($activeImport) && $activeImport && $activeImport->isActive())
     <x-import-progress-overlay
         :status-url="route('import.status-materials', $activeImport->id)"
+        :cancel-url="route('import.cancel-progress', $activeImport->id)"
         :index-route="route('import.import-materials')"
         import-label="Materials"
     />
@@ -80,6 +81,7 @@
     {{-- Placeholder overlay — JS fills statusUrl dynamically after dispatch --}}
     <x-import-progress-overlay
         status-url=""
+        cancel-url=""
         :index-route="route('import.import-materials')"
         import-label="Materials"
     />
@@ -132,11 +134,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 body: formData,
             });
 
-            const data = await response.json();
+            const data = await response.json().catch(() => ({
+                error: true,
+                message: 'The server returned an unexpected response while starting the import.',
+            }));
 
-            if (data.error) {
-                // Blocked or validation error
-                window.ImportOverlay.showBlocked(data.message);
+            if (!response.ok || data.error) {
+                window.ImportOverlay.showFailure(data.message || 'Unable to start the import.');
                 btn.disabled   = false;
                 btn.textContent = 'Insert to Database';
                 isSubmitting = false;
@@ -153,6 +157,9 @@ document.addEventListener('DOMContentLoaded', function () {
             if (window.ImportOverlay._setStatusUrl) {
                 window.ImportOverlay._setStatusUrl('{{ url("/admin/import/materials/import-status") }}/' + data.progress_id);
             }
+            if (window.ImportOverlay._setCancelUrl) {
+                window.ImportOverlay._setCancelUrl('{{ url("/admin/import/import-progress") }}/' + data.progress_id + '/cancel');
+            }
             window.ImportOverlay.startPolling(data.progress_id);
 
         } catch (e) {
@@ -164,7 +171,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     el.disabled = false;
                 });
             }
-            alert('An unexpected error occurred. Please try again.');
+            window.ImportOverlay.showFailure(e.message || 'Unable to start the import.');
         }
     });
 });

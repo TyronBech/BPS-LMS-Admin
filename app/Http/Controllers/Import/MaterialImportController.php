@@ -137,6 +137,8 @@ class MaterialImportController extends Controller
      */
     public function store(Request $request)
     {
+        $progress = null;
+
         // --- Global one-active-import-at-a-time lock ---
         $activeImport = ImportProgress::whereIn('status', ['pending', 'processing'])->first();
         if ($activeImport) {
@@ -156,58 +158,77 @@ class MaterialImportController extends Controller
             ], 422);
         }
 
-        // Merge any page-visible edits
-        $submittedMaterials = $request->input('materials', []);
-        $sessionEdits       = $request->session()->get('material_import_edits', []);
+        try {
+            // Merge any page-visible edits
+            $submittedMaterials = $request->input('materials', []);
+            $sessionEdits       = $request->session()->get('material_import_edits', []);
 
-        foreach ($submittedMaterials as $index => $material) {
-            if (!isset($sessionEdits[$index])) {
-                $sessionEdits[$index] = [];
+            foreach ($submittedMaterials as $index => $material) {
+                if (!isset($sessionEdits[$index])) {
+                    $sessionEdits[$index] = [];
+                }
+                if (isset($material['authors'])) {
+                    $sessionEdits[$index]['authors'] = array_merge($sessionEdits[$index]['authors'] ?? [], $material['authors']);
+                }
+                if (isset($material['description'])) {
+                    $sessionEdits[$index]['description'] = array_merge($sessionEdits[$index]['description'] ?? [], $material['description']);
+                }
+                $sessionEdits[$index] = array_merge(
+                    $sessionEdits[$index],
+                    array_diff_key($material, ['authors' => 1, 'description' => 1])
+                );
             }
-            if (isset($material['authors'])) {
-                $sessionEdits[$index]['authors'] = array_merge($sessionEdits[$index]['authors'] ?? [], $material['authors']);
+
+            // Parse file to get row count
+            $data = $this->readMaterialsExcel(\Illuminate\Support\Facades\Storage::path($filePath));
+
+            // Create the progress record first
+            $progress = ImportProgress::create([
+                'type'         => 'materials',
+                'status'       => 'pending',
+                'initiated_by' => Auth::id(),
+                'total_rows'   => count($data),
+            ]);
+
+            // Dispatch the job - passing file path and only the edits array
+            ProcessMaterialImport::dispatch($filePath, $progress->id, Auth::id(), $sessionEdits);
+
+            // Clear session
+            $request->session()->forget([
+                'material_import_file',
+                'material_import_edits',
+            ]);
+
+            Log::info('Material Import: Job dispatched with file', [
+                'progress_id' => $progress->id,
+                'file_path'   => $filePath,
+                'total_rows'  => count($data),
+                'user_id'     => Auth::id(),
+            ]);
+
+            return response()->json([
+                'success'     => true,
+                'progress_id' => $progress->id,
+                'total_rows'  => $progress->total_rows,
+            ]);
+        } catch (\Throwable $e) {
+            if ($progress) {
+                $progress->update([
+                    'status'        => 'failed',
+                    'error_message' => $e->getMessage(),
+                ]);
             }
-            if (isset($material['description'])) {
-                $sessionEdits[$index]['description'] = array_merge($sessionEdits[$index]['description'] ?? [], $material['description']);
-            }
-            $sessionEdits[$index] = array_merge(
-                $sessionEdits[$index],
-                array_diff_key($material, ['authors' => 1, 'description' => 1])
-            );
+
+            Log::error('Material Import: Failed to dispatch job', [
+                'error_message' => $e->getMessage(),
+                'user_id'       => Auth::id(),
+            ]);
+
+            return response()->json([
+                'error'   => true,
+                'message' => $e instanceof \Exception ? $this->friendlyErrorMessage($e) : 'Unable to start the import.',
+            ], 422);
         }
-
-        // Parse file to get row count
-        $data = $this->readMaterialsExcel(\Illuminate\Support\Facades\Storage::path($filePath));
-
-        // Create the progress record first
-        $progress = ImportProgress::create([
-            'type'         => 'materials',
-            'status'       => 'pending',
-            'initiated_by' => Auth::id(),
-            'total_rows'   => count($data),
-        ]);
-
-        // Dispatch the job - passing file path and only the edits array
-        ProcessMaterialImport::dispatch($filePath, $progress->id, Auth::id(), $sessionEdits);
-
-        // Clear session
-        $request->session()->forget([
-            'material_import_file',
-            'material_import_edits',
-        ]);
-
-        Log::info('Material Import: Job dispatched with file', [
-            'progress_id' => $progress->id,
-            'file_path'   => $filePath,
-            'total_rows'  => count($data),
-            'user_id'     => Auth::id(),
-        ]);
-
-        return response()->json([
-            'success'     => true,
-            'progress_id' => $progress->id,
-            'total_rows'  => $progress->total_rows,
-        ]);
     }
 
     /**
@@ -309,8 +330,10 @@ class MaterialImportController extends Controller
         // mark the import as failed so the frontend can stop polling.
         if ($progress->isActive()) {
             $failedJob = \Illuminate\Support\Facades\DB::table('failed_jobs')
-                ->where('payload', 'like', '%"progressId":' . $id . '%')
-                ->orWhere('payload', 'like', '%"progressId";i:' . $id . '%')
+                ->where(function ($query) use ($id) {
+                    $query->where('payload', 'like', '%"progressId":' . $id . '%')
+                        ->orWhere('payload', 'like', '%"progressId";i:' . $id . '%');
+                })
                 ->latest('failed_at')
                 ->first();
 

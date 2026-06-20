@@ -189,6 +189,8 @@ class UserImageImportController extends Controller
      */
     public function store(Request $request)
     {
+        $progress = null;
+
         // Global one-active-import-at-a-time lock
         $activeImport = ImportProgress::whereIn('status', ['pending', 'processing'])->first();
         if ($activeImport) {
@@ -208,35 +210,56 @@ class UserImageImportController extends Controller
             ], 422);
         }
 
-        $totalRows = count($matched);
+        try {
+            $totalRows = count($matched);
 
-        $progress = ImportProgress::create([
-            'type'         => 'user_images',
-            'status'       => 'pending',
-            'initiated_by' => Auth::id(),
-            'total_rows'   => $totalRows,
-        ]);
+            $progress = ImportProgress::create([
+                'type'         => 'user_images',
+                'status'       => 'pending',
+                'initiated_by' => Auth::id(),
+                'total_rows'   => $totalRows,
+            ]);
 
-        ProcessUserImageImport::dispatch($matched, $progress->id, Auth::id());
+            ProcessUserImageImport::dispatch($matched, $progress->id, Auth::id());
 
-        $request->session()->forget([
-            'user_image_import_folder',
-            'user_image_import_matched',
-            'user_image_import_unmatched',
-            'user_image_import_oversized',
-        ]);
+            $request->session()->forget([
+                'user_image_import_folder',
+                'user_image_import_matched',
+                'user_image_import_unmatched',
+                'user_image_import_oversized',
+            ]);
 
-        Log::info('User Image Import: Job dispatched', [
-            'progress_id' => $progress->id,
-            'total_files' => $totalRows,
-            'user_id'     => Auth::id(),
-        ]);
+            Log::info('User Image Import: Job dispatched', [
+                'progress_id' => $progress->id,
+                'total_files' => $totalRows,
+                'user_id'     => Auth::id(),
+            ]);
 
-        return response()->json([
-            'success'     => true,
-            'progress_id' => $progress->id,
-            'total_rows'  => $progress->total_rows,
-        ]);
+            return response()->json([
+                'success'     => true,
+                'progress_id' => $progress->id,
+                'total_rows'  => $progress->total_rows,
+            ]);
+        } catch (\Throwable $e) {
+            if ($progress) {
+                $progress->update([
+                    'status'        => 'failed',
+                    'error_message' => $e->getMessage(),
+                ]);
+            }
+
+            Log::error('User Image Import: Failed to dispatch job', [
+                'error_message' => $e->getMessage(),
+                'user_id'       => Auth::id(),
+            ]);
+
+            return response()->json([
+                'error'   => true,
+                'message' => $e instanceof \Exception
+                    ? 'Unable to start image import: ' . $e->getMessage()
+                    : 'Unable to start image import.',
+            ], 422);
+        }
     }
 
     /**
@@ -263,8 +286,10 @@ class UserImageImportController extends Controller
         // mark the import as failed so the frontend can stop polling.
         if ($progress->isActive()) {
             $failedJob = \Illuminate\Support\Facades\DB::table('failed_jobs')
-                ->where('payload', 'like', '%"progressId":' . $id . '%')
-                ->orWhere('payload', 'like', '%"progressId";i:' . $id . '%')
+                ->where(function ($query) use ($id) {
+                    $query->where('payload', 'like', '%"progressId":' . $id . '%')
+                        ->orWhere('payload', 'like', '%"progressId";i:' . $id . '%');
+                })
                 ->latest('failed_at')
                 ->first();
 
@@ -404,4 +429,3 @@ class UserImageImportController extends Controller
         return $bytes . ' B';
     }
 }
-

@@ -3,6 +3,7 @@
     ===================================
     Props (passed via slot or attributes):
       $statusUrl  – The URL to poll for JSON progress updates
+      $cancelUrl  – The URL to cancel an active import
       $indexRoute – Named route to redirect to on completion / dismiss
       $importLabel – Human-readable label e.g. "Materials", "Students"
 
@@ -15,6 +16,7 @@
 --}}
 @props([
     'statusUrl',
+    'cancelUrl' => '',
     'indexRoute',
     'importLabel' => 'Import',
 ])
@@ -95,6 +97,15 @@
                     <span id="overlay-rows-text">0 / 0 rows processed</span>
                 </p>
 
+                <!-- Active action button -->
+                <div id="overlay-active-actions" class="mt-6 flex justify-center">
+                    <button id="overlay-btn-cancel"
+                        type="button"
+                        class="px-6 py-2 border border-red-300 dark:border-red-700 text-red-600 dark:text-red-300 text-sm font-semibold rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 transition-all hidden">
+                        Cancel
+                    </button>
+                </div>
+
                 <!-- Result counts (hidden until done) -->
                 <div id="overlay-result-counts" class="hidden mt-4">
                     <div class="grid grid-cols-3 gap-3">
@@ -115,7 +126,7 @@
 
                 <!-- Error message box -->
                 <div id="overlay-error-box" class="hidden mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                    <p class="text-sm font-semibold text-red-700 dark:text-red-300 mb-1">Import Failed</p>
+                    <p id="overlay-error-title" class="text-sm font-semibold text-red-700 dark:text-red-300 mb-1">Import Failed</p>
                     <p id="overlay-error-msg" class="text-xs text-red-600 dark:text-red-400 break-words"></p>
                 </div>
 
@@ -164,6 +175,7 @@
     const STALE_THRESHOLD_MS      = 2 * 60 * 1000; // 2 minutes
 
     let STATUS_URL          = @json($statusUrl);
+    let CANCEL_URL          = @json($cancelUrl);
     const INDEX_ROUTE       = @json($indexRoute);
     const IMPORT_LABEL      = @json($importLabel);
 
@@ -182,12 +194,15 @@
     const updatedCountEl    = document.getElementById('overlay-updated-count');
     const skippedCountEl    = document.getElementById('overlay-skipped-count');
     const errorBox          = document.getElementById('overlay-error-box');
+    const errorTitle        = document.getElementById('overlay-error-title');
     const errorMsg          = document.getElementById('overlay-error-msg');
     const blockedBox        = document.getElementById('overlay-blocked-box');
     const blockedMsg        = document.getElementById('overlay-blocked-msg');
+    const activeActions     = document.getElementById('overlay-active-actions');
     const actions           = document.getElementById('overlay-actions');
     const btnOk             = document.getElementById('overlay-btn-ok');
     const btnDismiss        = document.getElementById('overlay-btn-dismiss');
+    const btnCancel         = document.getElementById('overlay-btn-cancel');
 
     let pollTimer           = null;
     let progressId          = null;
@@ -196,23 +211,60 @@
     let lastProcessedRows   = -1;
     let lastProgressChangeAt = null;
 
-    // Dismiss overlay click handler
     if (btnDismiss) {
         btnDismiss.addEventListener('click', function () {
             window.location.href = INDEX_ROUTE;
         });
     }
 
+    if (btnCancel) {
+        btnCancel.addEventListener('click', async function () {
+            if (!CANCEL_URL) return;
+
+            if (!window.confirm('Cancel this import? Already committed rows may remain in the database.')) {
+                return;
+            }
+
+            btnCancel.disabled = true;
+            btnCancel.textContent = 'Cancelling...';
+
+            try {
+                const response = await fetch(CANCEL_URL, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content ?? '',
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest',
+                    },
+                });
+
+                const data = await response.json().catch(() => ({}));
+                if (!response.ok || data.error) {
+                    throw new Error(data.message || 'Unable to cancel the import.');
+                }
+
+                stopPolling();
+                handleCancelled({ error_message: data.message || 'Import cancelled by the user.' });
+                reEnablePage();
+            } catch (error) {
+                btnCancel.disabled = false;
+                btnCancel.textContent = 'Cancel';
+                window.ImportOverlay.showFailure(error.message || 'Unable to cancel the import.');
+            }
+        });
+    }
+
     function reEnablePage() {
         const buttons = [
-            document.getElementById('btn-insert-materials'),
-            document.getElementById('btn-insert-students'),
-            document.getElementById('btn-insert-employees')
+            { el: document.getElementById('btn-insert-materials'), text: 'Insert to Database' },
+            { el: document.getElementById('btn-insert-students'), text: 'Insert to Database' },
+            { el: document.getElementById('btn-insert-employees'), text: 'Insert to Database' },
+            { el: document.getElementById('btn-import-user-images'), text: 'Import to Database' },
         ];
-        buttons.forEach(btn => {
-            if (btn) {
-                btn.disabled = false;
-                btn.textContent = 'Insert to Database';
+        buttons.forEach(({ el, text }) => {
+            if (el) {
+                el.disabled = false;
+                el.textContent = text;
             }
         });
 
@@ -232,6 +284,11 @@
          */
         _setStatusUrl(url) {
             STATUS_URL = url;
+        },
+
+        _setCancelUrl(url) {
+            CANCEL_URL = url;
+            syncCancelButton();
         },
 
         /**
@@ -264,12 +321,20 @@
             titleText.textContent = 'Import Blocked';
             setBadge('failed');
 
+            activeActions.classList.add('hidden');
             blockedBox.classList.remove('hidden');
             blockedMsg.textContent = message;
 
             actions.classList.remove('hidden');
             btnDismiss.classList.remove('hidden');
 
+            stopPolling();
+        },
+
+        showFailure(message) {
+            resetToProcessing();
+            overlay.classList.remove('hidden');
+            handleFailed({ error_message: message });
             stopPolling();
         },
     };
@@ -282,11 +347,16 @@
         errorIcon.classList.add('hidden');
         errorIcon.classList.remove('flex');
         errorBox.classList.add('hidden');
+        errorTitle.textContent = 'Import Failed';
         blockedBox.classList.add('hidden');
         resultCounts.classList.add('hidden');
+        activeActions.classList.remove('hidden');
         actions.classList.add('hidden');
         btnOk.classList.add('hidden');
         btnDismiss.classList.add('hidden');
+        btnCancel.disabled = false;
+        btnCancel.textContent = 'Cancel';
+        syncCancelButton();
         progressBar.style.width = '0%';
 
         rowsText.textContent = '0 / 0 rows processed';
@@ -295,16 +365,26 @@
         setBadge('pending');
     }
 
+    function syncCancelButton() {
+        if (!btnCancel) return;
+
+        if (CANCEL_URL) {
+            btnCancel.classList.remove('hidden');
+        } else {
+            btnCancel.classList.add('hidden');
+        }
+    }
+
     function poll() {
         fetch(STATUS_URL, {
             headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
         })
-        .then(function (r) {
+        .then(async function (r) {
+            const data = await r.json().catch(() => null);
             if (!r.ok) {
-                // Server returned a non-2xx status — treat as a poll error
-                throw new Error('HTTP ' + r.status);
+                throw new Error((data && (data.message || data.error_message)) || 'Import status check failed with HTTP ' + r.status + '.');
             }
-            return r.json();
+            return data || {};
         })
         .then(function (data) {
             // Successful poll — reset consecutive error counter
@@ -312,9 +392,9 @@
 
             updateUI(data);
 
-            if (data.status === 'completed' || data.status === 'failed') {
+            if (data.status === 'completed' || data.status === 'failed' || data.status === 'cancelled') {
                 stopPolling();
-                if (data.status === 'failed') {
+                if (data.status === 'failed' || data.status === 'cancelled') {
                     reEnablePage();
                 }
                 return;
@@ -347,14 +427,15 @@
 
             pollTimer = setTimeout(poll, POLL_INTERVAL_MS);
         })
-        .catch(function () {
+        .catch(function (error) {
             consecutiveErrors++;
 
             if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS) {
                 // Too many consecutive failures — stop and show error
                 handleFailed({
-                    error_message: 'Lost connection to the server while checking import status. '
-                        + 'The import may have failed. Please refresh the page and check the results.'
+                    error_message: (error && error.message)
+                        ? 'Unable to check import status: ' + error.message
+                        : 'Unable to check import status. Please refresh the page and check the results.'
                 });
                 stopPolling();
                 reEnablePage();
@@ -392,15 +473,19 @@
             handleCompleted(data);
         } else if (data.status === 'failed') {
             handleFailed(data);
+        } else if (data.status === 'cancelled') {
+            handleCancelled(data);
         }
     }
 
     function handleCompleted(data) {
+        activeActions.classList.add('hidden');
         spinner.classList.add('hidden');
         successIcon.classList.remove('hidden');
         successIcon.classList.add('flex');
 
         titleText.textContent = IMPORT_LABEL + ' Import Complete!';
+        setBadge('completed');
 
         progressBar.style.width = '100%';
 
@@ -426,14 +511,35 @@
     }
 
     function handleFailed(data) {
+        activeActions.classList.add('hidden');
         spinner.classList.add('hidden');
         errorIcon.classList.remove('hidden');
         errorIcon.classList.add('flex');
 
         titleText.textContent = IMPORT_LABEL + ' Import Failed';
+        setBadge('failed');
 
+        errorTitle.textContent = 'Import Failed';
         errorMsg.textContent = data.error_message ?? 'An unknown error occurred. Please check the logs.';
         errorBox.classList.remove('hidden');
+
+        actions.classList.remove('hidden');
+        btnDismiss.classList.remove('hidden');
+    }
+
+    function handleCancelled(data) {
+        activeActions.classList.add('hidden');
+        spinner.classList.add('hidden');
+        errorIcon.classList.remove('hidden');
+        errorIcon.classList.add('flex');
+
+        titleText.textContent = IMPORT_LABEL + ' Import Cancelled';
+
+        errorTitle.textContent = 'Import Cancelled';
+        errorMsg.textContent = data.error_message ?? 'Import cancelled by the user.';
+        errorBox.classList.remove('hidden');
+
+        setBadge('cancelled');
 
         actions.classList.remove('hidden');
         btnDismiss.classList.remove('hidden');
@@ -444,12 +550,14 @@
         processing: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300',
         completed:  'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300',
         failed:     'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300',
+        cancelled:  'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-300',
     };
     const BADGE_LABELS = {
-        pending:    '⏳ Pending',
-        processing: '⚙️ Processing',
-        completed:  '✅ Completed',
-        failed:     '❌ Failed',
+        pending:    'Pending',
+        processing: 'Processing',
+        completed:  'Completed',
+        failed:     'Failed',
+        cancelled:  'Cancelled',
     };
 
     function setBadge(status) {
@@ -465,7 +573,10 @@
         pollingStartedAt     = Date.now();
         lastProgressChangeAt = Date.now();
         overlay.classList.remove('hidden');
+        syncCancelButton();
         poll();
+    } else {
+        syncCancelButton();
     }
 }());
 </script>

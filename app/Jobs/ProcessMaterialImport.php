@@ -102,6 +102,9 @@ class ProcessMaterialImport implements ShouldQueue
 
         /** @var ImportProgress $progress */
         $progress = ImportProgress::findOrFail($this->progressId);
+        if ($progress->status === 'cancelled') {
+            return;
+        }
         $progress->update(['status' => 'processing']);
 
         $fullPath = \Illuminate\Support\Facades\Storage::path($this->filePath);
@@ -141,6 +144,11 @@ class ProcessMaterialImport implements ShouldQueue
             ]);
 
             foreach ($chunks as $chunkIndex => $chunk) {
+                $progress->refresh();
+                if ($progress->status === 'cancelled') {
+                    return;
+                }
+
                 // Each chunk gets its own transaction — success = commit, failure = rollback + stop
                 try {
                     DB::beginTransaction();
@@ -185,7 +193,9 @@ class ProcessMaterialImport implements ShouldQueue
                     gc_collect_cycles();
                 } catch (\Throwable $chunkError) {
                     // Rollback ONLY the current chunk
-                    DB::rollBack();
+                    if (DB::transactionLevel() > 0) {
+                        DB::rollBack();
+                    }
 
                     // Figure out which row caused the error
                     $failedRow = $processedRows + 1; // approximate row within the chunk
@@ -227,10 +237,13 @@ class ProcessMaterialImport implements ShouldQueue
             ]);
         } catch (\Throwable $e) {
             // Catch-all for parsing errors or unexpected failures before chunks start
-            $progress->update([
-                'status'        => 'failed',
-                'error_message' => $e->getMessage(),
-            ]);
+            $progress->refresh();
+            if ($progress->status !== 'cancelled') {
+                $progress->update([
+                    'status'        => 'failed',
+                    'error_message' => $e->getMessage(),
+                ]);
+            }
 
             Log::error('ProcessMaterialImport: Job failed', [
                 'progress_id'   => $this->progressId,

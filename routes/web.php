@@ -13,6 +13,7 @@ use App\Http\Controllers\Import\StudentImportController;
 use App\Http\Controllers\Import\MaterialImportController;
 use App\Http\Controllers\Import\FacultyStaffImportController;
 use App\Http\Controllers\Import\UserImageImportController;
+use App\Http\Controllers\Import\ImportProgressController;
 use App\Http\Controllers\Maintenance\AdminMaintenanceController;
 use App\Http\Controllers\Maintenance\BookMaintenanceController;
 use App\Http\Controllers\Maintenance\SubjectMaintenanceController;
@@ -194,6 +195,8 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
     });
 
     Route::prefix('import')->middleware(ImportAuthentication::class)->group(function () {
+        Route::post('import-progress/{id}/cancel', [ImportProgressController::class, 'cancel'])->name('import.cancel-progress');
+
         Route::controller(StudentImportController::class)->middleware(StudentImportAuthentication::class)->group(function () {
             Route::get('students', 'index')->name('import.import-students');
             Route::match(['get', 'post'], 'upload-students', 'upload')->name('import.upload-students');

@@ -34,6 +34,8 @@ class EmployeeImportPrivilegeAutomationTest extends TestCase
         User::where('email', 'unique.dean@example.com')->forceDelete();
         User::where('rfid', '987654321012')->forceDelete();
         EmployeeDetail::where('employee_id', 'EMP-UNIQUE-DEAN')->forceDelete();
+        StagingUser::where('email', 'unique.dean@example.com')->forceDelete();
+        StagingUser::where('rfid', '987654321012')->forceDelete();
 
         // 1. Create a dummy spreadsheet with a new role
         $spreadsheet = new Spreadsheet();

@@ -62,6 +62,8 @@ class FacultyStaffImportController extends Controller
      */
     public function store(Request $request)
     {
+        $progress = null;
+
         // --- Global one-active-import-at-a-time lock ---
         $activeImport = ImportProgress::whereIn('status', ['pending', 'processing'])->first();
         if ($activeImport) {
@@ -81,50 +83,69 @@ class FacultyStaffImportController extends Controller
             ], 422);
         }
 
-        // Merge any visible page edits
-        $submittedNew = $request->input('new_employees', []);
-        $sessionEditsNew = $request->session()->get('employee_import_edits_new', []);
-        foreach ($submittedNew as $index => $employee) {
-            $sessionEditsNew[$index] = array_merge($sessionEditsNew[$index] ?? [], $employee);
+        try {
+            // Merge any visible page edits
+            $submittedNew = $request->input('new_employees', []);
+            $sessionEditsNew = $request->session()->get('employee_import_edits_new', []);
+            foreach ($submittedNew as $index => $employee) {
+                $sessionEditsNew[$index] = array_merge($sessionEditsNew[$index] ?? [], $employee);
+            }
+
+            $submittedExisting = $request->input('existing_employees', []);
+            $sessionEditsExisting = $request->session()->get('employee_import_edits_existing', []);
+            foreach ($submittedExisting as $index => $employee) {
+                $sessionEditsExisting[$index] = array_merge($sessionEditsExisting[$index] ?? [], $employee);
+            }
+
+            // Parse file to get total count
+            [$newData, $existingData] = $this->readEmployeesExcel(\Illuminate\Support\Facades\Storage::path($filePath));
+            $totalRows = count($newData) + count($existingData);
+
+            $progress = ImportProgress::create([
+                'type'         => 'employees',
+                'status'       => 'pending',
+                'initiated_by' => Auth::id(),
+                'total_rows'   => $totalRows,
+            ]);
+
+            ProcessEmployeeImport::dispatch($filePath, $progress->id, Auth::id(), $sessionEditsNew, $sessionEditsExisting);
+
+            $request->session()->forget([
+                'employee_import_file',
+                'employee_import_edits_new',
+                'employee_import_edits_existing',
+            ]);
+
+            Log::info('Faculty/Staff Import: Job dispatched with file', [
+                'progress_id' => $progress->id,
+                'file_path'   => $filePath,
+                'total_rows'  => $totalRows,
+                'user_id'     => Auth::id(),
+            ]);
+
+            return response()->json([
+                'success'     => true,
+                'progress_id' => $progress->id,
+                'total_rows'  => $progress->total_rows,
+            ]);
+        } catch (\Throwable $e) {
+            if ($progress) {
+                $progress->update([
+                    'status'        => 'failed',
+                    'error_message' => $e->getMessage(),
+                ]);
+            }
+
+            Log::error('Faculty/Staff Import: Failed to dispatch job', [
+                'error_message' => $e->getMessage(),
+                'user_id'       => Auth::id(),
+            ]);
+
+            return response()->json([
+                'error'   => true,
+                'message' => $e instanceof \Exception ? $this->friendlyErrorMessage($e) : 'Unable to start the import.',
+            ], 422);
         }
-
-        $submittedExisting = $request->input('existing_employees', []);
-        $sessionEditsExisting = $request->session()->get('employee_import_edits_existing', []);
-        foreach ($submittedExisting as $index => $employee) {
-            $sessionEditsExisting[$index] = array_merge($sessionEditsExisting[$index] ?? [], $employee);
-        }
-
-        // Parse file to get total count
-        [$newData, $existingData] = $this->readEmployeesExcel(\Illuminate\Support\Facades\Storage::path($filePath));
-        $totalRows = count($newData) + count($existingData);
-
-        $progress = ImportProgress::create([
-            'type'         => 'employees',
-            'status'       => 'pending',
-            'initiated_by' => Auth::id(),
-            'total_rows'   => $totalRows,
-        ]);
-
-        ProcessEmployeeImport::dispatch($filePath, $progress->id, Auth::id(), $sessionEditsNew, $sessionEditsExisting);
-
-        $request->session()->forget([
-            'employee_import_file',
-            'employee_import_edits_new',
-            'employee_import_edits_existing',
-        ]);
-
-        Log::info('Faculty/Staff Import: Job dispatched with file', [
-            'progress_id' => $progress->id,
-            'file_path'   => $filePath,
-            'total_rows'  => $totalRows,
-            'user_id'     => Auth::id(),
-        ]);
-
-        return response()->json([
-            'success'     => true,
-            'progress_id' => $progress->id,
-            'total_rows'  => $progress->total_rows,
-        ]);
     }
 
     /**
@@ -309,8 +330,10 @@ class FacultyStaffImportController extends Controller
         // mark the import as failed so the frontend can stop polling.
         if ($progress->isActive()) {
             $failedJob = \Illuminate\Support\Facades\DB::table('failed_jobs')
-                ->where('payload', 'like', '%"progressId":' . $id . '%')
-                ->orWhere('payload', 'like', '%"progressId";i:' . $id . '%')
+                ->where(function ($query) use ($id) {
+                    $query->where('payload', 'like', '%"progressId":' . $id . '%')
+                        ->orWhere('payload', 'like', '%"progressId";i:' . $id . '%');
+                })
                 ->latest('failed_at')
                 ->first();
 
@@ -361,45 +384,23 @@ class FacultyStaffImportController extends Controller
      */
     private function extractNameParts(string $fullName): array
     {
-        $suffixes     = ['Jr', 'Jr.', 'Sr', 'Sr.', 'II', 'III', 'IV', 'V', 'PhD', 'MD', 'Esq'];
-        $normSuffixes = array_map(fn($s) => strtolower(rtrim($s, '.')), $suffixes);
-
         $parts      = explode(',', $fullName, 2);
-        $lastName   = trim($parts[0] ?? '');
-        $otherParts = trim($parts[1] ?? '');
+        $lastName   = preg_replace('/\s+/', ' ', trim($parts[0] ?? ''));
+        $otherParts = preg_replace('/\s+/', ' ', trim($parts[1] ?? ''));
 
         if ($otherParts === '') {
             return ['first_name' => '', 'middle_name' => '', 'last_name' => $lastName, 'suffix' => ''];
         }
 
-        $namePieces  = preg_split('/\s+/', $otherParts);
-        $firstName   = '';
-        $middleName  = '';
-        $suffix      = '';
-        $suffixIndex = null;
-
-        for ($i = 1; $i < count($namePieces); $i++) {
-            $normalized = strtolower(rtrim($namePieces[$i], '.'));
-            if (in_array($normalized, $normSuffixes, true)) {
-                $suffixIndex = $i;
-                $suffix      = $namePieces[$i];
-                break;
-            }
-        }
-
-        if ($suffixIndex !== null) {
-            $firstName  = implode(' ', array_slice($namePieces, 0, $suffixIndex));
-            $middleName = implode(' ', array_slice($namePieces, $suffixIndex + 1));
-        } else {
-            $firstName  = $namePieces[0] ?? '';
-            $middleName = count($namePieces) > 1 ? implode(' ', array_slice($namePieces, 1)) : '';
-        }
+        $namePieces = preg_split('/\s+/', $otherParts, -1, PREG_SPLIT_NO_EMPTY);
+        $middleName = count($namePieces) > 1 ? array_pop($namePieces) : '';
+        $firstName  = implode(' ', $namePieces);
 
         return [
             'first_name'  => $firstName,
             'middle_name' => $middleName,
             'last_name'   => $lastName,
-            'suffix'      => $suffix,
+            'suffix'      => '',
         ];
     }
 }
