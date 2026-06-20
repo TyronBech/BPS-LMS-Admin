@@ -277,6 +277,26 @@ class StudentImportController extends Controller
             throw new \Exception('Excel file is empty.');
         }
 
+        $idNumbers = [];
+        for ($i = 18; $i < count($rows); $i++) {
+            if (empty(array_filter(array_slice($rows[$i], 1, 7)))) {
+                continue;
+            }
+            $idNumber = $rows[$i][6] ?? null;
+            if ($idNumber) {
+                $idNumbers[] = $idNumber;
+            }
+        }
+
+        $existingIdNumbers = [];
+        if (!empty($idNumbers)) {
+            $existingIdNumbers = array_flip(
+                StudentDetail::whereIn('id_number', $idNumbers)
+                    ->pluck('id_number')
+                    ->toArray()
+            );
+        }
+
         for ($i = 18; $i < count($rows); $i++) {
             if (empty(array_filter(array_slice($rows[$i], 1, 7)))) {
                 continue;
@@ -300,7 +320,7 @@ class StudentImportController extends Controller
                 'section'     => $rows[$i][8],
             ];
 
-            if (StudentDetail::where('id_number', $temp['id_number'])->exists()) {
+            if (isset($existingIdNumbers[$temp['id_number']])) {
                 $existingData[] = $temp;
             } else {
                 $newData[] = $temp;

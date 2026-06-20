@@ -116,6 +116,27 @@ class ProcessStudentImport implements ShouldQueue
                 throw new \Exception('Excel file is empty or template is incorrect.');
             }
 
+            // Extract all id_numbers first to bulk-query existence and avoid N+1 queries
+            $idNumbers = [];
+            for ($i = 18; $i < count($rows); $i++) {
+                if (empty(array_filter(array_slice($rows[$i], 1, 7)))) {
+                    continue;
+                }
+                $idNumber = $rows[$i][6] ?? null;
+                if ($idNumber) {
+                    $idNumbers[] = $idNumber;
+                }
+            }
+
+            $existingIdNumbers = [];
+            if (!empty($idNumbers)) {
+                $existingIdNumbers = array_flip(
+                    StudentDetail::whereIn('id_number', $idNumbers)
+                        ->pluck('id_number')
+                        ->toArray()
+                );
+            }
+
             for ($i = 18; $i < count($rows); $i++) {
                 if (empty(array_filter(array_slice($rows[$i], 1, 7)))) {
                     continue;
@@ -139,7 +160,7 @@ class ProcessStudentImport implements ShouldQueue
                     'section'     => $rows[$i][8],
                 ];
 
-                if (StudentDetail::where('id_number', $temp['id_number'])->exists()) {
+                if (isset($existingIdNumbers[$temp['id_number']])) {
                     $existingData[] = $temp;
                 } else {
                     $newData[] = $temp;
@@ -168,24 +189,36 @@ class ProcessStudentImport implements ShouldQueue
             $updatedCount   = 0;
             $processedRows  = 0;
             $newEmails      = [];
-            $chunks         = array_chunk($students, self::CHUNK_SIZE);
             $users          = new User();
 
             // Free the spreadsheet from memory
             $spreadsheet->disconnectWorksheets();
-            unset($spreadsheet, $sheet, $rows);
+            unset($spreadsheet, $sheet, $rows, $existingIdNumbers, $idNumbers);
             gc_collect_cycles();
 
             Log::info('ProcessStudentImport: Data parsed', [
                 'progress_id' => $this->progressId,
                 'total_rows'  => count($students),
-                'chunks'      => count($chunks),
             ]);
 
-            foreach ($chunks as $chunkIndex => $chunk) {
+            $chunkIndex = 0;
+            while (!empty($students)) {
+                $chunk = array_splice($students, 0, self::CHUNK_SIZE);
+
                 $progress->refresh();
                 if ($progress->status === 'cancelled') {
                     return;
+                }
+
+                // Bulk-fetch existing students in this chunk to avoid N+1 queries
+                $chunkIdNumbers = array_filter(array_column($chunk, 'id_number'));
+                $existingUsers = [];
+                if (!empty($chunkIdNumbers)) {
+                    $existingUsers = User::whereHas('students', function ($query) use ($chunkIdNumbers) {
+                        $query->whereIn('id_number', $chunkIdNumbers);
+                    })->with('students')->get()->keyBy(function ($user) {
+                        return $user->students->id_number;
+                    })->all();
                 }
 
                 DB::beginTransaction();
@@ -197,7 +230,8 @@ class ProcessStudentImport implements ShouldQueue
                             continue;
                         }
 
-                        $result = $this->processRow($item, $users);
+                        $existingStudent = $existingUsers[$item['id_number']] ?? null;
+                        $result = $this->processRow($item, $users, $existingStudent);
 
                         if ($result === 'new') {
                             $newCount++;
@@ -219,7 +253,8 @@ class ProcessStudentImport implements ShouldQueue
                         'updated_count'  => $updatedCount,
                     ]);
 
-                    // Release Eloquent model memory between chunks
+                    // Release memory explicitly
+                    unset($chunk, $existingUsers, $chunkIdNumbers);
                     gc_collect_cycles();
 
                     Log::debug('ProcessStudentImport: Chunk committed', [
@@ -227,6 +262,7 @@ class ProcessStudentImport implements ShouldQueue
                         'chunk_index'    => $chunkIndex,
                         'processed_rows' => $processedRows,
                     ]);
+                    $chunkIndex++;
                 } catch (\Throwable $chunkError) {
                     if (DB::transactionLevel() > 0) {
                         DB::rollBack();
@@ -340,7 +376,7 @@ class ProcessStudentImport implements ShouldQueue
      * @return string
      * @throws \Exception
      */
-    private function processRow(array $item, User $usersModel): string
+    private function processRow(array $item, User $usersModel, ?User $existingStudent = null): string
     {
         $validator = Validator::make($item, [
             'rfid'        => 'nullable|string|min:10|regex:/^[0-9]+$/u',
@@ -363,10 +399,6 @@ class ProcessStudentImport implements ShouldQueue
                     . ($item['first_name'] ?? '') . ' ' . ($item['last_name'] ?? '')
             );
         }
-
-        $existingStudent = User::whereHas('students', function ($query) use ($item) {
-            $query->where('id_number', $item['id_number']);
-        })->with('students')->first();
 
         if ($existingStudent) {
             // Check if anything actually changed

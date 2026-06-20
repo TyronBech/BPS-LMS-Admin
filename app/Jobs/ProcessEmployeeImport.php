@@ -120,6 +120,27 @@ class ProcessEmployeeImport implements ShouldQueue
                 throw new \Exception('Excel file is empty or template is incorrect.');
             }
 
+            // Extract all employee_ids first to bulk-query existence and avoid N+1 queries
+            $employeeIds = [];
+            for ($i = 18; $i < count($rows); $i++) {
+                if (empty(array_filter(array_slice($rows[$i], 1, 7)))) {
+                    continue;
+                }
+                $empId = $rows[$i][6] ?? null;
+                if ($empId) {
+                    $employeeIds[] = $empId;
+                }
+            }
+
+            $existingEmpIds = [];
+            if (!empty($employeeIds)) {
+                $existingEmpIds = array_flip(
+                    EmployeeDetail::whereIn('employee_id', $employeeIds)
+                        ->pluck('employee_id')
+                        ->toArray()
+                );
+            }
+
             for ($i = 18; $i < count($rows); $i++) {
                 if (empty(array_filter(array_slice($rows[$i], 1, 7)))) {
                     continue;
@@ -142,7 +163,7 @@ class ProcessEmployeeImport implements ShouldQueue
                     'employee_role' => $rows[$i][7],
                 ];
 
-                if (EmployeeDetail::where('employee_id', $temp['employee_id'])->exists()) {
+                if (isset($existingEmpIds[$temp['employee_id']])) {
                     $existingData[] = $temp;
                 } else {
                     $newData[] = $temp;
@@ -171,36 +192,52 @@ class ProcessEmployeeImport implements ShouldQueue
             $updatedCount  = 0;
             $processedRows = 0;
             $newEmails     = [];
-            $chunks        = array_chunk($employees, self::CHUNK_SIZE);
             $users         = new User();
+
+            // Pre-fetch all user roles (category) to avoid N+1 validation queries
+            $allRoles = UserGroup::pluck('category')->toArray();
 
             // Free the spreadsheet from memory
             $spreadsheet->disconnectWorksheets();
-            unset($spreadsheet, $sheet, $rows);
+            unset($spreadsheet, $sheet, $rows, $existingEmpIds, $employeeIds);
             gc_collect_cycles();
 
             Log::info('ProcessEmployeeImport: Data parsed', [
                 'progress_id' => $this->progressId,
                 'total_rows'  => count($employees),
-                'chunks'      => count($chunks),
             ]);
 
-            foreach ($chunks as $chunkIndex => $chunk) {
+            $chunkIndex = 0;
+            while (!empty($employees)) {
+                $chunk = array_splice($employees, 0, self::CHUNK_SIZE);
+
                 $progress->refresh();
                 if ($progress->status === 'cancelled') {
                     return;
                 }
 
+                // Bulk-fetch existing employees in this chunk to avoid N+1 queries
+                $chunkEmployeeIds = array_filter(array_column($chunk, 'employee_id'));
+                $existingUsers = [];
+                if (!empty($chunkEmployeeIds)) {
+                    $existingUsers = User::whereHas('employees', function ($query) use ($chunkEmployeeIds) {
+                        $query->whereIn('employee_id', $chunkEmployeeIds);
+                    })->with('employees')->get()->keyBy(function ($user) {
+                        return $user->employees->employee_id;
+                    })->all();
+                }
+
                 DB::beginTransaction();
 
                 try {
-                    foreach ($chunk as $item) {
+                    foreach ($chunk as &$item) {
                         if (empty(array_filter($item))) {
                             $processedRows++;
                             continue;
                         }
 
-                        $result = $this->processRow($item, $users);
+                        $existingEmployee = $existingUsers[$item['employee_id']] ?? null;
+                        $result = $this->processRow($item, $users, $allRoles, $existingEmployee);
 
                         if ($result === 'new') {
                             $newCount++;
@@ -222,7 +259,8 @@ class ProcessEmployeeImport implements ShouldQueue
                         'updated_count'  => $updatedCount,
                     ]);
 
-                    // Release Eloquent model memory between chunks
+                    // Release memory explicitly
+                    unset($chunk, $existingUsers, $chunkEmployeeIds);
                     gc_collect_cycles();
 
                     Log::debug('ProcessEmployeeImport: Chunk committed', [
@@ -230,6 +268,7 @@ class ProcessEmployeeImport implements ShouldQueue
                         'chunk_index'    => $chunkIndex,
                         'processed_rows' => $processedRows,
                     ]);
+                    $chunkIndex++;
                 } catch (\Throwable $chunkError) {
                     if (DB::transactionLevel() > 0) {
                         DB::rollBack();
@@ -344,28 +383,42 @@ class ProcessEmployeeImport implements ShouldQueue
      * @return string
      * @throws \Exception
      */
-    private function processRow(array &$item, User $usersModel): string
+    private function processRow(array &$item, User $usersModel, array &$allRoles, ?User $existingEmployee = null): string
     {
         $employeeRole = trim($item['employee_role'] ?? '');
         if ($employeeRole !== '') {
-            $privilegeExists = UserGroup::withTrashed()
-                ->where('user_type', 'employee')
-                ->where(DB::raw('LOWER(category)'), strtolower($employeeRole))
-                ->first();
-
-            if (!$privilegeExists) {
-                UserGroup::create([
-                    'user_type'        => 'employee',
-                    'category'         => $employeeRole,
-                    'max_book_allowed' => 0,
-                    'duration_type'    => 'unlimited',
-                    'renewal_limit'    => 0,
-                ]);
-            } else {
-                if ($privilegeExists->trashed()) {
-                    $privilegeExists->restore();
+            $matchedRole = null;
+            foreach ($allRoles as $role) {
+                if (strtolower($role) === strtolower($employeeRole)) {
+                    $matchedRole = $role;
+                    break;
                 }
-                $item['employee_role'] = $privilegeExists->category;
+            }
+
+            if (!$matchedRole) {
+                $privilegeExists = UserGroup::withTrashed()
+                    ->where('user_type', 'employee')
+                    ->where(DB::raw('LOWER(category)'), strtolower($employeeRole))
+                    ->first();
+
+                if (!$privilegeExists) {
+                    UserGroup::create([
+                        'user_type'        => 'employee',
+                        'category'         => $employeeRole,
+                        'max_book_allowed' => 0,
+                        'duration_type'    => 'unlimited',
+                        'renewal_limit'    => 0,
+                    ]);
+                    $allRoles[] = $employeeRole;
+                } else {
+                    if ($privilegeExists->trashed()) {
+                        $privilegeExists->restore();
+                    }
+                    $item['employee_role'] = $privilegeExists->category;
+                    $allRoles[] = $privilegeExists->category;
+                }
+            } else {
+                $item['employee_role'] = $matchedRole;
             }
         }
 
@@ -377,7 +430,7 @@ class ProcessEmployeeImport implements ShouldQueue
             'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
             'gender'        => 'required|string|in:' . implode(',', $this->extractEnums($usersModel->getTable(), 'gender')),
             'email'         => 'nullable|string|email|max:255',
-            'employee_role' => ['required', 'string', \Illuminate\Validation\Rule::in(UserGroup::pluck('category')->toArray())],
+            'employee_role' => ['required', 'string', \Illuminate\Validation\Rule::in($allRoles)],
             'employee_id'   => 'required|string|max:50',
         ]);
 
@@ -389,10 +442,6 @@ class ProcessEmployeeImport implements ShouldQueue
                 . ($item['first_name'] ?? '') . ' ' . ($item['last_name'] ?? '')
             );
         }
-
-        $existingEmployee = User::whereHas('employees', function ($query) use ($item) {
-            $query->where('employee_id', $item['employee_id']);
-        })->with('employees')->first();
 
         if ($existingEmployee) {
             if (

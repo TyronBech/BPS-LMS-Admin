@@ -278,6 +278,26 @@ class FacultyStaffImportController extends Controller
             throw new \Exception('Excel file is empty.');
         }
 
+        $employeeIds = [];
+        for ($i = 18; $i < count($rows); $i++) {
+            if (empty(array_filter(array_slice($rows[$i], 1, 7)))) {
+                continue;
+            }
+            $empId = $rows[$i][6] ?? null;
+            if ($empId) {
+                $employeeIds[] = $empId;
+            }
+        }
+
+        $existingEmpIds = [];
+        if (!empty($employeeIds)) {
+            $existingEmpIds = array_flip(
+                EmployeeDetail::whereIn('employee_id', $employeeIds)
+                    ->pluck('employee_id')
+                    ->toArray()
+            );
+        }
+
         for ($i = 18; $i < count($rows); $i++) {
             if (empty(array_filter(array_slice($rows[$i], 1, 7)))) {
                 continue;
@@ -300,7 +320,7 @@ class FacultyStaffImportController extends Controller
                 'employee_role' => $rows[$i][7],
             ];
 
-            if (EmployeeDetail::where('employee_id', $temp['employee_id'])->exists()) {
+            if (isset($existingEmpIds[$temp['employee_id']])) {
                 $existingData[] = $temp;
             } else {
                 $newData[] = $temp;

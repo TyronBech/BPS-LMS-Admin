@@ -106,7 +106,7 @@ class UserMaintenanceAndAdminPromotionTest extends TestCase
                 'first-name' => 'Jane',
                 'last-name' => 'Smith',
                 'gender' => 'Female',
-                'employee_id' => 'EMP-' . rand(100, 999),
+                'employee_id' => 'EMP-' . rand(100000, 999999),
                 'employee_role' => 'Teacher',
                 'email' => $email,
             ]);
@@ -175,7 +175,7 @@ class UserMaintenanceAndAdminPromotionTest extends TestCase
         if (!$employee->employees) {
             EmployeeDetail::factory()->create([
                 'user_id' => $employee->id,
-                'employee_id' => 'EMP-' . rand(100, 999),
+                'employee_id' => 'EMP-' . rand(100000, 999999),
                 'employee_role' => 'Teacher',
             ]);
             $employee->load('employees');

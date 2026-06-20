@@ -13,23 +13,29 @@ class ImportProgressController extends Controller
     /**
      * Cancel an active import progress record.
      */
-    public function cancel(Request $request, int $id): JsonResponse
+    public function cancel(Request $request, int $id)
     {
         $progress = ImportProgress::find($id);
 
         if (!$progress) {
-            return response()->json([
-                'error'   => true,
-                'message' => 'Import record not found.',
-            ], 404);
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'error'   => true,
+                    'message' => 'Import record not found.',
+                ], 404);
+            }
+            return redirect()->back()->with('toast-error', 'Import record not found.');
         }
 
         if (!$progress->isActive()) {
-            return response()->json([
-                'success' => true,
-                'message' => 'This import is no longer active.',
-                'status'  => $progress->status,
-            ]);
+            if ($request->expectsJson() || $request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'This import is no longer active.',
+                    'status'  => $progress->status,
+                ]);
+            }
+            return redirect()->back()->with('toast-warning', 'This import is no longer active.');
         }
 
         $deletedQueuedJobs = DB::table('jobs')
@@ -44,13 +50,17 @@ class ImportProgressController extends Controller
             'error_message' => 'Import cancelled by the user.',
         ]);
 
-        return response()->json([
-            'success'             => true,
-            'message'             => $deletedQueuedJobs > 0
-                ? 'Import cancelled before the queue started processing it.'
-                : 'Import cancellation requested. The worker will stop after the current row or chunk.',
-            'status'              => 'cancelled',
-            'deleted_queued_jobs' => $deletedQueuedJobs,
-        ]);
+        if ($request->expectsJson() || $request->ajax()) {
+            return response()->json([
+                'success'             => true,
+                'message'             => $deletedQueuedJobs > 0
+                    ? 'Import cancelled before the queue started processing it.'
+                    : 'Import cancellation requested. The worker will stop after the current row or chunk.',
+                'status'              => 'cancelled',
+                'deleted_queued_jobs' => $deletedQueuedJobs,
+            ]);
+        }
+
+        return redirect()->back()->with('toast-success', 'Import cancelled successfully.');
     }
 }

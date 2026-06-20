@@ -19,6 +19,12 @@
         A <strong>{{ ucfirst($activeImport->type) }}</strong> import is currently running.
         Please wait for it to complete before starting a new import.
       </p>
+      <form action="{{ route('import.cancel-progress', $activeImport->id) }}" method="POST" class="mt-2 inline-block">
+          @csrf
+          <button type="submit" onclick="return confirm('Force cancel this active import?')" class="text-xs font-bold text-red-600 hover:text-red-700 underline uppercase tracking-wider">
+              Force Cancel Import
+          </button>
+      </form>
     </div>
   </div>
   @endif
@@ -108,7 +114,7 @@
 </div>
 
 {{-- Progress overlay --}}
-@if(isset($activeImport) && $activeImport && $activeImport->isActive())
+@if(isset($activeImport) && $activeImport && $activeImport->isActive() && $activeImport->type === 'user-images')
   <x-import-progress-overlay
     :status-url="route('import.status-user-images', $activeImport->id)"
     :cancel-url="route('import.cancel-progress', $activeImport->id)"
@@ -171,6 +177,10 @@ document.addEventListener('DOMContentLoaded', function () {
     isSubmitting = true;
     btn.disabled    = true;
     btn.textContent = 'Submitting…';
+
+    if (window.ImportOverlay && window.ImportOverlay.showInitializing) {
+        window.ImportOverlay.showInitializing();
+    }
 
     try {
       const response = await fetch('{{ route("import.store-user-images") }}', {

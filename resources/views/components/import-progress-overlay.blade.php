@@ -331,6 +331,15 @@
             stopPolling();
         },
 
+        showInitializing() {
+            resetToProcessing();
+            titleText.textContent = 'Preparing ' + IMPORT_LABEL + ' Import…';
+            rowsText.textContent = 'Parsing import data...';
+            percentInner.textContent = '0%';
+            if (btnCancel) btnCancel.classList.add('hidden');
+            overlay.classList.remove('hidden');
+        },
+
         showFailure(message) {
             resetToProcessing();
             overlay.classList.remove('hidden');
