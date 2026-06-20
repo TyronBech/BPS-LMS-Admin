@@ -328,7 +328,7 @@ class UsersMaintenanceController extends Controller
         ]);
 
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|min:10',
+            'rfid'          => 'nullable|string|min:10',
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
             'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
@@ -425,7 +425,7 @@ class UsersMaintenanceController extends Controller
         $validator = Validator::make(
             $request->all(),
             [
-                'rfid'          => 'required|string|min:10',
+                'rfid'          => 'nullable|string|min:10',
                 'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
                 'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
                 'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
@@ -610,7 +610,7 @@ class UsersMaintenanceController extends Controller
         ]);
 
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|min:10',
+            'rfid'          => 'nullable|string|min:10',
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
             'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
@@ -703,7 +703,7 @@ class UsersMaintenanceController extends Controller
         ]);
 
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|min:10',
+            'rfid'          => 'nullable|string|min:10',
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
             'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.\/\_\(\)\[\]\{\}\&\,]+$/u',

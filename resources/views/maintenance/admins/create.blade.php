@@ -86,7 +86,7 @@
                         class="assign-role-btn w-full text-center inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-white bg-primary-500 rounded-lg hover:bg-primary-600 focus:ring-4 focus:outline-none focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 transition-all duration-200 cursor-pointer shadow-sm"
                         data-modal-target="assign-role-modal"
                         data-modal-toggle="assign-role-modal"
-                        data-rfid="{{ $user->rfid }}"
+                        data-id="{{ $user->id }}"
                         data-name="{{ $user->first_name }} {{ $user->middle_name }} {{ $user->last_name }}"
                         data-email="{{ $user->email }}"
                         data-category="{{ $user->category }}"
@@ -203,7 +203,7 @@
 
     assignButtons.forEach(button => {
       button.addEventListener('click', function() {
-        const rfid = this.dataset.rfid;
+        const id = this.dataset.id;
         const name = this.dataset.name;
         const email = this.dataset.email;
         const category = this.dataset.category;
@@ -215,7 +215,7 @@
         currentSelectedUserType = userType;
 
         // Set inputs/values
-        modalRfid.value = rfid;
+        modalRfid.value = id;
         modalName.textContent = name;
         modalEmail.textContent = email;
         modalBadge.textContent = category;

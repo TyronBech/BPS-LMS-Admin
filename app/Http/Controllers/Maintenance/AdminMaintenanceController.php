@@ -199,7 +199,7 @@ class AdminMaintenanceController extends Controller
         Log::info('Admin Maintenance: Attempting to assign admin role', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name,
-            'target_rfid' => $request->input('adminID'),
+            'target_user_id' => $request->input('adminID'),
             'role' => $request->input('role'),
             'ip_address' => $request->ip(),
             'timestamp' => now(),
@@ -225,7 +225,7 @@ class AdminMaintenanceController extends Controller
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $role = $request->input('role');
-            $admin = User::with('privileges')->where('rfid', $request->input('adminID'))->first();
+            $admin = User::with('privileges')->where('id', $request->input('adminID'))->first();
             if ($admin->privileges->user_type === 'student' && $role === 'Super Admin') {
                 Log::warning('Admin Maintenance: Creation failed - Attempted to assign Student as Super Admin', [
                     'user_id' => Auth::guard('admin')->id(),
