@@ -77,6 +77,9 @@ class ProcessStudentImport implements ShouldQueue
      */
     public function handle(): void
     {
+        // Allow up to 10 minutes execution time for synchronous/long runs
+        @set_time_limit(600);
+
         // Allow 1 GB for large imports
         ini_set('memory_limit', '1G');
 
@@ -286,10 +289,6 @@ class ProcessStudentImport implements ShouldQueue
                     }
 
                     DB::commit();
-
-                    if (!app()->environment('testing')) {
-                        DB::statement('CALL DistributeStagingUsers()');
-                    }
 
                     $progress->update([
                         'processed_rows' => $processedRows,
@@ -517,7 +516,7 @@ class ProcessStudentImport implements ShouldQueue
             'suffix'      => $item['suffix'],
             'gender'      => $item['gender'],
             'email'       => $item['email'],
-            'password'    => Hash::make($password),
+            'password'    => password_hash($password, PASSWORD_BCRYPT, ['cost' => 4]),
             'id_number'   => $item['id_number'],
             'level'       => $item['grade_level'],
             'section'     => $item['section'],
@@ -546,9 +545,9 @@ class ProcessStudentImport implements ShouldQueue
         config(['mail.mailers.smtp.timeout' => 3]);
 
         try {
-            Mail::to($student->email)->send(new AccountEmailMessage($student, $password));
+            Mail::to($student->email)->queue(new AccountEmailMessage($student, $password));
 
-            Log::info('ProcessStudentImport: Account notification email sent', [
+            Log::info('ProcessStudentImport: Account notification email queued', [
                 'student_id' => $student->id,
                 'email'      => $student->email,
             ]);

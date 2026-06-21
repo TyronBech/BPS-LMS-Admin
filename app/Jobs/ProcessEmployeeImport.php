@@ -78,6 +78,9 @@ class ProcessEmployeeImport implements ShouldQueue
      */
     public function handle(): void
     {
+        // Allow up to 10 minutes execution time for synchronous/long runs
+        @set_time_limit(600);
+
         // Allow 1 GB for large imports
         ini_set('memory_limit', '1G');
 
@@ -292,10 +295,6 @@ class ProcessEmployeeImport implements ShouldQueue
                     }
 
                     DB::commit();
-
-                    if (!app()->environment('testing')) {
-                        DB::statement('CALL DistributeStagingUsers()');
-                    }
 
                     $progress->update([
                         'processed_rows' => $processedRows,
@@ -559,7 +558,7 @@ class ProcessEmployeeImport implements ShouldQueue
             'suffix'        => $item['suffix'],
             'gender'        => $item['gender'],
             'email'         => $item['email'],
-            'password'      => Hash::make($password),
+            'password'      => password_hash($password, PASSWORD_BCRYPT, ['cost' => 4]),
             'employee_id'   => $item['employee_id'],
             'employee_role' => $item['employee_role'],
             'user_type'     => 'employee',
@@ -587,9 +586,9 @@ class ProcessEmployeeImport implements ShouldQueue
         config(['mail.mailers.smtp.timeout' => 3]);
 
         try {
-            Mail::to($employee->email)->send(new AccountEmailMessage($employee, $password));
+            Mail::to($employee->email)->queue(new AccountEmailMessage($employee, $password));
 
-            Log::info('ProcessEmployeeImport: Account notification email sent', [
+            Log::info('ProcessEmployeeImport: Account notification email queued', [
                 'employee_id' => $employee->id,
                 'email'       => $employee->email,
             ]);

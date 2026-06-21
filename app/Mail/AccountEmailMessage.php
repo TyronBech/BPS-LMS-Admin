@@ -4,12 +4,13 @@ namespace App\Mail;
 
 use App\Models\UISetting;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
-class AccountEmailMessage extends Mailable
+class AccountEmailMessage extends Mailable implements ShouldQueue
 {
     use Queueable, SerializesModels;
 
