@@ -249,7 +249,7 @@ class BookMaintenanceController extends Controller
             ->filter(fn($item) => $item !== '')
             ->values();
 
-        $existingBooks = Book::whereIn('accession', $accessions)->pluck('accession');
+        $existingBooks = Book::withTrashed()->whereIn('accession', $accessions)->pluck('accession');
         if ($existingBooks->isNotEmpty()) {
             Log::warning('Book Maintenance: Creation failed - Accession already exists', [
                 'user_id' => Auth::guard('admin')->id(),
@@ -665,6 +665,24 @@ class BookMaintenanceController extends Controller
             ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
+
+        $accession = trim((string) $request->input('accession'));
+        $bookId = $request->input('id');
+
+        $existingBook = Book::withTrashed()
+            ->where('accession', $accession)
+            ->where('id', '!=', $bookId)
+            ->first();
+
+        if ($existingBook) {
+            Log::warning('Book Maintenance: Update failed - Accession already exists', [
+                'user_id' => Auth::guard('admin')->id(),
+                'accession' => $accession,
+                'ip_address' => $request->ip(),
+                'timestamp' => now(),
+            ]);
+            return redirect()->back()->with('toast-error', "Book with accession number '{$accession}' already exists!")->withInput();
+        }
         //dd($request->all());
         if ($request->hasFile('cover_image')) {
             $image = $request->file('cover_image');
@@ -819,7 +837,7 @@ class BookMaintenanceController extends Controller
             ->filter(fn($item) => $item !== '')
             ->values();
 
-        $existingBooks = Book::whereIn('accession', $accessions)->pluck('accession');
+        $existingBooks = Book::withTrashed()->whereIn('accession', $accessions)->pluck('accession');
         if ($existingBooks->isNotEmpty()) {
             Log::warning('Book Maintenance: Copy failed - Accession already exists', [
                 'user_id' => Auth::guard('admin')->id(),
@@ -1377,7 +1395,11 @@ class BookMaintenanceController extends Controller
         $prefixes = array_map('strtoupper', $prefixes);
         
         $escapedPrefixes = array_map(function($p) { return preg_quote($p, '/'); }, $prefixes);
-        $pattern = '/^(' . implode('|', $escapedPrefixes) . ')-\d{6}$/';
+        if ($accessionDashActive) {
+            $pattern = '/^(' . implode('|', $escapedPrefixes) . ')-\d{6}$/';
+        } else {
+            $pattern = '/^(' . implode('|', $escapedPrefixes) . ')\d{6}$/';
+        }
 
         $accessions = collect(explode(';', (string) $accessionInput))
             ->map(fn($item) => trim((string) $item))
@@ -1386,8 +1408,9 @@ class BookMaintenanceController extends Controller
 
         foreach ($accessions as $acc) {
             if (!preg_match($pattern, $acc)) {
-                $prefixListStr = implode("-' or '", $prefixes);
-                $validator->errors()->add('accession', "The accession number '{$acc}' format is invalid. It must start with exactly '{$prefixListStr}-' followed by a 6-digit number (e.g., {$prefixes[0]}-000001), respecting exact capitalization.");
+                $prefixListStr = implode($accessionDashActive ? "-' or '" : "' or '", $prefixes);
+                $dashStr = $accessionDashActive ? '-' : '';
+                $validator->errors()->add('accession', "The accession number '{$acc}' format is invalid. It must start with exactly '{$prefixListStr}{$dashStr}' followed by a 6-digit number (e.g., {$prefixes[0]}{$dashStr}000001), respecting exact capitalization.");
                 break;
             }
         }
@@ -1401,13 +1424,17 @@ class BookMaintenanceController extends Controller
         $accessionDashActive = $accessionDashActive ? ($accessionDashActive->value === 'true') : true;
 
         $legend = trim($category->legend);
+        $prefixes = [];
         if ($legend !== '') {
-            $prefix = explode('/', $legend)[0];
-            $prefix = trim($prefix);
+            $prefixes = array_map('trim', explode('/', $legend));
         } else {
-            $prefix = strtoupper(substr(str_replace(' ', '', $category->name), 0, 3));
+            $prefixes = [strtoupper(substr(str_replace(' ', '', $category->name), 0, 3))];
         }
-        if ($prefix === '') $prefix = 'ACC';
+        $prefixes = array_filter($prefixes, fn($p) => $p !== '');
+        if (empty($prefixes)) $prefixes = ['ACC'];
+
+        // Standardize base prefix to generate next one (which uses the first legend option)
+        $prefix = trim($prefixes[0]);
 
         if ($accessionDashActive) {
             if (!str_ends_with($prefix, '-')) {
@@ -1423,40 +1450,29 @@ class BookMaintenanceController extends Controller
         $lastFromTable = BkLastAccession::where('category_id', $categoryId)->value('accession_number');
 
         // Also check bk_books (including trashed) for this category to ensure accuracy
-        $maxFromBooks = Book::withTrashed()
+        $accessions = Book::withTrashed()
             ->where('category_id', $categoryId)
-            ->where('accession', 'like', $prefix . '%')
-            ->orderByRaw('LENGTH(accession) DESC, accession DESC')
-            ->value('accession');
+            ->pluck('accession');
 
-        $lastAccession = null;
-        if ($maxFromBooks && $lastFromTable) {
-            // Extract numbers to compare
-            preg_match('/(\d+)$/', $maxFromBooks, $m1);
-            preg_match('/(\d+)$/', $lastFromTable, $m2);
-            $n1 = isset($m1[1]) ? (int)$m1[1] : 0;
-            $n2 = isset($m2[1]) ? (int)$m2[1] : 0;
-            $lastAccession = ($n1 > $n2) ? $maxFromBooks : $lastFromTable;
-        } elseif ($maxFromBooks) {
-            $lastAccession = $maxFromBooks;
-        } else {
-            $lastAccession = $lastFromTable;
-        }
-
-        if ($lastAccession) {
-            preg_match('/(\d+)$/', $lastAccession, $match);
-            $numberStr = $match[1] ?? null;
-            if ($numberStr) {
-                $num = (int)$numberStr;
-                $width = strlen($numberStr);
-                $nextNumberStr = str_pad((string)($num + 1), $width, '0', STR_PAD_LEFT);
-                $nextAccession = $prefix . $nextNumberStr;
-            } else {
-                $nextAccession = $prefix . '000001';
+        $maxNumber = 0;
+        foreach ($accessions as $acc) {
+            if (preg_match('/(\d+)$/', $acc, $match)) {
+                $num = (int)$match[1];
+                if ($num > $maxNumber) {
+                    $maxNumber = $num;
+                }
             }
-        } else {
-            $nextAccession = $prefix . '000001';
         }
+
+        if ($lastFromTable && preg_match('/(\d+)$/', $lastFromTable, $match)) {
+            $num = (int)$match[1];
+            if ($num > $maxNumber) {
+                $maxNumber = $num;
+            }
+        }
+
+        $nextNumber = $maxNumber + 1;
+        $nextAccession = $prefix . str_pad((string)$nextNumber, 6, '0', STR_PAD_LEFT);
 
         return response()->json(['next_accession' => $nextAccession]);
     }

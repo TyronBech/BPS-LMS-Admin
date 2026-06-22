@@ -297,7 +297,7 @@
             <div class="md:col-span-2">
               <label for="copy_accession" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Accession Number:</label>
               <input type="text" id="copy_accession" name="accession" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., FIL0123456789" required>
-              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Add multiple by separating with a comma.</p>
+              <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Add multiple by separating with a semicolon.</p>
               @error('accession')
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
               @enderror
@@ -400,7 +400,6 @@
       const numberStr = match ? match[1] : null;
       let prefix = numberStr ? lastAccession.slice(0, -numberStr.length) : lastAccession;
       const num = numberStr ? parseInt(numberStr, 10) : 0;
-      const width = numberStr ? numberStr.length : 6;
 
       // Normalize prefix based on dash setting
       if (accessionDashActive) {
@@ -413,7 +412,7 @@
         }
       }
 
-      const nextNumberStr = String(num + 1).padStart(width, '0');
+      const nextNumberStr = String(num + 1).padStart(6, '0');
       return prefix + nextNumberStr;
     }
 
@@ -554,23 +553,34 @@
       const selectedCategory = getCategoryById(catId);
       if (!selectedCategory) return;
       
-      let prefix = (selectedCategory.legend && String(selectedCategory.legend).trim()) || '';
-      if (prefix !== '') {
-        prefix = prefix.split('/')[0].trim();
+      let legend = (selectedCategory.legend && String(selectedCategory.legend).trim()) || '';
+      let prefixes = [];
+      if (legend !== '') {
+        prefixes = legend.split('/').map(p => p.trim());
       } else if (selectedCategory.name) {
-        prefix = String(selectedCategory.name).replace(/\s+/g, '').slice(0, 3).toUpperCase();
+        prefixes = [String(selectedCategory.name).replace(/\s+/g, '').slice(0, 3).toUpperCase()];
       }
-      if (!prefix) prefix = 'ACC';
-      if (accessionDashActive) {
-        if (!prefix.endsWith('-')) prefix += '-';
-      } else {
-        if (prefix.endsWith('-')) prefix = prefix.slice(0, -1);
-      }
+      if (prefixes.length === 0) prefixes = ['ACC'];
+
+      // Normalize prefixes based on dash setting
+      prefixes = prefixes.map(p => {
+        let normalized = p;
+        if (accessionDashActive) {
+          if (!normalized.endsWith('-')) normalized += '-';
+        } else {
+          if (normalized.endsWith('-')) normalized = normalized.slice(0, -1);
+        }
+        return normalized;
+      });
+
+      // Escaping helper
+      const escapedPrefixes = prefixes.map(p => p.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'));
+      const regexPattern = new RegExp('^(' + escapedPrefixes.join('|') + ')\\d{6}$');
 
       const accessions = inputElement.value.split(';').map(s => s.trim()).filter(s => s);
       let isValid = true;
       for (const acc of accessions) {
-        if (!acc.startsWith(prefix)) {
+        if (!regexPattern.test(acc)) {
           isValid = false;
           break;
         }
@@ -584,7 +594,8 @@
         errorP.className = 'mt-2 text-sm text-red-600 dark:text-red-500 hidden';
         inputElement.parentNode.appendChild(errorP);
       }
-      errorP.innerText = `The inputted accession doesn't align with the selected category legend. It must start with '${prefix}'.`;
+      const prefixListStr = prefixes.join("' or '");
+      errorP.innerText = `The accession number format is invalid. It must start with '${prefixListStr}' followed by a 6-digit number (e.g., ${prefixes[0]}000001).`;
 
       const submitBtn = isCopy ? document.querySelector('#copy-book-modal button[type="submit"]') : document.querySelector('form button[type="submit"]');
 
