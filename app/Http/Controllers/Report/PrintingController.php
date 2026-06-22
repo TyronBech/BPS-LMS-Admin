@@ -132,7 +132,12 @@ class PrintingController extends Controller
 
         $printing->save();
 
-        return redirect()->back()->with('toast-success', 'Printing/Photocopy entry created successfully.');
+        $userType = $request->modal_user_type === 'student' ? 'students' : 'employees';
+
+        return redirect()->route('report.printing', [
+            'user_type' => $userType,
+            'printing_type' => $request->type,
+        ])->with('toast-success', 'Printing/Photocopy entry created successfully.');
     }
 
     public function searchUser(Request $request)

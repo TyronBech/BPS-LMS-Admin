@@ -27,7 +27,7 @@
           </svg>
         </button>
       </div>
-      <form action="{{ route('report.printing-store') }}" method="POST" id="printing-entry-form">
+      <form action="{{ route('report.printing-store') }}" method="POST" id="printing-entry-form" class="skip-loader">
         @csrf
         <div class="p-4 md:p-6">
           
@@ -339,5 +339,90 @@
         facultySuggestionsBox.classList.add('hidden');
       }
     });
+
+    const printingForm = document.getElementById('printing-entry-form');
+    const searchForm = document.querySelector('.auto-search-form');
+    const modalEl = document.getElementById('PrintingModal');
+
+    function showPrintingToast(doc, type) {
+      const toast = doc.getElementById(`toast-${type}`);
+      if (!toast) return;
+
+      const message = toast.querySelector('.font-normal')?.textContent?.trim();
+      if (!message) return;
+
+      const existing = document.getElementById(`toast-${type}`);
+      if (existing) existing.remove();
+
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
+    }
+
+    function syncFilterField(sourceDoc, fieldName) {
+      const sourceField = sourceDoc.querySelector(`[name="${fieldName}"]`);
+      const targetField = searchForm?.querySelector(`[name="${fieldName}"]`);
+      if (sourceField && targetField) {
+        targetField.value = sourceField.value;
+      }
+    }
+
+    if (printingForm && searchForm) {
+      printingForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const submitBtn = printingForm.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.disabled = true;
+
+        try {
+          const response = await fetch(printingForm.action, {
+            method: 'POST',
+            body: new FormData(printingForm),
+            headers: { 'X-Skip-Loader': 'true' },
+            redirect: 'follow',
+          });
+
+          const html = await response.text();
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          const newTable = doc.getElementById('table-container');
+          const oldTable = document.getElementById('table-container');
+
+          if (newTable && oldTable) {
+            oldTable.innerHTML = newTable.innerHTML;
+            if (typeof initFlowbite === 'function') initFlowbite();
+          }
+
+          syncFilterField(doc, 'user_type');
+          syncFilterField(doc, 'printing_type');
+          syncFilterField(doc, 'start');
+          syncFilterField(doc, 'end');
+          syncFilterField(doc, 'search');
+
+          showPrintingToast(doc, 'success');
+          showPrintingToast(doc, 'warning');
+
+          if (response.url) {
+            window.history.replaceState({}, '', response.url);
+          }
+
+          printingForm.reset();
+          const studentRadio = document.querySelector('input[name="modal_user_type"][value="student"]');
+          if (studentRadio) {
+            studentRadio.checked = true;
+            studentRadio.dispatchEvent(new Event('change'));
+          }
+          typeSelect.dispatchEvent(new Event('change'));
+          document.getElementById('printed_at').value = '{{ now()->format('Y-m-d\TH:i') }}';
+
+          if (modalEl) {
+            const hideBtn = modalEl.querySelector('[data-modal-hide="PrintingModal"]');
+            hideBtn?.click();
+          }
+        } catch (error) {
+          console.error('Failed to save printing entry', error);
+        } finally {
+          if (submitBtn) submitBtn.disabled = false;
+        }
+      });
+    }
   });
 </script>
