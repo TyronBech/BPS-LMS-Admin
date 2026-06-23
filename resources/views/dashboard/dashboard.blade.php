@@ -17,17 +17,48 @@
   .animate-slide-in {
     animation: slide-in 0.3s ease-out;
   }
+
+  .query-container {
+    container-type: inline-size;
+  }
+
+  .count-display {
+    font-size: clamp(2rem, 24cqw, 6rem);
+    line-height: 1;
+  }
+
+  .count-display[data-length="4"] {
+    font-size: clamp(2rem, 20cqw, 5.5rem);
+  }
+
+  .count-display[data-length="5"] {
+    font-size: clamp(1.8rem, 18cqw, 5rem);
+  }
+
+  .count-display[data-length="6"] {
+    font-size: clamp(1.6rem, 15cqw, 4.5rem);
+  }
+
+  .count-display[data-length="7"] {
+    font-size: clamp(1.4rem, 13cqw, 4rem);
+  }
+
+  .count-display[data-length="8"],
+  .count-display[data-length="9"],
+  .count-display[data-length="10"] {
+    font-size: clamp(1.2rem, 11cqw, 3rem);
+  }
 </style>
 <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Home</h1>
 @if(auth()->user()->can(PermissionsEnum::VIEW_DASHBOARD))
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-  <div class="flex flex-col min-h-96 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
+  <div class="query-container flex flex-col min-h-96 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div>
       <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Current Users</h5>
       <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Total number of users currently timed-in in the library.</p>
     </div>
     <div class="mb-2">
-      <h1 id="timed-in-count" class="text-8xl text-center font-extrabold dark:text-gray-300"></h1>
+      <h1 id="timed-in-count" class="count-display text-center font-extrabold dark:text-gray-300">...</h1>
     </div>
     <button type="button" id="timeout-all-users" data-modal-target="timeout-all-users-modal" data-modal-toggle="timeout-all-users-modal" class="skip-loader text-white bg-gradient-to-r from-primary-500 via-primary-500 to-primary-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-primary-300 dark:focus:ring-primary-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">Timeout All Users</button>
   </div>
@@ -37,13 +68,13 @@
       <canvas id="monthly-logs"></canvas>
     </div>
   </div>
-  <div class="flex flex-col min-h-96 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
+  <div class="query-container flex flex-col min-h-96 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div>
       <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Pending Overdues</h5>
       <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Total number of unpaid overdues.</p>
     </div>
     <div class="mb-2">
-      <h1 id="pending-overdues-count" class="text-8xl text-center font-extrabold dark:text-gray-300"></h1>
+      <h1 id="pending-overdues-count" class="count-display text-center font-extrabold dark:text-gray-300">...</h1>
     </div>
     <a href="{{ route('report.penalties', ['penalty_status' => 'Unpaid']) }}" class="skip-loader text-white bg-gradient-to-r from-primary-500 via-primary-500 to-primary-600 hover:bg-gradient-to-br focus:ring-4 focus:outline-none focus:ring-primary-300 dark:focus:ring-primary-800 font-medium rounded-lg text-sm px-5 py-2.5 text-center me-2 mb-2">View Unpaid Penalties</a>
   </div>
@@ -53,13 +84,13 @@
       <canvas id="transaction-history"></canvas>
     </div>
   </div>
-  <div class="flex flex-col min-h-96 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
+  <div class="query-container flex flex-col min-h-96 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div>
       <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Total Books</h5>
       <p class="mb-3 font-normal text-gray-700 dark:text-gray-400">Total number of books in the database.</p>
     </div>
     <div class="mb-20">
-      <h1 id="book-count" class="xl:text-8xl lg:text-4xl md:text-2xl text-base text-center font-extrabold dark:text-gray-300"></h1>
+      <h1 id="book-count" class="count-display text-center font-extrabold dark:text-gray-300">...</h1>
     </div>
   </div>
   <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-3 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
@@ -248,14 +279,22 @@
     return response.json();
   }
 
+  // Helper function to update count text and set a data attribute for length-based scaling
+  function updateCountDisplay(id, value) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.textContent = value;
+    el.setAttribute('data-length', value.toString().length);
+  }
+
   // Fetch the current count of active users
   async function fetchActiveCount() {
     try {
       const response = await fetch("{{ route('fetch-current-count') }}");
       const data = await handleApiResponse(response, 'current user count');
-      document.getElementById('timed-in-count').textContent = data.active_count;
+      updateCountDisplay('timed-in-count', data.active_count);
     } catch (error) {
-      document.getElementById('timed-in-count').textContent = '...';
+      updateCountDisplay('timed-in-count', '...');
       showToast('Unable to load current user count. Please refresh the page.', 'error');
     }
   }
@@ -303,9 +342,9 @@
     try {
       const response = await fetch("{{ route('fetch-book-count') }}");
       const data = await handleApiResponse(response, 'book count');
-      document.getElementById('book-count').textContent = data.total_books;
+      updateCountDisplay('book-count', data.total_books);
     } catch (error) {
-      document.getElementById('book-count').textContent = '...';
+      updateCountDisplay('book-count', '...');
       showToast('Unable to load book count.', 'warning');
     }
   }
@@ -314,9 +353,9 @@
     try {
       const response = await fetch("{{ route('fetch-pending-overdues-count') }}");
       const data = await handleApiResponse(response, 'pending overdues count');
-      document.getElementById('pending-overdues-count').textContent = data.unpaid_penalties_count;
+      updateCountDisplay('pending-overdues-count', data.unpaid_penalties_count);
     } catch (error) {
-      document.getElementById('pending-overdues-count').textContent = '...';
+      updateCountDisplay('pending-overdues-count', '...');
       showToast('Unable to load pending overdues count.', 'warning');
     }
   }
