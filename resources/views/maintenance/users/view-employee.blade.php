@@ -21,10 +21,6 @@
       {{-- Details List --}}
       <div class="w-full text-left space-y-3 text-sm md:text-base">
         <div class="flex justify-between border-b border-gray-200 dark:border-gray-700 py-2">
-          <span class="font-semibold text-gray-800 dark:text-gray-300">Employee ID:</span>
-          <span class="text-gray-600 dark:text-gray-400">{{ $employee->employees->employee_id }}</span>
-        </div>
-        <div class="flex justify-between border-b border-gray-200 dark:border-gray-700 py-2">
           <span class="font-semibold text-gray-800 dark:text-gray-300">RFID:</span>
           <span class="text-gray-600 dark:text-gray-400">{{ $employee->rfid }}</span>
         </div>
