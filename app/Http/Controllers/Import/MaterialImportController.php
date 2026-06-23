@@ -106,21 +106,70 @@ class MaterialImportController extends Controller
                 }
             }
 
+            // Query existing book accessions
+            $accessions = [];
+            foreach ($data as $item) {
+                if (isset($item['accession'])) {
+                    $accessions[] = strtoupper(trim($item['accession']));
+                }
+            }
+
+            $existingAccessions = [];
+            if (!empty($accessions)) {
+                $dbAccessions = \App\Models\Book::whereIn('accession', $accessions)
+                    ->pluck('accession')
+                    ->toArray();
+                $existingAccessions = array_flip(array_map('strtoupper', array_map('trim', $dbAccessions)));
+            }
+
+            // Partition into new and existing
+            $newData = [];
+            $existingData = [];
+            foreach ($data as $index => $item) {
+                $acc = isset($item['accession']) ? strtoupper(trim($item['accession'])) : '';
+                if (isset($existingAccessions[$acc])) {
+                    $existingData[$index] = $item;
+                } else {
+                    $newData[$index] = $item;
+                }
+            }
+
             $showTable   = true;
+            $new         = !empty($newData);
+            $existing    = !empty($existingData);
+            $newCount    = count($newData);
+            $existingCount = count($existingData);
             $activeImport = ImportProgress::whereIn('status', ['pending', 'processing'])->first();
             $perPage     = $request->input('perPage', 10);
-            $currentPage = LengthAwarePaginator::resolveCurrentPage();
-            $currentItems = array_slice($data, ($currentPage - 1) * $perPage, $perPage);
-            $paginatedData = new LengthAwarePaginator($currentItems, count($data), $perPage, $currentPage, [
-                'path'  => $request->url(),
-                'query' => $request->query(),
+
+            // Paginate New Data
+            $newCurrentPage  = LengthAwarePaginator::resolveCurrentPage('new');
+            $newCurrentItems = array_slice($newData, ($newCurrentPage - 1) * $perPage, $perPage, true);
+            $newPaginatedData = new LengthAwarePaginator($newCurrentItems, $newCount, $perPage, $newCurrentPage, [
+                'path'     => $request->url(),
+                'query'    => $request->query(),
+                'pageName' => 'new',
+            ]);
+
+            // Paginate Existing Data
+            $existingCurrentPage  = LengthAwarePaginator::resolveCurrentPage('existing');
+            $existingCurrentItems = array_slice($existingData, ($existingCurrentPage - 1) * $perPage, $perPage, true);
+            $existingPaginatedData = new LengthAwarePaginator($existingCurrentItems, $existingCount, $perPage, $existingCurrentPage, [
+                'path'     => $request->url(),
+                'query'    => $request->query(),
+                'pageName' => 'existing',
             ]);
 
             return view('import.materials.materials', [
-                'showTable'    => $showTable,
-                'data'         => $paginatedData,
-                'perPage'      => $perPage,
-                'activeImport' => $activeImport,
+                'showTable'             => $showTable,
+                'newPaginatedData'      => $newPaginatedData,
+                'existingPaginatedData' => $existingPaginatedData,
+                'new'                   => $new,
+                'existing'              => $existing,
+                'newCount'              => $newCount,
+                'existingCount'         => $existingCount,
+                'perPage'               => $perPage,
+                'activeImport'          => $activeImport,
             ]);
 
         } catch (\Exception $e) {
