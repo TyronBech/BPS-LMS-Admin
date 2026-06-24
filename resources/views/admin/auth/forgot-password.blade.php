@@ -34,19 +34,19 @@
 
 <body class="relative bg-secondary-500 dark:bg-gray-900">
 	<header>
-		<div class="bg-primary-500 border-gray-200 dark:bg-primary-500 min-h-36 pt-5">
-			<div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto">
-				<a href="{{ route('dashboard') }}" class="flex items-center space-x-3 rtl:space-x-reverse">
-					<img class="rounded-full w-24 h-24" src="{{ $settings->getOrgLogoBase64Attribute() ?? asset('img/BPSLogo.png') }}" alt="School Logo">
-					<div class="flex flex-col justify-center">
-						<h1 class="lg:text-2xl md:text-lg text-white font-semibold text-center">{{ $settings->org_name ?? 'Bicutan Parochial School' }}</h1>
-						<hr class="h-px bg-gray-200 border-0">
-						<h1 class="lg:text-xl md:text-md text-white font-semibold text-center">{{ config('app.name') }}</h1>
-					</div>
-				</a>
-			</div>
-		</div>
-	</header>
+    <div class="bg-primary-700 border-gray-200 dark:bg-primary-700 min-h-20 sm:min-h-24 md:min-h-28 lg:min-h-30 py-3 sm:py-4 md:py-5">
+      <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto px-4 sm:px-6">
+        <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 rtl:space-x-reverse">
+          <img class="rounded-full w-16 h-16 md:w-20 md:h-20" src="{{ $settings->getOrgLogoBase64Attribute() }}" alt="School Logo">
+          <div class="flex flex-col justify-center">
+            <h1 class="text-sm md:text-lg lg:text-xl text-white font-semibold text-start">{{ $settings->org_name ?? 'School Name' }}</h1>
+            <hr class="h-px bg-gray-200 border-0 my-1">
+            <h1 class="text-xs md:text-base lg:text-lg text-white font-semibold text-start">{{ config('app.name') }} - Library Management System</h1>
+          </div>
+        </a>
+      </div>
+    </div>
+  </header>
 	<main class="container relative mx-auto my-4 px-2 font-sans flex-col">
 		<div class="flex flex-col items-center justify-center h-[calc(100vh-17rem)] w-full">
 			<img class="w-20 h-20 block mb-4 dark:hidden" src="{{ asset('img/OwlQuery.png') }}" alt="OwlQuery">
@@ -70,6 +70,8 @@
 					</div>
 					@enderror
 					<div class="flex justify-end w-full">
+					<!-- Create a back button to go back to login page make it white bg but has border color-->
+					<a href="{{ route('login') }}" class="uppercase mr-2 border border-primary-500 text-primary-500 hover:bg-gray-200 focus:ring-4 focus:ring-primary-400 font-medium rounded-lg text-xs px-5 py-2.5 mb-2 dark:text-white dark:hover:bg-gray-700 focus:outline-none dark:focus:ring-primary-500">Back</a>
 						<button type="submit" class="text-white uppercase bg-primary-500 hover:bg-primary-400 focus:ring-4 focus:ring-primary-400 font-medium rounded-lg text-xs px-5 py-2.5 mb-2 dark:bg-primary-400 dark:hover:bg-primary-500 focus:outline-none dark:focus:ring-primary-500">Send Link</button>
 					</div>
 				</form>
