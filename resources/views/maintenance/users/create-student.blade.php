@@ -57,7 +57,7 @@
           @enderror
         </div>
         <div>
-          <label for="id_number" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">LRN:</label>
+          <label for="id_number" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Student ID Number:</label>
           <input type="text" id="id_number" name="id_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="0123456789" value="{{ old('id_number') }}" required>
           @error('id_number')
           <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
