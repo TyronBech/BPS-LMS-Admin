@@ -102,7 +102,7 @@
   <div class="flex flex-col col-span-1 md:col-span-2 lg:col-span-4 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
       <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-        Top 6 Most Visited Students per Grade Level
+        Top 5 Most Visited Students per Section
       </h5>
       <div id="date-range-picker" date-rangepicker class="flex items-center">
         <div class="relative">
@@ -131,7 +131,7 @@
   <div class="flex flex-col col-span-1 md:col-span-2 lg:col-span-4 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
       <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-        Top 3 Students with the Most Borrowed Books per Grade Level
+        Top 5 Students with the Most Borrowed Books per Section
       </h5>
       <div id="date-range-picker-borrowed" date-rangepicker class="flex items-center">
         <div class="relative">
@@ -158,13 +158,13 @@
     </div>
   </div>
   <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
-    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 5 Most Borrowed Books</h5>
+    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 10 Most Borrowed Books</h5>
     <div class="relative h-full">
       <canvas id="top-borrowed-books"></canvas>
     </div>
   </div>
   <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
-    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 5 Most Borrowed Books per Category</h5>
+    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 10 Most Borrowed Books per Category</h5>
     <div class="relative h-full">
       <canvas id="top-borrowed-categories"></canvas>
     </div>
@@ -401,16 +401,16 @@
         return;
       }
 
-      data.forEach(levelData => {
+      data.forEach(sectionData => {
         const {
-          level,
+          section,
           students
-        } = levelData;
+        } = sectionData;
 
         // Filter out students with 0 visits
         const filteredStudents = (students || []).filter(s => s.logs_count > 0);
 
-        // Skip this level if no student has visits
+        // Skip this section if no student has visits
         if (filteredStudents.length === 0) return;
 
         let tableHTML = `
@@ -418,7 +418,7 @@
           <div class="bg-gradient-to-r from-primary-500 to-primary-500 px-5 py-3 border-b border-primary-500">
             <h6 class="text-white text-lg font-bold flex items-center gap-2">
               <svg class="w-5 h-5 text-primary-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-              Grade ${level}
+              Section ${section}
             </h6>
           </div>
           <div class="overflow-x-auto flex-grow scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
@@ -428,7 +428,7 @@
                   <th scope="col" class="px-4 py-3 w-12 text-center">#</th>
                   <th scope="col" class="px-4 py-3">Student</th>
                   <th scope="col" class="px-4 py-3 text-center">Visits</th>
-                  <th scope="col" class="px-4 py-3">Section</th>
+                  <th scope="col" class="px-4 py-3">Grade</th>
                 </tr>
               </thead>
               <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -457,7 +457,7 @@
                     ${student.logs_count}
                 </span>
             </td>
-            <td class="px-4 py-3 whitespace-nowrap truncate max-w-[100px] text-gray-500 dark:text-gray-400" title="${s?.section ?? ''}">${s?.section ?? '-'}</td>
+            <td class="px-4 py-3 whitespace-nowrap truncate max-w-[100px] text-gray-500 dark:text-gray-400" title="Grade ${s?.level ?? ''}">Grade ${s?.level ?? '-'}</td>
           </tr>
         `;
           rank++;
@@ -473,7 +473,7 @@
         container.insertAdjacentHTML('beforeend', tableHTML);
       });
 
-      // If no grade level had students with visits
+      // If no section had students with visits
       if (container.innerHTML.trim() === '') {
         container.innerHTML = `<div class="col-span-full text-center py-8 text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-800 rounded-lg border border-dashed border-gray-300 dark:border-gray-700">No students with visits found for this period.</div>`;
       }
@@ -503,11 +503,11 @@
         return;
       }
 
-      data.forEach(levelData => {
+      data.forEach(sectionData => {
         const {
-          level,
+          section,
           students
-        } = levelData;
+        } = sectionData;
 
         // Filter out students with 0 borrowed books
         const filteredStudents = (students || []).filter(s => s.borrow_count > 0);
@@ -518,7 +518,7 @@
         <div class="bg-gradient-to-r from-primary-500 to-primary-500 px-5 py-3 border-b border-primary-500">
           <h6 class="text-white text-lg font-bold flex items-center gap-2">
              <svg class="w-5 h-5 text-amber-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-            Grade ${level}
+            Section ${section}
           </h6>
         </div>
         <div class="overflow-x-auto flex-grow scrollbar-thin scrollbar-thumb-gray-300 dark:scrollbar-thumb-gray-600">
@@ -528,7 +528,7 @@
                 <th scope="col" class="px-4 py-3 w-12 text-center">#</th>
                 <th scope="col" class="px-4 py-3">Student</th>
                 <th scope="col" class="px-4 py-3 text-center">Borrowed</th>
-                <th scope="col" class="px-4 py-3">Section</th>
+                <th scope="col" class="px-4 py-3">Grade</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -557,7 +557,7 @@
                 ${student.borrow_count}
              </span>
           </td>
-          <td class="px-4 py-3 whitespace-nowrap truncate max-w-[100px] text-gray-500 dark:text-gray-400" title="${s?.section ?? ''}">${s?.section ?? '-'}</td>
+          <td class="px-4 py-3 whitespace-nowrap truncate max-w-[100px] text-gray-500 dark:text-gray-400" title="Grade ${s?.level ?? ''}">Grade ${s?.level ?? '-'}</td>
         </tr>
       `;
           rank++;

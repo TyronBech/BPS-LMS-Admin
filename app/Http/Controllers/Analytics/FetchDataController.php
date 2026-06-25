@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Book;
 use App\Models\Transaction;
 use App\Models\User;
+use App\Models\StudentDetail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log as LogFacade;
 
@@ -403,7 +404,12 @@ class FetchDataController extends Controller
         ]);
 
         try {
-            $levels = range(7, 12);
+            $sections = StudentDetail::whereNotNull('section')
+                ->where('section', '!=', '')
+                ->distinct()
+                ->pluck('section')
+                ->sort()
+                ->values();
             $results = collect();
 
             $hasRange = false;
@@ -430,9 +436,9 @@ class FetchDataController extends Controller
                 }
             }
 
-            foreach ($levels as $level) {
-                $topStudents = User::whereHas('students', function ($q) use ($level) {
-                    $q->where('level', $level);
+            foreach ($sections as $section) {
+                $topStudents = User::whereHas('students', function ($q) use ($section) {
+                    $q->where('section', $section);
                 })
                     ->with('students')
                     ->withCount(['logs as logs_count' => function ($query) use ($hasRange, $startDT, $endDT) {
@@ -445,23 +451,23 @@ class FetchDataController extends Controller
                         $query->select(DB::raw('COUNT(DISTINCT DATE(time_in))'));
                     }])
                     ->orderByDesc('logs_count')
-                    ->take(6)
+                    ->take(5)
                     ->get();
 
-                LogFacade::debug('Analytics: Fetched top students for level', [
-                    'level' => $level,
+                LogFacade::debug('Analytics: Fetched top students for section', [
+                    'section' => $section,
                     'students_count' => $topStudents->count(),
                     'user_id' => Auth::id(),
                 ]);
 
                 $results->push([
-                    'level' => $level,
+                    'section' => $section,
                     'students' => $topStudents,
                 ]);
             }
 
             LogFacade::info('Analytics: Most visited students fetched successfully', [
-                'levels_processed' => count($levels),
+                'sections_processed' => count($sections),
                 'total_students' => $results->sum(fn($r) => count($r['students'])),
                 'user_id' => Auth::id(),
                 'timestamp' => now(),
@@ -505,7 +511,12 @@ class FetchDataController extends Controller
         ]);
 
         try {
-            $levels = range(7, 12);
+            $sections = StudentDetail::whereNotNull('section')
+                ->where('section', '!=', '')
+                ->distinct()
+                ->pluck('section')
+                ->sort()
+                ->values();
             $results = collect();
 
             $hasRange = false;
@@ -532,9 +543,9 @@ class FetchDataController extends Controller
                 }
             }
 
-            foreach ($levels as $level) {
-                $topStudents = User::whereHas('students', function ($q) use ($level) {
-                    $q->where('level', $level);
+            foreach ($sections as $section) {
+                $topStudents = User::whereHas('students', function ($q) use ($section) {
+                    $q->where('section', $section);
                 })
                     ->with('students')
                     ->withCount(['transactions as borrow_count' => function ($query) use ($hasRange, $startDT, $endDT) {
@@ -545,23 +556,23 @@ class FetchDataController extends Controller
                         }
                     }])
                     ->orderByDesc('borrow_count')
-                    ->take(3)
+                    ->take(5)
                     ->get();
 
-                LogFacade::debug('Analytics: Fetched top borrowers for level', [
-                    'level' => $level,
+                LogFacade::debug('Analytics: Fetched top borrowers for section', [
+                    'section' => $section,
                     'students_count' => $topStudents->count(),
                     'user_id' => Auth::id(),
                 ]);
 
                 $results->push([
-                    'level' => $level,
+                    'section' => $section,
                     'students' => $topStudents,
                 ]);
             }
 
             LogFacade::info('Analytics: Most borrowed students fetched successfully', [
-                'levels_processed' => count($levels),
+                'sections_processed' => count($sections),
                 'total_students' => $results->sum(fn($r) => count($r['students'])),
                 'user_id' => Auth::id(),
                 'timestamp' => now(),
@@ -612,7 +623,7 @@ class FetchDataController extends Controller
                     ];
                 })
                 ->sortByDesc('total_borrows')
-                ->take(5)
+                ->take(10)
                 ->values();
 
             LogFacade::info('Analytics: Top books borrowed fetched successfully', [
@@ -675,7 +686,7 @@ class FetchDataController extends Controller
                     ];
                 })
                 ->sortByDesc('total_borrows')
-                ->take(5)
+                ->take(10)
                 ->values();
 
             LogFacade::info('Analytics: Top categories borrowed fetched successfully', [
