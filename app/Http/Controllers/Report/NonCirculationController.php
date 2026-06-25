@@ -258,7 +258,7 @@ class NonCirculationController extends Controller
 
         $sheet->getColumnDimension('A')->setWidth(15); // Date
         $sheet->getColumnDimension('B')->setWidth(15); // Time
-        $sheet->getColumnDimension('C')->setWidth(20); // RFID
+        $sheet->getColumnDimension('C')->setWidth(25); // RFID
         $sheet->getColumnDimension('D')->setWidth(30); // User Name
         $sheet->getColumnDimension('E')->setWidth(20); // Grade & Section / Role
         $sheet->getColumnDimension('F')->setWidth(30); // Subject
@@ -313,7 +313,7 @@ class NonCirculationController extends Controller
                 $sheet->setCellValue('G' . $row, 'N/A');
             }
             
-            $sheet->setCellValue('C' . $row, $rfid);
+            $sheet->setCellValueExplicit('C' . $row, $rfid, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
             $sheet->setCellValue('F' . $row, $item->subject);
 
             $sheet->getStyle('A' . $row . ':G' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);

@@ -244,7 +244,7 @@ class PrintingController extends Controller
 
         $sheet->getColumnDimension('A')->setWidth(15); // Date
         $sheet->getColumnDimension('B')->setWidth(15); // Time
-        $sheet->getColumnDimension('C')->setWidth(20); // RFID
+        $sheet->getColumnDimension('C')->setWidth(25); // RFID
         $sheet->getColumnDimension('D')->setWidth(30); // User Name
         $sheet->getColumnDimension('E')->setWidth(25); // Grade & Section / Role
         $sheet->getColumnDimension('F')->setWidth(15); // Type
@@ -279,6 +279,7 @@ class PrintingController extends Controller
         $sheet->setCellValue('I10', 'Pages');
         $sheet->setCellValue('J10', 'Amount');
         
+        $totalAmount = 0;
         $row = 11;
         foreach ($data as $item) {
             $sheet->setCellValue('A' . $row, Carbon::parse($item->printed_at)->format('M j, Y'));
@@ -298,14 +299,15 @@ class PrintingController extends Controller
                 $sheet->setCellValue('E' . $row, 'N/A');
             }
             
-            $sheet->setCellValue('C' . $row, $rfid);
+            $sheet->setCellValueExplicit('C' . $row, $rfid, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
             $sheet->setCellValue('F' . $row, ucfirst($item->type));
             $sheet->setCellValue('G' . $row, $item->topic);
             $sheet->setCellValue('H' . $row, $item->title_of_material ?? 'N/A');
             $sheet->setCellValue('I' . $row, $item->pages);
             
             if (isset($item->amount)) {
-                $sheet->setCellValue('J' . $row, 'PHP ' . number_format($item->amount, 2));
+                $sheet->setCellValue('J' . $row, '₱ ' . number_format($item->amount, 2));
+                $totalAmount += $item->amount;
             } else {
                 $sheet->setCellValue('J' . $row, 'N/A');
             }
@@ -316,6 +318,15 @@ class PrintingController extends Controller
             $row++;
         }
 
+        // Add Total row
+        $sheet->mergeCells('A' . $row . ':I' . $row);
+        $sheet->setCellValue('A' . $row, 'Total Amount:');
+        $sheet->setCellValue('J' . $row, '₱ ' . number_format($totalAmount, 2));
+        
+        $sheet->getStyle('A' . $row . ':J' . $row)->getFont()->setBold(true);
+        $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('J' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+
         $styleArray = [
             'borders' => [
                 'allBorders' => [
@@ -323,7 +334,7 @@ class PrintingController extends Controller
                 ],
             ],
         ];
-        $sheet->getStyle('A10:J' . ($row - 1))->applyFromArray($styleArray);
+        $sheet->getStyle('A10:J' . $row)->applyFromArray($styleArray);
 
         $row += 2;
         $sheet->mergeCells('A' . $row . ':J' . $row);
