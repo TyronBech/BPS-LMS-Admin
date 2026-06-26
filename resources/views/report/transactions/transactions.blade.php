@@ -6,6 +6,7 @@
 
   <form action="{{ route('report.circulation-search') }}" method="POST" class="auto-search-form">
     @csrf
+    <input type="hidden" name="chart" id="chart-input">
     <div class="flex flex-col lg:flex-row lg:items-end lg:justify-center gap-3 mb-4">
       {{-- Date Range Picker --}}
       {{-- Date Range Picker --}}
@@ -53,6 +54,15 @@
         </select>
       </div>
 
+      {{-- User Type Select --}}
+      <div class="flex flex-col w-full lg:w-auto lg:flex-1 lg:max-w-[180px]">
+        <label for="user_type" class="block text-xs font-medium mb-1 text-gray-500 dark:text-gray-400">User Type</label>
+        <select id="user_type" name="user_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+          <option value="student" {{ request('user_type', 'student') == 'student' ? 'selected' : '' }}>Students</option>
+          <option value="employee" {{ request('user_type') == 'employee' ? 'selected' : '' }}>Employees</option>
+        </select>
+      </div>
+
       {{-- Subject Filter --}}
       <div class="flex flex-col w-full lg:w-auto lg:flex-1 lg:max-w-[200px]">
         <label for="subject_id" class="block text-xs font-medium mb-1 text-gray-500 dark:text-gray-400">Subject</label>
@@ -78,6 +88,14 @@
     </div>
   </form>
 
+  {{-- Circulation Summary Graph --}}
+  <div class="bg-white dark:bg-gray-800 shadow-md rounded-lg p-6 mb-6">
+    <h2 class="text-xl font-bold text-gray-800 dark:text-white mb-4 text-center">Circulation Summary Graph</h2>
+    <div class="relative w-full h-[300px]">
+      <canvas id="circulationChart"></canvas>
+    </div>
+  </div>
+
   <div id="table-container">
 
     @include('report.transactions.transaction-table')
@@ -86,4 +104,72 @@
 </div>
 @endsection
 @section('scripts')
+<script>
+  document.addEventListener("DOMContentLoaded", function () {
+    const ctx = document.getElementById('circulationChart').getContext('2d');
+    const chartLabels = @json($chartLabels);
+    const chartCounts = @json($chartCounts);
+
+    const chart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: chartLabels,
+        datasets: [{
+          label: 'Books Borrowed',
+          data: chartCounts,
+          backgroundColor: 'rgba(32, 36, 108, 0.7)',
+          borderColor: 'rgba(32, 36, 108, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          datalabels: {
+            anchor: 'end',
+            align: 'top',
+            formatter: function(value) {
+              return value > 0 ? value : '';
+            },
+            font: {
+              weight: 'bold'
+            }
+          },
+          legend: {
+            display: false
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              stepSize: 1,
+              precision: 0
+            }
+          }
+        }
+      }
+    });
+
+    const pdfButton = document.querySelector('button[value="pdf"]');
+    if (pdfButton) {
+      pdfButton.addEventListener('click', function () {
+        const chartImage = chart.toDataURL('image/png');
+        document.getElementById('chart-input').value = chartImage;
+      });
+    }
+
+    const form = document.querySelector('.auto-search-form');
+    if (form) {
+      form.addEventListener('submit', function (e) {
+        const submitter = e.submitter || document.activeElement;
+        if (submitter && submitter.value === 'pdf') {
+          const chartImage = chart.toDataURL('image/png');
+          document.getElementById('chart-input').value = chartImage;
+        }
+      });
+    }
+  });
+</script>
 @endsection
