@@ -140,6 +140,9 @@ class TransactionController extends Controller
             ]);
             $data = $this->generateData($request, new Transaction(), true);
             $chartBase64 = $request->input('chart');
+            if ($chartBase64) {
+                $chartBase64 = str_replace(' ', '+', $chartBase64);
+            }
             $this->generatePDF($data, $type, $userType, $chartBase64);
             return redirect()->route('report.circulation')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {

@@ -73,3 +73,11 @@
     </div>
   </div>
 </div>
+
+@if(isset($chartLabels) && isset($chartCounts))
+<div id="chart-data-bridge" 
+     data-labels="{{ json_encode($chartLabels) }}" 
+     data-counts="{{ json_encode($chartCounts) }}" 
+     style="display: none;">
+</div>
+@endif

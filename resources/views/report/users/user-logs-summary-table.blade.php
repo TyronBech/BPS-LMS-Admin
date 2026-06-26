@@ -1,5 +1,5 @@
-<div id="summary-card" class="container mx-auto mt-4 mb-4">
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-200 dark:border-gray-700 max-w-5xl mx-auto">
+<div id="summary-card" class="container mx-auto max-w-5xl mt-4 mb-4 px-4">
+  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-200 dark:border-gray-700">
     
     <!-- Title / Header (Compact) -->
     <div class="flex items-center space-x-2 border-b border-gray-150 dark:border-gray-700 pb-2 mb-3.5">

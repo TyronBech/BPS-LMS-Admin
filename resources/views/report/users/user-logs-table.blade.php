@@ -1,4 +1,4 @@
-<div id="tabular" class="container mx-auto mt-2 mb-4">
+<div id="tabular" class="container mx-auto max-w-5xl mt-2 mb-4 px-4">
   <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md">
     <div class="p-4">
       <h2 class="text-center mb-4 font-semibold text-2xl dark:text-white">Attendance Monitoring Report</h2>

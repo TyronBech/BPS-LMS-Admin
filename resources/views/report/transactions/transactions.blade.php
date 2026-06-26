@@ -106,7 +106,8 @@
 @section('scripts')
 <script>
   document.addEventListener("DOMContentLoaded", function () {
-    const ctx = document.getElementById('circulationChart').getContext('2d');
+    const canvas = document.getElementById('circulationChart');
+    const ctx = canvas.getContext('2d');
     const chartLabels = @json($chartLabels);
     const chartCounts = @json($chartCounts);
 
@@ -117,8 +118,8 @@
         datasets: [{
           label: 'Books Borrowed',
           data: chartCounts,
-          backgroundColor: 'rgba(32, 36, 108, 0.7)',
-          borderColor: 'rgba(32, 36, 108, 1)',
+          backgroundColor: 'rgba(54, 162, 235, 0.7)',
+          borderColor: 'rgba(54, 162, 235, 1)',
           borderWidth: 1
         }]
       },
@@ -155,7 +156,7 @@
     const pdfButton = document.querySelector('button[value="pdf"]');
     if (pdfButton) {
       pdfButton.addEventListener('click', function () {
-        const chartImage = chart.toDataURL('image/png');
+        const chartImage = canvas.toDataURL('image/png');
         document.getElementById('chart-input').value = chartImage;
       });
     }
@@ -165,10 +166,30 @@
       form.addEventListener('submit', function (e) {
         const submitter = e.submitter || document.activeElement;
         if (submitter && submitter.value === 'pdf') {
-          const chartImage = chart.toDataURL('image/png');
+          const chartImage = canvas.toDataURL('image/png');
           document.getElementById('chart-input').value = chartImage;
         }
       });
+    }
+
+    // Dynamic Chart Update on AJAX table container updates
+    const tableContainer = document.getElementById('table-container');
+    if (tableContainer) {
+      const observer = new MutationObserver(function () {
+        const bridge = document.getElementById('chart-data-bridge');
+        if (bridge) {
+          try {
+            const newLabels = JSON.parse(bridge.getAttribute('data-labels'));
+            const newCounts = JSON.parse(bridge.getAttribute('data-counts'));
+            chart.data.labels = newLabels;
+            chart.data.datasets[0].data = newCounts;
+            chart.update();
+          } catch (e) {
+            console.error("Error updating chart:", e);
+          }
+        }
+      });
+      observer.observe(tableContainer, { childList: true, subtree: true });
     }
   });
 </script>
