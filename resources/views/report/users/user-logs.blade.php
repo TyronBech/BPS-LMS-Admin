@@ -66,7 +66,7 @@
   </form>
 
   <div id="table-container">
-    <h1 class="text-md font-extrabold">PEAK HOUR: <small class="ms-2 font-semibold text-gray-500">{{ $peak_hour }}</small></h1>
+    <h1 class="text-md font-extrabold ml-16">PEAK HOUR: <small class="ms-2 font-semibold text-gray-500">{{ $peak_hour }}</small></h1>
     @include('report.users.user-logs-table')
   </div>
 </div>

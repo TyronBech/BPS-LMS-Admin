@@ -1,4 +1,4 @@
-<div id="summary-card" class="container mx-auto max-w-5xl mt-4 mb-4 px-4">
+<div id="summary-card" class="container mx-auto max-w-[95%] mt-4 mb-4 px-4">
   <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-200 dark:border-gray-700">
     
     <!-- Title / Header (Compact) -->
