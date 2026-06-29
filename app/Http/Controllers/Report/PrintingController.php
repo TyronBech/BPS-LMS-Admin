@@ -181,6 +181,51 @@ class PrintingController extends Controller
         return response()->json($formatted_users);
     }
 
+    public function destroy(Request $request)
+    {
+        Log::warning('Printing Report: Attempting to delete printing entry', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name . ' ' . Auth::guard('admin')->user()->last_name,
+            'printing_id' => $request->input('id'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|integer|exists:printing,id',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+        }
+
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            \Illuminate\Support\Facades\DB::statement('SET @current_user_id = ?', [Auth::guard('admin')->user()->id]);
+
+            $printing = Printing::findOrFail($request->input('id'));
+            $printing->delete();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            Log::error('Printing Report: Database error during deletion', [
+                'user_id' => Auth::guard('admin')->id(),
+                'printing_id' => $request->input('id'),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
+            return redirect()->back()->with('toast-error', 'Failed to delete printing entry.');
+        }
+        \Illuminate\Support\Facades\DB::commit();
+
+        Log::info('Printing Report: Printing entry deleted successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'printing_id' => $request->input('id'),
+            'timestamp' => now(),
+        ]);
+
+        return redirect()->back()->with('toast-success', 'Printing entry deleted successfully.');
+    }
+
     private function generatePDF(Collection $data)
     {
         ini_set('memory_limit', '2048M');

@@ -152,6 +152,7 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
             Route::post('non-circulation/store', 'store')->name('report.non-circulation-store');
             Route::get('non-circulation/search-user', 'searchUser')->name('report.non-circulation-search-user');
             Route::get('lookup-rfid', 'lookupRfid')->name('report.lookup-rfid');
+            Route::delete('non-circulation/delete', 'destroy')->name('report.non-circulation-delete');
         });
 
         Route::controller(\App\Http\Controllers\Report\PrintingController::class)->group(function () {
@@ -159,6 +160,7 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
             Route::post('printing', 'search')->name('report.printing-search');
             Route::post('printing/store', 'store')->name('report.printing-store');
             Route::get('printing/search-user', 'searchUser')->name('report.printing-search-user');
+            Route::delete('printing/delete', 'destroy')->name('report.printing-delete');
         });
 
         Route::controller(BibliographyController::class)->middleware(ViewBibliographyMiddleware::class)->group(function () {

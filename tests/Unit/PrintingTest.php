@@ -112,4 +112,57 @@ class PrintingTest extends TestCase
             'amount' => 15.00,
         ]);
     }
+
+    /**
+     * Test successfully soft deleting a printing entry.
+     */
+    public function test_delete_printing_entry_success(): void
+    {
+        $admin = User::factory()->create();
+        $admin->givePermissionTo(PermissionsEnum::CREATE_PRINTING_ENTRY->value);
+
+        $studentUser = User::factory()->create();
+        $student = StudentDetail::create([
+            'user_id' => $studentUser->id,
+            'id_number' => 'STUD-TEST-888',
+            'level' => 'Grade 12',
+            'section' => 'B',
+        ]);
+
+        $printing = Printing::create([
+            'student_id' => $student->id,
+            'type' => 'print',
+            'topic' => 'Chemistry Notes',
+            'pages' => 10,
+            'printed_at' => now(),
+        ]);
+
+        $response = $this->actingAs($admin, 'admin')->delete(route('report.printing-delete'), [
+            'id' => $printing->id,
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('toast-success', 'Printing entry deleted successfully.');
+        
+        // Assert that it's soft deleted
+        $this->assertSoftDeleted('printing', [
+            'id' => $printing->id,
+        ]);
+    }
+
+    /**
+     * Test delete validation fails if ID does not exist.
+     */
+    public function test_delete_printing_validation_fails(): void
+    {
+        $admin = User::factory()->create();
+        $admin->givePermissionTo(PermissionsEnum::CREATE_PRINTING_ENTRY->value);
+
+        $response = $this->actingAs($admin, 'admin')->delete(route('report.printing-delete'), [
+            'id' => 999999, // non-existent
+        ]);
+
+        $response->assertRedirect();
+        $response->assertSessionHas('toast-warning');
+    }
 }

@@ -1,3 +1,4 @@
+@use('App\Enum\PermissionsEnum')
 <div class="relative overflow-x-auto shadow-md sm:rounded-lg mb-6">
   <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
@@ -15,6 +16,9 @@
         </th>
         <th scope="col" class="px-6 py-3 whitespace-nowrap">Subject</th>
         <th scope="col" class="px-6 py-3 whitespace-nowrap">Teacher</th>
+        @can(PermissionsEnum::CREATE_NON_CIRCULATION_ENTRY->value, 'admin')
+        <th scope="col" class="px-6 py-3 whitespace-nowrap">Actions</th>
+        @endcan
       </tr>
     </thead>
     <tbody>
@@ -63,10 +67,17 @@
             N/A
           @endif
         </td>
+        @can(PermissionsEnum::CREATE_NON_CIRCULATION_ENTRY->value, 'admin')
+        <td class="px-6 py-4 whitespace-nowrap">
+          <button data-modal-target="delete-non-circulation-modal" data-modal-toggle="delete-non-circulation-modal" class="deleteNonCirculationBtn inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800" type="button" value="{{ $item->id }}">
+            Delete
+          </button>
+        </td>
+        @endcan
       </tr>
       @empty
       <tr>
-        <td colspan="7" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+        <td colspan="@can(PermissionsEnum::CREATE_NON_CIRCULATION_ENTRY->value, 'admin') 8 @else 7 @endcan" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
           No non-circulation entries found.
         </td>
       </tr>

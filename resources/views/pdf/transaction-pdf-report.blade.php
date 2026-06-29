@@ -254,7 +254,7 @@
         <thead>
           <tr>
             <th style="width: 25%; text-align: center;">Month</th>
-            <th colspan="{{ $maxSections }}" style="text-align: center;">Sections & Borrow Counts</th>
+            <th colspan="{{ $maxSections }}" style="text-align: center;">Sections & Circulation Counts</th>
             <th style="width: 15%; text-align: center;">Total</th>
           </tr>
         </thead>

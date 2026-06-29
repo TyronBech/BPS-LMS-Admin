@@ -195,6 +195,51 @@ class NonCirculationController extends Controller
         ]);
     }
 
+    public function destroy(Request $request)
+    {
+        Log::warning('Non-Circulation Report: Attempting to delete non-circulation entry', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name . ' ' . Auth::guard('admin')->user()->last_name,
+            'non_circulation_id' => $request->input('id'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|integer|exists:bk_non_circulations,id',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+        }
+
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            \Illuminate\Support\Facades\DB::statement('SET @current_user_id = ?', [Auth::guard('admin')->user()->id]);
+
+            $nonCirculation = BkNonCirculation::findOrFail($request->input('id'));
+            $nonCirculation->delete();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            Log::error('Non-Circulation Report: Database error during deletion', [
+                'user_id' => Auth::guard('admin')->id(),
+                'non_circulation_id' => $request->input('id'),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
+            return redirect()->back()->with('toast-error', 'Failed to delete non-circulation entry.');
+        }
+        \Illuminate\Support\Facades\DB::commit();
+
+        Log::info('Non-Circulation Report: Non-circulation entry deleted successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'non_circulation_id' => $request->input('id'),
+            'timestamp' => now(),
+        ]);
+
+        return redirect()->back()->with('toast-success', 'Non-Circulation entry deleted successfully.');
+    }
+
     private function generatePDF(Collection $data)
     {
         ini_set('memory_limit', '2048M');
