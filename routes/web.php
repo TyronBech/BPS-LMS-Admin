@@ -134,6 +134,8 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
         Route::controller(ComputerUseController::class)->middleware(ViewUserReportsMiddleware::class)->group(function () {
             Route::get('computer-use', 'index')->name('report.computer-use');
             Route::post('computer-use', 'search')->name('report.computer-use-search');
+            Route::get('computer-graph', 'graph')->name('report.computer-graph');
+            Route::post('computer-export-graph', 'exportGraph')->name('report.computer-graph-export-pdf');
         });
 
         Route::controller(VisitorLogsController::class)->middleware(ViewUserReportsMiddleware::class)->group(function () {

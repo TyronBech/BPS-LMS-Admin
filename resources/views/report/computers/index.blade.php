@@ -3,6 +3,8 @@
 @use('App\Enum\PermissionsEnum')
 <div class="container mx-auto px-4">
   <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Report Document</h1>
+  @include('report.computers.graph')
+  @include('report.computers.summary-table')
   <form action="{{ route('report.computer-use-search') }}" method="POST" class="auto-search-form">
     @csrf
     <div class="flex flex-col lg:flex-row lg:items-end lg:justify-center gap-3 mb-4">
