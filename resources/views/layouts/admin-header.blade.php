@@ -539,7 +539,11 @@
     }
 
     updateBadges();
-    setInterval(updateBadges, 10000);
+    if (typeof window.createActiveInterval === 'function') {
+      window.createActiveInterval(updateBadges, 30000);
+    } else {
+      setInterval(updateBadges, 30000);
+    }
   });
 </script>
 @endcan

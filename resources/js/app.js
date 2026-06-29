@@ -10,6 +10,73 @@ window.$ = window.jQuery = $;
 window.Chart = Chart;
 Chart.register(ChartDataLabels);
 
+// Reusable utility to run intervals only when the tab is active and user is not idle
+window.createActiveInterval = function (callback, intervalMs, idleTimeoutMs = 180000) {
+    let lastActivity = Date.now();
+    let intervalId = null;
+    let isIdle = false;
+
+    function resetActivity() {
+        lastActivity = Date.now();
+        if (isIdle) {
+            isIdle = false;
+            // Resume immediately and trigger update
+            callback();
+            startTimer();
+        }
+    }
+
+    const events = ["mousemove", "mousedown", "keydown", "scroll", "touchstart"];
+    events.forEach((event) => {
+        document.addEventListener(event, resetActivity, { passive: true });
+    });
+
+    document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) {
+            resetActivity();
+        } else {
+            stopTimer();
+        }
+    });
+
+    function checkIdle() {
+        if (document.hidden || Date.now() - lastActivity >= idleTimeoutMs) {
+            isIdle = true;
+            stopTimer();
+        }
+    }
+
+    function startTimer() {
+        stopTimer();
+        intervalId = setInterval(() => {
+            checkIdle();
+            if (!isIdle) {
+                callback();
+            }
+        }, intervalMs);
+    }
+
+    function stopTimer() {
+        if (intervalId) {
+            clearInterval(intervalId);
+            intervalId = null;
+        }
+    }
+
+    // Start initially if visible
+    if (!document.hidden) {
+        startTimer();
+    }
+
+    // Return clean-up function
+    return () => {
+        stopTimer();
+        events.forEach((event) => {
+            document.removeEventListener(event, resetActivity);
+        });
+    };
+};
+
 document.addEventListener("DOMContentLoaded", () => {
     const loader = document.getElementById("form-loader");
 

@@ -27,6 +27,7 @@ class ReservationStatus extends Controller
      */
     public function getReservationStatus()
     {
+        session()->save(); // Release session lock early for concurrent polling
         Log::debug('Reservation Status: Fetching current status', [
             'user_id' => Auth::guard('admin')->id(),
             'timestamp' => now(),
@@ -96,6 +97,7 @@ class ReservationStatus extends Controller
      */
     public function getReservationStats()
     {
+        session()->save(); // Release session lock early for concurrent polling
         Log::debug('Reservation Status: Fetching statistics', [
             'user_id' => Auth::guard('admin')->id(),
             'timestamp' => now(),

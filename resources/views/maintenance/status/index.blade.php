@@ -124,9 +124,14 @@
     checkReservationStatus();
     updateStats();
 
-    // Auto-refresh every 30 seconds
-    setInterval(checkReservationStatus, 30000);
-    setInterval(updateStats, 60000); // Update stats every minute
+    // Auto-refresh with active interval utility (pauses when idle/backgrounded)
+    if (typeof window.createActiveInterval === 'function') {
+      window.createActiveInterval(checkReservationStatus, 30000);
+      window.createActiveInterval(updateStats, 60000);
+    } else {
+      setInterval(checkReservationStatus, 30000);
+      setInterval(updateStats, 60000);
+    }
   });
 
   let currentSystemState = false;

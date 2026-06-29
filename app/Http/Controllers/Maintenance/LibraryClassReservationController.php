@@ -334,6 +334,7 @@ class LibraryClassReservationController extends Controller
      */
     public function pendingCount()
     {
+        session()->save(); // Release session lock early for concurrent polling
         $count = LibraryClassReservation::where('status', 'Pending')->count();
         return response()->json(['pending_count' => $count]);
     }

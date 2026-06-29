@@ -105,6 +105,7 @@ class ReservationExtensionController extends Controller
 
     public function pendingExtensionCount()
     {
+        session()->save(); // Release session lock early for concurrent polling
         $count = Transaction::whereIn('transaction_type', ['Borrowed', 'Reserved'])
             ->where('status', 'Pending')
             ->count();
