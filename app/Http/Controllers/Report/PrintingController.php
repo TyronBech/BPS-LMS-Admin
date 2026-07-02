@@ -71,10 +71,16 @@ class PrintingController extends Controller
 
         if ($request->input('submit') == 'pdf') {
             $data = $this->generateData($request, new Printing(), true);
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
             $this->generatePDF($data);
             return redirect()->route('report.printing')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {
             $data = $this->generateData($request, new Printing(), true);
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
             $this->exportExcel($data);
             return redirect()->route('report.printing')->with('toast-success', 'Successfully exported to Excel');
         }

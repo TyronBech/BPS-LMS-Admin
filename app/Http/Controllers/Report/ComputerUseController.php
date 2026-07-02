@@ -196,6 +196,9 @@ class ComputerUseController extends Controller
                 'timestamp' => now()
             ]);
             $data = $this->generateData($request, new AppLog(), true);
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
             $this->generatePDF($data);
             return redirect()->route('report.computer-use')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {
@@ -204,6 +207,9 @@ class ComputerUseController extends Controller
                 'timestamp' => now()
             ]);
             $data = $this->generateData($request, new AppLog(), true);
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
             $this->exportExcel($data);
             return redirect()->route('report.computer-use')->with('toast-success', 'Successfully exported to Excel');
         }
@@ -555,6 +561,12 @@ class ComputerUseController extends Controller
         }
 
         $query->orderBy('time_in', 'desc')->orderBy('id', 'desc');
+
+        if ($isExport) {
+            $data = $query->get();
+            $data->reporting_period = \App\Helpers\ReportHelper::buildReportingPeriod($data, 'start');
+            return $data->makeHidden(['id', 'user_id']);
+        }
 
         return $query->paginate($perPage)->appends($request->all());
     }

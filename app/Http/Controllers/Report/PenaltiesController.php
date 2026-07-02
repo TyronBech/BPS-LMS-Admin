@@ -142,6 +142,9 @@ class PenaltiesController extends Controller
                 'timestamp' => now()
             ]);
             $data    = $this->generateData($request, new Transaction(), true);
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
             $reportingPeriod = $this->buildReportingPeriodLabel($data);
             $summary = $this->generateSummaryFromDataset($data);
             $this->generatePDF($data, $summary, $reportingPeriod);
@@ -152,6 +155,9 @@ class PenaltiesController extends Controller
                 'timestamp' => now()
             ]);
             $data    = $this->generateData($request, new Transaction(), true);
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
             $reportingPeriod = $this->buildReportingPeriodLabel($data);
             $summary = $this->generateSummaryFromDataset($data);
             $this->exportExcel($data, $summary, $reportingPeriod);

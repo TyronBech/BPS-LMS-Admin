@@ -113,6 +113,9 @@ class BibliographyController extends Controller
             ]);
 
             $data = $this->generateData($request, new Book(), true);
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
             $this->generatePDF($data);
 
             return redirect()->route('report.bibliography')->with('toast-success', 'Successfully exported to PDF');
@@ -125,6 +128,9 @@ class BibliographyController extends Controller
             ]);
 
             $data = $this->generateData($request, new Book(), true);
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
             $this->exportExcel($data);
 
             return redirect()->route('report.bibliography')->with('toast-success', 'Successfully exported to Excel');

@@ -102,12 +102,18 @@ class InventoriesController extends Controller
 
         if ($request->input('submit') === 'pdf') {
             $data = $this->generateData($request, true);
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
             $this->generatePDF($data);
             return redirect()->route('report.inventories')->with('toast-success', 'Successfully exported to PDF');
         }
 
         if ($request->input('submit') === 'excel') {
             $data = $this->generateData($request, true);
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
             $this->exportExcel($data);
             return redirect()->route('report.inventories')->with('toast-success', 'Successfully exported to Excel');
         }

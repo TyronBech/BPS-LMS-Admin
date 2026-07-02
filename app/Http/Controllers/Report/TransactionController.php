@@ -139,6 +139,9 @@ class TransactionController extends Controller
                 'timestamp' => now()
             ]);
             $data = $this->generateData($request, new Transaction(), true);
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
             $chartBase64 = $request->input('chart');
             if ($chartBase64) {
                 $chartBase64 = str_replace(' ', '+', $chartBase64);
@@ -151,6 +154,9 @@ class TransactionController extends Controller
                 'timestamp' => now()
             ]);
             $data = $this->generateData($request, new Transaction(), true);
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
             $this->exportExcel($data, $type, $userType);
             return redirect()->route('report.circulation')->with('toast-success', 'Successfully exported to Excel');
         }

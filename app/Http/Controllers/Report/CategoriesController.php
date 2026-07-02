@@ -74,9 +74,15 @@ class CategoriesController extends Controller
 
         $data = $this->getSummaryCollectionData($educationalLevel, $categoryType);
         if ($request->input('submit') == 'pdf') {
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
             $this->generatePDF($data, $educationalLevel, $categoryType);
             return redirect()->back()->with('toast-success', 'PDF generated successfully');
         } else if ($request->input('submit') == 'excel') {
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
             $this->exportExcel($data, $educationalLevel, $categoryType);
             return redirect()->back()->with('toast-success', 'Excel generated successfully');
         }

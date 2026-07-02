@@ -185,6 +185,9 @@ class UserLogsController extends Controller
                 'timestamp' => now()
             ]);
             $data = $this->generateData($request, $tableName, true);
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
             $this->generatePDF($data);
             return redirect()->route('report.user')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {
@@ -193,6 +196,9 @@ class UserLogsController extends Controller
                 'timestamp' => now()
             ]);
             $data = $this->generateData($request, $tableName, true);
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
             $this->exportExcel($data);
             return redirect()->route('report.user')->with('toast-success', 'Successfully exported to Excel');
         }
