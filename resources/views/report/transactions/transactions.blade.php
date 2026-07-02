@@ -2,7 +2,7 @@
 @section('content')
 @use('App\Enum\PermissionsEnum')
 <div class="container mx-auto px-4">
-  <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">{{ \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Circulation History', $fromInputDate, $toInputDate, $data, 'date_borrowed') }}</h1>
+  <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Circulation History</h1>
 
   <form action="{{ route('report.circulation-search') }}" method="POST" class="auto-search-form">
     @csrf

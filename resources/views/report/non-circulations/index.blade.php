@@ -2,7 +2,7 @@
 @section('content')
 @use('App\Enum\PermissionsEnum')
 <div class="container mx-auto px-4">
-  <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">{{ \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Evaluation and Review Collection', $fromInputDate, $toInputDate, $data, 'borrowed_at') }}</h1>
+  <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Evaluation and Review Collection</h1>
   <form action="{{ route('report.non-circulation-search') }}" method="POST" class="auto-search-form">
     @csrf
     <div class="flex flex-col lg:flex-row lg:items-end lg:justify-center gap-3 mb-4">
