@@ -166,11 +166,101 @@ class ReportHelper
      */
     private static function parseDate($value): Carbon
     {
+        if ($value instanceof Carbon) {
+            return $value;
+        }
         foreach (['m/d/Y', 'Y-m-d', 'd-m-Y'] as $format) {
             try {
                 return Carbon::createFromFormat($format, $value);
             } catch (\Throwable $e) {}
         }
         return Carbon::parse($value);
+    }
+
+    /**
+     * Helper to format report titles suffix based on date filters or fallback to data.
+     * E.g. (Online Research for the month of June to July 2026) or (Online Research for S.Y. 2025-2026)
+     */
+    public static function getFormattedHeaderSuffix($reportName, $startDateStr = null, $endDateStr = null, $collection = null, $dateField = 'created_at')
+    {
+        $start = null;
+        $end = null;
+
+        if (!empty($startDateStr)) {
+            try {
+                $start = self::parseDate($startDateStr);
+            } catch (\Throwable $e) {}
+        }
+        if (!empty($endDateStr)) {
+            try {
+                $end = self::parseDate($endDateStr);
+            } catch (\Throwable $e) {}
+        }
+
+        if (!$start) {
+            $reqStart = request('start') ?: request('start_date');
+            if (!empty($reqStart)) {
+                try {
+                    $start = self::parseDate($reqStart);
+                } catch (\Throwable $e) {}
+            }
+        }
+        if (!$end) {
+            $reqEnd = request('end') ?: request('end_date');
+            if (!empty($reqEnd)) {
+                try {
+                    $end = self::parseDate($reqEnd);
+                } catch (\Throwable $e) {}
+            }
+        }
+
+        if ((!$start || !$end) && $collection) {
+            $items = (is_object($collection) && method_exists($collection, 'getCollection')) ? $collection->getCollection() : $collection;
+            $dates = collect($items)->map(function ($item, $key) use ($dateField) {
+                if (is_array($item)) {
+                    $val = $item[$dateField] ?? $item['timestamp'] ?? $item['created_at'] ?? $item['start'] ?? $item['borrowed_at'] ?? $item['printed_at'] ?? null;
+                } else if (is_object($item)) {
+                    $val = $item->{$dateField} ?? $item->timestamp ?? $item->created_at ?? $item->start ?? $item->borrowed_at ?? $item->printed_at ?? null;
+                } else {
+                    $val = $item;
+                }
+                if (!$val && is_string($key)) {
+                    $val = $key;
+                }
+                if ($val) {
+                    try {
+                        return Carbon::parse($val);
+                    } catch (\Throwable $e) {}
+                }
+                return null;
+            })->filter();
+
+            if ($dates->isNotEmpty()) {
+                if (!$start) $start = $dates->min();
+                if (!$end) $end = $dates->max();
+            }
+        }
+
+        if (!$start) {
+            $start = Carbon::now();
+        }
+        if (!$end) {
+            $end = Carbon::now();
+        }
+
+        // Philippine school year is June to March next year
+        if ($start->month === 6 && $end->month === 3 && $start->year === ($end->year - 1)) {
+            return "{$reportName} for S.Y. {$start->year}-{$end->year}";
+        }
+
+        if ($start->year === $end->year) {
+            if ($start->month === $end->month) {
+                return "{$reportName} for the month of " . $start->format('F Y');
+            } else {
+                return "{$reportName} for the month of " . $start->format('F') . ' to ' . $end->format('F Y');
+            }
+        } else {
+            return "{$reportName} for " . $start->format('F Y') . ' to ' . $end->format('F Y');
+        }
     }
 }

@@ -247,7 +247,7 @@ class NonCirculationController extends Controller
 
         $settings = UISetting::first() ?? new UISetting();
         $items = [
-            'title'         => 'Tabular Presentation of Non-Circulation Book Report',
+            'title'         => \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Non-Circulation Book Report', request('start'), request('end'), $data, 'borrowed_at'),
             'school'        => $settings->org_name ?? "Bicutan Parochial School, Inc.",
             'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
@@ -299,7 +299,7 @@ class NonCirculationController extends Controller
         $sheet->getStyle('A6:G6')->getFont()->setSize(14);
         $sheet->getStyle('A6:G6')->getAlignment()->setHorizontal('center');
         $sheet->getStyle('A6:G6')->getAlignment()->setVertical('center');
-        $sheet->setCellValue('A6', 'Non-Circulation Report');
+        $sheet->setCellValue('A6', \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Non-Circulation Report', request('start'), request('end'), $data, 'borrowed_at'));
 
         $sheet->getColumnDimension('A')->setWidth(15); // Date
         $sheet->getColumnDimension('B')->setWidth(15); // Time

@@ -568,8 +568,8 @@ class UserLogsController extends Controller
         return response()->json([
             'labels'           => $labels->values(),
             'counts'           => $counts->values(),
-            'chart_title'      => $chartTitle,
-            'reporting_period' => $reportingPeriod
+            'chart_title'      => \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Attendance Monitoring', $start, $end),
+            'reporting_period' => ''
         ]);
     }
 
@@ -742,7 +742,7 @@ class UserLogsController extends Controller
 
             $settings = UISetting::first() ?? new UISetting();
             $items = [
-                'title'       => 'Graphical Presentation of Library Attendance Monitoring Report',
+                'title'       => \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Attendance Monitoring Graphical Report', $start ?? $startDate, $end ?? $endDate, $hourlyData, 'start'),
                 'school'      => $settings->org_name ?? "Bicutan Parochial School, Inc.",
                 'address'     => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
                 'logo'        => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
@@ -783,7 +783,7 @@ class UserLogsController extends Controller
     {
         $settings = UISetting::first() ?? new UISetting();
         $items = [
-            'title'         => 'Tabular Presentation of Library Attendance Monitoring Report',
+            'title'         => \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Attendance Monitoring Report', request('start'), request('end'), $data, 'start'),
             'school'        => $settings->org_name ?? "Bicutan Parochial School, Inc.",
             'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents(public_path('img/BPSLogoFull.png'))),
@@ -831,7 +831,7 @@ class UserLogsController extends Controller
         $sheet->getPageSetup()->setFitToWidth(1);
         $sheet->getPageSetup()->setFitToHeight(0);
         $sheet->mergeCells('A6:D6');
-        $sheet->setCellValue('A6', 'Attendance Monitoring Report');
+        $sheet->setCellValue('A6', \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Attendance Monitoring Report', request('start'), request('end'), $data, 'start'));
         $sheet->getStyle('A6:D6')->getFont()->setBold(true);
         $sheet->getStyle('A6:D6')->getFont()->setSize(14);
         $sheet->getStyle('A6:D6')->getAlignment()->setHorizontal('center');

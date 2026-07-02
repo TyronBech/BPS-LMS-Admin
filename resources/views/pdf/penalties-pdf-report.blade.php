@@ -184,7 +184,6 @@
   <div class="generated-date">{{ $date }}</div>
 
   <main class="table-container">
-    <div>{{ $reporting_period }}</div>
     <table>
       <thead>
         <tr>

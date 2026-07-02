@@ -203,7 +203,7 @@ class PenaltiesController extends Controller
             'date'          => "as of " . date('F j, Y'),
             'data'          => $data,
             'summary'       => $summary,
-            'reporting_period' => $reportingPeriod,
+            'reporting_period' => '',
             'totalCount'    => $data->count(),
             'schoolYear'    => \App\Helpers\ReportHelper::getSchoolYear(request('start'), request('end'), $data, 'created_at')
         ];
@@ -276,7 +276,7 @@ class PenaltiesController extends Controller
 
         // Reporting period (if provided)
         $sheet->mergeCells('A9:I9');
-        $sheet->setCellValue('A9', $reportingPeriod ?? '');
+        $sheet->setCellValue('A9', '');
         $sheet->getStyle('A9:I9')->getFont()->setBold(false);
         $sheet->getStyle('A9:I9')->getFont()->setSize(10);
         $sheet->getStyle('A9:I9')->getAlignment()->setHorizontal('left');

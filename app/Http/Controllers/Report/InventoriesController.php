@@ -195,7 +195,7 @@ class InventoriesController extends Controller
         $sheet->getStyle('A7:D8')->getAlignment()->setVertical('left');
         $sheet->getStyle('A7:D8')->getAlignment()->setWrapText(true);
         $sheet->mergeCells('A9:D9');
-        $sheet->setCellValue('A9', $data->reporting_period ?? 'Current inventory snapshot');
+        $sheet->setCellValue('A9', '');
         $sheet->getStyle('A9:D9')->getFont()->setItalic(true);
         $sheet->getStyle('A9:D9')->getAlignment()->setHorizontal('left');
 

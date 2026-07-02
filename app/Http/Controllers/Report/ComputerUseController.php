@@ -323,7 +323,7 @@ class ComputerUseController extends Controller
 
         $settings = UISetting::first() ?? new UISetting();
         $items = [
-            'title'         => 'Tabular Presentation of Online Research Report',
+            'title'         => \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Online Research Report', request('start'), request('end'), $data, 'start'),
             'school'        => $settings->org_name ?? "Bicutan Parochial School, Inc.",
             'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
@@ -397,7 +397,7 @@ class ComputerUseController extends Controller
             $sheet->getStyle('A6:C6')->getAlignment()->setHorizontal('center');
             $sheet->getStyle('A6:C6')->getAlignment()->setVertical('center');
         }
-        $sheet->setCellValue('A6', 'Online Research Report');
+        $sheet->setCellValue('A6', \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Online Research Report', request('start'), request('end'), $data, 'start'));
 
         $sheet->getColumnDimension('A')->setWidth(30);
         $sheet->getColumnDimension('B')->setWidth(20);
@@ -853,8 +853,8 @@ class ComputerUseController extends Controller
         return response()->json([
             'labels'           => $labels->values(),
             'counts'           => $counts->values(),
-            'chart_title'      => $chartTitle,
-            'reporting_period' => $reportingPeriod
+            'chart_title'      => \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Online Research', $start, $end),
+            'reporting_period' => ''
         ]);
     }
 
@@ -1006,7 +1006,7 @@ class ComputerUseController extends Controller
 
             $settings = UISetting::first() ?? new UISetting();
             $items = [
-                'title'       => 'Graphical Presentation of Online Research Report',
+                'title'       => \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Online Research Graphical Report', $start ?? $startDate, $end ?? $endDate, $hourlyData, 'start'),
                 'school'      => $settings->org_name ?? "Bicutan Parochial School, Inc.",
                 'address'     => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
                 'logo'        => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),

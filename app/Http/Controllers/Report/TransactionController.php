@@ -182,7 +182,7 @@ class TransactionController extends Controller
 
         $settings = UISetting::first() ?? new UISetting();
         $items = [
-            'title'         => 'Tabular Presentation of Book Circulation Report',
+            'title'         => \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Book Circulation Report', request('start'), request('end'), $data, 'date_borrowed'),
             'school'        => $settings->org_name ?? "Bicutan Parochial School, Inc.",
             'type'          => $type,
             'userType'      => $userType,
@@ -410,15 +410,14 @@ class TransactionController extends Controller
         unset($m);
 
         // Write summary sheet header
-        $summaryTitle = 'Book Circulation Summary Report (' . ($userType === 'student' ? 'Students' : 'Employees') . ')';
+        $summaryTitle = \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Book Circulation Summary Report (' . ($userType === 'student' ? 'Students' : 'Employees') . ')', request('start'), request('end'), $data, 'date_borrowed');
         $summarySheet->mergeCells('A6:F6');
         $summarySheet->setCellValue('A6', $summaryTitle);
         $summarySheet->getStyle('A6:F6')->getFont()->setBold(true)->setSize(14);
         $summarySheet->getStyle('A6:F6')->getAlignment()->setHorizontal('center')->setVertical('center');
-
-        $schoolYearDisplay = \App\Helpers\ReportHelper::getSchoolYear(request('start'), request('end'), $data, 'date_borrowed');
+ 
         $summarySheet->mergeCells('A7:F7');
-        $summarySheet->setCellValue('A7', 'School Year ' . $schoolYearDisplay);
+        $summarySheet->setCellValue('A7', '');
         $summarySheet->getStyle('A7:F7')->getFont()->setBold(true)->setSize(10);
         $summarySheet->getStyle('A7:F7')->getAlignment()->setHorizontal('center');
 
@@ -585,7 +584,7 @@ class TransactionController extends Controller
         }
 
         $detailedSheet->mergeCells('A6:' . $endCol . '6');
-        $detailedSheet->setCellValue('A6', 'Book Circulation Report (Detailed Records)');
+        $detailedSheet->setCellValue('A6', \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Book Circulation Report (Detailed Records)', request('start'), request('end'), $data, 'date_borrowed'));
         $detailedSheet->getStyle('A6:' . $endCol . '6')->getFont()->setBold(true)->setSize(14);
         $detailedSheet->getStyle('A6:' . $endCol . '6')->getAlignment()->setHorizontal('center')->setVertical('center');
 

@@ -209,12 +209,9 @@
     <hr>
   </header>
 
-  <h4 class="title" style="margin-top: 15px;">Book Circulation Graphical Summary Report ({{ $userType === 'student' ? 'Students' : 'Employees' }})</h4>
+  <h4 class="title" style="margin-top: 15px;">{{ \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Book Circulation Graphical Summary Report (' . ($userType === 'student' ? 'Students' : 'Employees') . ')', request('start'), request('end'), $data, 'date_borrowed') }}</h4>
   <div style="text-align: center; font-size: 11px; font-weight: bold; margin-bottom: 12px;">
-    @if(isset($schoolYear))
-      School Year {{ $schoolYear }}
-    @endif
-    | {{ $date }}
+    {{ $date }}
   </div>
 
   @if(isset($chart) && $chart)
@@ -241,12 +238,9 @@
   </header>
 
   @if($userType === 'student')
-    <h4 class="title" style="margin-top: 15px;">Book Circulation Summary Report (Students)</h4>
+    <h4 class="title" style="margin-top: 15px;">{{ \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Book Circulation Summary Report (Students)', request('start'), request('end'), $data, 'date_borrowed') }}</h4>
     <div style="text-align: center; font-size: 11px; font-weight: bold; margin-bottom: 12px;">
-      @if(isset($schoolYear))
-        School Year {{ $schoolYear }}
-      @endif
-      | {{ $date }}
+      {{ $date }}
     </div>
     
     <main class="table-container" style="margin-top: 10px;">
@@ -300,12 +294,9 @@
       </table>
     </main>
   @else
-    <h4 class="title" style="margin-top: 15px;">Book Circulation Summary Report (Employees)</h4>
+    <h4 class="title" style="margin-top: 15px;">{{ \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Book Circulation Summary Report (Employees)', request('start'), request('end'), $data, 'date_borrowed') }}</h4>
     <div style="text-align: center; font-size: 11px; font-weight: bold; margin-bottom: 12px;">
-      @if(isset($schoolYear))
-        School Year {{ $schoolYear }}
-      @endif
-      | {{ $date }}
+      {{ $date }}
     </div>
     
     <main class="table-container" style="margin-top: 10px;">
@@ -347,10 +338,7 @@
     <hr>
   </header>
 
-  <h4 class="title">Tabular Presentation of Book Circulation Detailed Report</h4>
-  @if(isset($schoolYear))
-    <div style="text-align: center; font-size: 11px; font-weight: bold; margin-top: -2px; margin-bottom: 8px;">School Year {{ $schoolYear }}</div>
-  @endif
+  <h4 class="title">{{ \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Book Circulation Detailed Report', request('start'), request('end'), $data, 'date_borrowed') }}</h4>
   <div class="generated-date">{{ $date }}</div>
 
   <main class="table-container">

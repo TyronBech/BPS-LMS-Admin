@@ -68,7 +68,7 @@
 
 <div class="container mx-auto max-w-[95%] mt-4 mb-4 px-4">
   <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-200 dark:border-gray-700">
-    <h2 class="text-center mb-1 font-semibold text-2xl dark:text-white">Graph Data for Users</h2>
+    <h2 class="text-center mb-1 font-semibold text-2xl dark:text-white">{{ \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Graph Data for Users', request('start_date'), request('end_date')) }}</h2>
     <p id="graph-reporting-period" class="text-center text-sm text-gray-500 dark:text-gray-400 mb-4"></p>
     <div id="validation-warning" class="hidden w-full max-w-2xl mx-auto mb-4"></div>
     <div class="relative h-[300px]">
