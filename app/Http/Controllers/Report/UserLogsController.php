@@ -825,9 +825,9 @@ class UserLogsController extends Controller
         $logo->setName(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setDescription(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setPath($tempLogoPath ?? public_path('img/OwlQueryFull.png'));
-        $logo->setHeight(80);
+        $logo->setHeight(90);
         $logo->setCoordinates('A1');
-        $logo->setOffsetX(70);
+        $logo->setOffsetX(120);
         $logo->setOffsetY(5);
         $logo->setWorksheet($sheet);
 
