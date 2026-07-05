@@ -18,12 +18,12 @@
                 <th scope="col" class="px-6 py-3">Access Code</th>
                 <th scope="col" class="px-6 py-3">Linked Materials</th>
                 <th scope="col" class="px-6 py-3">Last Updated</th>
-                <th scope="col" class="px-6 py-3">Actions</th>
+                <th scope="col" class="px-6 py-3 sticky right-0 z-10 bg-gray-50 dark:bg-gray-700">Actions</th>
             </tr>
         </thead>
         <tbody>
             @forelse($subjectAccessCodes as $item)
-            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+            <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 group">
                 <th scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white whitespace-nowrap">
                     <div class="text-base font-semibold">{{ $item->access_code }}</div>
                 </th>
@@ -35,7 +35,7 @@
                 <td class="px-6 py-4">
                     {{ $item->updated_at->diffForHumans() }}
                 </td>
-                <td class="px-6 py-4">
+                <td class="px-6 py-4 sticky right-0 z-10 bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-600">
                     <div class="flex items-center space-x-2">
                         @can(PermissionsEnum::EDIT_SUBJECTS)
                         <button

@@ -13,12 +13,12 @@
         <th scope="col" class="px-6 py-3 hidden md:table-cell">Duration</th>
         <th scope="col" class="px-6 py-3 hidden lg:table-cell">Max Books</th>
         <th scope="col" class="px-6 py-3 hidden lg:table-cell">Renewal Limit</th>
-        <th scope="col" class="px-6 py-3">Actions</th>
+        <th scope="col" class="px-6 py-3 sticky right-0 z-10 bg-gray-50 dark:bg-gray-700">Actions</th>
       </tr>
     </thead>
     <tbody>
       @forelse($privileges as $item)
-      <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+      <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 group">
         <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
           <div class="text-base font-semibold">{{ ucfirst($item->user_type) }}</div>
           <div class="font-normal text-gray-500 sm:hidden">{{ $item->category }}</div>
@@ -27,7 +27,7 @@
         <td class="px-6 py-4 hidden md:table-cell">{{ $item->duration_type }}</td>
         <td class="px-6 py-4 hidden lg:table-cell">{{ $item->max_book_allowed == 0 ? '-' : $item->max_book_allowed }}</td>
         <td class="px-6 py-4 hidden lg:table-cell">{{ $item->renewal_limit == 0 ? '-' : $item->renewal_limit }}</td>
-        <td class="px-6 py-4">
+        <td class="px-6 py-4 sticky right-0 z-10 bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-600">
           <div class="flex items-center space-x-2">
             @can(PermissionsEnum::EDIT_PRIVILEGES)
             <button type="button" data-modal-target="edit-privilege-modal" data-modal-toggle="edit-privilege-modal" data-privilege='@json($item)' class="editBtn inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800">Edit</button>

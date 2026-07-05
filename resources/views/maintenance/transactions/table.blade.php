@@ -14,13 +14,13 @@
         <th scope="col" class="px-6 py-3 hidden lg:table-cell">Borrowed Date</th>
         <th scope="col" class="px-6 py-3 hidden xl:table-cell">Due Date</th>
         <th scope="col" class="px-6 py-3 hidden xl:table-cell">Returned Date</th>
-        <th scope="col" class="px-6 py-3">Actions</th>
+        <th scope="col" class="px-6 py-3 sticky right-0 z-10 bg-gray-50 dark:bg-gray-700">Actions</th>
       </tr>
     </thead>
     <tbody>
       @forelse($transactions as $item)
       @if($item->book && $item->user)
-      <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+      <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 group">
         <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
           <div class="text-base font-semibold">{{ $item->user->last_name }}, {{ $item->user->first_name }}</div>
           <div class="font-normal text-gray-500">{{ $item->user->email }}</div>
@@ -31,7 +31,7 @@
         <td class="px-6 py-4 hidden md:table-cell">{{ \Carbon\Carbon::parse($item->date_borrowed)->format('Y-m-d') }}</td>
         <td class="px-6 py-4 hidden xl:table-cell">{{ $item->due_date ? \Carbon\Carbon::parse($item->due_date)->format('Y-m-d') : '-' }}</td>
         <td class="px-6 py-4 hidden xl:table-cell">{{ $item->return_date ? \Carbon\Carbon::parse($item->return_date)->format('Y-m-d') : 'Not Returned' }}</td>
-        <td class="px-6 py-4">
+        <td class="px-6 py-4 sticky right-0 z-10 bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-600">
           <div class="flex items-center space-x-2">
             <form action="{{ route('maintenance.show-circulations') }}" method="GET" class="inline-block">
               @csrf

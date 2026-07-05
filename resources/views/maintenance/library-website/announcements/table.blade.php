@@ -14,12 +14,12 @@
         <th scope="col" class="px-6 py-3 hidden lg:table-cell">Priority</th>
         <th scope="col" class="px-6 py-3 hidden lg:table-cell">Date</th>
         <th scope="col" class="px-6 py-3 hidden md:table-cell">Status</th>
-        <th scope="col" class="px-6 py-3">Actions</th>
+        <th scope="col" class="px-6 py-3 sticky right-0 z-10 bg-gray-50 dark:bg-gray-700">Actions</th>
       </tr>
     </thead>
     <tbody>
       @forelse($announcements as $announcement)
-      <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+      <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 group">
         <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
           <div class="text-base font-semibold">{{ $announcement->title }}</div>
           <div class="font-normal text-gray-500 text-xs mt-0.5">{{ Str::limit(strip_tags($announcement->content), 80) }}</div>
@@ -43,7 +43,7 @@
           @endif
         </td>
         <td class="px-6 py-4 hidden lg:table-cell text-xs">
-          {{ $announcement->date ? \Carbon\Carbon::parse($announcement->date)->format('M d, Y') : '—' }}
+          {{ $announcement->updated_at->diffForHumans() }}
         </td>
         <td class="px-6 py-4 hidden md:table-cell">
           @if($announcement->is_published)
@@ -52,7 +52,7 @@
             <span class="bg-yellow-100 text-yellow-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-yellow-900 dark:text-yellow-300">Draft</span>
           @endif
         </td>
-        <td class="px-6 py-4 w-52">
+        <td class="px-6 py-4 sticky right-0 z-10 bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-600">
           <div class="flex items-center space-x-2">
             <a href="{{ route('maintenance.library-website.view-announcement', ['id' => $announcement->id]) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 focus:ring-4 focus:outline-none focus:ring-yellow-300 dark:bg-yellow-400 dark:hover:bg-yellow-500 dark:focus:ring-yellow-800">View</a>
             @can(PermissionsEnum::EDIT_ANNOUNCEMENTS)

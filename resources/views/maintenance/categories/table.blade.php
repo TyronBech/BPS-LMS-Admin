@@ -18,12 +18,12 @@
         <th scope="col" class="px-6 py-3 hidden lg:table-cell">Educational Level</th>
         <th scope="col" class="px-6 py-3 hidden md:table-cell">Duration of Borrow (Days)</th>
         <th scope="col" class="px-6 py-3">Borrowable</th>
-        <th scope="col" class="px-6 py-3">Actions</th>
+        <th scope="col" class="px-6 py-3 sticky right-0 z-10 bg-gray-50 dark:bg-gray-700">Actions</th>
       </tr>
     </thead>
     <tbody>
       @forelse($categories as $item)
-      <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+      <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 group">
         <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
           <div class="text-base font-semibold">{{ $item->name }}</div>
           <div class="font-normal text-gray-500 sm:hidden">{{ $item->legend }}</div>
@@ -57,7 +57,7 @@
           <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold bg-green-100 text-green-800">Borrowable</span>
           @endif
         </td>
-        <td class="px-6 py-4">
+        <td class="px-6 py-4 sticky right-0 z-10 bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-600">
           <div class="flex items-center space-x-2">
             @can(PermissionsEnum::EDIT_CATEGORIES)
             <button type="button" data-modal-target="edit-category-modal" data-modal-toggle="edit-category-modal" data-category='@json($item)' class="editBtn inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800">Edit</button>

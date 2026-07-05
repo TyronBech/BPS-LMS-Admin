@@ -6,12 +6,12 @@
                 <th scope="col" class="px-6 py-3">Album Name</th>
                 <th scope="col" class="px-6 py-3">Title</th>
                 <th scope="col" class="px-6 py-3 text-center">Status</th>
-                <th scope="col" class="px-6 py-3 text-center">Action</th>
+                <th scope="col" class="px-6 py-3 text-center sticky right-0 z-10 bg-gray-50 dark:bg-gray-700">Action</th>
             </tr>
         </thead>
         <tbody>
             @forelse ($photoAlbums as $album)
-                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+                <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 group">
                     <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
                         {{ $album->name }}
                     </th>
@@ -25,14 +25,16 @@
                             <span class="bg-red-100 text-red-800 text-xs font-medium px-2.5 py-0.5 rounded dark:bg-red-900 dark:text-red-300">Inactive</span>
                         @endif
                     </td>
-                    <td class="px-6 py-4 text-center">
-                        @can(PermissionsEnum::EDIT_GALLERY)
-                        <a href="{{ route('maintenance.library-website.gallery.edit-photo-album', ['id' => $album->id]) }}" class="font-medium text-primary-600 dark:text-primary-500 hover:underline mr-3">Edit</a>
-                        @endcan
-                        
-                        @can(PermissionsEnum::DELETE_GALLERY)
-                        <button type="button" data-modal-target="deleteModal{{ $album->id }}" data-modal-toggle="deleteModal{{ $album->id }}" class="font-medium text-red-600 dark:text-red-500 hover:underline">Delete</button>
-                        @endcan
+                    <td class="px-6 py-4 sticky right-0 z-10 bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-600">
+                        <div class="flex items-center justify-center space-x-2">
+                            @can(PermissionsEnum::EDIT_GALLERY)
+                            <a href="{{ route('maintenance.library-website.gallery.edit-photo-album', ['id' => $album->id]) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800">Edit</a>
+                            @endcan
+                            
+                            @can(PermissionsEnum::DELETE_GALLERY)
+                            <button type="button" data-modal-target="deleteModal{{ $album->id }}" data-modal-toggle="deleteModal{{ $album->id }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800">Delete</button>
+                            @endcan
+                        </div>
                     </td>
                 </tr>
 

@@ -26,12 +26,12 @@
           <th scope="col" class="px-6 py-3">Reason</th>
         @endif
         <th scope="col" class="px-6 py-3">Submitted</th>
-        <th scope="col" class="px-6 py-3 text-center">Actions</th>
+        <th scope="col" class="px-6 py-3 text-center sticky right-0 z-10 bg-gray-50 dark:bg-gray-700">Actions</th>
       </tr>
     </thead>
     <tbody>
       @forelse($pendingRequests as $request)
-      <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+      <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 group">
         <!-- Student Info -->
         <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
           <div class="font-semibold text-sm">{{ $request->user->first_name }} {{ $request->user->last_name }}</div>
@@ -90,7 +90,7 @@
         </td>
 
         <!-- Actions -->
-        <td class="px-6 py-4 text-center">
+        <td class="px-6 py-4 text-center sticky right-0 z-10 bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-600">
           <div class="flex items-center justify-center space-x-2">
             <button
               type="button"

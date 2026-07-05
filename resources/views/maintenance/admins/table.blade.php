@@ -15,12 +15,12 @@ $adminID = null;
       <tr>
         <th scope="col" class="px-6 py-3">Name</th>
         <th scope="col" class="px-6 py-3 hidden md:table-cell">Role</th>
-        <th scope="col" class="px-6 py-3">Actions</th>
+        <th scope="col" class="px-6 py-3 sticky right-0 z-10 bg-gray-50 dark:bg-gray-700">Actions</th>
       </tr>
     </thead>
     <tbody>
       @forelse($admins as $admin)
-      <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+      <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 group">
         <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
           <div class="text-base font-semibold">{{ $admin->last_name }}, {{ $admin->first_name }} {{ $admin->middle_name ? substr($admin->middle_name, 0, 1) . '.' : '' }}</div>
           <div class="font-normal text-gray-500">{{ $admin->email }}</div>
@@ -29,7 +29,7 @@ $adminID = null;
         <td class="px-6 py-4 hidden md:table-cell">
           {{ implode(', ', $admin->getRoleNames()->toArray()) }}
         </td>
-        <td class="px-6 py-4 w-56">
+        <td class="px-6 py-4 w-56 sticky right-0 z-10 bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-600">
           <div class="flex items-center space-x-2">
             <a href="{{ route('maintenance.edit-admin', ['id' => $admin->id, 'return_to' => request()->fullUrl()]) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800">Edit</a>
             @if(auth()->user()->hasRole(RolesEnum::SUPER_ADMIN) && auth()->user()->id != $admin->id)

@@ -37,12 +37,12 @@ $increment = 0;
           <th scope="col" class="px-6 py-3">Name</th>
           <th scope="col" class="px-6 py-3 hidden md:table-cell">Email</th>
           <th scope="col" class="px-6 py-3 hidden lg:table-cell">Organization</th>
-          <th scope="col" class="px-6 py-3">Actions</th>
+          <th scope="col" class="px-6 py-3 sticky right-0 z-10 bg-gray-50 dark:bg-gray-700">Actions</th>
         </tr>
       </thead>
       <tbody>
         @forelse($visitors as $item)
-        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+        <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 group">
           <td class="w-4 p-4">
             <div class="flex items-center">
               <input id="visitorCheck" type="checkbox" value="{{ $item->id }}" class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
@@ -55,7 +55,7 @@ $increment = 0;
           </th>
           <td class="px-6 py-4 hidden md:table-cell">{{ $item->email }}</td>
           <td class="px-6 py-4 hidden lg:table-cell">{{ $item->visitors->school_org }}</td>
-          <td class="px-6 py-4">
+          <td class="px-6 py-4 sticky right-0 z-10 bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-600">
             <div class="flex items-center space-x-2">
               @can(PermissionsEnum::EDIT_USERS, 'admin')
               <a href="{{ route('maintenance.edit-visitor', ['id' => $item->id, 'return_to' => request()->fullUrl()]) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-4 focus:outline-none focus:ring-blue-300 dark:bg-blue-500 dark:hover:bg-blue-600 dark:focus:ring-blue-800">Edit</a>
