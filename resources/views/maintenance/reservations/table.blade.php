@@ -86,7 +86,13 @@
 
         <!-- Submitted -->
         <td class="px-6 py-4 text-xs text-gray-500 dark:text-gray-400">
-          {{ $request->updated_at->diffForHumans() }}
+          @php
+            $submitted = clone $request->updated_at;
+            if ($submitted->isFuture()) {
+              $submitted->subHours(8);
+            }
+          @endphp
+          {{ $submitted->diffForHumans() }}
         </td>
 
         <!-- Actions -->

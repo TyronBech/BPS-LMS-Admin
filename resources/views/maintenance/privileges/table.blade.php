@@ -169,9 +169,10 @@
       editModal.duration_type.addEventListener('change', updateEditModalFields);
     }
 
-    editButtons.forEach(btn => {
-      btn.addEventListener('click', function() {
-        const privilege = JSON.parse(this.dataset.privilege);
+    document.addEventListener('click', function(event) {
+      const editBtn = event.target.closest('.editBtn');
+      if (editBtn) {
+        const privilege = JSON.parse(editBtn.dataset.privilege);
         if (editModal.id) editModal.id.value = privilege.id;
         if (editModal.user_type) editModal.user_type.value = privilege.user_type;
         if (editModal.category) editModal.category.value = privilege.category;
@@ -180,15 +181,13 @@
         if (editModal.renewal_limit) editModal.renewal_limit.value = privilege.renewal_limit;
         
         updateEditModalFields();
-      });
-    });
+      }
 
-    const deleteButtons = document.querySelectorAll('.deleteBtn');
-    const deleteInputID = document.getElementById('delete_privilege_id');
-    deleteButtons.forEach(btn => {
-      btn.addEventListener('click', function() {
-        if (deleteInputID) deleteInputID.value = this.value;
-      });
+      const deleteBtn = event.target.closest('.deleteBtn');
+      if (deleteBtn) {
+        const deleteInputID = document.getElementById('delete_privilege_id');
+        if (deleteInputID) deleteInputID.value = deleteBtn.value;
+      }
     });
   });
 </script>

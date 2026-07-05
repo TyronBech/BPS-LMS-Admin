@@ -136,13 +136,14 @@ $increment = 0;
 </div>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    const deleteEmployeeBtn = document.querySelectorAll('.deleteEmployeeBtn');
-    const deleteEmployeeID = document.getElementById('delete_employee_id');
-    deleteEmployeeBtn.forEach(btn => {
-      btn.addEventListener('click', function(event) {
-        const employeeId = event.currentTarget.value;
-        deleteEmployeeID.value = employeeId;
-      });
+    document.addEventListener('click', function(event) {
+      const deleteBtn = event.target.closest('.deleteEmployeeBtn');
+      if (deleteBtn) {
+        const deleteEmployeeID = document.getElementById('delete_employee_id');
+        if (deleteEmployeeID) {
+          deleteEmployeeID.value = deleteBtn.value;
+        }
+      }
     });
 
     const employeeCheckboxes = document.querySelectorAll('#employeeCheck');

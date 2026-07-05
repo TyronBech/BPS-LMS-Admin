@@ -78,16 +78,14 @@ $adminID = null;
 </div>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    const deleteAdminBtns = document.querySelectorAll('.deleteAdminBtn');
-    const deleteAdminIDInput = document.getElementById('delete_admin_id');
-
-    if (deleteAdminBtns.length > 0 && deleteAdminIDInput) {
-      deleteAdminBtns.forEach(btn => {
-        btn.addEventListener('click', function() {
-          const adminId = this.value;
-          deleteAdminIDInput.value = adminId;
-        });
-      });
-    }
+    document.addEventListener('click', function(event) {
+      const deleteBtn = event.target.closest('.deleteAdminBtn');
+      if (deleteBtn) {
+        const deleteAdminIDInput = document.getElementById('delete_admin_id');
+        if (deleteAdminIDInput) {
+          deleteAdminIDInput.value = deleteBtn.value;
+        }
+      }
+    });
   });
 </script>

@@ -143,27 +143,26 @@
       perDayNo: document.getElementById('edit_per_day-2')
     };
 
-    editButtons.forEach(btn => {
-      btn.addEventListener('click', function() {
-        const rule = JSON.parse(this.dataset.rule);
-        editModal.id.value = rule.id;
-        editModal.type.value = rule.type;
-        editModal.description.value = rule.description;
-        editModal.rate.value = rule.rate;
+    document.addEventListener('click', function(event) {
+      const editBtn = event.target.closest('.editBtn');
+      if (editBtn) {
+        const rule = JSON.parse(editBtn.dataset.rule);
+        if (editModal.id) editModal.id.value = rule.id;
+        if (editModal.type) editModal.type.value = rule.type;
+        if (editModal.description) editModal.description.value = rule.description;
+        if (editModal.rate) editModal.rate.value = rule.rate;
         if (rule.per_day) {
-          editModal.perDayYes.checked = true;
+          if (editModal.perDayYes) editModal.perDayYes.checked = true;
         } else {
-          editModal.perDayNo.checked = true;
+          if (editModal.perDayNo) editModal.perDayNo.checked = true;
         }
-      });
-    });
+      }
 
-    const deleteButtons = document.querySelectorAll('.deleteBtn');
-    const deleteInputID = document.getElementById('delete_rule_id');
-    deleteButtons.forEach(btn => {
-      btn.addEventListener('click', function() {
-        deleteInputID.value = this.value;
-      });
+      const deleteBtn = event.target.closest('.deleteBtn');
+      if (deleteBtn) {
+        const deleteInputID = document.getElementById('delete_rule_id');
+        if (deleteInputID) deleteInputID.value = deleteBtn.value;
+      }
     });
   });
 </script>

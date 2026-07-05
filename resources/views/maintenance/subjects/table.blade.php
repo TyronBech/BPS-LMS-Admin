@@ -154,20 +154,20 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const editButtons = document.querySelectorAll('.editBtn');
-        const deleteButtons = document.querySelectorAll('.deleteBtn');
+        document.addEventListener('click', function(event) {
+            const editBtn = event.target.closest('.editBtn');
+            if (editBtn) {
+                const editId = document.getElementById('edit_id');
+                const editCode = document.getElementById('edit_access_code');
+                if (editId) editId.value = editBtn.dataset.id;
+                if (editCode) editCode.value = editBtn.dataset.code;
+            }
 
-        editButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.getElementById('edit_id').value = this.dataset.id;
-                document.getElementById('edit_access_code').value = this.dataset.code;
-            });
-        });
-
-        deleteButtons.forEach(btn => {
-            btn.addEventListener('click', function() {
-                document.getElementById('delete_id').value = this.dataset.id;
-            });
+            const deleteBtn = event.target.closest('.deleteBtn');
+            if (deleteBtn) {
+                const deleteId = document.getElementById('delete_id');
+                if (deleteId) deleteId.value = deleteBtn.dataset.id;
+            }
         });
     });
 </script>

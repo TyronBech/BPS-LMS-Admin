@@ -158,12 +158,15 @@
   </div>
 </div>
 <script>
-  const deleteBookBtn = document.querySelectorAll('.deleteBookBtn');
-  const deleteBookID = document.getElementById('delete_book_id');
-  deleteBookBtn.forEach(btn => {
-    btn.addEventListener('click', function(event) {
-      const bookId = event.target.value;
-      deleteBookID.value = bookId;
+  document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('click', function(event) {
+      const deleteBtn = event.target.closest('.deleteBookBtn');
+      if (deleteBtn) {
+        const deleteBookID = document.getElementById('delete_book_id');
+        if (deleteBookID) {
+          deleteBookID.value = deleteBtn.value;
+        }
+      }
     });
   });
   const bookCheck = document.querySelectorAll('#bookCheck');

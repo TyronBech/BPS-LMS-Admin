@@ -221,14 +221,15 @@
       updateStatusOptions(this.value);
     });
 
-    editButtons.forEach(button => {
-      button.addEventListener('click', function(e) {
+    document.addEventListener('click', function(e) {
+      const button = e.target.closest('.editBtn');
+      if (button) {
         e.preventDefault();
         $.ajax({
           url: "{{ route('maintenance.retrieve-circulation') }}",
           type: "GET",
           data: {
-            viewBtn: this.value
+            viewBtn: button.value
           },
           dataType: "json",
           headers: {
@@ -292,7 +293,7 @@
             console.error("Error fetching transaction data:", error);
           }
         });
-      });
+      }
     });
 
     if (editTransactionForm) {

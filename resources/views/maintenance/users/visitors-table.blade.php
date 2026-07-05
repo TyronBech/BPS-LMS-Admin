@@ -134,13 +134,14 @@ $increment = 0;
 </div>
 <script>
   document.addEventListener('DOMContentLoaded', function() {
-    const deleteVisitorBtn = document.querySelectorAll('.deleteVisitorBtn');
-    const deleteVisitorID = document.getElementById('delete_visitor_id');
-    deleteVisitorBtn.forEach(btn => {
-      btn.addEventListener('click', function(event) {
-        const visitorId = event.currentTarget.value;
-        deleteVisitorID.value = visitorId;
-      });
+    document.addEventListener('click', function(event) {
+      const deleteBtn = event.target.closest('.deleteVisitorBtn');
+      if (deleteBtn) {
+        const deleteVisitorID = document.getElementById('delete_visitor_id');
+        if (deleteVisitorID) {
+          deleteVisitorID.value = deleteBtn.value;
+        }
+      }
     });
 
     const visitorCheckboxes = document.querySelectorAll('#visitorCheck');
