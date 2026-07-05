@@ -41,6 +41,7 @@ class DatabaseSeeder extends Seeder
             SuperAdminSeeder::class,
             ResetBookMatrix::class,
             BookMaintenanceSeeder::class,
+            ReportDataSeeder::class,
         ]);
     }
 }
