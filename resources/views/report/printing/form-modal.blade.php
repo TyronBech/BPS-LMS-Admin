@@ -269,7 +269,7 @@
       }
     }
 
-    // Auto-focus RFID input when opening modal
+    // Auto-focus RFID input when opening modal and update time field
     const openModalBtn = document.querySelector('[data-modal-target="PrintingModal"]');
     if (openModalBtn) {
       openModalBtn.addEventListener('click', function() {
@@ -283,6 +283,19 @@
             }
           }
         }, 300);
+
+        // Dynamically update to current local date/time
+        const now = new Date();
+        const year = now.getFullYear();
+        const month = String(now.getMonth() + 1).padStart(2, '0');
+        const day = String(now.getDate()).padStart(2, '0');
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        const currentDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+        const printedAtInput = document.getElementById('printed_at');
+        if (printedAtInput) {
+          printedAtInput.value = currentDateTime;
+        }
       });
     }
 
@@ -411,7 +424,15 @@
             studentRadio.dispatchEvent(new Event('change'));
           }
           typeSelect.dispatchEvent(new Event('change'));
-          document.getElementById('printed_at').value = '{{ now()->format('Y-m-d\TH:i') }}';
+          // Dynamically update to current local date/time
+          const now = new Date();
+          const year = now.getFullYear();
+          const month = String(now.getMonth() + 1).padStart(2, '0');
+          const day = String(now.getDate()).padStart(2, '0');
+          const hours = String(now.getHours()).padStart(2, '0');
+          const minutes = String(now.getMinutes()).padStart(2, '0');
+          const currentDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+          document.getElementById('printed_at').value = currentDateTime;
 
           if (modalEl) {
             const hideBtn = modalEl.querySelector('[data-modal-hide="PrintingModal"]');
