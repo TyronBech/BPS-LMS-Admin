@@ -245,10 +245,10 @@ class PenaltiesController extends Controller
         $logo->setName(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setDescription(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setPath($tempLogoPath ?? public_path('img/BPSLogoFull.png'));
-        $logo->setHeight(80);
+        $logo->setHeight(100);
         $logo->setCoordinates('C1');
-        $logo->setOffsetX(90);
-        $logo->setOffsetY(5);
+        $logo->setOffsetX(280);
+        $logo->setOffsetY(1);
         $logo->setWorksheet($sheet);
 
         $sheet->setTitle('Overdue Fines Report');

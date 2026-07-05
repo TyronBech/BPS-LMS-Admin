@@ -369,14 +369,14 @@ class ComputerUseController extends Controller
         $logo->setName(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setDescription(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setPath($tempLogoPath ?? public_path('img/BPSLogoFull.png'));
-        $logo->setHeight(80);
+        $logo->setHeight(100);
         $logo->setCoordinates('B1');
         if ($data->first() && $data->first()->user->students) {
             $logo->setOffsetX(20);
         } elseif ($data->first() && $data->first()->user->employees) {
-            $logo->setOffsetX(5);
+            $logo->setOffsetX(-70);
         }
-        $logo->setOffsetY(5);
+        $logo->setOffsetY(1);
         $logo->setWorksheet($sheet);
 
         $sheet->setTitle('Computer Use Report');

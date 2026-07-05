@@ -161,10 +161,10 @@ class CategoriesController extends Controller
         $logo->setName(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setDescription(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setPath($tempLogoPath ?? public_path('img/BPSLogoFull.png'));
-        $logo->setHeight(80);
+        $logo->setHeight(100);
         $logo->setCoordinates('C1');
-        $logo->setOffsetX(10);
-        $logo->setOffsetY(5);
+        $logo->setOffsetX(50);
+        $logo->setOffsetY(2);
         $logo->setWorksheet($sheet);
 
         $sheet->setTitle(($settings->org_initial ?? 'BPS') . ' Collection Report');

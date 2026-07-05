@@ -206,10 +206,10 @@ class BookCirculationController extends Controller
         $logo->setName(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setDescription(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setPath($tempLogoPath ?? public_path('img/OwlQueryFull.png'));
-        $logo->setHeight(80);
-        $logo->setCoordinates('C1');
+        $logo->setHeight(100);
+        $logo->setCoordinates('D1');
         $logo->setOffsetX(10);
-        $logo->setOffsetY(5);
+        $logo->setOffsetY(1);
         $logo->setWorksheet($sheet);
 
         $sheet->setTitle('Accession List Report');

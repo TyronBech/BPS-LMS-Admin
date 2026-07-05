@@ -332,10 +332,10 @@ class TransactionController extends Controller
         $logo1->setName(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo1->setDescription(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo1->setPath($tempLogoPath ?? public_path('img/BPSLogoFull.png'));
-        $logo1->setHeight(80);
-        $logo1->setCoordinates('B1');
-        $logo1->setOffsetX(300);
-        $logo1->setOffsetY(5);
+        $logo1->setHeight(100);
+        $logo1->setCoordinates('A1');
+        $logo1->setOffsetX(200);
+        $logo1->setOffsetY(1);
         $logo1->setWorksheet($summarySheet);
 
         // Calculate summary data
@@ -417,90 +417,89 @@ class TransactionController extends Controller
 
         // Write summary sheet header
         $summaryTitle = \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Book Circulation Summary Report (' . ($userType === 'student' ? 'Students' : 'Employees') . ')', request('start'), request('end'), $data, 'date_borrowed');
-        $summarySheet->mergeCells('A6:F6');
+        $maxHeaderCol = $userType === 'student' ? 'C' : 'B';
+        
+        $summarySheet->mergeCells("A6:{$maxHeaderCol}6");
         $summarySheet->setCellValue('A6', $summaryTitle);
-        $summarySheet->getStyle('A6:F6')->getFont()->setBold(true)->setSize(14);
-        $summarySheet->getStyle('A6:F6')->getAlignment()->setHorizontal('center')->setVertical('center');
+        $summarySheet->getStyle("A6:{$maxHeaderCol}6")->getFont()->setBold(true)->setSize(14);
+        $summarySheet->getStyle("A6:{$maxHeaderCol}6")->getAlignment()->setHorizontal('center')->setVertical('center');
  
-        $summarySheet->mergeCells('A7:F7');
+        $summarySheet->mergeCells("A7:{$maxHeaderCol}7");
         $summarySheet->setCellValue('A7', '');
-        $summarySheet->getStyle('A7:F7')->getFont()->setBold(true)->setSize(10);
-        $summarySheet->getStyle('A7:F7')->getAlignment()->setHorizontal('center');
+        $summarySheet->getStyle("A7:{$maxHeaderCol}7")->getFont()->setBold(true)->setSize(10);
+        $summarySheet->getStyle("A7:{$maxHeaderCol}7")->getAlignment()->setHorizontal('center');
 
-        $summarySheet->mergeCells('A8:F8');
+        $summarySheet->mergeCells("A8:{$maxHeaderCol}8");
         $summarySheet->setCellValue('A8', 'Report Generated On: ' . date('F j, Y'));
-        $summarySheet->getStyle('A8:F8')->getFont()->setSize(10);
-        $summarySheet->getStyle('A8:F8')->getAlignment()->setHorizontal('center');
+        $summarySheet->getStyle("A8:{$maxHeaderCol}8")->getFont()->setSize(10);
+        $summarySheet->getStyle("A8:{$maxHeaderCol}8")->getAlignment()->setHorizontal('center');
 
         $summaryRow = 10;
         if ($userType === 'student') {
-            // Find max sections
-            $maxSections = 1;
-            foreach ($monthsList as $m) {
-                if (count($m['student_sections']) > $maxSections) {
-                    $maxSections = count($m['student_sections']);
-                }
-            }
-
             // Headers
             $summarySheet->setCellValue('A10', 'Month');
-            
-            // Merge sections header
-            $startColLetter = 'B';
-            $endColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(1 + $maxSections);
-            $summarySheet->mergeCells("B10:{$endColLetter}10");
-            $summarySheet->setCellValue('B10', 'Sections & Borrow Counts');
-            
-            $totalColLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex(2 + $maxSections);
-            $summarySheet->setCellValue("{$totalColLetter}10", 'Total');
+            $summarySheet->setCellValue('B10', 'Grade & Section (Count)');
+            $summarySheet->setCellValue('C10', 'Total');
 
-            $summarySheet->getStyle("A10:{$totalColLetter}10")->getFont()->setBold(true)->setSize(10);
-            $summarySheet->getStyle("A10:{$totalColLetter}10")->getAlignment()->setHorizontal('center');
-            $summarySheet->getStyle("A10:{$totalColLetter}10")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+            $summarySheet->getStyle("A10:C10")->getFont()->setBold(true)->setSize(10);
+            $summarySheet->getStyle("A10:C10")->getAlignment()->setHorizontal('center');
+            $summarySheet->getStyle("A10:C10")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
 
             $summarySheet->getColumnDimension('A')->setWidth(25);
-            for ($c = 2; $c <= 1 + $maxSections; $c++) {
-                $summarySheet->getColumnDimensionByColumn($c)->setWidth(30);
-            }
-            $summarySheet->getColumnDimension("{$totalColLetter}")->setWidth(15);
+            $summarySheet->getColumnDimension('B')->setWidth(45);
+            $summarySheet->getColumnDimension('C')->setWidth(15);
 
             $currentRow = 11;
             $studentGrandTotal = 0;
             foreach ($monthsList as $m) {
-                $summarySheet->setCellValue('A' . $currentRow, $m['label']);
-                
                 $sections = $m['student_sections'];
                 $countSections = count($sections);
-                if ($countSections == 0) {
-                    $summarySheet->mergeCells("B{$currentRow}:{$endColLetter}{$currentRow}");
-                    $summarySheet->setCellValue("B{$currentRow}", 'No student borrowings');
-                    $summarySheet->getStyle("B{$currentRow}")->getAlignment()->setHorizontal('center');
-                } else {
-                    $colIndex = 2;
-                    foreach ($sections as $secName => $secCount) {
-                        $colLetter = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($colIndex);
-                        $summarySheet->setCellValue($colLetter . $currentRow, "{$secName}: {$secCount}");
-                        $summarySheet->getStyle($colLetter . $currentRow)->getAlignment()->setHorizontal('center');
-                        $colIndex++;
-                    }
-                }
                 
-                $summarySheet->setCellValue($totalColLetter . $currentRow, $m['student_total']);
-                $summarySheet->getStyle($totalColLetter . $currentRow)->getAlignment()->setHorizontal('center');
-                $studentGrandTotal += $m['student_total'];
-                $currentRow++;
+                if ($countSections == 0) {
+                    $summarySheet->setCellValue('A' . $currentRow, $m['label']);
+                    $summarySheet->setCellValue('B' . $currentRow, 'No student borrowings');
+                    $summarySheet->setCellValue('C' . $currentRow, 0);
+                    $summarySheet->getStyle("A{$currentRow}:C{$currentRow}")->getAlignment()->setHorizontal('center');
+                    $currentRow++;
+                } else {
+                    $startRow = $currentRow;
+                    
+                    // Write sections
+                    $i = 0;
+                    foreach ($sections as $secName => $secCount) {
+                        $summarySheet->setCellValue('B' . ($startRow + $i), "{$secName}: {$secCount}");
+                        $summarySheet->getStyle('B' . ($startRow + $i))->getAlignment()->setHorizontal('center');
+                        $i++;
+                    }
+                    
+                    // Write month label in first row of merged range
+                    $summarySheet->setCellValue('A' . $startRow, $m['label']);
+                    // Write total in first row of merged range
+                    $summarySheet->setCellValue('C' . $startRow, $m['student_total']);
+                    
+                    // Merge Month cells
+                    $summarySheet->mergeCells("A{$startRow}:A" . ($startRow + $countSections - 1));
+                    // Merge Total cells
+                    $summarySheet->mergeCells("C{$startRow}:C" . ($startRow + $countSections - 1));
+                    
+                    // Align cell contents
+                    $summarySheet->getStyle("A{$startRow}:A" . ($startRow + $countSections - 1))->getAlignment()->setHorizontal('center')->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+                    $summarySheet->getStyle("C{$startRow}:C" . ($startRow + $countSections - 1))->getAlignment()->setHorizontal('center')->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+                    
+                    $studentGrandTotal += $m['student_total'];
+                    $currentRow += $countSections;
+                }
             }
 
             // Total row
-            $summarySheet->setCellValue('A' . $currentRow, 'Total');
-            $summarySheet->mergeCells("B{$currentRow}:{$endColLetter}{$currentRow}");
-            $summarySheet->setCellValue("B{$currentRow}", 'Grand Total Borrowed:');
-            $summarySheet->getStyle("B{$currentRow}")->getAlignment()->setHorizontal('right');
-            $summarySheet->setCellValue($totalColLetter . $currentRow, $studentGrandTotal);
-            $summarySheet->getStyle($totalColLetter . $currentRow)->getAlignment()->setHorizontal('center');
+            $summarySheet->mergeCells("A{$currentRow}:B{$currentRow}");
+            $summarySheet->setCellValue('A' . $currentRow, 'Grand Total Borrowed:');
+            $summarySheet->getStyle('A' . $currentRow)->getAlignment()->setHorizontal('right');
+            $summarySheet->setCellValue('C' . $currentRow, $studentGrandTotal);
+            $summarySheet->getStyle('C' . $currentRow)->getAlignment()->setHorizontal('center');
 
-            $summarySheet->getStyle("A{$currentRow}:{$totalColLetter}{$currentRow}")->getFont()->setBold(true)->setSize(10);
-            $summarySheet->getStyle("A{$currentRow}:{$totalColLetter}{$currentRow}")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFE2E8F0');
+            $summarySheet->getStyle("A{$currentRow}:C{$currentRow}")->getFont()->setBold(true)->setSize(10);
+            $summarySheet->getStyle("A{$currentRow}:C{$currentRow}")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFE2E8F0');
 
             $styleArray = [
                 'borders' => [
@@ -509,7 +508,7 @@ class TransactionController extends Controller
                     ],
                 ],
             ];
-            $summarySheet->getStyle("A10:{$totalColLetter}{$currentRow}")->applyFromArray($styleArray);
+            $summarySheet->getStyle("A10:C{$currentRow}")->applyFromArray($styleArray);
 
             $currentRow += 2;
             $summarySheet->setCellValue('A' . $currentRow, 'Report Generated By: ' . Auth::user()->first_name . ' ' . Auth::user()->last_name);
@@ -524,8 +523,8 @@ class TransactionController extends Controller
             $summarySheet->getStyle("A10:B10")->getAlignment()->setHorizontal('center');
             $summarySheet->getStyle("A10:B10")->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
 
-            $summarySheet->getColumnDimension('A')->setWidth(30);
-            $summarySheet->getColumnDimension('B')->setWidth(25);
+            $summarySheet->getColumnDimension('A')->setWidth(60);
+            $summarySheet->getColumnDimension('B')->setWidth(60);
 
             $currentRow = 11;
             $employeeGrandTotal = 0;
@@ -573,10 +572,10 @@ class TransactionController extends Controller
         $logo2->setName(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo2->setDescription(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo2->setPath($tempLogoPath ?? public_path('img/BPSLogoFull.png'));
-        $logo2->setHeight(80);
-        $logo2->setCoordinates('B1');
-        $logo2->setOffsetX(300);
-        $logo2->setOffsetY(5);
+        $logo2->setHeight(100);
+        $logo2->setCoordinates('D1');
+        $logo2->setOffsetX(10);
+        $logo2->setOffsetY(1);
         $logo2->setWorksheet($detailedSheet);
 
         // Determine column width / shift for detailed sheet

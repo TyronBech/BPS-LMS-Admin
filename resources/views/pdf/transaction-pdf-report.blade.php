@@ -248,46 +248,49 @@
         <thead>
           <tr>
             <th style="width: 25%; text-align: center;">Month</th>
-            <th colspan="{{ $maxSections }}" style="text-align: center;">Sections & Circulation Counts</th>
+            <th style="width: 60%; text-align: center;">Grade & Section (Count)</th>
             <th style="width: 15%; text-align: center;">Total</th>
           </tr>
         </thead>
         <tbody>
           @php $studentGrandTotal = 0; @endphp
           @foreach($monthsList as $m)
-            <tr>
-              <td style="text-align: center; font-weight: bold; vertical-align: middle; padding: 6px;">{{ $m['label'] }}</td>
-              
-              @php 
-                $sections = $m['student_sections'];
-                $countSections = count($sections);
-              @endphp
-              
-              @if($countSections == 0)
-                <td colspan="{{ $maxSections }}" style="text-align: center; color: #777; vertical-align: middle; padding: 6px;">No student borrowings</td>
-              @else
-                @php $secIndex = 0; @endphp
-                @foreach($sections as $secName => $secCount)
-                  @php
-                    $colspan = ($secIndex === $countSections - 1) ? ($maxSections - $countSections + 1) : 1;
-                  @endphp
-                  <td colspan="{{ $colspan }}" style="text-align: center; vertical-align: middle; padding: 6px;">
-                    <span style="font-weight: bold;">{{ $secName }}</span><br>
-                    <span style="font-size: 9px; color: #2d3748;">{{ $secCount }} book{{ $secCount > 1 ? 's' : '' }}</span>
+            @php 
+              $sections = $m['student_sections'];
+              $countSections = count($sections);
+            @endphp
+            
+            @if($countSections == 0)
+              <tr>
+                <td style="text-align: center; font-weight: bold; vertical-align: middle; padding: 6px;">{{ $m['label'] }}</td>
+                <td style="text-align: center; color: #777; vertical-align: middle; padding: 6px;">No student borrowings</td>
+                <td style="text-align: center; font-weight: bold; vertical-align: middle; background-color: #f7fafc; padding: 6px;">0</td>
+              </tr>
+            @else
+              @php $first = true; @endphp
+              @foreach($sections as $secName => $secCount)
+                <tr>
+                  @if($first)
+                    <td rowspan="{{ $countSections }}" style="text-align: center; font-weight: bold; vertical-align: middle; padding: 6px;">{{ $m['label'] }}</td>
+                  @endif
+                  
+                  <td style="text-align: center; vertical-align: middle; padding: 6px;">
+                    <span style="font-weight: bold;">{{ $secName }}: {{ $secCount }} book{{ $secCount > 1 ? 's' : '' }}</span>
                   </td>
-                  @php $secIndex++; @endphp
-                @endforeach
-              @endif
-              
-              <td style="text-align: center; font-weight: bold; vertical-align: middle; background-color: #f7fafc; padding: 6px;">
-                {{ $m['student_total'] }}
-              </td>
-            </tr>
+                  
+                  @if($first)
+                    <td rowspan="{{ $countSections }}" style="text-align: center; font-weight: bold; vertical-align: middle; background-color: #f7fafc; padding: 6px;">
+                      {{ $m['student_total'] }}
+                    </td>
+                    @php $first = false; @endphp
+                  @endif
+                </tr>
+              @endforeach
+            @endif
             @php $studentGrandTotal += $m['student_total']; @endphp
           @endforeach
           <tr style="font-weight: bold; background-color: #e2e8f0;">
-            <td style="text-align: center; padding: 6px;">Total</td>
-            <td colspan="{{ $maxSections }}" style="text-align: right; padding-right: 15px; padding: 6px;">Grand Total Borrowed:</td>
+            <td colspan="2" style="text-align: right; padding-right: 15px; padding: 6px;">Grand Total Borrowed:</td>
             <td style="text-align: center; background-color: #cbd5e1; padding: 6px;">{{ $studentGrandTotal }}</td>
           </tr>
         </tbody>
