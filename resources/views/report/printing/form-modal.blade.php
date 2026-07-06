@@ -329,6 +329,23 @@
                     searchInput.value = item.text;
                     idInput.value = item.id;
                     suggestionsBox.classList.add('hidden');
+
+                    // Sync RFID field when a name is selected
+                    if (rfidInput && item.rfid) {
+                      rfidInput.value = item.rfid;
+                      if (rfidStatus) {
+                        rfidStatus.textContent = `User selected: ${item.text}`;
+                        rfidStatus.className = 'mt-1 text-xs text-green-600 dark:text-green-400';
+                        rfidStatus.classList.remove('hidden');
+                      }
+                    } else if (rfidInput) {
+                      rfidInput.value = '';
+                      if (rfidStatus) {
+                        rfidStatus.textContent = 'Selected user has no RFID assigned.';
+                        rfidStatus.className = 'mt-1 text-xs text-yellow-600 dark:text-yellow-400';
+                        rfidStatus.classList.remove('hidden');
+                      }
+                    }
                   });
                   suggestionsBox.appendChild(div);
                 });
@@ -440,6 +457,23 @@
           }
         } catch (error) {
           console.error('Failed to save printing entry', error);
+          // Show a client-side warning toast on network/unexpected errors
+          const existing = document.getElementById('toast-warning');
+          if (existing) existing.remove();
+          const warningToast = document.createElement('div');
+          warningToast.id = 'toast-warning';
+          warningToast.className = 'flex items-center absolute top-4 z-10 right-5 w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg dark:text-gray-400 dark:bg-gray-800 shadow-md';
+          warningToast.setAttribute('role', 'alert');
+          warningToast.innerHTML = `
+            <div class="inline-flex items-center justify-center shrink-0 w-8 h-8 text-orange-500 bg-orange-100 rounded-lg dark:bg-orange-700 dark:text-orange-200">
+              <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM10 15a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm1-4a1 1 0 0 1-2 0V6a1 1 0 0 1 2 0v5Z" />
+              </svg>
+            </div>
+            <div class="ms-3 text-sm font-normal">Failed to save entry. Please try again.</div>
+          `;
+          document.body.appendChild(warningToast);
+          setTimeout(() => warningToast.remove(), 5000);
         } finally {
           if (submitBtn) submitBtn.disabled = false;
         }

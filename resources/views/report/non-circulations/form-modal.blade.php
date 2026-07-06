@@ -27,7 +27,7 @@
           </svg>
         </button>
       </div>
-      <form action="{{ route('report.non-circulation-store') }}" method="POST">
+      <form action="{{ route('report.non-circulation-store') }}" method="POST" id="non-circulation-entry-form" class="skip-loader">
         @csrf
         <div class="p-4 md:p-6">
           <div class="mb-4">
@@ -281,6 +281,23 @@
                     searchInput.value = item.text;
                     idInput.value = item.id;
                     suggestionsBox.classList.add('hidden');
+
+                    // Sync RFID field when a name is selected
+                    if (rfidInput && item.rfid) {
+                      rfidInput.value = item.rfid;
+                      if (rfidStatus) {
+                        rfidStatus.textContent = `User selected: ${item.text}`;
+                        rfidStatus.className = 'mt-1 text-xs text-green-600 dark:text-green-400';
+                        rfidStatus.classList.remove('hidden');
+                      }
+                    } else if (rfidInput) {
+                      rfidInput.value = '';
+                      if (rfidStatus) {
+                        rfidStatus.textContent = 'Selected user has no RFID assigned.';
+                        rfidStatus.className = 'mt-1 text-xs text-yellow-600 dark:text-yellow-400';
+                        rfidStatus.classList.remove('hidden');
+                      }
+                    }
                   });
                   suggestionsBox.appendChild(div);
                 });
@@ -304,5 +321,117 @@
         facultySuggestionsBox.classList.add('hidden');
       }
     });
+
+    const nonCirculationForm = document.getElementById('non-circulation-entry-form');
+    const searchForm = document.querySelector('.auto-search-form');
+    const modalEl = document.getElementById('NonCirculationModal');
+
+    function showToast(doc, type) {
+      const toast = doc.getElementById(`toast-${type}`);
+      if (!toast) return;
+
+      const message = toast.querySelector('.font-normal')?.textContent?.trim();
+      if (!message) return;
+
+      const existing = document.getElementById(`toast-${type}`);
+      if (existing) existing.remove();
+
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
+    }
+
+    function syncFilterField(sourceDoc, fieldName) {
+      const sourceField = sourceDoc.querySelector(`[name="${fieldName}"]`);
+      const targetField = searchForm?.querySelector(`[name="${fieldName}"]`);
+      if (sourceField && targetField) {
+        targetField.value = sourceField.value;
+      }
+    }
+
+    if (nonCirculationForm && searchForm) {
+      nonCirculationForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const submitBtn = nonCirculationForm.querySelector('button[type="submit"]');
+        if (submitBtn) submitBtn.disabled = true;
+
+        try {
+          const response = await fetch(nonCirculationForm.action, {
+            method: 'POST',
+            body: new FormData(nonCirculationForm),
+            headers: { 'X-Skip-Loader': 'true' },
+            redirect: 'follow',
+          });
+
+          const html = await response.text();
+          const doc = new DOMParser().parseFromString(html, 'text/html');
+          const newTable = doc.getElementById('table-container');
+          const oldTable = document.getElementById('table-container');
+
+          if (newTable && oldTable) {
+            oldTable.innerHTML = newTable.innerHTML;
+            if (typeof initFlowbite === 'function') initFlowbite();
+          }
+
+          syncFilterField(doc, 'user_type');
+          syncFilterField(doc, 'start');
+          syncFilterField(doc, 'end');
+          syncFilterField(doc, 'search');
+
+          showToast(doc, 'success');
+          showToast(doc, 'warning');
+
+          if (response.url) {
+            window.history.replaceState({}, '', response.url);
+          }
+
+          nonCirculationForm.reset();
+          const studentRadio = document.querySelector('input[name="modal_user_type"][value="student"]');
+          if (studentRadio) {
+            studentRadio.checked = true;
+            studentRadio.dispatchEvent(new Event('change'));
+          }
+
+          // Dynamically update to current local date/time
+          const now = new Date();
+          const year = now.getFullYear();
+          const month = String(now.getMonth() + 1).padStart(2, '0');
+          const day = String(now.getDate()).padStart(2, '0');
+          const hours = String(now.getHours()).padStart(2, '0');
+          const minutes = String(now.getMinutes()).padStart(2, '0');
+          const currentDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+          const borrowedAtInput = document.getElementById('borrowed_at');
+          if (borrowedAtInput) {
+            borrowedAtInput.value = currentDateTime;
+          }
+
+          if (modalEl) {
+            const hideBtn = modalEl.querySelector('[data-modal-hide="NonCirculationModal"]');
+            hideBtn?.click();
+          }
+        } catch (error) {
+          console.error('Failed to save non-circulation entry', error);
+          // Show a client-side warning toast on network/unexpected errors
+          const existing = document.getElementById('toast-warning');
+          if (existing) existing.remove();
+          const warningToast = document.createElement('div');
+          warningToast.id = 'toast-warning';
+          warningToast.className = 'flex items-center absolute top-4 z-10 right-5 w-full max-w-xs p-4 text-gray-500 bg-white rounded-lg dark:text-gray-400 dark:bg-gray-800 shadow-md';
+          warningToast.setAttribute('role', 'alert');
+          warningToast.innerHTML = `
+            <div class="inline-flex items-center justify-center shrink-0 w-8 h-8 text-orange-500 bg-orange-100 rounded-lg dark:bg-orange-700 dark:text-orange-200">
+              <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5ZM10 15a1 1 0 1 1 0-2 1 1 0 0 1 0 2Zm1-4a1 1 0 0 1-2 0V6a1 1 0 0 1 2 0v5Z" />
+              </svg>
+            </div>
+            <div class="ms-3 text-sm font-normal">Failed to save entry. Please try again.</div>
+          `;
+          document.body.appendChild(warningToast);
+          setTimeout(() => warningToast.remove(), 5000);
+        } finally {
+          if (submitBtn) submitBtn.disabled = false;
+        }
+      });
+    }
   });
 </script>

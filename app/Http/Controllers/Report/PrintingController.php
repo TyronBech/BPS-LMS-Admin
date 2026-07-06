@@ -180,7 +180,8 @@ class PrintingController extends Controller
             $type = $user->students ? 'Student' : 'Faculty/Staff';
             $formatted_users[] = [
                 'id' => $user->id,
-                'text' => $user->first_name . ' ' . $user->last_name . ' (' . $type . ')'
+                'text' => $user->first_name . ' ' . $user->last_name . ' (' . $type . ')',
+                'rfid' => $user->rfid,
             ];
         }
 
