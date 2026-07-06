@@ -195,11 +195,11 @@ class InventoriesController extends Controller
         $sheet->getColumnDimension('D')->setWidth(50);
         $sheet->getColumnDimension('E')->setWidth(15);
         $sheet->mergeCells('A8:E8');
-        $sheet->setCellValue('A8', 'Report Generated On: ' . date('F j, Y'));
+        $sheet->setCellValue('A8', 'as of ' . date('F j, Y'));
         $sheet->getStyle('A7:E8')->getFont()->setBold(true);
         $sheet->getStyle('A7:E8')->getFont()->setSize(10);
-        $sheet->getStyle('A7:E8')->getAlignment()->setHorizontal('left');
-        $sheet->getStyle('A7:E8')->getAlignment()->setVertical('left');
+        $sheet->getStyle('A7:E8')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A7:E8')->getAlignment()->setVertical('center');
         $sheet->getStyle('A7:E8')->getAlignment()->setWrapText(true);
         $sheet->mergeCells('A9:E9');
         $sheet->setCellValue('A9', '');

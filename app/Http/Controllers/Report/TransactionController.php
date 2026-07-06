@@ -430,7 +430,7 @@ class TransactionController extends Controller
         $summarySheet->getStyle("A7:{$maxHeaderCol}7")->getAlignment()->setHorizontal('center');
 
         $summarySheet->mergeCells("A8:{$maxHeaderCol}8");
-        $summarySheet->setCellValue('A8', 'Report Generated On: ' . date('F j, Y'));
+        $summarySheet->setCellValue('A8', 'as of ' . date('F j, Y'));
         $summarySheet->getStyle("A8:{$maxHeaderCol}8")->getFont()->setSize(10);
         $summarySheet->getStyle("A8:{$maxHeaderCol}8")->getAlignment()->setHorizontal('center');
 
@@ -593,7 +593,7 @@ class TransactionController extends Controller
         $detailedSheet->getStyle('A6:' . $endCol . '6')->getFont()->setBold(true)->setSize(14);
         $detailedSheet->getStyle('A6:' . $endCol . '6')->getAlignment()->setHorizontal('center')->setVertical('center');
 
-        $detailedSheet->setCellValue('A8', 'Report Generated On: ' . date('F j, Y'));
+        $detailedSheet->setCellValue('A8', 'as of ' . date('F j, Y'));
         $detailedSheet->getStyle('A8')->getFont()->setBold(true)->setSize(10);
 
         $detailedSheet->setCellValue('A10', 'Accession');
@@ -649,7 +649,7 @@ class TransactionController extends Controller
         }
 
         $detailedSheet->getStyle($cells1)->getFont()->setBold(true)->setSize(10);
-        $detailedSheet->getStyle($cells1)->getAlignment()->setHorizontal('left')->setVertical('left')->setWrapText(true);
+        $detailedSheet->getStyle($cells1)->getAlignment()->setHorizontal('center')->setVertical('center')->setWrapText(true);
         $detailedSheet->getStyle($cells2)->getFont()->setSize(10)->setBold(true);
         $detailedSheet->getStyle($cells2)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
         $detailedSheet->getStyle($cells2)->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');

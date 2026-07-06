@@ -201,11 +201,11 @@ class CategoriesController extends Controller
         $sheet->getColumnDimension('I')->setWidth(18);
         $sheet->getColumnDimension('J')->setWidth(18);
         $sheet->mergeCells('A8:J8');
-        $sheet->setCellValue('A8', 'Report Generated On: ' . date('F j, Y'));
+        $sheet->setCellValue('A8', 'as of ' . date('F j, Y'));
         $sheet->getStyle('A7:J8')->getFont()->setBold(true);
         $sheet->getStyle('A7:J8')->getFont()->setSize(10);
-        $sheet->getStyle('A7:J8')->getAlignment()->setHorizontal('left');
-        $sheet->getStyle('A7:J8')->getAlignment()->setVertical('left');
+        $sheet->getStyle('A7:J8')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A7:J8')->getAlignment()->setVertical('center');
         $sheet->getStyle('A7:J8')->getAlignment()->setWrapText(true);
         $sheet->getStyle('A10:J10')->getFont()->setSize(10);
         $sheet->getStyle('A10:J10')->getFont()->setBold(true);

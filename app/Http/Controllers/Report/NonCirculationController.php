@@ -319,12 +319,12 @@ class NonCirculationController extends Controller
         $sheet->mergeCells('A7:G7');
         $sheet->mergeCells('A8:G8');
         
-        $sheet->setCellValue('A8', 'Report Generated On: ' . date('F j, Y'));
+        $sheet->setCellValue('A8', 'as of ' . date('F j, Y'));
         
         $sheet->getStyle('A7:G8')->getFont()->setBold(true);
         $sheet->getStyle('A7:G8')->getFont()->setSize(10);
-        $sheet->getStyle('A7:G8')->getAlignment()->setHorizontal('left');
-        $sheet->getStyle('A7:G8')->getAlignment()->setVertical('left');
+        $sheet->getStyle('A7:G8')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A7:G8')->getAlignment()->setVertical('center');
         $sheet->getStyle('A7:G8')->getAlignment()->setWrapText(true);
         $sheet->getStyle('A10:G10')->getFont()->setSize(10);
         $sheet->getStyle('A10:G10')->getFont()->setBold(true);

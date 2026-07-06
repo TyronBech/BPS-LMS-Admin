@@ -234,11 +234,11 @@ class BookCirculationController extends Controller
         $sheet->getColumnDimension('H')->setWidth(18);
         $sheet->getColumnDimension('I')->setWidth(22);
         $sheet->mergeCells('A8:I8');
-        $sheet->setCellValue('A8', 'Report Generated On: ' . date('F j, Y'));
+        $sheet->setCellValue('A8', 'as of ' . date('F j, Y'));
         $sheet->getStyle('A7:I8')->getFont()->setBold(true);
         $sheet->getStyle('A7:I8')->getFont()->setSize(10);
-        $sheet->getStyle('A7:I8')->getAlignment()->setHorizontal('left');
-        $sheet->getStyle('A7:I8')->getAlignment()->setVertical('left');
+        $sheet->getStyle('A7:I8')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A7:I8')->getAlignment()->setVertical('center');
         $sheet->getStyle('A7:I8')->getAlignment()->setWrapText(true);
         $sheet->getStyle('A10:I10')->getFont()->setSize(10);
         $sheet->getStyle('A10:I10')->getFont()->setBold(true);

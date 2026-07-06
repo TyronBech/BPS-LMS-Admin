@@ -222,11 +222,13 @@ class BibliographyController extends Controller
         $sheet->getStyle('A6:B6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
 
         $sheet->mergeCells('A8:B8');
-        $sheet->setCellValue('A8', 'Report Generated On: ' . date('F j, Y'));
+        $sheet->setCellValue('A8', 'as of ' . date('F j, Y'));
         $sheet->mergeCells('A9:B9');
         $sheet->setCellValue('A9', 'Total Entries: ' . $data->count());
-        $sheet->getStyle('A8:B9')->getFont()->setBold(true)->setSize(10);
-        $sheet->getStyle('A8:B9')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT)->setWrapText(true);
+        $sheet->getStyle('A8:B8')->getFont()->setBold(true)->setSize(10);
+        $sheet->getStyle('A8:B8')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setWrapText(true);
+        $sheet->getStyle('A9:B9')->getFont()->setBold(true)->setSize(10);
+        $sheet->getStyle('A9:B9')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT)->setWrapText(true);
 
         $sheet->getColumnDimension('A')->setWidth(8);
         $sheet->getColumnDimension('B')->setWidth(115);

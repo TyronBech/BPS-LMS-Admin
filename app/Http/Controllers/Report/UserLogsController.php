@@ -848,11 +848,11 @@ class UserLogsController extends Controller
         $sheet->getColumnDimension('C')->setWidth(20);
         $sheet->getColumnDimension('D')->setWidth(20);
         $sheet->mergeCells('A8:D8');
-        $sheet->setCellValue('A8', 'Report Generated On: ' . date('F j, Y'));
+        $sheet->setCellValue('A8', 'as of ' . date('F j, Y'));
         $sheet->getStyle('A8:D8')->getFont()->setBold(true);
         $sheet->getStyle('A8:D8')->getFont()->setSize(10);
-        $sheet->getStyle('A8:D8')->getAlignment()->setHorizontal('left');
-        $sheet->getStyle('A8:D8')->getAlignment()->setVertical('left');
+        $sheet->getStyle('A8:D8')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A8:D8')->getAlignment()->setVertical('center');
         $sheet->getStyle('A8:D8')->getAlignment()->setWrapText(true);
         $sheet->getStyle('A10:D10')->getFont()->setSize(10);
         $sheet->getStyle('A10:D10')->getFont()->setBold(true);

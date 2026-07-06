@@ -417,12 +417,12 @@ class ComputerUseController extends Controller
             $sheet->mergeCells('A7:D7');
             $sheet->mergeCells('A8:D8');
         }
-        $sheet->setCellValue('A8', 'Report Generated On: ' . date('F j, Y'));
+        $sheet->setCellValue('A8', 'as of ' . date('F j, Y'));
         if ($data->first() && $data->first()->user->students) {
             $sheet->getStyle('A7:E8')->getFont()->setBold(true);
             $sheet->getStyle('A7:E8')->getFont()->setSize(10);
-            $sheet->getStyle('A7:E8')->getAlignment()->setHorizontal('left');
-            $sheet->getStyle('A7:E8')->getAlignment()->setVertical('left');
+            $sheet->getStyle('A7:E8')->getAlignment()->setHorizontal('center');
+            $sheet->getStyle('A7:E8')->getAlignment()->setVertical('center');
             $sheet->getStyle('A7:E8')->getAlignment()->setWrapText(true);
             $sheet->getStyle('A10:E10')->getFont()->setSize(10);
             $sheet->getStyle('A10:E10')->getFont()->setBold(true);
@@ -431,8 +431,8 @@ class ComputerUseController extends Controller
         } elseif ($data->first() && $data->first()->user->employees) {
             $sheet->getStyle('A7:D8')->getFont()->setBold(true);
             $sheet->getStyle('A7:D8')->getFont()->setSize(10);
-            $sheet->getStyle('A7:D8')->getAlignment()->setHorizontal('left');
-            $sheet->getStyle('A7:D8')->getAlignment()->setVertical('left');
+            $sheet->getStyle('A7:D8')->getAlignment()->setHorizontal('center');
+            $sheet->getStyle('A7:D8')->getAlignment()->setVertical('center');
             $sheet->getStyle('A7:D8')->getAlignment()->setWrapText(true);
             $sheet->getStyle('A10:D10')->getFont()->setSize(10);
             $sheet->getStyle('A10:D10')->getFont()->setBold(true);
