@@ -421,13 +421,13 @@ class ProcessMaterialImport implements ShouldQueue
         $escapedPrefixes = array_map(function ($p) {
             return preg_quote($p, '/');
         }, $prefixes);
-        $pattern = '/^(' . implode('|', $escapedPrefixes) . ')-\d{6}$/';
+        $pattern = '/^(' . implode('|', $escapedPrefixes) . ')-\d{5,}$/';
 
         if (!preg_match($pattern, $item['accession'])) {
             $prefixListStr = implode("-' or '", $prefixes);
             throw new \Exception(
                 "Row {$rowNumber} (accession: {$item['accession']}): Accession format is invalid. "
-                    . "It must start with exactly '{$prefixListStr}-' followed by a 6-digit number (e.g., {$prefixes[0]}-000001), respecting exact capitalization."
+                    . "It must start with exactly '{$prefixListStr}-' followed by at least a 5-digit number (e.g., {$prefixes[0]}-00001), respecting exact capitalization."
             );
         }
 

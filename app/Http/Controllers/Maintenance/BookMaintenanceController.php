@@ -1396,9 +1396,9 @@ class BookMaintenanceController extends Controller
         
         $escapedPrefixes = array_map(function($p) { return preg_quote($p, '/'); }, $prefixes);
         if ($accessionDashActive) {
-            $pattern = '/^(' . implode('|', $escapedPrefixes) . ')-\d{6}$/';
+            $pattern = '/^(' . implode('|', $escapedPrefixes) . ')-\d{5,}$/';
         } else {
-            $pattern = '/^(' . implode('|', $escapedPrefixes) . ')\d{6}$/';
+            $pattern = '/^(' . implode('|', $escapedPrefixes) . ')\d{5,}$/';
         }
 
         $accessions = collect(explode(';', (string) $accessionInput))
@@ -1410,7 +1410,7 @@ class BookMaintenanceController extends Controller
             if (!preg_match($pattern, $acc)) {
                 $prefixListStr = implode($accessionDashActive ? "-' or '" : "' or '", $prefixes);
                 $dashStr = $accessionDashActive ? '-' : '';
-                $validator->errors()->add('accession', "The accession number '{$acc}' format is invalid. It must start with exactly '{$prefixListStr}{$dashStr}' followed by a 6-digit number (e.g., {$prefixes[0]}{$dashStr}000001), respecting exact capitalization.");
+                $validator->errors()->add('accession', "The accession number '{$acc}' format is invalid. It must start with exactly '{$prefixListStr}{$dashStr}' followed by at least a 5-digit number (e.g., {$prefixes[0]}{$dashStr}00001), respecting exact capitalization.");
                 break;
             }
         }
@@ -1472,7 +1472,7 @@ class BookMaintenanceController extends Controller
         }
 
         $nextNumber = $maxNumber + 1;
-        $nextAccession = $prefix . str_pad((string)$nextNumber, 6, '0', STR_PAD_LEFT);
+        $nextAccession = $prefix . str_pad((string)$nextNumber, 5, '0', STR_PAD_LEFT);
 
         return response()->json(['next_accession' => $nextAccession]);
     }

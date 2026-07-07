@@ -575,7 +575,7 @@
 
       // Escaping helper
       const escapedPrefixes = prefixes.map(p => p.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'));
-      const regexPattern = new RegExp('^(' + escapedPrefixes.join('|') + ')\\d{6}$');
+      const regexPattern = new RegExp('^(' + escapedPrefixes.join('|') + ')\\d{5,}$');
 
       const accessions = inputElement.value.split(';').map(s => s.trim()).filter(s => s);
       let isValid = true;
@@ -595,7 +595,7 @@
         inputElement.parentNode.appendChild(errorP);
       }
       const prefixListStr = prefixes.join("' or '");
-      errorP.innerText = `The accession number format is invalid. It must start with '${prefixListStr}' followed by a 6-digit number (e.g., ${prefixes[0]}000001).`;
+      errorP.innerText = `The accession number format is invalid. It must start with '${prefixListStr}' followed by at least a 5-digit number (e.g., ${prefixes[0]}00001).`;
 
       const submitBtn = isCopy ? document.querySelector('#copy-book-modal button[type="submit"]') : document.querySelector('form button[type="submit"]');
 
