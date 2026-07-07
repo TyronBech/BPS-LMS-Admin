@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 class CategoryMaintenanceController extends Controller
 {
@@ -138,13 +139,17 @@ class CategoryMaintenanceController extends Controller
         ]);
 
         $validator = Validator::make($request->all(), [
-            'name'                      => 'required|string|max:50',
-            'legend'                    => 'required|string|max:255',
+            'name'                      => 'required|string|max:100|unique:bk_categories,name',
+            'legend'                    => 'required|string|max:12|unique:bk_categories,legend',
             'category_type'             => 'required|in:Print,Non-print,E-books',
             'educational_level'         => 'nullable|array',
             'educational_level.*'       => 'string|in:Elementary,Junior High School,Senior High School',
             'can_borrow'                => 'sometimes|boolean',
             'borrow_duration_days_add'  => 'required_if:can_borrow,1|nullable|integer|min:1|max:999',
+        ], [
+            'name.unique' => 'Category name already exists.',
+            'legend.unique' => 'Category legend already exists.',
+            'legend.max' => 'Category legend must not exceed 12 characters.',
         ]);
         if ($validator->fails()) {
             Log::warning('Category Maintenance: Creation validation failed', [
@@ -154,15 +159,6 @@ class CategoryMaintenanceController extends Controller
                 'timestamp' => now(),
             ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
-        }
-        if (Category::where('name', $request->name)->exists()) {
-            Log::warning('Category Maintenance: Creation failed - Category already exists', [
-                'user_id' => Auth::guard('admin')->id(),
-                'category_name' => $request->name,
-                'ip_address' => $request->ip(),
-                'timestamp' => now(),
-            ]);
-            return redirect()->route('maintenance.categories')->with('toast-warning', 'Category already exists.')->withInput();
         }
         DB::beginTransaction();
         try {
@@ -222,13 +218,27 @@ class CategoryMaintenanceController extends Controller
         ]);
 
         $validator = Validator::make($request->all(), [
-            'name'                      => 'required|string|max:50',
-            'legend'                    => 'required|string|max:255',
+            'name'                      => [
+                'required',
+                'string',
+                'max:100',
+                Rule::unique('bk_categories', 'name')->ignore($request->input('edit_category_id')),
+            ],
+            'legend'                    => [
+                'required',
+                'string',
+                'max:12',
+                Rule::unique('bk_categories', 'legend')->ignore($request->input('edit_category_id')),
+            ],
             'category_type'             => 'required|in:Print,Non-print,E-books',
             'educational_level'         => 'nullable|array',
             'educational_level.*'       => 'string|in:Elementary,Junior High School,Senior High School',
             'can_borrow_edit'           => 'sometimes|boolean',
             'borrow_duration_days_edit' => 'required_if:can_borrow_edit,1|nullable|integer|min:1|max:999',
+        ], [
+            'name.unique' => 'Category name already exists.',
+            'legend.unique' => 'Category legend already exists.',
+            'legend.max' => 'Category legend must not exceed 12 characters.',
         ]);
         if ($validator->fails()) {
             Log::warning('Category Maintenance: Update validation failed', [
