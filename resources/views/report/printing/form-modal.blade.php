@@ -381,11 +381,23 @@
       const message = toast.querySelector('.font-normal')?.textContent?.trim();
       if (!message) return;
 
+      const adoptedToast = document.adoptNode(toast);
+      
+      // Convert positioning from absolute to fixed and z-index to 50
+      adoptedToast.classList.remove('absolute', 'z-10');
+      adoptedToast.classList.add('fixed', 'z-50');
+
       const existing = document.getElementById(`toast-${type}`);
       if (existing) existing.remove();
 
-      document.body.appendChild(toast);
-      setTimeout(() => toast.remove(), 5000);
+      // Set up close button event listener
+      const closeBtn = adoptedToast.querySelector('[data-dismiss-target]');
+      if (closeBtn) {
+        closeBtn.addEventListener('click', () => adoptedToast.remove());
+      }
+
+      document.body.appendChild(adoptedToast);
+      setTimeout(() => adoptedToast.remove(), 5000);
     }
 
     function syncFilterField(sourceDoc, fieldName) {
@@ -413,47 +425,56 @@
 
           const html = await response.text();
           const doc = new DOMParser().parseFromString(html, 'text/html');
-          const newTable = doc.getElementById('table-container');
-          const oldTable = document.getElementById('table-container');
 
-          if (newTable && oldTable) {
-            oldTable.innerHTML = newTable.innerHTML;
-            if (typeof initFlowbite === 'function') initFlowbite();
-          }
+          // Check if there is a success toast in the response
+          const hasSuccess = doc.getElementById('toast-success') !== null;
 
-          syncFilterField(doc, 'user_type');
-          syncFilterField(doc, 'printing_type');
-          syncFilterField(doc, 'start');
-          syncFilterField(doc, 'end');
-          syncFilterField(doc, 'search');
+          if (hasSuccess) {
+            const newTable = doc.getElementById('table-container');
+            const oldTable = document.getElementById('table-container');
 
-          showPrintingToast(doc, 'success');
-          showPrintingToast(doc, 'warning');
+            if (newTable && oldTable) {
+              oldTable.innerHTML = newTable.innerHTML;
+              if (typeof initFlowbite === 'function') initFlowbite();
+            }
 
-          if (response.url) {
-            window.history.replaceState({}, '', response.url);
-          }
+            syncFilterField(doc, 'user_type');
+            syncFilterField(doc, 'printing_type');
+            syncFilterField(doc, 'start');
+            syncFilterField(doc, 'end');
+            syncFilterField(doc, 'search');
 
-          printingForm.reset();
-          const studentRadio = document.querySelector('input[name="modal_user_type"][value="student"]');
-          if (studentRadio) {
-            studentRadio.checked = true;
-            studentRadio.dispatchEvent(new Event('change'));
-          }
-          typeSelect.dispatchEvent(new Event('change'));
-          // Dynamically update to current local date/time
-          const now = new Date();
-          const year = now.getFullYear();
-          const month = String(now.getMonth() + 1).padStart(2, '0');
-          const day = String(now.getDate()).padStart(2, '0');
-          const hours = String(now.getHours()).padStart(2, '0');
-          const minutes = String(now.getMinutes()).padStart(2, '0');
-          const currentDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
-          document.getElementById('printed_at').value = currentDateTime;
+            showPrintingToast(doc, 'success');
 
-          if (modalEl) {
-            const hideBtn = modalEl.querySelector('[data-modal-hide="PrintingModal"]');
-            hideBtn?.click();
+            if (response.url) {
+              window.history.replaceState({}, '', response.url);
+            }
+
+            printingForm.reset();
+            const studentRadio = document.querySelector('input[name="modal_user_type"][value="student"]');
+            if (studentRadio) {
+              studentRadio.checked = true;
+              studentRadio.dispatchEvent(new Event('change'));
+            }
+            typeSelect.dispatchEvent(new Event('change'));
+            // Dynamically update to current local date/time
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const currentDateTime = `${year}-${month}-${day}T${hours}:${minutes}`;
+            document.getElementById('printed_at').value = currentDateTime;
+
+            if (modalEl) {
+              const hideBtn = modalEl.querySelector('[data-modal-hide="PrintingModal"]');
+              hideBtn?.click();
+            }
+          } else {
+            // Show warnings/errors but keep the modal open with form inputs intact
+            showPrintingToast(doc, 'warning');
+            showPrintingToast(doc, 'danger');
           }
         } catch (error) {
           console.error('Failed to save printing entry', error);
