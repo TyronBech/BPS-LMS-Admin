@@ -194,29 +194,29 @@ class InventoriesController extends Controller
         $sheet->getColumnDimension('C')->setWidth(40);
         $sheet->getColumnDimension('D')->setWidth(50);
         $sheet->getColumnDimension('E')->setWidth(15);
+        $sheet->mergeCells('A7:E7');
+        $sheet->setCellValue('A7', 'as of ' . date('F j, Y'));
+        $sheet->getStyle('A7:E7')->getFont()->setBold(true);
+        $sheet->getStyle('A7:E7')->getFont()->setSize(10);
+        $sheet->getStyle('A7:E7')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A7:E7')->getAlignment()->setVertical('center');
+        $sheet->getStyle('A7:E7')->getAlignment()->setWrapText(true);
         $sheet->mergeCells('A8:E8');
-        $sheet->setCellValue('A8', 'as of ' . date('F j, Y'));
-        $sheet->getStyle('A7:E8')->getFont()->setBold(true);
-        $sheet->getStyle('A7:E8')->getFont()->setSize(10);
-        $sheet->getStyle('A7:E8')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('A7:E8')->getAlignment()->setVertical('center');
-        $sheet->getStyle('A7:E8')->getAlignment()->setWrapText(true);
-        $sheet->mergeCells('A9:E9');
-        $sheet->setCellValue('A9', '');
-        $sheet->getStyle('A9:E9')->getFont()->setItalic(true);
-        $sheet->getStyle('A9:E9')->getAlignment()->setHorizontal('left');
+        $sheet->setCellValue('A8', '');
+        $sheet->getStyle('A8:E8')->getFont()->setItalic(true);
+        $sheet->getStyle('A8:E8')->getAlignment()->setHorizontal('left');
 
-        $sheet->getStyle('A11:E11')->getFont()->setSize(10);
-        $sheet->getStyle('A11:E11')->getFont()->setBold(true);
-        $sheet->getStyle('A11:E11')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A11:E11')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+        $sheet->getStyle('A10:E10')->getFont()->setSize(10);
+        $sheet->getStyle('A10:E10')->getFont()->setBold(true);
+        $sheet->getStyle('A10:E10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A10:E10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
 
-        $sheet->setCellValue('A11', 'Accession Number');
-        $sheet->setCellValue('B11', 'Author');
-        $sheet->setCellValue('C11', 'Title');
-        $sheet->setCellValue('D11', 'Description');
-        $sheet->setCellValue('E11', 'Remarks');
-        $row = 12;
+        $sheet->setCellValue('A10', 'Accession Number');
+        $sheet->setCellValue('B10', 'Author');
+        $sheet->setCellValue('C10', 'Title');
+        $sheet->setCellValue('D10', 'Description');
+        $sheet->setCellValue('E10', 'Remarks');
+        $row = 11;
 
         foreach ($data as $item) {
             $book = $item->book;
@@ -235,8 +235,8 @@ class InventoriesController extends Controller
             $row++;
         }
 
-        $lastDataRow = max(11, $row - 1);
-        $sheet->getStyle('A11:E' . $lastDataRow)->applyFromArray([
+        $lastDataRow = max(10, $row - 1);
+        $sheet->getStyle('A10:E' . $lastDataRow)->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,

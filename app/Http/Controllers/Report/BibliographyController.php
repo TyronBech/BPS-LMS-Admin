@@ -221,25 +221,25 @@ class BibliographyController extends Controller
         $sheet->getStyle('A6:B6')->getFont()->setBold(true)->setSize(14);
         $sheet->getStyle('A6:B6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
 
+        $sheet->mergeCells('A7:B7');
+        $sheet->setCellValue('A7', 'as of ' . date('F j, Y'));
         $sheet->mergeCells('A8:B8');
-        $sheet->setCellValue('A8', 'as of ' . date('F j, Y'));
-        $sheet->mergeCells('A9:B9');
-        $sheet->setCellValue('A9', 'Total Entries: ' . $data->count());
+        $sheet->setCellValue('A8', 'Total Entries: ' . $data->count());
+        $sheet->getStyle('A7:B7')->getFont()->setBold(true)->setSize(10);
+        $sheet->getStyle('A7:B7')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setWrapText(true);
         $sheet->getStyle('A8:B8')->getFont()->setBold(true)->setSize(10);
-        $sheet->getStyle('A8:B8')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setWrapText(true);
-        $sheet->getStyle('A9:B9')->getFont()->setBold(true)->setSize(10);
-        $sheet->getStyle('A9:B9')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT)->setWrapText(true);
+        $sheet->getStyle('A8:B8')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT)->setWrapText(true);
 
         $sheet->getColumnDimension('A')->setWidth(8);
         $sheet->getColumnDimension('B')->setWidth(115);
 
-        $sheet->setCellValue('A11', 'No.');
-        $sheet->setCellValue('B11', 'Bibliography Entry');
-        $sheet->getStyle('A11:B11')->getFont()->setBold(true)->setSize(10);
-        $sheet->getStyle('A11:B11')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
-        $sheet->getStyle('A11:B11')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+        $sheet->setCellValue('A10', 'No.');
+        $sheet->setCellValue('B10', 'Bibliography Entry');
+        $sheet->getStyle('A10:B10')->getFont()->setBold(true)->setSize(10);
+        $sheet->getStyle('A10:B10')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle('A10:B10')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
 
-        $row = 12;
+        $row = 11;
         foreach ($data->values() as $index => $item) {
             $sheet->setCellValue('A' . $row, $index + 1);
             $sheet->setCellValue('B' . $row, $item->bibliography_entry);
@@ -249,8 +249,8 @@ class BibliographyController extends Controller
             $row++;
         }
 
-        $lastDataRow = max(11, $row - 1);
-        $sheet->getStyle('A11:B' . $lastDataRow)->applyFromArray([
+        $lastDataRow = max(10, $row - 1);
+        $sheet->getStyle('A10:B' . $lastDataRow)->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
@@ -258,7 +258,7 @@ class BibliographyController extends Controller
             ],
         ]);
 
-        $sheet->freezePane('A12');
+        $sheet->freezePane('A11');
 
         $row += 2;
         $sheet->mergeCells('A' . $row . ':B' . $row);

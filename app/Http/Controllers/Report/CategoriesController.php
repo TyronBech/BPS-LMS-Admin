@@ -200,31 +200,31 @@ class CategoriesController extends Controller
         $sheet->getColumnDimension('H')->setWidth(18);
         $sheet->getColumnDimension('I')->setWidth(18);
         $sheet->getColumnDimension('J')->setWidth(18);
-        $sheet->mergeCells('A8:J8');
-        $sheet->setCellValue('A8', 'as of ' . date('F j, Y'));
-        $sheet->getStyle('A7:J8')->getFont()->setBold(true);
-        $sheet->getStyle('A7:J8')->getFont()->setSize(10);
-        $sheet->getStyle('A7:J8')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('A7:J8')->getAlignment()->setVertical('center');
-        $sheet->getStyle('A7:J8')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A10:J10')->getFont()->setSize(10);
-        $sheet->getStyle('A10:J10')->getFont()->setBold(true);
-        $sheet->getStyle('A10:J10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A10:J10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
-        $sheet->getStyle('A10:B10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-        $sheet->getStyle('C10:J10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->mergeCells('A7:J7');
+        $sheet->setCellValue('A7', 'as of ' . date('F j, Y'));
+        $sheet->getStyle('A7:J7')->getFont()->setBold(true);
+        $sheet->getStyle('A7:J7')->getFont()->setSize(10);
+        $sheet->getStyle('A7:J7')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A7:J7')->getAlignment()->setVertical('center');
+        $sheet->getStyle('A7:J7')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A9:J9')->getFont()->setSize(10);
+        $sheet->getStyle('A9:J9')->getFont()->setBold(true);
+        $sheet->getStyle('A9:J9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A9:J9')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+        $sheet->getStyle('A9:B9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('C9:J9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
-        $sheet->setCellValue('A10', 'Legend');
-        $sheet->setCellValue('B10', 'Description');
-        $sheet->setCellValue('C10', 'Previous Inventory');
-        $sheet->setCellValue('D10', 'Newly Acquired');
-        $sheet->setCellValue('E10', 'Lost and Paid For');
-        $sheet->setCellValue('F10', 'Lost and Replaced');
-        $sheet->setCellValue('G10', 'Unreturned');
-        $sheet->setCellValue('H10', 'Missing');
-        $sheet->setCellValue('I10', 'Discarded');
-        $sheet->setCellValue('J10', 'Present Inventory');
-        $row = 11;
+        $sheet->setCellValue('A9', 'Legend');
+        $sheet->setCellValue('B9', 'Description');
+        $sheet->setCellValue('C9', 'Previous Inventory');
+        $sheet->setCellValue('D9', 'Newly Acquired');
+        $sheet->setCellValue('E9', 'Lost and Paid For');
+        $sheet->setCellValue('F9', 'Lost and Replaced');
+        $sheet->setCellValue('G9', 'Unreturned');
+        $sheet->setCellValue('H9', 'Missing');
+        $sheet->setCellValue('I9', 'Discarded');
+        $sheet->setCellValue('J9', 'Present Inventory');
+        $row = 10;
         foreach ($data as $item) {
             $sheet->setCellValue('A' . $row, $item->legend);
             $sheet->setCellValue('B' . $row, $item->name);
@@ -264,7 +264,7 @@ class CategoriesController extends Controller
                 ],
             ],
         ];
-        $sheet->getStyle('A10:J' . $row)->applyFromArray($styleArray);
+        $sheet->getStyle('A9:J' . $row)->applyFromArray($styleArray);
 
         $row += 2;
         $sheet->mergeCells('A' . $row . ':J' . $row);

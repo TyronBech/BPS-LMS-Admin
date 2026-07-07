@@ -233,28 +233,28 @@ class BookCirculationController extends Controller
         $sheet->getColumnDimension('G')->setWidth(18);
         $sheet->getColumnDimension('H')->setWidth(18);
         $sheet->getColumnDimension('I')->setWidth(22);
-        $sheet->mergeCells('A8:I8');
-        $sheet->setCellValue('A8', 'as of ' . date('F j, Y'));
-        $sheet->getStyle('A7:I8')->getFont()->setBold(true);
-        $sheet->getStyle('A7:I8')->getFont()->setSize(10);
-        $sheet->getStyle('A7:I8')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('A7:I8')->getAlignment()->setVertical('center');
-        $sheet->getStyle('A7:I8')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A10:I10')->getFont()->setSize(10);
-        $sheet->getStyle('A10:I10')->getFont()->setBold(true);
-        $sheet->getStyle('A10:I10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A10:I10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+        $sheet->mergeCells('A7:I7');
+        $sheet->setCellValue('A7', 'as of ' . date('F j, Y'));
+        $sheet->getStyle('A7:I7')->getFont()->setBold(true);
+        $sheet->getStyle('A7:I7')->getFont()->setSize(10);
+        $sheet->getStyle('A7:I7')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A7:I7')->getAlignment()->setVertical('center');
+        $sheet->getStyle('A7:I7')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A9:I9')->getFont()->setSize(10);
+        $sheet->getStyle('A9:I9')->getFont()->setBold(true);
+        $sheet->getStyle('A9:I9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A9:I9')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
 
-        $sheet->setCellValue('A10', 'Accession');
-        $sheet->setCellValue('B10', 'Author');
-        $sheet->setCellValue('C10', 'Title');
-        $sheet->setCellValue('D10', 'Publication');
-        $sheet->setCellValue('E10', 'Publisher');
-        $sheet->setCellValue('F10', 'Call Number');
-        $sheet->setCellValue('G10', 'ISBN');
-        $sheet->setCellValue('H10', 'Copyright');
-        $sheet->setCellValue('I10', 'Status');
-        $row = 11;
+        $sheet->setCellValue('A9', 'Accession');
+        $sheet->setCellValue('B9', 'Author');
+        $sheet->setCellValue('C9', 'Title');
+        $sheet->setCellValue('D9', 'Publication');
+        $sheet->setCellValue('E9', 'Publisher');
+        $sheet->setCellValue('F9', 'Call Number');
+        $sheet->setCellValue('G9', 'ISBN');
+        $sheet->setCellValue('H9', 'Copyright');
+        $sheet->setCellValue('I9', 'Status');
+        $row = 10;
         foreach ($data as $item) {
             $sheet->setCellValue('A' . $row, $item->accession);
             $sheet->setCellValue('B' . $row, $item->author ?? 'N/A');
@@ -278,7 +278,7 @@ class BookCirculationController extends Controller
                 ],
             ],
         ];
-        $sheet->getStyle('A10:I' . ($row - 1))->applyFromArray($styleArray);
+        $sheet->getStyle('A9:I' . ($row - 1))->applyFromArray($styleArray);
 
         $row += 2;
         $sheet->mergeCells('A' . $row . ':I' . $row);

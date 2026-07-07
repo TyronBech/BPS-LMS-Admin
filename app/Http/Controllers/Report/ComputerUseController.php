@@ -412,50 +412,48 @@ class ComputerUseController extends Controller
         if ($data->first() && $data->first()->user->students) {
             $sheet->getColumnDimension('E')->setWidth(30);
             $sheet->mergeCells('A7:E7');
-            $sheet->mergeCells('A8:E8');
         } elseif ($data->first() && $data->first()->user->teachers) {
             $sheet->mergeCells('A7:D7');
-            $sheet->mergeCells('A8:D8');
         }
-        $sheet->setCellValue('A8', 'as of ' . date('F j, Y'));
+        $sheet->setCellValue('A7', 'as of ' . date('F j, Y'));
         if ($data->first() && $data->first()->user->students) {
-            $sheet->getStyle('A7:E8')->getFont()->setBold(true);
-            $sheet->getStyle('A7:E8')->getFont()->setSize(10);
-            $sheet->getStyle('A7:E8')->getAlignment()->setHorizontal('center');
-            $sheet->getStyle('A7:E8')->getAlignment()->setVertical('center');
-            $sheet->getStyle('A7:E8')->getAlignment()->setWrapText(true);
-            $sheet->getStyle('A10:E10')->getFont()->setSize(10);
-            $sheet->getStyle('A10:E10')->getFont()->setBold(true);
-            $sheet->getStyle('A10:E10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle('A10:E10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+            $sheet->getStyle('A7:E7')->getFont()->setBold(true);
+            $sheet->getStyle('A7:E7')->getFont()->setSize(10);
+            $sheet->getStyle('A7:E7')->getAlignment()->setHorizontal('center');
+            $sheet->getStyle('A7:E7')->getAlignment()->setVertical('center');
+            $sheet->getStyle('A7:E7')->getAlignment()->setWrapText(true);
+            $sheet->getStyle('A9:E9')->getFont()->setSize(10);
+            $sheet->getStyle('A9:E9')->getFont()->setBold(true);
+            $sheet->getStyle('A9:E9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('A9:E9')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
         } elseif ($data->first() && $data->first()->user->employees) {
-            $sheet->getStyle('A7:D8')->getFont()->setBold(true);
-            $sheet->getStyle('A7:D8')->getFont()->setSize(10);
-            $sheet->getStyle('A7:D8')->getAlignment()->setHorizontal('center');
-            $sheet->getStyle('A7:D8')->getAlignment()->setVertical('center');
-            $sheet->getStyle('A7:D8')->getAlignment()->setWrapText(true);
-            $sheet->getStyle('A10:D10')->getFont()->setSize(10);
-            $sheet->getStyle('A10:D10')->getFont()->setBold(true);
-            $sheet->getStyle('A10:D10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle('A10:D10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+            $sheet->getStyle('A7:D7')->getFont()->setBold(true);
+            $sheet->getStyle('A7:D7')->getFont()->setSize(10);
+            $sheet->getStyle('A7:D7')->getAlignment()->setHorizontal('center');
+            $sheet->getStyle('A7:D7')->getAlignment()->setVertical('center');
+            $sheet->getStyle('A7:D7')->getAlignment()->setWrapText(true);
+            $sheet->getStyle('A9:D9')->getFont()->setSize(10);
+            $sheet->getStyle('A9:D9')->getFont()->setBold(true);
+            $sheet->getStyle('A9:D9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('A9:D9')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
         }
-        $sheet->setCellValue('A10', 'Name');
+        $sheet->setCellValue('A9', 'Name');
         if ($data->first() && $data->first()->user->students) {
-            $sheet->setCellValue('B10', 'Level');
-            $sheet->setCellValue('C10', 'Section');
+            $sheet->setCellValue('B9', 'Level');
+            $sheet->setCellValue('C9', 'Section');
             $colD = 'D';
             $colE = 'E';
         } elseif ($data->first() && $data->first()->user->employees) {
-            $sheet->setCellValue('B10', 'Role');
+            $sheet->setCellValue('B9', 'Role');
             $colD = 'C';
             $colE = 'D';
         } else {
             $colD = 'B';
             $colE = 'C';
         }
-        $sheet->setCellValue($colD . '10', 'Date');
-        $sheet->setCellValue($colE . '10', 'Time');
-        $row = 11;
+        $sheet->setCellValue($colD . '9', 'Date');
+        $sheet->setCellValue($colE . '9', 'Time');
+        $row = 10;
         foreach ($data as $item) {
             if (!$item->user) {
                 continue; // Skip if users relationship is not loaded

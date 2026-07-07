@@ -847,23 +847,23 @@ class UserLogsController extends Controller
         $sheet->getColumnDimension('B')->setWidth(20);
         $sheet->getColumnDimension('C')->setWidth(20);
         $sheet->getColumnDimension('D')->setWidth(20);
-        $sheet->mergeCells('A8:D8');
-        $sheet->setCellValue('A8', 'as of ' . date('F j, Y'));
-        $sheet->getStyle('A8:D8')->getFont()->setBold(true);
-        $sheet->getStyle('A8:D8')->getFont()->setSize(10);
-        $sheet->getStyle('A8:D8')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('A8:D8')->getAlignment()->setVertical('center');
-        $sheet->getStyle('A8:D8')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A10:D10')->getFont()->setSize(10);
-        $sheet->getStyle('A10:D10')->getFont()->setBold(true);
-        $sheet->getStyle('A10:D10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A10:D10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+        $sheet->mergeCells('A7:D7');
+        $sheet->setCellValue('A7', 'as of ' . date('F j, Y'));
+        $sheet->getStyle('A7:D7')->getFont()->setBold(true);
+        $sheet->getStyle('A7:D7')->getFont()->setSize(10);
+        $sheet->getStyle('A7:D7')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A7:D7')->getAlignment()->setVertical('center');
+        $sheet->getStyle('A7:D7')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A9:D9')->getFont()->setSize(10);
+        $sheet->getStyle('A9:D9')->getFont()->setBold(true);
+        $sheet->getStyle('A9:D9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A9:D9')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
 
-        $sheet->setCellValue('A10', 'Name');
-        $sheet->setCellValue('B10', 'Date');
-        $sheet->setCellValue('C10', 'Time in');
-        $sheet->setCellValue('D10', 'Time out');
-        $row = 11;
+        $sheet->setCellValue('A9', 'Name');
+        $sheet->setCellValue('B9', 'Date');
+        $sheet->setCellValue('C9', 'Time in');
+        $sheet->setCellValue('D9', 'Time out');
+        $row = 10;
         foreach ($data as $item) {
             if (!$item->user) {
                 continue; // Skip if users relationship is not loaded
@@ -889,7 +889,7 @@ class UserLogsController extends Controller
                 ],
             ],
         ];
-        $sheet->getStyle('A10:D' . ($row - 1))->applyFromArray($styleArray);
+        $sheet->getStyle('A9:D' . ($row - 1))->applyFromArray($styleArray);
 
         $row += 2;
         $sheet->mergeCells('A' . $row . ':D' . $row);

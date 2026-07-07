@@ -307,33 +307,32 @@ class PrintingController extends Controller
         $sheet->getColumnDimension('J')->setWidth(15); // Amount
         
         $sheet->mergeCells('A7:J7');
-        $sheet->mergeCells('A8:J8');
         
-        $sheet->setCellValue('A8', 'as of ' . date('F j, Y'));
+        $sheet->setCellValue('A7', 'as of ' . date('F j, Y'));
         
-        $sheet->getStyle('A7:J8')->getFont()->setBold(true);
-        $sheet->getStyle('A7:J8')->getFont()->setSize(10);
-        $sheet->getStyle('A7:J8')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('A7:J8')->getAlignment()->setVertical('center');
-        $sheet->getStyle('A7:J8')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A10:J10')->getFont()->setSize(10);
-        $sheet->getStyle('A10:J10')->getFont()->setBold(true);
-        $sheet->getStyle('A10:J10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A10:J10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+        $sheet->getStyle('A7:J7')->getFont()->setBold(true);
+        $sheet->getStyle('A7:J7')->getFont()->setSize(10);
+        $sheet->getStyle('A7:J7')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A7:J7')->getAlignment()->setVertical('center');
+        $sheet->getStyle('A7:J7')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A9:J9')->getFont()->setSize(10);
+        $sheet->getStyle('A9:J9')->getFont()->setBold(true);
+        $sheet->getStyle('A9:J9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A9:J9')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
 
-        $sheet->setCellValue('A10', 'Date');
-        $sheet->setCellValue('B10', 'Time');
-        $sheet->setCellValue('C10', 'RFID');
-        $sheet->setCellValue('D10', 'User Name');
-        $sheet->setCellValue('E10', 'Grade & Section / Role');
-        $sheet->setCellValue('F10', 'Type');
-        $sheet->setCellValue('G10', 'Topic');
-        $sheet->setCellValue('H10', 'Title of Material');
-        $sheet->setCellValue('I10', 'Pages');
-        $sheet->setCellValue('J10', 'Amount');
+        $sheet->setCellValue('A9', 'Date');
+        $sheet->setCellValue('B9', 'Time');
+        $sheet->setCellValue('C9', 'RFID');
+        $sheet->setCellValue('D9', 'User Name');
+        $sheet->setCellValue('E9', 'Grade & Section / Role');
+        $sheet->setCellValue('F9', 'Type');
+        $sheet->setCellValue('G9', 'Topic');
+        $sheet->setCellValue('H9', 'Title of Material');
+        $sheet->setCellValue('I9', 'Pages');
+        $sheet->setCellValue('J9', 'Amount');
         
         $totalAmount = 0;
-        $row = 11;
+        $row = 10;
         foreach ($data as $item) {
             $sheet->setCellValue('A' . $row, Carbon::parse($item->printed_at)->format('M j, Y'));
             $sheet->setCellValue('B' . $row, Carbon::parse($item->printed_at)->format('g:i A'));

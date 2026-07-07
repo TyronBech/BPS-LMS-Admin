@@ -317,29 +317,28 @@ class NonCirculationController extends Controller
         $sheet->getColumnDimension('G')->setWidth(30); // Teacher
         
         $sheet->mergeCells('A7:G7');
-        $sheet->mergeCells('A8:G8');
         
-        $sheet->setCellValue('A8', 'as of ' . date('F j, Y'));
+        $sheet->setCellValue('A7', 'as of ' . date('F j, Y'));
         
-        $sheet->getStyle('A7:G8')->getFont()->setBold(true);
-        $sheet->getStyle('A7:G8')->getFont()->setSize(10);
-        $sheet->getStyle('A7:G8')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('A7:G8')->getAlignment()->setVertical('center');
-        $sheet->getStyle('A7:G8')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A10:G10')->getFont()->setSize(10);
-        $sheet->getStyle('A10:G10')->getFont()->setBold(true);
-        $sheet->getStyle('A10:G10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A10:G10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+        $sheet->getStyle('A7:G7')->getFont()->setBold(true);
+        $sheet->getStyle('A7:G7')->getFont()->setSize(10);
+        $sheet->getStyle('A7:G7')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A7:G7')->getAlignment()->setVertical('center');
+        $sheet->getStyle('A7:G7')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A9:G9')->getFont()->setSize(10);
+        $sheet->getStyle('A9:G9')->getFont()->setBold(true);
+        $sheet->getStyle('A9:G9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A9:G9')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
 
-        $sheet->setCellValue('A10', 'Date');
-        $sheet->setCellValue('B10', 'Time');
-        $sheet->setCellValue('C10', 'RFID');
-        $sheet->setCellValue('D10', 'User Name');
-        $sheet->setCellValue('E10', 'Grade & Section / Role');
-        $sheet->setCellValue('F10', 'Subject');
-        $sheet->setCellValue('G10', 'Teacher');
+        $sheet->setCellValue('A9', 'Date');
+        $sheet->setCellValue('B9', 'Time');
+        $sheet->setCellValue('C9', 'RFID');
+        $sheet->setCellValue('D9', 'User Name');
+        $sheet->setCellValue('E9', 'Grade & Section / Role');
+        $sheet->setCellValue('F9', 'Subject');
+        $sheet->setCellValue('G9', 'Teacher');
         
-        $row = 11;
+        $row = 10;
         foreach ($data as $item) {
             $sheet->setCellValue('A' . $row, Carbon::parse($item->borrowed_at)->format('M j, Y'));
             $sheet->setCellValue('B' . $row, Carbon::parse($item->borrowed_at)->format('g:i A'));
@@ -381,7 +380,7 @@ class NonCirculationController extends Controller
                 ],
             ],
         ];
-        $sheet->getStyle('A10:G' . ($row - 1))->applyFromArray($styleArray);
+        $sheet->getStyle('A9:G' . ($row - 1))->applyFromArray($styleArray);
 
         $row += 2;
         $sheet->mergeCells('A' . $row . ':G' . $row);
