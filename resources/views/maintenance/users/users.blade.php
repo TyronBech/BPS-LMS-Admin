@@ -79,14 +79,13 @@
   // Simple toggle without external deps
   document.addEventListener('DOMContentLoaded', () => {
     const buttons = document.querySelectorAll('.js-user-toggle');
-    const sections = document.querySelectorAll('[data-content]');
     const hiddenTabInput = document.getElementById('users-tab-input');
     const activeBtnClasses = ['bg-primary-400', 'text-white'];
     const inactiveBtnClasses = ['bg-white', 'text-gray-700', 'hover:bg-gray-50', 'dark:bg-gray-700', 'dark:text-gray-200', 'dark:hover:bg-gray-600'];
 
     function setActive(tab) {
-      // Show/hide sections
-      sections.forEach(sec => {
+      // Re-query sections from the live DOM each time to handle AJAX content replacement
+      document.querySelectorAll('[data-content]').forEach(sec => {
         sec.classList.toggle('hidden', sec.dataset.content !== tab);
       });
 

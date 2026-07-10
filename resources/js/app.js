@@ -387,6 +387,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (oldContainer && newContainer) {
                     oldContainer.innerHTML = newContainer.innerHTML;
                     if (typeof initFlowbite === 'function') initFlowbite();
+                    oldContainer.dispatchEvent(new CustomEvent('contentUpdated'));
                     if (method === 'GET') {
                         window.history.pushState({}, '', url);
                     }
@@ -450,6 +451,7 @@ document.addEventListener("DOMContentLoaded", () => {
                         form.querySelectorAll('select').forEach(sel => sel.selectedIndex = 0);
 
                         if (typeof initFlowbite === 'function') initFlowbite();
+                        oldContainer.dispatchEvent(new CustomEvent('contentUpdated'));
                         window.history.pushState({}, '', url.toString());
                     } else {
                         window.location.href = url.toString();

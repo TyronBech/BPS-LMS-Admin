@@ -80,13 +80,13 @@
   document.addEventListener('DOMContentLoaded', () => {
     // Tab switching logic
     const buttons = document.querySelectorAll('.js-category-toggle');
-    const sections = document.querySelectorAll('[data-content]');
     const hiddenTabInput = document.getElementById('categories-tab-input');
     const activeBtnClasses = ['bg-primary-400', 'text-white'];
     const inactiveBtnClasses = ['bg-white', 'text-gray-700', 'hover:bg-gray-50', 'dark:bg-gray-700', 'dark:text-gray-200', 'dark:hover:bg-gray-600'];
 
     function setActive(tab) {
-      sections.forEach(sec => {
+      // Re-query sections from the live DOM each time to handle AJAX content replacement
+      document.querySelectorAll('[data-content]').forEach(sec => {
         sec.classList.toggle('hidden', sec.dataset.content !== tab);
       });
 
@@ -140,6 +140,10 @@
 
         // Update the browser URL without full refresh
         window.history.pushState({}, '', url);
+
+        // Restore the active tab
+        const currentTab = hiddenTabInput ? hiddenTabInput.value : 'print';
+        setActive(currentTab);
       } catch (error) {
         console.error('AJAX update failed:', error);
       }
@@ -148,10 +152,26 @@
     // Intercept pagination and per-page changes using delegation (Auto Filter)
     document.addEventListener('click', e => {
       const link = e.target.closest('nav a, .pagination a');
-      if (link && (link.closest('#print-section') || link.closest('#non-print-section') || link.closest('#ebooks-section'))) {
-        e.preventDefault();
-        // Pagination: skip loader
-        updateTable(link.href, true);
+      if (link) {
+        let pageParam = null;
+        if (link.closest('#print-section')) pageParam = 'print_page';
+        else if (link.closest('#non-print-section')) pageParam = 'non_print_page';
+        else if (link.closest('#ebooks-section')) pageParam = 'ebooks_page';
+        
+        if (pageParam) {
+          e.preventDefault();
+          const currentUrl = new URL(window.location.href);
+          const targetUrl = new URL(link.href);
+          
+          // Delete pageParam to support page 1 correctly (omitted parameter)
+          currentUrl.searchParams.delete(pageParam);
+          
+          targetUrl.searchParams.forEach((value, key) => {
+            currentUrl.searchParams.set(key, value);
+          });
+          
+          updateTable(currentUrl.toString(), true);
+        }
       }
     });
 
@@ -159,18 +179,34 @@
       const input = e.target.closest('input[name^="per"]');
       if (input && input.form && input.form.classList.contains('skip-loader')) {
         e.preventDefault();
-        const formData = new FormData(input.form);
-        const params = new URLSearchParams(formData);
-        // Ensure the current search and tab are preserved
-        const searchVal = document.getElementById('search-categories')?.value;
-        const tabVal = document.getElementById('categories-tab-input')?.value;
-        if (searchVal) params.set('search-categories', searchVal);
-        if (tabVal) params.set('tab', tabVal);
         
-        // Per-page change: skip loader
-        updateTable(`${window.location.pathname}?${params.toString()}`, true);
+        const currentUrl = new URL(window.location.href);
+        const name = input.name;
+        const val = input.value;
+        
+        currentUrl.searchParams.set(name, val);
+        
+        // Reset matching page parameter to 1
+        if (name === 'perPrintPage') {
+          currentUrl.searchParams.delete('print_page');
+        } else if (name === 'perNonPrintPage') {
+          currentUrl.searchParams.delete('non_print_page');
+        } else if (name === 'perEbooksPage') {
+          currentUrl.searchParams.delete('ebooks_page');
+        }
+        
+        updateTable(currentUrl.toString(), true);
       }
     });
+
+    // Listen to contentUpdated event from global search in app.js
+    const tableContainer = document.getElementById('table-container');
+    if (tableContainer) {
+      tableContainer.addEventListener('contentUpdated', () => {
+        const currentTab = hiddenTabInput ? hiddenTabInput.value : 'print';
+        setActive(currentTab);
+      });
+    }
 
     // Autocomplete logic
     const searchInput = document.getElementById('search-categories');
@@ -206,10 +242,18 @@
                   searchInput.value = item.name;
                   resultsDropdown.classList.add('hidden');
                   
-                  // For selection from autocomplete: skip loader
-                  const formData = new FormData(searchForm);
-                  const params = new URLSearchParams(formData);
-                  updateTable(`${searchForm.action}?${params.toString()}`, true);
+                  const searchForm = document.getElementById('category-search-form');
+                  if (searchForm) {
+                    const currentUrl = new URL(window.location.href);
+                    currentUrl.searchParams.set('search-categories', item.name);
+                    
+                    // Reset all page parameters to page 1
+                    currentUrl.searchParams.delete('print_page');
+                    currentUrl.searchParams.delete('non_print_page');
+                    currentUrl.searchParams.delete('ebooks_page');
+                    
+                    updateTable(currentUrl.toString(), true);
+                  }
                 });
                 resultsList.appendChild(li);
               });
