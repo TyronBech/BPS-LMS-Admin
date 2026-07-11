@@ -74,4 +74,6 @@ jobs:
                      storage/framework/sessions \
                      bootstrap/cache && \
             php artisan optimize:clear && \
-            php artisan migrate"
+            php artisan migrate && \
+            php artisan db:seed --class=SyncPermissionsSeeder && \
+            php artisan queue:restart"
