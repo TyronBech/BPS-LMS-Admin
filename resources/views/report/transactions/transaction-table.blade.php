@@ -3,13 +3,14 @@
     <div class="p-4">
       <h2 class="text-center mb-4 font-semibold text-2xl dark:text-white">Circulation Table</h2>
       <form method="GET" class="flex items-center">
-        <label for="perPage" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Show</label>
+        <label for="perPage" class="mr-2 text-xs font-medium text-gray-500 dark:text-gray-400">Show</label>
         <input type="hidden" name="start" value="{{ old('start', request('start')) }}">
         <input type="hidden" name="end" value="{{ old('end', request('end')) }}">
         <input type="hidden" name="search" value="{{ old('search', request('search')) }}">
         <input type="hidden" name="type" value="{{ old('type', request('type')) }}">
+        <input type="hidden" name="user_type" value="{{ request('user_type', 'student') }}">
         <input type="number" name="perPage" id="perPage" min="1" max="500" onchange="this.form.submit()" value="{{ old('perPage', $perPage) }}" min="1" max="500" class="border border-gray-300 text-xs rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
-        <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">entries per page</span>
+        <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">entries per page</span>
       </form>
     </div>
     <div class="overflow-x-auto">
@@ -19,6 +20,12 @@
             <th scope="col" class="px-6 py-3">Accession</th>
             <th scope="col" class="px-6 py-3">Title</th>
             <th scope="col" class="px-6 py-3 whitespace-nowrap">Name</th>
+            @php $ut = request('user_type', 'student'); @endphp
+            @if($ut === 'student')
+              <th scope="col" class="px-6 py-3 whitespace-nowrap">Grade & Section</th>
+            @else
+              <th scope="col" class="px-6 py-3 whitespace-nowrap">Position</th>
+            @endif
             <th scope="col" class="px-6 py-3 whitespace-nowrap">Reserved Date</th>
             <th scope="col" class="px-6 py-3 whitespace-nowrap">Pickup Deadline</th>
             <th scope="col" class="px-6 py-3 whitespace-nowrap">Borrowed</th>
@@ -36,17 +43,26 @@
               {{ $item->book->title }}
             </th>
             <td class="px-6 py-4 whitespace-nowrap">{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->reserved ?? 'Not Reserved' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->deadline ?? 'No Pickup Deadline' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->borrowed ?? 'Not Borrowed' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->due ?? 'No Due Date' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->returned ?? 'Unreturned' }}</td>
-            <td class="px-6 py-4">{{ ucwords($item->type) ?? 'No Type' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              @if($item->user->students)
+                {{ $item->user->students->level }} - {{ $item->user->students->section }}
+              @elseif($item->user->employees)
+                {{ $item->user->employees->employee_role }}
+              @else
+                N/A
+              @endif
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->reserved_date ? \Carbon\Carbon::parse($item->reserved_date)->format('M j, Y') : 'Not Reserved' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->pickup_deadline ? \Carbon\Carbon::parse($item->pickup_deadline)->format('M j, Y') : 'No Pickup Deadline' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->date_borrowed ? \Carbon\Carbon::parse($item->date_borrowed)->format('M j, Y') : 'Not Borrowed' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->due_date ? \Carbon\Carbon::parse($item->due_date)->format('M j, Y') : 'No Due Date' }}</td>
+            <td class="px-6 py-4 whitespace-nowrap">{{ $item->return_date ? \Carbon\Carbon::parse($item->return_date)->format('M j, Y') : 'Unreturned' }}</td>
+            <td class="px-6 py-4">{{ ucwords($item->transaction_type) ?? 'No Type' }}</td>
             <td class="px-6 py-4">{{ ucwords($item->status) ?? 'No Status' }}</td>
           </tr>
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-            <td colspan="10" class="px-6 py-4 text-center">No data found.</td>
+            <td colspan="11" class="px-6 py-4 text-center">No data found.</td>
           </tr>
           @endforelse
         </tbody>
@@ -57,3 +73,11 @@
     </div>
   </div>
 </div>
+
+@if(isset($chartLabels) && isset($chartCounts))
+<div id="chart-data-bridge" 
+     data-labels="{{ json_encode($chartLabels) }}" 
+     data-counts="{{ json_encode($chartCounts) }}" 
+     style="display: none;">
+</div>
+@endif

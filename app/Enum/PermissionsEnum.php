@@ -48,4 +48,8 @@ enum PermissionsEnum: string
     case RESERVATION_APPROVALS              = 'Reservation Approvals';
     case MODIFY_UI_SETTINGS                 = 'Modify UI Settings';
     case VIEW_BIBLIOGRAPHY_REPORTS          = 'View Bibliography Reports';
+    case CREATE_NON_CIRCULATION_ENTRY       = 'Create Non-Circulation Entry';
+    case VIEW_NON_CIRCULATION_REPORTS       = 'View Non-Circulation Reports';
+    case CREATE_PRINTING_ENTRY              = 'Create Printing Entry';
+    case VIEW_PRINTING_REPORTS              = 'View Printing Reports';
 }
