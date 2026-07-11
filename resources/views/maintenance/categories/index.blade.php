@@ -58,17 +58,17 @@
       <div class="space-y-0">
         <div data-content="print" id="print-section">
           <div class="overflow-x-auto">
-            @include('maintenance.categories.table', ['categories' => $printCategories, 'perPage' => $perPrintPage, 'type' => 'Print', 'pageParam' => 'print_page'])
+            @include('maintenance.categories.table', ['categories' => $printCategories, 'perPage' => $perPrintPage, 'type' => 'Print', 'pageParam' => 'print_page', 'perPageName' => 'perPrintPage'])
           </div>
         </div>
         <div data-content="non-print" id="non-print-section" class="hidden">
           <div class="overflow-x-auto">
-            @include('maintenance.categories.table', ['categories' => $nonPrintCategories, 'perPage' => $perNonPrintPage, 'type' => 'Non-print', 'pageParam' => 'non_print_page'])
+            @include('maintenance.categories.table', ['categories' => $nonPrintCategories, 'perPage' => $perNonPrintPage, 'type' => 'Non-print', 'pageParam' => 'non_print_page', 'perPageName' => 'perNonPrintPage'])
           </div>
         </div>
         <div data-content="ebooks" id="ebooks-section" class="hidden">
           <div class="overflow-x-auto">
-            @include('maintenance.categories.table', ['categories' => $ebooksCategories, 'perPage' => $perEbooksPage, 'type' => 'E-books', 'pageParam' => 'ebooks_page'])
+            @include('maintenance.categories.table', ['categories' => $ebooksCategories, 'perPage' => $perEbooksPage, 'type' => 'E-books', 'pageParam' => 'ebooks_page', 'perPageName' => 'perEbooksPage'])
           </div>
         </div>
       </div>

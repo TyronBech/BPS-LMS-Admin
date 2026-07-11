@@ -5,8 +5,8 @@
     <input type="hidden" name="search-categories" value="{{ request('search-categories') }}">
     @endif
     <input type="hidden" name="tab" value="{{ request('tab', 'print') }}">
-    <label for="per{{ str_replace([' ', '-'], '', $type) }}Page" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Show</label>
-    <input type="number" name="per{{ str_replace([' ', '-'], '', $type) }}Page" id="per{{ str_replace([' ', '-'], '', $type) }}Page" min="1" max="500" value="{{ $perPage }}" class="border border-gray-300 text-xs rounded-lg focus:ring-primary-400 focus:border-primary-400 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+    <label for="{{ $perPageName }}" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Show</label>
+    <input type="number" name="{{ $perPageName }}" id="{{ $perPageName }}" min="1" max="500" value="{{ $perPage }}" class="border border-gray-300 text-xs rounded-lg focus:ring-primary-400 focus:border-primary-400 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
     <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">entries per page</span>
   </form>
   <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
