@@ -1,0 +1,468 @@
+<?php
+
+namespace App\Http\Controllers\Report;
+
+use App\Helpers\ReportHelper;
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\Models\BkNonCirculation;
+use App\Models\UISetting;
+use App\Models\User;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use Illuminate\Database\Eloquent\Collection;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
+
+class NonCirculationController extends Controller
+{
+    public function index(Request $request)
+    {
+        $search      = $request->input('search', '');
+        $fromInputDate  = $request->input('start', '');
+        $toInputDate    = $request->input('end', '');
+        $perPage        = $request->input('perPage', 10);
+        $userType       = $request->input('user_type', 'students');
+
+        $validator = Validator::make($request->all(), [
+            'search'        => 'nullable|string|max:255',
+            'user_type'     => 'nullable|string|max:255',
+            'start'         => 'nullable|date',
+            'end'           => 'nullable|date|after_or_equal:start',
+            'perPage'       => 'nullable|integer|min:1|max:500',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+        }
+
+        $data = $this->generateData($request, new BkNonCirculation(), false);
+
+        return view('report.non-circulations.index', compact('data', 'search', 'userType', 'fromInputDate', 'toInputDate', 'perPage'));
+    }
+
+    public function search(Request $request)
+    {
+        $search         = $request->input('search', '');
+        $userType       = $request->input('user_type', 'students');
+        $fromInputDate  = $request->input('start', '');
+        $toInputDate    = $request->input('end', '');
+        $perPage        = $request->input('perPage', 10);
+
+        $validator = Validator::make($request->all(), [
+            'start'         => 'nullable|date',
+            'end'           => 'nullable|date|after_or_equal:start',
+            'search'        => 'nullable|string|max:255',
+            'user_type'     => 'nullable|string|max:255',
+            'perPage'       => 'nullable|integer|min:1|max:500'
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+        }
+
+        if ($request->input('submit') == 'pdf') {
+            $data = $this->generateData($request, new BkNonCirculation(), true);
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
+            $this->generatePDF($data);
+            return redirect()->route('report.non-circulation')->with('toast-success', 'Successfully exported to PDF');
+        } else if ($request->input('submit') == 'excel') {
+            $data = $this->generateData($request, new BkNonCirculation(), true);
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
+            $this->exportExcel($data);
+            return redirect()->route('report.non-circulation')->with('toast-success', 'Successfully exported to Excel');
+        }
+
+        $data = $this->generateData($request, new BkNonCirculation(), false);
+        return view('report.non-circulations.index', compact('data', 'search', 'userType', 'fromInputDate', 'toInputDate', 'perPage'));
+    }
+
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'modal_user_type' => 'required|in:student,faculty',
+            'student_id'      => 'required_if:modal_user_type,student|nullable|exists:usr_users,id',
+            'faculty_id'      => 'required_if:modal_user_type,faculty|nullable|exists:usr_users,id',
+            'subject'         => 'required|string|max:255',
+            'borrowed_at'     => 'nullable|date'
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+        }
+
+        $nonCirculation = new BkNonCirculation();
+        $nonCirculation->subject = $request->subject;
+        $nonCirculation->borrowed_at = $request->borrowed_at ?? now();
+
+        if ($request->modal_user_type === 'student') {
+            $studentUser = User::with('students')->find($request->student_id);
+            if (!$studentUser || !$studentUser->students) {
+                return redirect()->back()->with('toast-warning', 'Invalid student selected.')->withInput();
+            }
+            $nonCirculation->student_id = $studentUser->students->id;
+            $nonCirculation->faculty_id = null;
+        } else {
+            $facultyUser = User::with('employees')->find($request->faculty_id);
+            if (!$facultyUser || !$facultyUser->employees) {
+                return redirect()->back()->with('toast-warning', 'Invalid faculty/staff selected.')->withInput();
+            }
+            $nonCirculation->faculty_id = $facultyUser->employees->id;
+            $nonCirculation->student_id = null;
+        }
+
+        $nonCirculation->save();
+
+        return redirect()->back()->with('toast-success', 'Non-Circulation entry created successfully.');
+    }
+
+    public function searchUser(Request $request)
+    {
+        $search = $request->get('term');
+        $typeParam = $request->get('type');
+        
+        $searchTerms = array_filter(explode(' ', $search));
+        $users = User::where(function($query) use ($searchTerms) {
+            foreach ($searchTerms as $term) {
+                $query->where(function ($sub) use ($term) {
+                    $sub->where('first_name', 'LIKE', "%{$term}%")
+                        ->orWhere('middle_name', 'LIKE', "%{$term}%")
+                        ->orWhere('last_name', 'LIKE', "%{$term}%");
+                });
+            }
+        });
+
+        if ($typeParam === 'student') {
+            $users->has('students');
+        } else if ($typeParam === 'faculty') {
+            $users->has('employees');
+        } else {
+            $users->where(function($query) {
+                $query->has('students')->orHas('employees');
+            });
+        }
+            
+        $users = $users->limit(10)->get();
+
+        $formatted_users = [];
+
+        foreach ($users as $user) {
+            $type = $user->students ? 'Student' : 'Faculty/Staff';
+            $formatted_users[] = [
+                'id' => $user->id,
+                'text' => $user->first_name . ' ' . $user->last_name . ' (' . $type . ')',
+                'rfid' => $user->rfid,
+            ];
+        }
+
+        return response()->json($formatted_users);
+    }
+
+    public function lookupRfid(Request $request)
+    {
+        $rfid = $request->get('rfid');
+        if (empty($rfid)) {
+            return response()->json(['success' => false, 'message' => 'RFID is empty.']);
+        }
+
+        $user = User::with(['students', 'employees'])->where('rfid', $rfid)->first();
+
+        if (!$user) {
+            return response()->json(['success' => false, 'message' => 'User not found.']);
+        }
+
+        $type = null;
+        $details = null;
+        if ($user->students) {
+            $type = 'student';
+            $details = $user->students->level . ' - ' . $user->students->section;
+        } elseif ($user->employees) {
+            $type = 'faculty';
+            $details = $user->employees->employee_role;
+        }
+
+        if (!$type) {
+            return response()->json(['success' => false, 'message' => 'User has no student or employee profile.']);
+        }
+
+        return response()->json([
+            'success' => true,
+            'id' => $user->id,
+            'name' => trim($user->first_name . ' ' . ($user->middle_name ? $user->middle_name . ' ' : '') . $user->last_name . ($user->suffix ? ' ' . $user->suffix : '')),
+            'type' => $type,
+            'details' => $details,
+        ]);
+    }
+
+    public function destroy(Request $request)
+    {
+        Log::warning('Non-Circulation Report: Attempting to delete non-circulation entry', [
+            'user_id' => Auth::guard('admin')->id(),
+            'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name . ' ' . Auth::guard('admin')->user()->last_name,
+            'non_circulation_id' => $request->input('id'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|integer|exists:bk_non_circulations,id',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+        }
+
+        \Illuminate\Support\Facades\DB::beginTransaction();
+        try {
+            \Illuminate\Support\Facades\DB::statement('SET @current_user_id = ?', [Auth::guard('admin')->user()->id]);
+
+            $nonCirculation = BkNonCirculation::findOrFail($request->input('id'));
+            $nonCirculation->delete();
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\DB::rollBack();
+            Log::error('Non-Circulation Report: Database error during deletion', [
+                'user_id' => Auth::guard('admin')->id(),
+                'non_circulation_id' => $request->input('id'),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
+            return redirect()->back()->with('toast-error', 'Failed to delete non-circulation entry.');
+        }
+        \Illuminate\Support\Facades\DB::commit();
+
+        Log::info('Non-Circulation Report: Non-circulation entry deleted successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'non_circulation_id' => $request->input('id'),
+            'timestamp' => now(),
+        ]);
+
+        return redirect()->back()->with('toast-success', 'Non-Circulation entry deleted successfully.');
+    }
+
+    private function generatePDF(Collection $data)
+    {
+        ini_set('memory_limit', '2048M');
+        ini_set('max_execution_time', 300);
+
+        $settings = UISetting::first() ?? new UISetting();
+        $items = [
+            'title'         => ReportHelper::getFormattedHeaderSuffix('Non-Circulation Book Report', request('start'), request('end'), $data, 'borrowed_at'),
+            'school'        => $settings->org_name ?? "Bicutan Parochial School, Inc.",
+            'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
+            'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
+            'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
+            'date'          => "as of " . date('F j, Y'),
+            'data'          => $data,
+            'totalCount'    => $data->count(),
+            'schoolYear'    => ReportHelper::getSchoolYear(request('start'), request('end'), $data, 'borrowed_at')
+        ];
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isPhpEnabled', true);
+        $options->set('isRemoteEnabled', true);
+        $dompdf = new Dompdf($options);
+        $dompdf->loadHtml(view('pdf.non-circulation-pdf-report', $items));
+        $dompdf->setPaper('legal', 'portrait');
+        $dompdf->render();
+        $dompdf->stream('non-circulation-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
+        exit;
+    }
+
+    private function exportExcel(Collection $data)
+    {
+        $spreadsheet    = new Spreadsheet();
+        $logo           = new Drawing();
+        $settings       = UISetting::first() ?? new UISetting();
+        $sheet          = $spreadsheet->getActiveSheet();
+
+        $tempLogoPath = public_path('img/orgLogoFull.png');
+        $decodedLogo = base64_decode($settings->org_logo_full);
+        file_put_contents($tempLogoPath, $decodedLogo);
+
+        $logo->setName(($settings->org_initial ?? 'BPS') . ' Logo');
+        $logo->setDescription(($settings->org_initial ?? 'BPS') . ' Logo');
+        $logo->setPath($tempLogoPath ?? public_path('img/BPSLogoFull.png'));
+        $logo->setHeight(100);
+        $logo->setCoordinates('D1');
+        $logo->setOffsetY(1);
+        $logo->setWorksheet($sheet);
+
+        $sheet->setTitle('Non-Circulation Report');
+        $sheet->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_LEGAL);
+        $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
+        $sheet->getPageSetup()->setFitToWidth(1);
+        $sheet->getPageSetup()->setFitToHeight(0);
+
+        $sheet->mergeCells('A6:G6');
+        $sheet->getStyle('A6:G6')->getFont()->setBold(true);
+        $sheet->getStyle('A6:G6')->getFont()->setSize(14);
+        $sheet->getStyle('A6:G6')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A6:G6')->getAlignment()->setVertical('center');
+        $sheet->setCellValue('A6', ReportHelper::getFormattedHeaderSuffix('Non-Circulation Report', request('start'), request('end'), $data, 'borrowed_at'));
+
+        $sheet->getColumnDimension('A')->setWidth(15); // Date
+        $sheet->getColumnDimension('B')->setWidth(15); // Time
+        $sheet->getColumnDimension('C')->setWidth(25); // RFID
+        $sheet->getColumnDimension('D')->setWidth(30); // User Name
+        $sheet->getColumnDimension('E')->setWidth(20); // Grade & Section / Role
+        $sheet->getColumnDimension('F')->setWidth(30); // Subject
+        $sheet->getColumnDimension('G')->setWidth(30); // Teacher
+        
+        $sheet->mergeCells('A7:G7');
+        
+        $sheet->setCellValue('A7', 'as of ' . date('F j, Y'));
+        
+        $sheet->getStyle('A7:G7')->getFont()->setBold(true);
+        $sheet->getStyle('A7:G7')->getFont()->setSize(10);
+        $sheet->getStyle('A7:G7')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A7:G7')->getAlignment()->setVertical('center');
+        $sheet->getStyle('A7:G7')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A9:G9')->getFont()->setSize(10);
+        $sheet->getStyle('A9:G9')->getFont()->setBold(true);
+        $sheet->getStyle('A9:G9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A9:G9')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+
+        $sheet->setCellValue('A9', 'Date');
+        $sheet->setCellValue('B9', 'Time');
+        $sheet->setCellValue('C9', 'RFID');
+        $sheet->setCellValue('D9', 'User Name');
+        $sheet->setCellValue('E9', 'Grade & Section / Role');
+        $sheet->setCellValue('F9', 'Subject');
+        $sheet->setCellValue('G9', 'Teacher');
+        
+        $row = 10;
+        foreach ($data as $item) {
+            $sheet->setCellValue('A' . $row, Carbon::parse($item->borrowed_at)->format('M j, Y'));
+            $sheet->setCellValue('B' . $row, Carbon::parse($item->borrowed_at)->format('g:i A'));
+            
+            $rfid = 'N/A';
+            if ($item->student && $item->student->users) {
+                $rfid = $item->student->users->rfid ?? 'N/A';
+                $sheet->setCellValue('D' . $row, $item->student->users->last_name . ', ' . $item->student->users->first_name . ' ' . $item->student->users->middle_name);
+                $sheet->setCellValue('E' . $row, $item->student->level . ' - ' . $item->student->section);
+                if ($item->faculty && $item->faculty->users) {
+                    $sheet->setCellValue('G' . $row, $item->faculty->users->last_name . ', ' . $item->faculty->users->first_name);
+                } else {
+                    $sheet->setCellValue('G' . $row, 'N/A');
+                }
+            } elseif ($item->faculty && $item->faculty->users) {
+                $rfid = $item->faculty->users->rfid ?? 'N/A';
+                $sheet->setCellValue('D' . $row, $item->faculty->users->last_name . ', ' . $item->faculty->users->first_name . ' ' . $item->faculty->users->middle_name);
+                $sheet->setCellValue('E' . $row, $item->faculty->employee_role);
+                $sheet->setCellValue('G' . $row, 'N/A');
+            } else {
+                $sheet->setCellValue('D' . $row, 'N/A');
+                $sheet->setCellValue('E' . $row, 'N/A');
+                $sheet->setCellValue('G' . $row, 'N/A');
+            }
+            
+            $sheet->setCellValueExplicit('C' . $row, $rfid, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+            $sheet->setCellValue('F' . $row, $item->subject);
+
+            $sheet->getStyle('A' . $row . ':G' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle('A' . $row . ':G' . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+            $sheet->getStyle('A' . $row . ':G' . $row)->getAlignment()->setWrapText(true);
+            $row++;
+        }
+
+        $styleArray = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+            ],
+        ];
+        $sheet->getStyle('A9:G' . ($row - 1))->applyFromArray($styleArray);
+
+        $row += 2;
+        $sheet->mergeCells('A' . $row . ':G' . $row);
+        $sheet->setCellValue('A' . $row, 'Report Generated By: ' . Auth::user()->first_name . ' ' . Auth::user()->last_name);
+
+        $styleRange = 'A' . $row . ':G' . $row;
+        $sheet->getStyle($styleRange)->getFont()->setBold(true);
+        $sheet->getStyle($styleRange)->getFont()->setSize(10);
+        $sheet->getStyle($styleRange)->getAlignment()->setHorizontal('left');
+        $sheet->getStyle($styleRange)->getAlignment()->setVertical('left');
+        $sheet->getStyle($styleRange)->getAlignment()->setWrapText(true);
+
+        $writer     = new WriterXlsx($spreadsheet);
+        $fileName = 'non-circulation-report ' . date('Y-m-d') . '.xlsx';
+        header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        header("Content-Disposition: attachment;filename=\"$fileName\"");
+        $writer->save("php://output");
+
+        if (file_exists($tempLogoPath)) {
+            unlink($tempLogoPath);
+        }
+        exit;
+    }
+
+    private function generateData(Request $request, BkNonCirculation $model, bool $isExport = false)
+    {
+        $startStr   = $request->input('start');
+        $endStr     = $request->input('end');
+        $search     = strtolower($request->input('search'));
+        $perPage    = $request->input('perPage', 10);
+        $userType   = $request->input('user_type', 'students');
+
+        $query = $model->newQuery()
+            ->with(['student.users', 'faculty.users']);
+
+        if ($userType === 'students') {
+            $query->whereNotNull('student_id');
+        } elseif ($userType === 'employees') {
+            $query->whereNotNull('faculty_id')->whereNull('student_id');
+        }
+
+        if ($startStr && $endStr) {
+            $startDate = Carbon::createFromFormat('m/d/Y', $startStr)->startOfDay();
+            $endDate   = Carbon::createFromFormat('m/d/Y', $endStr)->endOfDay();
+            $query->whereBetween('borrowed_at', [$startDate, $endDate]);
+        }
+
+        if (strlen($search) > 0) {
+            $searchTerms = array_filter(explode(' ', $search));
+            $query->where(function($q) use ($searchTerms, $search) {
+                $q->whereHas('student.users', function ($sub) use ($searchTerms) {
+                    $sub->where(function ($queryWrapper) use ($searchTerms) {
+                        foreach ($searchTerms as $term) {
+                            $queryWrapper->where(function ($subQ) use ($term) {
+                                $subQ->whereRaw('LOWER(first_name) LIKE ?', ["%{$term}%"])
+                                    ->orWhereRaw('LOWER(middle_name) LIKE ?', ["%{$term}%"])
+                                    ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$term}%"]);
+                            });
+                        }
+                    });
+                })->orWhereHas('faculty.users', function ($sub) use ($searchTerms) {
+                    $sub->where(function ($queryWrapper) use ($searchTerms) {
+                        foreach ($searchTerms as $term) {
+                            $queryWrapper->where(function ($subQ) use ($term) {
+                                $subQ->whereRaw('LOWER(first_name) LIKE ?', ["%{$term}%"])
+                                    ->orWhereRaw('LOWER(middle_name) LIKE ?', ["%{$term}%"])
+                                    ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$term}%"]);
+                            });
+                        }
+                    });
+                })->orWhereRaw('LOWER(subject) LIKE ?', ["%{$search}%"]);
+            });
+        }
+
+        $query->orderBy('borrowed_at', 'desc')->orderBy('id', 'desc');
+
+        if ($isExport) {
+            $data = $query->get();
+            return $data;
+        }
+
+        return $query->paginate($perPage)->appends($request->all());
+    }
+}

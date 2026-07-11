@@ -68,10 +68,67 @@ class UserLogsController extends Controller
             return redirect()->route('report.user')->with('toast-warning', $validator->errors()->first())->withInput();
         }
 
-        $data  = $this->generateData($request, new Log(), false);
+        $data = $this->generateData($request, new Log(), false);
+
+        // Query consolidated hourly counts for the summary card
+        $summaryQuery = Log::query()
+            ->whereNotNull('time_in')
+            ->where('computer_use', 'No')
+            ->whereHas('user');
+
+        if ($fromInputDate && $toInputDate) {
+            $startDate = Carbon::createFromFormat('m/d/Y', $fromInputDate)->startOfDay();
+            $endDate   = Carbon::createFromFormat('m/d/Y', $toInputDate)->endOfDay();
+            $summaryQuery->whereBetween('time_in', [$startDate, $endDate]);
+        }
+
+        if (strlen($search) > 0) {
+            $searchTerms = array_filter(explode(' ', $search));
+            $summaryQuery->whereHas('user', function ($q) use ($searchTerms) {
+                $q->where(function ($queryWrapper) use ($searchTerms) {
+                    foreach ($searchTerms as $term) {
+                        $queryWrapper->where(function ($sub) use ($term) {
+                            $sub->whereRaw('LOWER(first_name) LIKE ?', ["%{$term}%"])
+                                ->orWhereRaw('LOWER(middle_name) LIKE ?', ["%{$term}%"])
+                                ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$term}%"]);
+                        });
+                    }
+                });
+            });
+        }
+
+        if ($userType !== 'all') {
+            $summaryQuery->whereHas('user.privileges', function ($q) use ($userType) {
+                $q->where('user_type', $userType);
+            });
+        }
+
+        $counts = $summaryQuery->selectRaw('HOUR(time_in) as log_hour, COUNT(*) as count')
+            ->groupBy(DB::raw('HOUR(time_in)'))
+            ->get()
+            ->pluck('count', 'log_hour')
+            ->toArray();
+
+        $hourlySummary = array_fill(6, 16, 0);
+        foreach ($counts as $hour => $count) {
+            if ($hour >= 6 && $hour <= 21) {
+                $hourlySummary[$hour] = $count;
+            }
+        }
+
+        $numDays = 1;
+        if ($fromInputDate && $toInputDate) {
+            $startDate = Carbon::createFromFormat('m/d/Y', $fromInputDate)->startOfDay();
+            $endDate   = Carbon::createFromFormat('m/d/Y', $toInputDate)->endOfDay();
+            $numDays = $startDate->diffInDays($endDate) + 1;
+            if ($numDays < 1) $numDays = 1;
+        } else {
+            $numDays = $summaryQuery->clone()->selectRaw('COUNT(DISTINCT DATE(time_in)) as count')->first()->count ?? 1;
+            if ($numDays < 1) $numDays = 1;
+        }
+
         $hours = $data->map(function ($item) {
-            $item = Carbon::parse($item->time_in)->format('H:i:s');
-            return $item;
+            return Carbon::parse($item->start)->format('H:i:s');
         });
         $hour = $this->findPeakHour($hours);
         if ($hour == 12) {
@@ -79,23 +136,14 @@ class UserLogsController extends Controller
         } else if ($hour == 0) {
             $peak_hour = "12:00 AM";
         } else if ($hour > 12) {
-            $peak_hour = $hour - 12 . ":00 PM";
+            $peak_hour = ($hour - 12) . ":00 PM";
         } else {
             $peak_hour = $hour . ":00 AM";
         }
-        return view('report.users.user-logs', compact('data', 'search', 'fromInputDate', 'toInputDate', 'peak_hour', 'perPage', 'userType'));
+
+        return view('report.users.user-logs', compact('data', 'hourlySummary', 'numDays', 'search', 'fromInputDate', 'toInputDate', 'peak_hour', 'perPage', 'userType'));
     }
-    /**
-     * Handles the search request for the user logs report.
-     * It takes in the request object and extracts the search term, user type, start date, end date and page size from the request.
-     * It then logs an info message with the user id, user name, filters, ip address and timestamp.
-     * If the validation fails, it logs a warning message with the user id, errors, ip address and timestamp.
-     * If the submit button is 'pdf', it generates the PDF export.
-     * If the submit button is 'excel', it generates the Excel export.
-     * Finally, it generates the data for the report and returns the view with the data, search term, user type, start date, end date, peak hour and page size.
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Contracts\View\View
-     */
+
     public function search(Request $request)
     {
         $search         = $request->input('search', '');
@@ -137,6 +185,9 @@ class UserLogsController extends Controller
                 'timestamp' => now()
             ]);
             $data = $this->generateData($request, $tableName, true);
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
             $this->generatePDF($data);
             return redirect()->route('report.user')->with('toast-success', 'Successfully exported to PDF');
         } else if ($request->input('submit') == 'excel') {
@@ -145,13 +196,74 @@ class UserLogsController extends Controller
                 'timestamp' => now()
             ]);
             $data = $this->generateData($request, $tableName, true);
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
             $this->exportExcel($data);
             return redirect()->route('report.user')->with('toast-success', 'Successfully exported to Excel');
         }
+
         $data = $this->generateData($request, $tableName, false);
+
+        // Query consolidated hourly counts for the summary card
+        $summaryQuery = Log::query()
+            ->whereNotNull('time_in')
+            ->where('computer_use', 'No')
+            ->whereHas('user');
+
+        if ($fromInputDate && $toInputDate) {
+            $startDate = Carbon::createFromFormat('m/d/Y', $fromInputDate)->startOfDay();
+            $endDate   = Carbon::createFromFormat('m/d/Y', $toInputDate)->endOfDay();
+            $summaryQuery->whereBetween('time_in', [$startDate, $endDate]);
+        }
+
+        if (strlen($search) > 0) {
+            $searchTerms = array_filter(explode(' ', $search));
+            $summaryQuery->whereHas('user', function ($q) use ($searchTerms) {
+                $q->where(function ($queryWrapper) use ($searchTerms) {
+                    foreach ($searchTerms as $term) {
+                        $queryWrapper->where(function ($sub) use ($term) {
+                            $sub->whereRaw('LOWER(first_name) LIKE ?', ["%{$term}%"])
+                                ->orWhereRaw('LOWER(middle_name) LIKE ?', ["%{$term}%"])
+                                ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$term}%"]);
+                        });
+                    }
+                });
+            });
+        }
+
+        if ($userType !== 'all') {
+            $summaryQuery->whereHas('user.privileges', function ($q) use ($userType) {
+                $q->where('user_type', $userType);
+            });
+        }
+
+        $counts = $summaryQuery->selectRaw('HOUR(time_in) as log_hour, COUNT(*) as count')
+            ->groupBy(DB::raw('HOUR(time_in)'))
+            ->get()
+            ->pluck('count', 'log_hour')
+            ->toArray();
+
+        $hourlySummary = array_fill(6, 16, 0);
+        foreach ($counts as $hour => $count) {
+            if ($hour >= 6 && $hour <= 21) {
+                $hourlySummary[$hour] = $count;
+            }
+        }
+
+        $numDays = 1;
+        if ($fromInputDate && $toInputDate) {
+            $startDate = Carbon::createFromFormat('m/d/Y', $fromInputDate)->startOfDay();
+            $endDate   = Carbon::createFromFormat('m/d/Y', $toInputDate)->endOfDay();
+            $numDays = $startDate->diffInDays($endDate) + 1;
+            if ($numDays < 1) $numDays = 1;
+        } else {
+            $numDays = $summaryQuery->clone()->selectRaw('COUNT(DISTINCT DATE(time_in)) as count')->first()->count ?? 1;
+            if ($numDays < 1) $numDays = 1;
+        }
+
         $hours = $data->map(function ($item) {
-            $item = Carbon::parse($item->time_in)->format('H:i:s');
-            return $item;
+            return Carbon::parse($item->start)->format('H:i:s');
         });
         $hour = $this->findPeakHour($hours);
         if ($hour == 12) {
@@ -159,20 +271,14 @@ class UserLogsController extends Controller
         } else if ($hour == 0) {
             $peak_hour = "12:00 AM";
         } else if ($hour > 12) {
-            $peak_hour = $hour - 12 . ":00 PM";
+            $peak_hour = ($hour - 12) . ":00 PM";
         } else {
             $peak_hour = $hour . ":00 AM";
         }
-        return view('report.users.user-logs', compact('data', 'search', 'fromInputDate', 'toInputDate', 'peak_hour', 'perPage', 'userType'));
+
+        return view('report.users.user-logs', compact('data', 'hourlySummary', 'numDays', 'search', 'fromInputDate', 'toInputDate', 'peak_hour', 'perPage', 'userType'));
     }
-    /**
-     * Returns JSON data for user logs graph.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     *
-     * @throws \Illuminate\Validation\ValidationException
-     */
+
     public function graph(Request $request)
     {
         Logger::info('User Logs Report: Graph data requested', [
@@ -180,78 +286,87 @@ class UserLogsController extends Controller
             'type' => $request->type,
             'start_date' => $request->start_date,
             'end_date' => $request->end_date,
+            'user_type' => $request->user_type,
             'ip_address' => $request->ip(),
             'timestamp' => now(),
         ]);
 
         $baseQuery = Log::query();
         $baseQuery->whereNotNull('time_in')
-            ->where('computer_use', 'No');
+            ->where('computer_use', 'No')
+            ->whereHas('user');
 
-        if ($request->start_date && !$request->end_date) {
-            return redirect()->back()->with('toast-warning', 'Please select an end date.');
+        $userType = $request->input('user_type', 'all');
+        if ($userType !== 'all') {
+            $baseQuery->whereHas('user.privileges', function ($q) use ($userType) {
+                $q->where('user_type', $userType);
+            });
         }
 
+        $type = strtolower($request->input('type', 'monthly'));
+        $hasCustomDates = $request->start_date && $request->end_date;
         $chartTitle = '';
+        $reportingPeriod = '';
         $labels = collect();
         $counts = collect();
 
-        // If custom date range provided, parse it and limit base query
-        if ($request->start_date && $request->end_date) {
-            if (Carbon::createFromFormat('m/d/Y', $request->end_date)->eq(Carbon::createFromFormat('m/d/Y', $request->start_date))) {
-                // Hourly: 8am .. 5pm (8 - 17)
-                $today = Carbon::createFromFormat('m/d/Y', $request->start_date);
-                $query = (clone $baseQuery)->whereDate('time_in', $today);
-                $chartTitle = "User Logs for " . $today->format('M d, Y') . " (Hourly)";
-
-                $data = $query->selectRaw('HOUR(time_in) as hour, COUNT(*) as count')
-                    ->whereBetween(DB::raw('HOUR(time_in)'), [8, 17])
-                    ->groupBy('hour')
-                    ->orderBy('hour')
-                    ->get()
-                    ->keyBy('hour');
-
-                $hours = range(8, 17);
-                $labels = collect($hours)->map(fn($h) => strtolower(Carbon::createFromTime($h)->format('ga'))); // e.g. 8am
-                $counts = collect($hours)->map(fn($h) => $data->get($h)->count ?? 0);
-                return response()->json([
-                    'labels'      => $labels,
-                    'counts'      => $counts,
-                    'chart_title' => $chartTitle
-                ]);
-            }
+        // Step 1: Determine the effective date range
+        if ($hasCustomDates) {
             $start = Carbon::createFromFormat('m/d/Y', $request->start_date)->startOfDay();
-            $end   = Carbon::createFromFormat('m/d/Y', $request->end_date)->endOfDay();
-
-            $query = (clone $baseQuery)->whereBetween(DB::raw('DATE(time_in)'), [
-                $start->format('Y-m-d'),
-                $end->format('Y-m-d')
-            ]);
-
-            $chartTitle = "User Logs from {$start->format('M d, Y')} to {$end->format('M d, Y')}";
-
-            $data = $query->selectRaw('DATE(time_in) as day, COUNT(*) as count')
-                ->groupBy('day')
-                ->orderBy('day')
-                ->get();
-
-            $labels = $data->pluck('day')->map(fn($d) => Carbon::parse($d)->format('M d'));
-            $counts = $data->pluck('count');
-            return response()->json([
-                'labels'      => $labels,
-                'counts'      => $counts,
-                'chart_title' => $chartTitle
-            ]);
+            $end = Carbon::createFromFormat('m/d/Y', $request->end_date)->endOfDay();
+        } else {
+            // Compute default date range based on type
+            $now = Carbon::now();
+            switch ($type) {
+                case 'hourly':
+                    $start = Carbon::today()->startOfDay();
+                    $end = Carbon::today()->endOfDay();
+                    break;
+                case 'daily':
+                    $start = $now->copy()->startOfWeek(Carbon::MONDAY)->startOfDay();
+                    $end = $now->copy()->startOfWeek(Carbon::MONDAY)->addDays(4)->endOfDay();
+                    break;
+                case 'weekly':
+                    $start = $now->copy()->startOfMonth()->startOfDay();
+                    $end = $now->copy()->endOfMonth()->endOfDay();
+                    break;
+                case 'monthly':
+                    // Philippine school year: June of current year to March of next year
+                    // If current month is Jan-May, use June of previous year to March of current year
+                    if ($now->month >= 6) {
+                        $start = Carbon::create($now->year, 6, 1)->startOfDay();
+                        $end = Carbon::create($now->year + 1, 3, 31)->endOfDay();
+                    } else {
+                        $start = Carbon::create($now->year - 1, 6, 1)->startOfDay();
+                        $end = Carbon::create($now->year, 3, 31)->endOfDay();
+                    }
+                    break;
+                case 'yearly':
+                    $startYear = $now->year - 10;
+                    $endYear = $now->year;
+                    $start = Carbon::create($startYear, 1, 1)->startOfDay();
+                    $end = Carbon::create($endYear, 12, 31)->endOfDay();
+                    break;
+                default:
+                    // Default to monthly (school year)
+                    if ($now->month >= 6) {
+                        $start = Carbon::create($now->year, 6, 1)->startOfDay();
+                        $end = Carbon::create($now->year + 1, 3, 31)->endOfDay();
+                    } else {
+                        $start = Carbon::create($now->year - 1, 6, 1)->startOfDay();
+                        $end = Carbon::create($now->year, 3, 31)->endOfDay();
+                    }
+                    $type = 'monthly';
+                    break;
+            }
         }
 
-        $type = strtolower($request->type ?? 'daily');
+        // Step 2: Build the base query with the effective date range
+        $query = (clone $baseQuery)->whereBetween('time_in', [$start, $end]);
 
+        // Step 3: Format data according to type
         if ($type === 'hourly') {
-            // Hourly: 8am .. 5pm (8 - 17)
-            $today = Carbon::today();
-            $query = (clone $baseQuery)->whereDate('time_in', $today);
-            $chartTitle = "User Logs for " . $today->format('M d, Y') . " (Hourly)";
-
+            // Aggregate hourly totals across the entire date range (8am–5pm)
             $data = $query->selectRaw('HOUR(time_in) as hour, COUNT(*) as count')
                 ->whereBetween(DB::raw('HOUR(time_in)'), [8, 17])
                 ->groupBy('hour')
@@ -260,39 +375,54 @@ class UserLogsController extends Controller
                 ->keyBy('hour');
 
             $hours = range(8, 17);
-            $labels = collect($hours)->map(fn($h) => strtolower(Carbon::createFromTime($h)->format('ga'))); // e.g. 8am
+            $labels = collect($hours)->map(fn($h) => strtolower(Carbon::createFromTime($h)->format('ga')));
             $counts = collect($hours)->map(fn($h) => $data->get($h)->count ?? 0);
+
+            if ($hasCustomDates) {
+                if ($start->isSameDay($end->copy()->startOfDay())) {
+                    $reportingPeriod = $start->format('F d, Y');
+                    $chartTitle = "User Logs for " . $start->format('M d, Y') . " (Hourly)";
+                } else {
+                    $reportingPeriod = $start->format('F d, Y') . ' to ' . $end->copy()->startOfDay()->format('F d, Y');
+                    $chartTitle = "User Logs (Hourly) from " . $start->format('M d, Y') . " to " . $end->copy()->startOfDay()->format('M d, Y');
+                }
+            } else {
+                $reportingPeriod = Carbon::today()->format('F d, Y');
+                $chartTitle = "User Logs for " . Carbon::today()->format('M d, Y') . " (Hourly)";
+            }
         } elseif ($type === 'daily') {
-            // Daily: Monday .. Friday (school days)
-            $monday = Carbon::now()->startOfWeek(Carbon::MONDAY);
-            $friday = $monday->copy()->addDays(4);
-
-            $query = (clone $baseQuery)->whereBetween('time_in', [$monday->startOfDay(), $friday->endOfDay()]);
-
-            $chartTitle = "User Logs for week of {$monday->format('M d, Y')}";
-
+            // Each day as a data point
             $data = $query->selectRaw('DATE(time_in) as day, COUNT(*) as count')
                 ->groupBy('day')
                 ->orderBy('day')
                 ->get()
                 ->keyBy('day');
 
-            $labels = collect(range(0, 4))->map(fn($i) => $monday->copy()->addDays($i)->format('l')); // Monday, Tuesday...
-            $counts = collect(range(0, 4))->map(function ($i) use ($data, $monday) {
-                $d = $monday->copy()->addDays($i)->toDateString();
-                return $data->get($d)->count ?? 0;
-            });
+            if ($hasCustomDates) {
+                // Generate labels for each day in the custom range
+                $current = $start->copy();
+                $endDate = $end->copy()->startOfDay();
+                while ($current->lte($endDate)) {
+                    $labels->push($current->format('M d'));
+                    $counts->push($data->get($current->toDateString())->count ?? 0);
+                    $current->addDay();
+                }
+                $reportingPeriod = $start->format('F d, Y') . ' to ' . $endDate->format('F d, Y');
+                $chartTitle = "User Logs (Daily) from " . $start->format('M d, Y') . " to " . $endDate->format('M d, Y');
+            } else {
+                // Default: Mon-Fri of current week
+                $monday = $start->copy();
+                $labels = collect(range(0, 4))->map(fn($i) => $monday->copy()->addDays($i)->format('l'));
+                $counts = collect(range(0, 4))->map(function ($i) use ($data, $monday) {
+                    $d = $monday->copy()->addDays($i)->toDateString();
+                    return $data->get($d)->count ?? 0;
+                });
+                $friday = $monday->copy()->addDays(4);
+                $reportingPeriod = $monday->format('F d, Y') . ' to ' . $friday->format('F d, Y');
+                $chartTitle = "User Logs for week of " . $monday->format('M d, Y');
+            }
         } elseif ($type === 'weekly') {
-            // Weekly: split current month into week buckets (week 1, week 2, ...)
-            $now = Carbon::now();
-            $start = $now->copy()->startOfMonth();
-            $end = $now->copy()->endOfMonth();
-
-            $query = (clone $baseQuery)->whereBetween('time_in', [$start->startOfDay(), $end->endOfDay()]);
-
-            $chartTitle = "User Logs by week for " . $now->format('F Y');
-
-            // Pre-aggregate counts by day for the month
+            // Split range into week buckets (Mon-Fri)
             $dayCounts = $query->selectRaw('DATE(time_in) as day, COUNT(*) as count')
                 ->groupBy('day')
                 ->orderBy('day')
@@ -300,20 +430,22 @@ class UserLogsController extends Controller
                 ->keyBy('day');
 
             $current = $start->copy();
+            $rangeEnd = $end->copy()->startOfDay();
             $weekIndex = 1;
-            while ($current->lte($end)) {
-                // Skip weekends (move to next Monday if current is Sat/Sun)
+
+            while ($current->lte($rangeEnd)) {
+                // Skip weekends
                 if ($current->isSaturday() || $current->isSunday()) {
                     $current->next(Carbon::MONDAY);
-                    if ($current->gt($end)) break;
+                    if ($current->gt($rangeEnd)) break;
                 }
 
-                // Determine week end = upcoming Friday (or month end)
-                $dayOfWeekIso = $current->dayOfWeekIso; // 1..7
-                $daysToFriday = 5 - $dayOfWeekIso; // Friday is 5
+                // Determine week end = upcoming Friday (or range end)
+                $dayOfWeekIso = $current->dayOfWeekIso;
+                $daysToFriday = 5 - $dayOfWeekIso;
                 if ($daysToFriday < 0) $daysToFriday = 0;
                 $weekEnd = $current->copy()->addDays($daysToFriday);
-                if ($weekEnd->gt($end)) $weekEnd = $end->copy();
+                if ($weekEnd->gt($rangeEnd)) $weekEnd = $rangeEnd->copy();
 
                 // Sum counts for Mon-Fri in this range
                 $sum = 0;
@@ -326,92 +458,129 @@ class UserLogsController extends Controller
                 $labels->push($label);
                 $counts->push($sum);
 
-                // Advance to next Monday after this week's Friday
                 $current = $weekEnd->copy()->next(Carbon::MONDAY);
                 $weekIndex++;
             }
+
+            if ($hasCustomDates) {
+                $reportingPeriod = $start->format('F d, Y') . ' to ' . $end->copy()->startOfDay()->format('F d, Y');
+                $chartTitle = "User Logs (Weekly) from " . $start->format('M d, Y') . " to " . $end->copy()->startOfDay()->format('M d, Y');
+            } else {
+                $now = Carbon::now();
+                $reportingPeriod = $now->format('F Y');
+                $chartTitle = "User Logs by week for " . $now->format('F Y');
+            }
         } elseif ($type === 'monthly') {
-            // Monthly: Jan..Dec for current year
-            $now = Carbon::now();
-            $start = $now->copy()->startOfYear();
-            $end = $now->copy()->endOfYear();
-
-            $query = (clone $baseQuery)->whereBetween('time_in', [$start->startOfDay(), $end->endOfDay()]);
-
-            $chartTitle = "User Logs for " . $now->format('Y');
-
-            $data = $query->selectRaw('MONTH(time_in) as month, COUNT(*) as count')
-                ->groupBy('month')
+            // Group by year+month, ordered by school year (Jun→Mar) when no custom dates
+            $data = $query->selectRaw('YEAR(time_in) as year, MONTH(time_in) as month, COUNT(*) as count')
+                ->groupBy('year', 'month')
+                ->orderBy('year')
                 ->orderBy('month')
-                ->get()
-                ->keyBy('month');
+                ->get();
 
-            $months = range(1, 12);
-            $labels = collect($months)->map(fn($m) => Carbon::createFromFormat('!m', $m)->format('F'));
-            $counts = collect($months)->map(fn($m) => $data->get($m)->count ?? 0);
+            // Build a keyed map: "YYYY-MM" => count
+            $monthlyData = [];
+            foreach ($data as $row) {
+                $key = $row->year . '-' . str_pad($row->month, 2, '0', STR_PAD_LEFT);
+                $monthlyData[$key] = $row->count;
+            }
+
+            // Generate labels for each month in the range (in order)
+            $current = $start->copy()->startOfMonth();
+            $endMonth = $end->copy()->startOfMonth();
+            while ($current->lte($endMonth)) {
+                $key = $current->format('Y-m');
+                $labels->push($current->format('F Y'));
+                $counts->push($monthlyData[$key] ?? 0);
+                $current->addMonth();
+            }
+
+            if ($hasCustomDates) {
+                $reportingPeriod = $start->format('F Y') . ' to ' . $end->copy()->startOfMonth()->format('F Y');
+                $chartTitle = "User Logs (Monthly) from " . $start->format('F Y') . " to " . $end->copy()->startOfMonth()->format('F Y');
+            } else {
+                // School year display
+                $syStartYear = $start->year;
+                $syEndYear = $end->year;
+                $reportingPeriod = "S.Y. {$syStartYear}-{$syEndYear} (June {$syStartYear} – March {$syEndYear})";
+                $chartTitle = "User Logs (Monthly) — S.Y. {$syStartYear}-{$syEndYear}";
+            }
         } elseif ($type === 'yearly') {
-            // Yearly: last 10 years (same as original behavior)
-            $now = Carbon::now();
-            $startYear = $now->year - 9;
-            $endYear   = $now->year;
-
-            $query = (clone $baseQuery)->whereBetween('time_in', [
-                Carbon::create($startYear, 1, 1)->startOfDay(),
-                Carbon::create($endYear, 12, 31)->endOfDay()
-            ]);
-
+            // Group by year
             $data = $query->selectRaw('YEAR(time_in) as year, COUNT(*) as count')
                 ->groupBy('year')
                 ->orderBy('year')
                 ->get()
                 ->keyBy('year');
 
-            $labels = collect(range($startYear, $endYear));
-            $counts = $labels->map(fn($y) => $data->get($y)->count ?? 0);
+            // Determine unique years in range
+            $startYear = $start->year;
+            $endYear = $end->year;
 
-            $chartTitle = "User Logs for the past 10 years ({$startYear} - {$endYear})";
+            $labels = collect(range($startYear, $endYear))->map(fn($y) => (string) $y);
+            $counts = collect(range($startYear, $endYear))->map(fn($y) => $data->get($y)->count ?? 0);
+
+            if ($hasCustomDates) {
+                if ($startYear === $endYear) {
+                    $reportingPeriod = (string) $startYear;
+                    $chartTitle = "User Logs for {$startYear}";
+                } else {
+                    $reportingPeriod = "{$startYear} to {$endYear}";
+                    $chartTitle = "User Logs (Yearly) from {$startYear} to {$endYear}";
+                }
+            } else {
+                $reportingPeriod = "{$startYear} to {$endYear}";
+                $chartTitle = "User Logs for the past " . ($endYear - $startYear + 1) . " years ({$startYear} - {$endYear})";
+            }
         } else {
-            // Default -> use daily (Mon-Fri)
-            $monday = Carbon::now()->startOfWeek(Carbon::MONDAY);
-            $friday = $monday->copy()->addDays(4);
+            // Fallback: treat as monthly with school year
+            $now = Carbon::now();
+            if ($now->month >= 6) {
+                $start = Carbon::create($now->year, 6, 1)->startOfDay();
+                $end = Carbon::create($now->year + 1, 3, 31)->endOfDay();
+            } else {
+                $start = Carbon::create($now->year - 1, 6, 1)->startOfDay();
+                $end = Carbon::create($now->year, 3, 31)->endOfDay();
+            }
+            $query = (clone $baseQuery)->whereBetween('time_in', [$start, $end]);
 
-            $query = (clone $baseQuery)->whereBetween('time_in', [$monday->startOfDay(), $friday->endOfDay()]);
+            $data = $query->selectRaw('YEAR(time_in) as year, MONTH(time_in) as month, COUNT(*) as count')
+                ->groupBy('year', 'month')
+                ->orderBy('year')
+                ->orderBy('month')
+                ->get();
 
-            $chartTitle = "User Logs for week of {$monday->format('M d, Y')}";
+            $monthlyData = [];
+            foreach ($data as $row) {
+                $key = $row->year . '-' . str_pad($row->month, 2, '0', STR_PAD_LEFT);
+                $monthlyData[$key] = $row->count;
+            }
 
-            $data = $query->selectRaw('DATE(time_in) as day, COUNT(*) as count')
-                ->groupBy('day')
-                ->orderBy('day')
-                ->get()
-                ->keyBy('day');
+            $current = $start->copy()->startOfMonth();
+            $endMonth = $end->copy()->startOfMonth();
+            while ($current->lte($endMonth)) {
+                $key = $current->format('Y-m');
+                $labels->push($current->format('F Y'));
+                $counts->push($monthlyData[$key] ?? 0);
+                $current->addMonth();
+            }
 
-            $labels = collect(range(0, 4))->map(fn($i) => $monday->copy()->addDays($i)->format('l'));
-            $counts = collect(range(0, 4))->map(function ($i) use ($data, $monday) {
-                $d = $monday->copy()->addDays($i)->toDateString();
-                return $data->get($d)->count ?? 0;
-            });
+            $syStartYear = $start->year;
+            $syEndYear = $end->year;
+            $reportingPeriod = "S.Y. {$syStartYear}-{$syEndYear} (June {$syStartYear} – March {$syEndYear})";
+            $chartTitle = "User Logs (Monthly) — S.Y. {$syStartYear}-{$syEndYear}";
         }
 
         return response()->json([
-            'labels'      => $labels->values(),
-            'counts'      => $counts->values(),
-            'chart_title' => $chartTitle
+            'labels'           => $labels->values(),
+            'counts'           => $counts->values(),
+            'chart_title'      => \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Attendance Monitoring', $start, $end),
         ]);
     }
-    /**
-     * Finds the peak hour from an array of times.
-     *
-     * The peak hour is the hour with the highest count of occurrences in the array.
-     * If there are no times, it returns "00".
-     * It goes through each time in the array, extracts the hour from it, and counts how many times the hour occurs.
-     * It then compares each hour's count with the max count and updates the max count and peak hour if necessary.
-     * Finally, it returns the peak hour in the format "HH".
-     *
-     * @param array $times an array of times in the format "HH:MM:SS"
-     * @return string the peak hour in the format "HH"
-     */
+
     private function findPeakHour($times)
     {
+        $peakHour = null;
         $hourCounts = array();
         foreach ($times as $time) {
             $hour = substr($time, 0, 2);
@@ -427,14 +596,7 @@ class UserLogsController extends Controller
         }
         return $peakHour;
     }
-    /**
-     * Exports the user logs report to a PDF file.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @return \Illuminate\Http\Response
-     *
-     * @throws \Exception
-     */
+
     public function exportGraph(Request $request)
     {
         Logger::info('User Logs Report: Graph export requested', [
@@ -446,52 +608,172 @@ class UserLogsController extends Controller
 
         try {
             $chart = $request->input('chart');
-            $type  = strtolower($request->input('type')); // daily, weekly, monthly
+            $type  = strtolower((string) $request->input('type', ''));
             $start = $request->input('start_date');
             $end   = $request->input('end_date');
+            $userType = $request->input('user_type', 'all');
 
             $validator = Validator::make($request->all(), [
-                'type'          => 'nullable|in:daily,weekly,monthly',
-                'start_date'    => 'nullable|date|required_with:end_date',
-                'end_date'      => 'nullable|date|required_with:start_date|after_or_equal:start_date',
+                'type'          => 'nullable|in:hourly,daily,weekly,monthly,yearly',
+                'start_date'    => 'nullable|date_format:m/d/Y|required_with:end_date',
+                'end_date'      => 'nullable|date_format:m/d/Y|required_with:start_date|after_or_equal:start_date',
+                'user_type'     => 'nullable|in:all,student,employee,visitor',
             ]);
             if ($validator->fails()) {
                 return response()->json(['error' => $validator->errors()->first()], 400);
             }
-            // build range string
+            
+            // build range string using same defaults as graph()
             $range = '';
-            if ($start && $end) {
-                // custom date range
-                $range = 'from ' . Carbon::parse($start)->format('F d, Y') . ' to ' . Carbon::parse($end)->format('F d, Y');
-            } elseif ($type === 'daily') {
-                // today
-                $range = Carbon::today()->format('F d, Y');
-            } elseif ($type === 'weekly') {
-                // from Monday to today (but cap at Friday if weekend)
-                $monday = Carbon::now()->startOfWeek(Carbon::MONDAY);
-                $today  = Carbon::now();
+            $startDate = null;
+            $endDate = null;
+            $hasCustomDates = $start && $end;
 
-                if ($today->isSaturday() || $today->isSunday()) {
-                    $friday = Carbon::now()->startOfWeek(Carbon::MONDAY)->addDays(4); // Friday
-                    $range  = 'from ' . $monday->format('F d, Y') . ' to ' . $friday->format('F d, Y');
+            if ($hasCustomDates) {
+                // Custom date range
+                $startDate = Carbon::createFromFormat('m/d/Y', $start)->startOfDay();
+                $endDate = Carbon::createFromFormat('m/d/Y', $end)->endOfDay();
+                if ($startDate->isSameDay($endDate)) {
+                    $range = $startDate->format('F d, Y');
                 } else {
-                    $range = 'from ' . $monday->format('F d, Y') . ' to ' . $today->format('F d, Y');
+                    $range = 'from ' . $startDate->format('F d, Y') . ' to ' . $endDate->format('F d, Y');
                 }
-            } elseif ($type === 'monthly') {
-                // current month + year
-                $range = Carbon::now()->format('F Y');
+            } else {
+                $now = Carbon::now();
+                if (empty($type)) $type = 'monthly';
+                switch ($type) {
+                    case 'hourly':
+                        $startDate = Carbon::today()->startOfDay();
+                        $endDate = Carbon::today()->endOfDay();
+                        $range = Carbon::today()->format('F d, Y');
+                        break;
+                    case 'daily':
+                        $startDate = $now->copy()->startOfWeek(Carbon::MONDAY)->startOfDay();
+                        $endDate = $now->copy()->startOfWeek(Carbon::MONDAY)->addDays(4)->endOfDay();
+                        $range = 'from ' . $startDate->format('F d, Y') . ' to ' . $endDate->format('F d, Y');
+                        break;
+                    case 'weekly':
+                        $startDate = $now->copy()->startOfMonth()->startOfDay();
+                        $endDate = $now->copy()->endOfMonth()->endOfDay();
+                        $range = $now->format('F Y');
+                        break;
+                    case 'monthly':
+                        // Philippine school year: June → March
+                        if ($now->month >= 6) {
+                            $startDate = Carbon::create($now->year, 6, 1)->startOfDay();
+                            $endDate = Carbon::create($now->year + 1, 3, 31)->endOfDay();
+                        } else {
+                            $startDate = Carbon::create($now->year - 1, 6, 1)->startOfDay();
+                            $endDate = Carbon::create($now->year, 3, 31)->endOfDay();
+                        }
+                        $syStart = $startDate->year;
+                        $syEnd = $endDate->year;
+                        $range = "S.Y. {$syStart}-{$syEnd} (June {$syStart} – March {$syEnd})";
+                        break;
+                    case 'yearly':
+                        $startYear = $now->year - 10;
+                        $endYear = $now->year;
+                        $startDate = Carbon::create($startYear, 1, 1)->startOfDay();
+                        $endDate = Carbon::create($endYear, 12, 31)->endOfDay();
+                        $range = "{$startYear} to {$endYear}";
+                        break;
+                    default:
+                        // Default to monthly (school year)
+                        if ($now->month >= 6) {
+                            $startDate = Carbon::create($now->year, 6, 1)->startOfDay();
+                            $endDate = Carbon::create($now->year + 1, 3, 31)->endOfDay();
+                        } else {
+                            $startDate = Carbon::create($now->year - 1, 6, 1)->startOfDay();
+                            $endDate = Carbon::create($now->year, 3, 31)->endOfDay();
+                        }
+                        $syStart = $startDate->year;
+                        $syEnd = $endDate->year;
+                        $range = "S.Y. {$syStart}-{$syEnd} (June {$syStart} – March {$syEnd})";
+                        break;
+                }
+            }
+
+            // Fetch hourly summary data for PDF export (Page 2)
+            $dateQuery = Log::query()
+                ->whereNotNull('time_in')
+                ->where('computer_use', 'No')
+                ->whereHas('user')
+                ->whereBetween('time_in', [$startDate, $endDate]);
+
+            if ($userType !== 'all') {
+                $dateQuery->whereHas('user.privileges', function ($q) use ($userType) {
+                    $q->where('user_type', $userType);
+                });
+            }
+
+            $dates = $dateQuery->selectRaw('DATE(time_in) as log_date')
+                ->groupBy(DB::raw('DATE(time_in)'))
+                ->orderBy(DB::raw('DATE(time_in)'), 'asc')
+                ->get()
+                ->pluck('log_date')
+                ->toArray();
+
+            $hourlyData = [];
+            $tableData = [];
+            if (!empty($dates)) {
+                $countsQuery = Log::query()
+                    ->whereNotNull('time_in')
+                    ->where('computer_use', 'No')
+                    ->whereHas('user')
+                    ->whereIn(DB::raw('DATE(time_in)'), $dates);
+
+                if ($userType !== 'all') {
+                    $countsQuery->whereHas('user.privileges', function ($q) use ($userType) {
+                        $q->where('user_type', $userType);
+                    });
+                }
+
+                $counts = $countsQuery->selectRaw('DATE(time_in) as log_date, HOUR(time_in) as log_hour, COUNT(*) as count')
+                    ->groupBy(DB::raw('DATE(time_in)'), DB::raw('HOUR(time_in)'))
+                    ->get();
+
+                foreach ($dates as $date) {
+                    $formattedDate = Carbon::parse($date)->format('F j, Y');
+                    $hourlyData[$formattedDate] = array_fill(6, 16, 0);
+                }
+
+                foreach ($counts as $c) {
+                    $formattedDate = Carbon::parse($c->log_date)->format('F j, Y');
+                    $hour = (int)$c->log_hour;
+                    if ($hour >= 6 && $hour <= 21) {
+                        $hourlyData[$formattedDate][$hour] = $c->count;
+                    }
+                }
+
+                // Compute tableData (consolidated hourly counts)
+                for ($h = 6; $h <= 21; $h++) {
+                    $formattedHour = Carbon::createFromTime($h)->format('g:00 A');
+                    $totalCount = 0;
+                    foreach ($hourlyData as $date => $hours) {
+                        $totalCount += $hours[$h] ?? 0;
+                    }
+                    $tableData[] = [
+                        'hour' => $formattedHour,
+                        'count' => $totalCount
+                    ];
+                }
             }
 
             $settings = UISetting::first() ?? new UISetting();
             $items = [
-                'title'   => 'Attendance Monitoring Report Graph',
-                'school'  => $settings->org_name ?? "Bicutan Parochial School, Inc.",
-                'address' => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
-                'logo'    => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
-                'user'    => Auth::user()->first_name . ' ' . Auth::user()->last_name,
-                'date'    => now()->format('F d, Y'),
-                'chart'   => $chart,
-                'range'   => $range
+                'title'       => \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Attendance Monitoring Graphical Report', $start ?? $startDate, $end ?? $endDate, $hourlyData, 'start'),
+                'school'      => $settings->org_name ?? "Bicutan Parochial School, Inc.",
+                'address'     => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
+                'logo'        => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
+                'user'        => Auth::user()->first_name . ' ' . Auth::user()->last_name,
+                'date'        => now()->format('F d, Y'),
+                'chart'       => $chart,
+                'graphImage'  => $chart,
+                'range'       => $range,
+                'hourlyData'  => $hourlyData,
+                'tableData'   => $tableData,
+                'settings'    => $settings,
+                'schoolYear'  => \App\Helpers\ReportHelper::getSchoolYear($start, $end, $hourlyData, 'start')
             ];
 
             $options = new Options();
@@ -505,7 +787,6 @@ class UserLogsController extends Controller
             $pdf->render();
 
             $output = $pdf->output();
-            //session()->flash('toast-success', 'Your data has been saved successfully!');
             return response($output, 200)
                 ->header('Content-Type', 'application/pdf')
                 ->header('Content-Disposition', 'attachment; filename="user-logs-graph-' . date('Y-m-d') . '.pdf"');
@@ -518,18 +799,12 @@ class UserLogsController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-    /**
-     * Generates a PDF report for the user logs report.
-     *
-     * @param \Illuminate\Database\Eloquent\Collection $data The data to be included in the report.
-     *
-     * @return void
-     */
+
     private function generatePDF(Collection $data)
     {
         $settings = UISetting::first() ?? new UISetting();
         $items = [
-            'title'         => 'Attendance Monitoring Report',
+            'title'         => \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Attendance Monitoring Report', request('start'), request('end'), $data, 'start'),
             'school'        => $settings->org_name ?? "Bicutan Parochial School, Inc.",
             'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents(public_path('img/BPSLogoFull.png'))),
@@ -537,6 +812,7 @@ class UserLogsController extends Controller
             'date'          => "as of " . date('F j, Y'),
             'data'          => $data,
             'totalCount'    => $data->count(),
+            'schoolYear'    => \App\Helpers\ReportHelper::getSchoolYear(request('start'), request('end'), $data, 'start')
         ];
         $options = new Options();
         $options->set('isHtml5ParserEnabled', true);
@@ -549,13 +825,7 @@ class UserLogsController extends Controller
         $dompdf->stream('users-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;
     }
-    /**
-     * Exports the user logs report to an Excel file.
-     *
-     * @param Illuminate\Database\Eloquent\Collection $data The data to be included in the report.
-     *
-     * @return void
-     */
+
     private function exportExcel(Collection $data)
     {
         $spreadsheet    = new Spreadsheet();
@@ -570,9 +840,9 @@ class UserLogsController extends Controller
         $logo->setName(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setDescription(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setPath($tempLogoPath ?? public_path('img/OwlQueryFull.png'));
-        $logo->setHeight(80);
+        $logo->setHeight(90);
         $logo->setCoordinates('A1');
-        $logo->setOffsetX(70);
+        $logo->setOffsetX(120);
         $logo->setOffsetY(5);
         $logo->setWorksheet($sheet);
 
@@ -582,7 +852,7 @@ class UserLogsController extends Controller
         $sheet->getPageSetup()->setFitToWidth(1);
         $sheet->getPageSetup()->setFitToHeight(0);
         $sheet->mergeCells('A6:D6');
-        $sheet->setCellValue('A6', 'Attendance Monitoring Report');
+        $sheet->setCellValue('A6', \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Attendance Monitoring Report', request('start'), request('end'), $data, 'start'));
         $sheet->getStyle('A6:D6')->getFont()->setBold(true);
         $sheet->getStyle('A6:D6')->getFont()->setSize(14);
         $sheet->getStyle('A6:D6')->getAlignment()->setHorizontal('center');
@@ -592,32 +862,32 @@ class UserLogsController extends Controller
         $sheet->getColumnDimension('B')->setWidth(20);
         $sheet->getColumnDimension('C')->setWidth(20);
         $sheet->getColumnDimension('D')->setWidth(20);
-        $sheet->mergeCells('A8:D8');
-        $sheet->setCellValue('A8', 'Report Generated On: ' . date('F j, Y'));
-        $sheet->getStyle('A8:D8')->getFont()->setBold(true);
-        $sheet->getStyle('A8:D8')->getFont()->setSize(10);
-        $sheet->getStyle('A8:D8')->getAlignment()->setHorizontal('left');
-        $sheet->getStyle('A8:D8')->getAlignment()->setVertical('left');
-        $sheet->getStyle('A8:D8')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A10:D10')->getFont()->setSize(10);
-        $sheet->getStyle('A10:D10')->getFont()->setBold(true);
-        $sheet->getStyle('A10:D10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A10:D10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+        $sheet->mergeCells('A7:D7');
+        $sheet->setCellValue('A7', 'as of ' . date('F j, Y'));
+        $sheet->getStyle('A7:D7')->getFont()->setBold(true);
+        $sheet->getStyle('A7:D7')->getFont()->setSize(10);
+        $sheet->getStyle('A7:D7')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A7:D7')->getAlignment()->setVertical('center');
+        $sheet->getStyle('A7:D7')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A9:D9')->getFont()->setSize(10);
+        $sheet->getStyle('A9:D9')->getFont()->setBold(true);
+        $sheet->getStyle('A9:D9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A9:D9')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
 
-        $sheet->setCellValue('A10', 'Name');
-        $sheet->setCellValue('B10', 'Date');
-        $sheet->setCellValue('C10', 'Time in');
-        $sheet->setCellValue('D10', 'Time out');
-        $row = 11;
+        $sheet->setCellValue('A9', 'Name');
+        $sheet->setCellValue('B9', 'Date');
+        $sheet->setCellValue('C9', 'Time in');
+        $sheet->setCellValue('D9', 'Time out');
+        $row = 10;
         foreach ($data as $item) {
             if (!$item->user) {
                 continue; // Skip if users relationship is not loaded
             }
             $sheet->setCellValue('A' . $row, $item->user->last_name . ', ' . $item->user->first_name . ' ' . $item->user->middle_name);
-            $sheet->setCellValue('B' . $row, Carbon::parse($item->time_in)->format('M j, Y'));
-            $sheet->setCellValue('C' . $row, Carbon::parse($item->time_in)->format('g:i A'));
-            if ($item->time_out) {
-                $sheet->setCellValue('D' . $row, Carbon::parse($item->time_out)->format('g:i A'));
+            $sheet->setCellValue('B' . $row, Carbon::parse($item->start)->format('M j, Y'));
+            $sheet->setCellValue('C' . $row, Carbon::parse($item->start)->format('g:i A'));
+            if ($item->end) {
+                $sheet->setCellValue('D' . $row, Carbon::parse($item->end)->format('g:i A'));
             } else {
                 $sheet->setCellValue('D' . $row, 'No Time Out');
             }
@@ -634,7 +904,7 @@ class UserLogsController extends Controller
                 ],
             ],
         ];
-        $sheet->getStyle('A10:D' . ($row - 1))->applyFromArray($styleArray);
+        $sheet->getStyle('A9:D' . ($row - 1))->applyFromArray($styleArray);
 
         $row += 2;
         $sheet->mergeCells('A' . $row . ':D' . $row);
@@ -658,19 +928,12 @@ class UserLogsController extends Controller
         }
         exit;
     }
-    /**
-     * Generates the data for the user logs report based on the request parameters.
-     *
-     * @param \Illuminate\Http\Request $request
-     * @param \App\Models\Log $model
-     * @param bool $isExport
-     * @return Collection|\Illuminate\Contracts\Pagination\LengthAwarePaginator
-     */
+
     private function generateData(Request $request, Log $model, bool $isExport = false)
     {
         $startStr   = $request->input('start');
         $endStr     = $request->input('end');
-        $search     = strtolower($request->input('search'));
+        $search     = strtolower($request->input('search', ''));
         $userType   = $request->input('user_type', 'all');
         $perPage    = $request->input('perPage', 10);
 
@@ -698,12 +961,16 @@ class UserLogsController extends Controller
         }
 
         if (strlen($search) > 0) {
-            $query->whereHas('user', function ($q) use ($search) {
-                $q->where(function ($sub) use ($search) {
-                    $sub->whereRaw('LOWER(first_name) LIKE ?', ["%{$search}%"])
-                        ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$search}%"])
-                        ->orWhereRaw('LOWER(CONCAT(first_name, " ", last_name)) LIKE ?', ["%{$search}%"])
-                        ->orWhereRaw('LOWER(CONCAT(last_name, ", ", first_name)) LIKE ?', ["%{$search}%"]);
+            $searchTerms = array_filter(explode(' ', $search));
+            $query->whereHas('user', function ($q) use ($searchTerms) {
+                $q->where(function ($queryWrapper) use ($searchTerms) {
+                    foreach ($searchTerms as $term) {
+                        $queryWrapper->where(function ($sub) use ($term) {
+                            $sub->whereRaw('LOWER(first_name) LIKE ?', ["%{$term}%"])
+                                ->orWhereRaw('LOWER(middle_name) LIKE ?', ["%{$term}%"])
+                                ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$term}%"]);
+                        });
+                    }
                 });
             });
         }
@@ -713,26 +980,128 @@ class UserLogsController extends Controller
                 $q->where('user_type', $userType);
             });
         }
+        
         $query->orderBy('time_in', 'desc')->orderBy('id', 'desc');
+
         if ($isExport) {
             $data = $query->get();
-            if ($data->isNotEmpty()) {
-                $min = $data->first()->start;
-                $max = $data->last()->start;
-                $data->reporting_period = 'From ' . Carbon::parse($max)->format('F j, Y') . ' to ' . Carbon::parse($min)->format('F j, Y');
-            } else {
-                $data->reporting_period = 'N/A';
-            }
-
+            $data->reporting_period = \App\Helpers\ReportHelper::buildReportingPeriod($data, 'start');
             return $data->makeHidden(['id', 'user_id']);
         }
 
-        $result = $query->paginate($perPage)
-            ->appends($request->all());
+        $result = $query->paginate($perPage)->appends($request->all());
 
         $result->getCollection()->transform(function ($item) {
             return $item->makeHidden(['id', 'user_id']);
         });
+        
         return $result;
+    }
+
+    private function generateSummaryData(Request $request)
+    {
+        $startStr   = $request->input('start');
+        $endStr     = $request->input('end');
+        $search     = strtolower($request->input('search', ''));
+        $userType   = $request->input('user_type', 'all');
+
+        $dateQuery = Log::query()
+            ->whereNotNull('time_in')
+            ->where('computer_use', 'No')
+            ->whereHas('user');
+
+        if ($startStr && $endStr) {
+            $startDate = Carbon::createFromFormat('m/d/Y', $startStr)->startOfDay();
+            $endDate   = Carbon::createFromFormat('m/d/Y', $endStr)->endOfDay();
+            $dateQuery->whereBetween('time_in', [$startDate, $endDate]);
+        }
+
+        if (strlen($search) > 0) {
+            $searchTerms = array_filter(explode(' ', $search));
+            $dateQuery->whereHas('user', function ($q) use ($searchTerms) {
+                $q->where(function ($queryWrapper) use ($searchTerms) {
+                    foreach ($searchTerms as $term) {
+                        $queryWrapper->where(function ($sub) use ($term) {
+                            $sub->whereRaw('LOWER(first_name) LIKE ?', ["%{$term}%"])
+                                ->orWhereRaw('LOWER(middle_name) LIKE ?', ["%{$term}%"])
+                                ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$term}%"]);
+                        });
+                    }
+                });
+            });
+        }
+
+        if ($userType !== 'all') {
+            $dateQuery->whereHas('user.privileges', function ($q) use ($userType) {
+                $q->where('user_type', $userType);
+            });
+        }
+
+        // Group by date to get distinct log dates in ascending order
+        $distinctDatesQuery = $dateQuery->selectRaw('DATE(time_in) as log_date')
+            ->groupBy(DB::raw('DATE(time_in)'))
+            ->orderBy(DB::raw('DATE(time_in)'), 'asc');
+
+        // Paginate distinct dates (using a separate 'summaryPage' parameter)
+        $paginatedDates = $distinctDatesQuery->paginate(10, ['*'], 'summaryPage')->appends($request->all());
+        $dates = collect($paginatedDates->items())->pluck('log_date')->toArray();
+
+        $hourlyData = [];
+        if (!empty($dates)) {
+            $countsQuery = Log::query()
+                ->whereNotNull('time_in')
+                ->where('computer_use', 'No')
+                ->whereHas('user')
+                ->whereIn(DB::raw('DATE(time_in)'), $dates);
+
+            if (strlen($search) > 0) {
+                $searchTerms = array_filter(explode(' ', $search));
+                $countsQuery->whereHas('user', function ($q) use ($searchTerms) {
+                    $q->where(function ($queryWrapper) use ($searchTerms) {
+                        foreach ($searchTerms as $term) {
+                            $queryWrapper->where(function ($sub) use ($term) {
+                                $sub->whereRaw('LOWER(first_name) LIKE ?', ["%{$term}%"])
+                                    ->orWhereRaw('LOWER(middle_name) LIKE ?', ["%{$term}%"])
+                                    ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$term}%"]);
+                            });
+                        }
+                    });
+                });
+            }
+
+            if ($userType !== 'all') {
+                $countsQuery->whereHas('user.privileges', function ($q) use ($userType) {
+                    $q->where('user_type', $userType);
+                });
+            }
+
+            $counts = $countsQuery->selectRaw('DATE(time_in) as log_date, HOUR(time_in) as log_hour, COUNT(*) as count')
+                ->groupBy(DB::raw('DATE(time_in)'), DB::raw('HOUR(time_in)'))
+                ->get();
+
+            foreach ($dates as $date) {
+                $hourlyData[$date] = array_fill(6, 16, 0);
+            }
+
+            foreach ($counts as $c) {
+                $hour = (int)$c->log_hour;
+                if ($hour >= 6 && $hour <= 21) {
+                    $hourlyData[$c->log_date][$hour] = $c->count;
+                }
+            }
+        }
+
+        $paginatedDates->getCollection()->transform(function ($item) use ($hourlyData) {
+            $date = $item->log_date;
+            $hours = $hourlyData[$date] ?? array_fill(6, 16, 0);
+            return (object)[
+                'date' => Carbon::parse($date)->format('F j, Y'),
+                'raw_date' => $date,
+                'hours' => $hours,
+                'total' => array_sum($hours)
+            ];
+        });
+
+        return $paginatedDates;
     }
 }

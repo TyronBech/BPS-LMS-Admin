@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>User Attendance Statistics Report</title>
+  <title>Computer Use Statistics Report</title>
   <style>
     @page {
       margin: 15mm 15mm 15mm 15mm;
@@ -138,7 +138,7 @@
   <p class="report-period">{{ $date }}</p>
 
   <div class="graph-container">
-    <img class="graph-image" src="{{ $graphImage }}" alt="Attendance Chart">
+    <img class="graph-image" src="{{ $graphImage }}" alt="Computer Use Chart">
   </div>
 
   <table class="metadata-section">

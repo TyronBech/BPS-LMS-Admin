@@ -17,9 +17,8 @@
       <label for="graph_user_type" class="block text-xs font-medium mb-1 text-gray-500 dark:text-gray-400">User Type</label>
       <select id="graph_user_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
         <option value="all" selected>All</option>
-        <option value="student">Students</option>
-        <option value="employee">Faculties & Staff</option>
-        <option value="visitor">Visitors</option>
+        <option value="students">Students</option>
+        <option value="employees">Faculties & Staff</option>
       </select>
     </div>
     
@@ -60,7 +59,7 @@
     {{-- PDF Button --}}
     <div class="w-full md:w-auto">
       <button type="button" id="downloadPDF" class="bg-red-500 hover:bg-red-700 active:bg-red-900 text-white font-bold py-2.5 px-4 rounded w-full text-sm">
-         PDF
+        PDF
       </button>
     </div>
   </div>
@@ -68,7 +67,7 @@
 
 <div class="container mx-auto max-w-[95%] mt-4 mb-4 px-4">
   <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm p-4 border border-gray-200 dark:border-gray-700">
-    <h2 class="text-center mb-1 font-semibold text-2xl dark:text-white">Graph Data for Users</h2>
+    <h2 class="text-center mb-1 font-semibold text-2xl dark:text-white">Graph Data for Online Research</h2>
     <p id="graph-reporting-period" class="text-center text-sm text-gray-500 dark:text-gray-400 mb-4"></p>
     <div id="validation-warning" class="hidden w-full max-w-2xl mx-auto mb-4"></div>
     <div class="relative h-[300px]">
@@ -125,7 +124,7 @@
     $('#downloadPDF').removeAttr('disabled').removeClass('opacity-50 cursor-not-allowed');
 
     $.ajax({
-      url: "{{ route('report.user-graph') }}",
+      url: "{{ route('report.computer-graph') }}",
       type: "GET",
       data: {
         type: type,
@@ -225,7 +224,7 @@
     let end_date = $('#datepicker-range-graph-end').val();
 
     $.ajax({
-      url: "{{ route('report.graph-export-pdf') }}",
+      url: "{{ route('report.computer-graph-export-pdf') }}",
       type: "POST",
       data: {
         _token: "{{ csrf_token() }}",
@@ -242,7 +241,7 @@
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = "user-logs-graph {{ date('Y-m-d') }}.pdf";
+        a.download = "computer-use-graph {{ date('Y-m-d') }}.pdf";
         document.body.appendChild(a);
         a.click();
         a.remove();

@@ -9,6 +9,8 @@ use App\Http\Controllers\Report\UserLogsController;
 use App\Http\Controllers\Report\VisitorLogsController;
 use App\Http\Controllers\Report\TransactionController;
 use App\Http\Controllers\Report\BookCirculationController;
+use App\Http\Controllers\Report\NonCirculationController;
+use App\Http\Controllers\Report\PrintingController;
 use App\Http\Controllers\Import\StudentImportController;
 use App\Http\Controllers\Import\BookImportController;
 use App\Http\Controllers\Import\FacultyStaffImportController;
@@ -129,6 +131,8 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
         Route::controller(ComputerUseController::class)->middleware(ViewUserReportsMiddleware::class)->group(function () {
             Route::get('computer-use', 'index')->name('report.computer-use');
             Route::post('computer-use', 'search')->name('report.computer-use-search');
+            Route::get('computer-graph', 'graph')->name('report.computer-graph');
+            Route::post('export-computer-graph', 'exportGraph')->name('report.computer-graph-export-pdf');
         });
 
         Route::controller(VisitorLogsController::class)->middleware(ViewUserReportsMiddleware::class)->group(function () {
@@ -139,6 +143,23 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
         Route::controller(TransactionController::class)->middleware(ViewTransactionReportsMiddleware::class)->group(function () {
             Route::get('book-circulation', 'index')->name('report.circulation');
             Route::post('book-circulation', 'search')->name('report.circulation-search');
+        });
+
+        Route::controller(NonCirculationController::class)->group(function () {
+            Route::get('non-circulation', 'index')->name('report.non-circulation');
+            Route::post('non-circulation', 'search')->name('report.non-circulation-search');
+            Route::post('non-circulation/store', 'store')->name('report.non-circulation-store');
+            Route::get('non-circulation/search-user', 'searchUser')->name('report.non-circulation-search-user');
+            Route::get('lookup-rfid', 'lookupRfid')->name('report.lookup-rfid');
+            Route::delete('non-circulation/delete', 'destroy')->name('report.non-circulation-delete');
+        });
+
+        Route::controller(PrintingController::class)->group(function () {
+            Route::get('printing', 'index')->name('report.printing');
+            Route::post('printing', 'search')->name('report.printing-search');
+            Route::post('printing/store', 'store')->name('report.printing-store');
+            Route::get('printing/search-user', 'searchUser')->name('report.printing-search-user');
+            Route::delete('printing/delete', 'destroy')->name('report.printing-delete');
         });
 
         Route::controller(BibliographyController::class)->middleware(ViewBibliographyMiddleware::class)->group(function () {
