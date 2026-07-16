@@ -165,13 +165,13 @@ class StudentImportController extends Controller
                     ->where(function ($query) use ($item) {
                         $query->whereHas('students', function ($q) use ($item) {
                             $q->where('id_number', $item['id_number'])->withTrashed();
-                        })
-                        ->orWhere('email', $item['email'])
-                        ->orWhere(function ($q) use ($item) {
-                            if (!empty($item['rfid'])) {
-                                $q->where('rfid', $item['rfid']);
-                            }
                         });
+                        if (!empty($item['email'])) {
+                            $query->orWhere('email', $item['email']);
+                        }
+                        if (!empty($item['rfid'])) {
+                            $query->orWhere('rfid', $item['rfid']);
+                        }
                     })
                     ->with(['students' => function ($query) {
                         $query->withTrashed();
@@ -250,7 +250,7 @@ class StudentImportController extends Controller
                         'user_id' => Auth::id(),
                     ]);
 
-                    if (User::withTrashed()->where('email', $item['email'])->exists() || StagingUser::where('email', $item['email'])->exists()) {
+                    if (!empty($item['email']) && (User::withTrashed()->where('email', $item['email'])->exists() || StagingUser::where('email', $item['email'])->exists())) {
                         DB::rollBack();
                         $errors = "Email already exists for student: " . $item['first_name'] . " " . $item['last_name'];
 
@@ -748,6 +748,11 @@ class StudentImportController extends Controller
      */
     private function account_notification($user, $password)
     {
+        if (!$user || empty($user->email)) {
+            Log::info('Student Import: Skip sending email, no email provided');
+            return;
+        }
+
         Log::info('Student Import: Sending account notification email', [
             'user_id' => $user->id,
             'user_email' => $user->email,

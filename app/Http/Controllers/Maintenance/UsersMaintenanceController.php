@@ -792,7 +792,7 @@ class UsersMaintenanceController extends Controller
             'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
             'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'email'         => 'required|string|email',
+            'email'         => 'nullable|string|email',
             'school_org'   => 'required|string|max:100',
         ]);
         if ($validator->fails()) {
@@ -1099,6 +1099,11 @@ class UsersMaintenanceController extends Controller
      */
     private function account_notification($user, $password)
     {
+        if (!$user || empty($user->email)) {
+            Log::info('Users Maintenance: Skip sending email, no email provided');
+            return;
+        }
+
         Log::info('Users Maintenance: Sending account notification email', [
             'recipient_email' => $user->email,
             'timestamp' => now(),
