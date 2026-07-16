@@ -307,6 +307,7 @@ class UsersMaintenanceController extends Controller
      */
     public function store_student(Request $request)
     {
+        ini_set('max_execution_time', 300);
         ini_set('memory_limit', '4096M');
         $users = new User();
 
@@ -404,6 +405,7 @@ class UsersMaintenanceController extends Controller
      */
     public function store_employee(Request $request)
     {
+        ini_set('max_execution_time', 300);
         ini_set('memory_limit', '4096M');
         $users = new User();
 
