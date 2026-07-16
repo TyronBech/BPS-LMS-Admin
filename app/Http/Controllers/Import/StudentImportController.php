@@ -223,7 +223,7 @@ class StudentImportController extends Controller
                         'last_name' => $item['last_name'],
                         'suffix' => $item['suffix'],
                         'gender' => $item['gender'],
-                        'email' => $item['email'],
+                        'email' => empty($item['email']) ? null : $item['email'],
                     ]);
 
                     $existingStudent->students()->update([
@@ -296,7 +296,7 @@ class StudentImportController extends Controller
                         'last_name' => $item['last_name'],
                         'suffix' => $item['suffix'],
                         'gender' => $item['gender'],
-                        'email' => $item['email'],
+                        'email' => empty($item['email']) ? null : $item['email'],
                         'password' => Hash::make($password),
                         'id_number' => $item['id_number'],
                         'level' => $item['grade_level'],
@@ -377,6 +377,9 @@ class StudentImportController extends Controller
         ]);
 
         foreach ($staged_users as $user) {
+            if (empty($user['email'])) {
+                continue;
+            }
             $student = User::where('email', $user['email'])->first();
             if (!$student) {
                 Log::warning('Student Import: Student not found for email notification', [

@@ -364,7 +364,7 @@ class UsersMaintenanceController extends Controller
                 'id_number'     => $request->input('id_number'),
                 'level'         => $request->input('level'),
                 'section'       => $request->input('section'),
-                'email'         => $request->input('email'),
+                'email'         => empty($request->input('email')) ? null : $request->input('email'),
                 'password'      => Hash::make($password),
                 'user_type'     => "student",
             ]);
@@ -388,7 +388,9 @@ class UsersMaintenanceController extends Controller
             ]);
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage())->withInput();
         }
-        $this->account_notification(User::where('email', $request->input('email'))->first(), $password);
+        if (!empty($request->input('email'))) {
+            $this->account_notification(User::where('email', $request->input('email'))->first(), $password);
+        }
         return redirect()->route('maintenance.users')->with('toast-success', 'User added successfully');
     }
     /**
@@ -458,7 +460,7 @@ class UsersMaintenanceController extends Controller
                 'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
                 'employee_id'   => $request->input('employee_id'),
                 'employee_role' => $request->input('employee_role'),
-                'email'         => $request->input('email'),
+                'email'         => empty($request->input('email')) ? null : $request->input('email'),
                 'password'      => Hash::make($password),
                 'user_type'     => "employee",
             ]);
@@ -482,7 +484,9 @@ class UsersMaintenanceController extends Controller
             ]);
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage())->withInput();
         }
-        $this->account_notification(User::where('email', $request->input('email'))->first(), $password);
+        if (!empty($request->input('email'))) {
+            $this->account_notification(User::where('email', $request->input('email'))->first(), $password);
+        }
         return redirect()->route('maintenance.users')->with('toast-success', 'User added successfully');
     }
     /**
@@ -640,7 +644,7 @@ class UsersMaintenanceController extends Controller
                     'last_name'     => $request->input('last-name'),
                     'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
                     'gender'        => $request->input('gender'),
-                    'email'         => $request->input('email'),
+                    'email'         => empty($request->input('email')) ? null : $request->input('email'),
                     'profile_image' => $profileImage,
                 ];
 
@@ -736,7 +740,7 @@ class UsersMaintenanceController extends Controller
                 'last_name'     => $request->input('last-name'),
                 'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
                 'gender'        => $request->input('gender'),
-                'email'         => $request->input('email'),
+                'email'         => empty($request->input('email')) ? null : $request->input('email'),
                 'profile_image' => $profileImage,
                 'privilege_id'  => $privileges[$request->input('employee_role')],
             ];
@@ -822,7 +826,7 @@ class UsersMaintenanceController extends Controller
                 'last_name'     => $request->input('last-name'),
                 'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
                 'gender'        => $request->input('gender'),
-                'email'         => $request->input('email'),
+                'email'         => empty($request->input('email')) ? null : $request->input('email'),
                 'profile_image' => $profileImage,
             ];
 
