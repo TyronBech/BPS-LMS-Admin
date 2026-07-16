@@ -19,7 +19,7 @@
   <!-- Mobile Card View (sm and below) -->
   <div class="block lg:hidden space-y-4">
     @foreach($pendingRequests as $request)
-    <div class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 shadow-sm">
+    <div class="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 shadow-md">
       <!-- Student Info -->
       <div class="mb-3">
         <div class="flex items-start justify-between mb-2">

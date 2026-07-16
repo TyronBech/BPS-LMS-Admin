@@ -36,17 +36,18 @@ class RoleEmailMessage extends Mailable
         // Get logo from settings or fallback to default
         $this->logoData = $settings->org_logo ? base64_decode($settings->org_logo) : null;
         $this->defaultLogoPath = public_path('img/OwlQuery.png');
+        $brandName = trim(($settings->org_initial ?? '') . ' ' . config('app.name'));
 
         // Formal, emoji-friendly defaults
         $this->msg = array_replace([
             'org_initial'     => $settings->org_initial ?? '',
-            'brand_name'      => ($settings->org_initial ?? '') . ' Library Management System',
+            'brand_name'      => $brandName,
             // 'brand_logo' removed
             'brand_logo_alt'  => ($settings->org_initial ?? '') . ' Logo',
             'subject'         => '🎓 Role Assignment Notification',
             'title'           => 'Role Update Notification 📩',
             'greeting'        => "Dear {$displayName},",
-            'intro'           => 'We are pleased to inform you that your role within the ' . ($settings->org_initial ?? '') . ' Library Management System has been updated.',
+            'intro'           => 'We are pleased to inform you that your role within the ' . $brandName . ' has been updated.',
             'instruction'     => 'Please sign in to review your updated access and permissions.',
             'details_title'   => 'Assignment details 🧩',
             'email_label'     => 'Account email 📧',

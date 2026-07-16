@@ -156,7 +156,7 @@ class PenaltiesController extends Controller
         $options->set('isRemoteEnabled', true);
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml(view('pdf.penalties-pdf-report', $items));
-        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->setPaper('legal', 'portrait');
         $dompdf->render();
         $dompdf->stream('overdue-fines-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;
@@ -189,6 +189,10 @@ class PenaltiesController extends Controller
         $logo->setWorksheet($sheet);
 
         $sheet->setTitle('Overdue Fines Report');
+        $sheet->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_LEGAL);
+        $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
+        $sheet->getPageSetup()->setFitToWidth(1);
+        $sheet->getPageSetup()->setFitToHeight(0);
         $sheet->mergeCells('A6:I6');
         $sheet->setCellValue('A6', 'Overdue Fines Report');
         $sheet->getStyle('A6:I6')->getFont()->setBold(true);
@@ -237,6 +241,9 @@ class PenaltiesController extends Controller
             $sheet->setCellValue('G' . $row, $item->violation);
             $sheet->setCellValue('H' . $row, number_format($item->penalty_total, 2));
             $sheet->setCellValue('I' . $row, $item->penalty_status);
+            $sheet->getStyle('A' . $row . ':I' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle('A' . $row . ':I' . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+            $sheet->getStyle('A' . $row . ':I' . $row)->getAlignment()->setWrapText(true);
 
             $row++;
         }

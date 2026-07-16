@@ -36,7 +36,7 @@ class CategoriesController extends Controller
             'timestamp' => now(),
         ]);
 
-        $data = Category::select('legend', 'name', 'previous_inventory', 'newly_acquired', 'discarded', 'present_inventory')->get();
+        $data = $this->getSummaryCollectionData();
         return view('report.categories.categories', compact('data'));
     }
     /**
@@ -59,7 +59,7 @@ class CategoriesController extends Controller
             'timestamp' => now(),
         ]);
 
-        $data = Category::select('legend', 'name', 'previous_inventory', 'newly_acquired', 'discarded', 'present_inventory')->get();
+        $data = $this->getSummaryCollectionData();
         if ($request->input('submit') == 'pdf') {
             $this->generatePDF($data);
             return redirect()->back()->with('toast-success', 'PDF generated successfully');
@@ -104,7 +104,7 @@ class CategoriesController extends Controller
         $options->set('isRemoteEnabled', true);
         $dompdf = new Dompdf($options);
         $dompdf->loadHtml(view('pdf.summary-pdf-report', $items));
-        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->setPaper('legal', 'landscape');
         $dompdf->render();
         $dompdf->stream('book-summary-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
         exit;
@@ -136,59 +136,83 @@ class CategoriesController extends Controller
         $logo->setWorksheet($sheet);
 
         $sheet->setTitle(($settings->org_initial ?? 'BPS') . ' Collection Report');
-        $sheet->mergeCells('A6:F6');
+        $sheet->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_LEGAL);
+        $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
+        $sheet->getPageSetup()->setFitToWidth(1);
+        $sheet->getPageSetup()->setFitToHeight(0);
+        $sheet->mergeCells('A6:J6');
         $sheet->setCellValue('A6', 'Summary of ' . ($settings->org_initial ?? 'BPS') . ' Collections Report');
-        $sheet->getStyle('A6:F6')->getFont()->setBold(true);
-        $sheet->getStyle('A6:F6')->getFont()->setSize(14);
-        $sheet->getStyle('A6:F6')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('A6:F6')->getAlignment()->setVertical('center');
+        $sheet->getStyle('A6:J6')->getFont()->setBold(true);
+        $sheet->getStyle('A6:J6')->getFont()->setSize(14);
+        $sheet->getStyle('A6:J6')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A6:J6')->getAlignment()->setVertical('center');
 
         $sheet->getColumnDimension('A')->setWidth(30);
         $sheet->getColumnDimension('B')->setWidth(30);
-        $sheet->getColumnDimension('C')->setWidth(30);
-        $sheet->getColumnDimension('D')->setWidth(30);
-        $sheet->getColumnDimension('E')->setWidth(30);
-        $sheet->getColumnDimension('F')->setWidth(30);
-        $sheet->mergeCells('A8:F8');
+        $sheet->getColumnDimension('C')->setWidth(18);
+        $sheet->getColumnDimension('D')->setWidth(18);
+        $sheet->getColumnDimension('E')->setWidth(18);
+        $sheet->getColumnDimension('F')->setWidth(18);
+        $sheet->getColumnDimension('G')->setWidth(18);
+        $sheet->getColumnDimension('H')->setWidth(18);
+        $sheet->getColumnDimension('I')->setWidth(18);
+        $sheet->getColumnDimension('J')->setWidth(18);
+        $sheet->mergeCells('A8:J8');
         $sheet->setCellValue('A8', 'Report Generated On: ' . date('F j, Y'));
-        $sheet->getStyle('A7:F8')->getFont()->setBold(true);
-        $sheet->getStyle('A7:F8')->getFont()->setSize(10);
-        $sheet->getStyle('A7:F8')->getAlignment()->setHorizontal('left');
-        $sheet->getStyle('A7:F8')->getAlignment()->setVertical('left');
-        $sheet->getStyle('A7:F8')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A10:F10')->getFont()->setSize(10);
-        $sheet->getStyle('A10:F10')->getFont()->setBold(true);
-        $sheet->getStyle('A10:F10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A10:F10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+        $sheet->getStyle('A7:J8')->getFont()->setBold(true);
+        $sheet->getStyle('A7:J8')->getFont()->setSize(10);
+        $sheet->getStyle('A7:J8')->getAlignment()->setHorizontal('left');
+        $sheet->getStyle('A7:J8')->getAlignment()->setVertical('left');
+        $sheet->getStyle('A7:J8')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A10:J10')->getFont()->setSize(10);
+        $sheet->getStyle('A10:J10')->getFont()->setBold(true);
+        $sheet->getStyle('A10:J10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A10:J10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+        $sheet->getStyle('A10:B10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('C10:J10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
         $sheet->setCellValue('A10', 'Legend');
         $sheet->setCellValue('B10', 'Description');
         $sheet->setCellValue('C10', 'Previous Inventory');
         $sheet->setCellValue('D10', 'Newly Acquired');
-        $sheet->setCellValue('E10', 'Discarded');
-        $sheet->setCellValue('F10', 'Present Inventory');
+        $sheet->setCellValue('E10', 'Lost and Paid For');
+        $sheet->setCellValue('F10', 'Lost and Replaced');
+        $sheet->setCellValue('G10', 'Unreturned');
+        $sheet->setCellValue('H10', 'Missing');
+        $sheet->setCellValue('I10', 'Discarded');
+        $sheet->setCellValue('J10', 'Present Inventory');
         $row = 11;
         foreach ($data as $item) {
             $sheet->setCellValue('A' . $row, $item->legend);
             $sheet->setCellValue('B' . $row, $item->name);
             $sheet->setCellValue('C' . $row, $item->previous_inventory);
             $sheet->setCellValue('D' . $row, $item->newly_acquired);
-            $sheet->setCellValue('E' . $row, $item->discarded);
-            $sheet->setCellValue('F' . $row, $item->present_inventory);
-            $sheet->getStyle('A' . $row . ':F' . $row)->getAlignment()->setHorizontal('left');
-            $sheet->getStyle('A' . $row . ':F' . $row)->getAlignment()->setVertical('center');
-            $sheet->getStyle('A' . $row . ':F' . $row)->getAlignment()->setWrapText(true);
+            $sheet->setCellValue('E' . $row, $item->lost_and_paid_for);
+            $sheet->setCellValue('F' . $row, $item->lost_and_replaced);
+            $sheet->setCellValue('G' . $row, $item->unreturned);
+            $sheet->setCellValue('H' . $row, $item->missing);
+            $sheet->setCellValue('I' . $row, $item->discarded);
+            $sheet->setCellValue('J' . $row, $item->present_inventory);
+            $sheet->getStyle('A' . $row . ':B' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle('C' . $row . ':J' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+            $sheet->getStyle('A' . $row . ':J' . $row)->getAlignment()->setVertical('center');
+            $sheet->getStyle('A' . $row . ':J' . $row)->getAlignment()->setWrapText(true);
             $row++;
         }
         $sheet->mergeCells('A' . $row . ':B' . $row);
-        $sheet->getStyle('A' . $row . ':F' . $row)->getFont()->setSize(12);
-        $sheet->getStyle('A' . $row . ':F' . $row)->getAlignment()->setHorizontal('right');
-        $sheet->getStyle('A' . $row . ':F' . $row)->getFont()->setBold(true);
+        $sheet->getStyle('A' . $row . ':J' . $row)->getFont()->setSize(12);
+        $sheet->getStyle('A' . $row . ':B' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
+        $sheet->getStyle('C' . $row . ':J' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A' . $row . ':J' . $row)->getFont()->setBold(true);
         $sheet->setCellValue('A' . $row, 'Total:');
         $sheet->setCellValue('C' . $row, $data->sum('previous_inventory'));
         $sheet->setCellValue('D' . $row, $data->sum('newly_acquired'));
-        $sheet->setCellValue('E' . $row, $data->sum('discarded'));
-        $sheet->setCellValue('F' . $row, $data->sum('present_inventory'));
+        $sheet->setCellValue('E' . $row, $data->sum('lost_and_paid_for'));
+        $sheet->setCellValue('F' . $row, $data->sum('lost_and_replaced'));
+        $sheet->setCellValue('G' . $row, $data->sum('unreturned'));
+        $sheet->setCellValue('H' . $row, $data->sum('missing'));
+        $sheet->setCellValue('I' . $row, $data->sum('discarded'));
+        $sheet->setCellValue('J' . $row, $data->sum('present_inventory'));
 
         $styleArray = [
             'borders' => [
@@ -197,13 +221,13 @@ class CategoriesController extends Controller
                 ],
             ],
         ];
-        $sheet->getStyle('A10:F' . $row)->applyFromArray($styleArray);
+        $sheet->getStyle('A10:J' . $row)->applyFromArray($styleArray);
 
         $row += 2;
-        $sheet->mergeCells('A' . $row . ':F' . $row);
+        $sheet->mergeCells('A' . $row . ':J' . $row);
         $sheet->setCellValue('A' . $row, 'Report Generated By: ' . Auth::user()->first_name . ' ' . Auth::user()->last_name);
 
-        $styleRange = 'A' . $row . ':F' . $row;
+        $styleRange = 'A' . $row . ':J' . $row;
         $sheet->getStyle($styleRange)->getFont()->setBold(true);
         $sheet->getStyle($styleRange)->getFont()->setSize(10);
         $sheet->getStyle($styleRange)->getAlignment()->setHorizontal('left');
@@ -226,7 +250,8 @@ class CategoriesController extends Controller
      *
      * @return \Illuminate\Http\RedirectResponse
      */
-    public function update(){
+    public function update()
+    {
         Log::info('Categories Report: Attempting to update summary matrix', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name,
@@ -234,7 +259,7 @@ class CategoriesController extends Controller
             'timestamp' => now(),
         ]);
 
-        try{
+        try {
             DB::statement('CALL update_summary_matrix()');
         } catch (\Illuminate\Database\QueryException $e) {
             Log::error('Categories Report: Database error during update', [
@@ -250,5 +275,58 @@ class CategoriesController extends Controller
             'timestamp' => now(),
         ]);
         return redirect()->back()->with('toast-success', 'Successfully updated');
+    }
+
+    /**
+     * Builds summary report data with remark-based counters per category.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    private function getSummaryCollectionData(): Collection
+    {
+        return Category::query()
+            ->select([
+                'bk_categories.legend',
+                'bk_categories.name',
+                'bk_categories.previous_inventory',
+                'bk_categories.newly_acquired',
+                'bk_categories.present_inventory',
+            ])
+            ->selectSub(function ($query) {
+                $query->from('bk_books')
+                    ->selectRaw('COUNT(*)')
+                    ->whereNull('bk_books.deleted_at')
+                    ->whereColumn('bk_books.category_id', 'bk_categories.id')
+                    ->whereRaw('LOWER(bk_books.remarks) = ?', ['lost and paid for']);
+            }, 'lost_and_paid_for')
+            ->selectSub(function ($query) {
+                $query->from('bk_books')
+                    ->selectRaw('COUNT(*)')
+                    ->whereNull('bk_books.deleted_at')
+                    ->whereColumn('bk_books.category_id', 'bk_categories.id')
+                    ->whereRaw('LOWER(bk_books.remarks) = ?', ['lost and replaced']);
+            }, 'lost_and_replaced')
+            ->selectSub(function ($query) {
+                $query->from('bk_books')
+                    ->selectRaw('COUNT(*)')
+                    ->whereNull('bk_books.deleted_at')
+                    ->whereColumn('bk_books.category_id', 'bk_categories.id')
+                    ->whereRaw('LOWER(bk_books.remarks) = ?', ['unreturned']);
+            }, 'unreturned')
+            ->selectSub(function ($query) {
+                $query->from('bk_books')
+                    ->selectRaw('COUNT(*)')
+                    ->whereNull('bk_books.deleted_at')
+                    ->whereColumn('bk_books.category_id', 'bk_categories.id')
+                    ->whereRaw('LOWER(bk_books.remarks) = ?', ['missing']);
+            }, 'missing')
+            ->selectSub(function ($query) {
+                $query->from('bk_books')
+                    ->selectRaw('COUNT(*)')
+                    ->whereNull('bk_books.deleted_at')
+                    ->whereColumn('bk_books.category_id', 'bk_categories.id')
+                    ->whereRaw('LOWER(bk_books.remarks) = ?', ['discarded']);
+            }, 'discarded')
+            ->get();
     }
 }

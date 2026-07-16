@@ -1,15 +1,15 @@
-<div id="tabular" class="container mx-auto mt-2 mb-4">
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow">
+<div id="tabular" class="container mx-auto max-w-[95%] mt-2 mb-4 px-4">
+  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md">
     <div class="p-4">
-      <h2 class="text-center mb-4 font-semibold text-2xl dark:text-white">Report Table for Users</h2>
+      <h2 class="text-center mb-4 font-semibold text-2xl dark:text-white">Attendance Monitoring Table</h2>
       <form method="GET" class="flex items-center">
-        <label for="perPage" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Show</label>
+        <label for="perPage" class="mr-2 text-xs font-medium text-gray-500 dark:text-gray-400">Show</label>
         <input type="hidden" name="search" value="{{ old('search', request('search')) }}">
         <input type="hidden" name="start" value="{{ old('start', request('start')) }}">
         <input type="hidden" name="end" value="{{ old('end', request('end')) }}">
         <input type="hidden" name="user_type" value="{{ old('user_type', request('user_type')) }}">
         <input type="number" name="perPage" id="perPage" min="1" max="500" onchange="this.form.submit()" value="{{ old('perPage', $perPage) }}" class="border border-gray-300 text-xs rounded-lg focus:ring-primary-500 focus:border-primary-500 p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white">
-        <span class="ml-2 text-sm text-gray-600 dark:text-gray-400">entries per page</span>
+        <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">entries per page</span>
       </form>
     </div>
     <div class="overflow-x-auto">

@@ -4,7 +4,7 @@
 <div class="container mx-auto px-4">
   <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">System Settings</h1>
 
-  <div class="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 relative">
+  <div class="bg-white dark:bg-gray-800 rounded-lg p-6 relative shadow-md">
     <!-- Edit Button -->
     <button data-modal-target="edit-settings-modal" data-modal-toggle="edit-settings-modal" class="absolute top-4 right-4 bg-primary-500 hover:bg-primary-400 text-white font-semibold py-2 px-3 sm:px-4 rounded-lg shadow transition duration-150 ease-in-out flex items-center dark:bg-primary-400 dark:hover:bg-primary-500 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:focus:ring-primary-500">
       <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -156,7 +156,7 @@
   <div id="edit-settings-modal" data-modal-backdrop="static" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
     <div class="relative p-2 sm:p-4 w-full max-w-full sm:max-w-4xl max-h-full">
       <!-- Modal content -->
-      <div class="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
+      <div class="relative bg-white rounded-lg dark:bg-gray-700 shadow-md">
         <!-- Modal header -->
         <div class="flex items-center justify-between p-3 sm:p-4 md:p-5 border-b rounded-t dark:border-gray-600">
           <h3 class="text-lg sm:text-xl font-semibold text-gray-900 dark:text-white">
@@ -410,7 +410,7 @@
 
             <!-- Modal Actions -->
             <div class="flex flex-col-reverse sm:flex-row justify-end gap-2 sm:gap-3 pt-3 sm:pt-4 border-t dark:border-gray-700">
-              <button data-modal-hide="edit-settings-modal" type="button" class="skip-loader w-full sm:w-auto py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-500 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-50 dark:border-gray-600 dark:hover:text-gray-50 dark:hover:bg-gray-700">Cancel</button>
+              <button data-modal-hide="edit-settings-modal" type="button" class="skip-loader w-full sm:w-auto py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-500 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-50 dark:border-gray-600 dark:hover:text-gray-50 dark:hover:bg-gray-700 shadow-md">Cancel</button>
               <button type="submit" class="w-full sm:w-auto text-white bg-primary-500 hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">Save Settings</button>
             </div>
           </div>

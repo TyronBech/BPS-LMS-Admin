@@ -4,7 +4,7 @@
 # Hello!
 
 {{-- Intro Lines --}}
-You are receiving this email because we received a password reset request for your account at **Bicutan Parochial School Library**.
+You are receiving this email because we received a password reset request for your account at **{{ config('app.name') }}**.
 
 {{-- Action Button --}}
 <x-mail::button :url="$actionUrl" color="primary">
@@ -18,7 +18,7 @@ If you did not request a password reset, no further action is required.
 
 {{-- Salutation --}}
 Regards,<br>
-**{{ config('app.name') }} Library System**
+**{{ config('app.name') }}**
 
 {{-- Subcopy --}}
 <x-slot:subcopy>

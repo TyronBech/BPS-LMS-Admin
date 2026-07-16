@@ -9,11 +9,14 @@ use App\Http\Controllers\Report\UserLogsController;
 use App\Http\Controllers\Report\VisitorLogsController;
 use App\Http\Controllers\Report\TransactionController;
 use App\Http\Controllers\Report\BookCirculationController;
+use App\Http\Controllers\Report\NonCirculationController;
+use App\Http\Controllers\Report\PrintingController;
 use App\Http\Controllers\Import\StudentImportController;
 use App\Http\Controllers\Import\BookImportController;
 use App\Http\Controllers\Import\FacultyStaffImportController;
 use App\Http\Controllers\Maintenance\AdminMaintenanceController;
 use App\Http\Controllers\Maintenance\BookMaintenanceController;
+use App\Http\Controllers\Maintenance\SubjectMaintenanceController;
 use App\Http\Controllers\Maintenance\UsersMaintenanceController;
 use App\Http\Controllers\Maintenance\CategoryMaintenanceController;
 use App\Http\Controllers\Roles_Permissions\RolesController;
@@ -32,15 +35,16 @@ use App\Http\Controllers\Maintenance\PenaltyRuleController;
 use App\Http\Controllers\Maintenance\ReservationExtensionController;
 use App\Http\Controllers\Maintenance\ReservationStatus;
 use App\Http\Controllers\Maintenance\TransactionMaintenanceController;
+use App\Http\Controllers\Report\BibliographyController;
 use App\Http\Controllers\Settings\UISettingController;
 use App\Http\Controllers\Testing\MailPreviewController;
 use App\Http\Middleware\AuditReportAuthentication;
 use App\Http\Middleware\BackupAuthentication;
 use App\Http\Middleware\BookAuthentication;
+use App\Http\Middleware\SubjectAuthentication;
 use App\Http\Middleware\SuperAdminAuthentication;
 use App\Http\Middleware\UserAuthentication;
 use App\Http\Middleware\InventoryAuthentication;
-use App\Http\Middleware\ReportAuthentication;
 use App\Http\Middleware\PrivilegeAuthentication;
 use App\Http\Middleware\BookCategoriesAuthentication;
 use App\Http\Middleware\BookImportAuthentication;
@@ -52,6 +56,13 @@ use App\Http\Middleware\PreventBackHistory;
 use App\Http\Middleware\ReservationAuthentication;
 use App\Http\Middleware\StudentImportAuthentication;
 use App\Http\Middleware\UISettingAuthentication;
+use App\Http\Middleware\ViewBookCirculationReportsMiddleware;
+use App\Http\Middleware\ViewBibliographyMiddleware;
+use App\Http\Middleware\ViewInventoryReportsMiddleware;
+use App\Http\Middleware\ViewPenaltyReportsMiddleware;
+use App\Http\Middleware\ViewSummaryReportsMiddleware;
+use App\Http\Middleware\ViewTransactionReportsMiddleware;
+use App\Http\Middleware\ViewUserReportsMiddleware;
 
 Route::middleware(['guest', RedirectIfAuthenticated::class, PreventBackHistory::class])->group(function () {
     Route::get('/', function () {
@@ -109,46 +120,70 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
         Route::get('top-categories-borrowed', 'topCategoriesBorrowed')->name('fetch-top-categories-borrowed');
     });
 
-    Route::prefix('report')->middleware(ReportAuthentication::class)->group(function () {
-        Route::controller(UserLogsController::class)->group(function () {
+    Route::prefix('report')->group(function () {
+        Route::controller(UserLogsController::class)->middleware(ViewUserReportsMiddleware::class)->group(function () {
             Route::get('user-report', 'index')->name('report.user');
             Route::post('user-report', 'search')->name('report.user-search');
             Route::get('user-graph', 'graph')->name('report.user-graph');
             Route::post('export-graph', 'exportGraph')->name('report.graph-export-pdf');
         });
 
-        Route::controller(ComputerUseController::class)->group(function () {
+        Route::controller(ComputerUseController::class)->middleware(ViewUserReportsMiddleware::class)->group(function () {
             Route::get('computer-use', 'index')->name('report.computer-use');
             Route::post('computer-use', 'search')->name('report.computer-use-search');
+            Route::get('computer-graph', 'graph')->name('report.computer-graph');
+            Route::post('export-computer-graph', 'exportGraph')->name('report.computer-graph-export-pdf');
         });
 
-        Route::controller(VisitorLogsController::class)->group(function () {
+        Route::controller(VisitorLogsController::class)->middleware(ViewUserReportsMiddleware::class)->group(function () {
             Route::get('visitor-report', 'index')->name('report.visitor');
             Route::post('visitor-report', 'retrieve')->name('report.visitor-retrieve');
         });
 
-        Route::controller(TransactionController::class)->group(function () {
+        Route::controller(TransactionController::class)->middleware(ViewTransactionReportsMiddleware::class)->group(function () {
             Route::get('book-circulation', 'index')->name('report.circulation');
             Route::post('book-circulation', 'search')->name('report.circulation-search');
         });
 
-        Route::controller(BookCirculationController::class)->group(function () {
+        Route::controller(NonCirculationController::class)->group(function () {
+            Route::get('non-circulation', 'index')->name('report.non-circulation');
+            Route::post('non-circulation', 'search')->name('report.non-circulation-search');
+            Route::post('non-circulation/store', 'store')->name('report.non-circulation-store');
+            Route::get('non-circulation/search-user', 'searchUser')->name('report.non-circulation-search-user');
+            Route::get('lookup-rfid', 'lookupRfid')->name('report.lookup-rfid');
+            Route::delete('non-circulation/delete', 'destroy')->name('report.non-circulation-delete');
+        });
+
+        Route::controller(PrintingController::class)->group(function () {
+            Route::get('printing', 'index')->name('report.printing');
+            Route::post('printing', 'search')->name('report.printing-search');
+            Route::post('printing/store', 'store')->name('report.printing-store');
+            Route::get('printing/search-user', 'searchUser')->name('report.printing-search-user');
+            Route::delete('printing/delete', 'destroy')->name('report.printing-delete');
+        });
+
+        Route::controller(BibliographyController::class)->middleware(ViewBibliographyMiddleware::class)->group(function () {
+            Route::get('bibliography', 'index')->name('report.bibliography');
+            Route::post('bibliography', 'search')->name('report.bibliography-search');
+        });
+
+        Route::controller(BookCirculationController::class)->middleware(ViewBookCirculationReportsMiddleware::class)->group(function () {
             Route::get('accession-list', 'index')->name('report.accession-list');
             Route::post('accession-list', 'search')->name('report.accession-list-search');
         });
 
-        Route::controller(CategoriesController::class)->group(function () {
+        Route::controller(CategoriesController::class)->middleware(ViewSummaryReportsMiddleware::class)->group(function () {
             Route::get('summary', 'index')->name('report.summary');
             Route::post('summary', 'export')->name('report.summary-export');
             Route::post('update-summary', 'update')->name('report.summary-update');
         });
 
-        Route::controller(InventoriesController::class)->group(function () {
+        Route::controller(InventoriesController::class)->middleware(ViewInventoryReportsMiddleware::class)->group(function () {
             Route::get('inventory-report', 'index')->name('report.inventory');
             Route::post('inventory-report', 'search')->name('report.inventory-search');
         });
 
-        Route::controller(PenaltiesController::class)->group(function () {
+        Route::controller(PenaltiesController::class)->middleware(ViewPenaltyReportsMiddleware::class)->group(function () {
             Route::get('penalties', 'index')->name('report.penalties');
             Route::post('penalties', 'search')->name('report.penalties-search');
         });
@@ -216,6 +251,14 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
                 Route::put('edit-category', 'update')->name('maintenance.update-category');
                 Route::delete('delete-category', 'destroy')->name('maintenance.delete-category');
             });
+        });
+
+        Route::prefix('subjects')->middleware(SubjectAuthentication::class)->controller(SubjectMaintenanceController::class)->group(function () {
+            Route::get('subjects', 'index')->name('maintenance.subjects');
+            Route::post('add-subject', 'store')->name('maintenance.store-subject');
+            Route::put('edit-subject', 'update')->name('maintenance.update-subject');
+            Route::delete('delete-subject', 'destroy')->name('maintenance.delete-subject');
+            Route::get('subject-access-code-suggestions', 'suggestAccessCodes')->name('maintenance.subject-access-code-suggestions');
         });
 
         Route::prefix('users')->middleware(UserAuthentication::class)->controller(UsersMaintenanceController::class)->group(function () {

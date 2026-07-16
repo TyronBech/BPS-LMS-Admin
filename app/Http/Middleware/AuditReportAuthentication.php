@@ -21,7 +21,7 @@ class AuditReportAuthentication
     {
         if(!Auth::guard('admin')->check()) return redirect()->route('login')->with('toast-error', 'You are not authenticated');
         $authAdmin = User::findOrFail(Auth::guard('admin')->user()->id);
-        if(!$authAdmin->hasRole(RolesEnum::SUPER_ADMIN) && !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_AUDIT_REPORTS)) return abort(403);
+        if(!$authAdmin->hasRole(RolesEnum::SUPER_ADMIN) || !$authAdmin->hasPermissionTo(PermissionsEnum::VIEW_AUDIT_REPORTS)) return abort(403);
         return $next($request);
     }
 }

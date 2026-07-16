@@ -64,7 +64,7 @@ return [
         'standard_log' => [
             'driver' => 'daily',
             'path' => storage_path('logs/laravel.log'),
-            'level' => 'info', // Captures Info and everything above it
+            'level' => env('LOG_LEVEL', 'debug'), // Captures Info and everything above it
             'days' => 60,
         ],
 

@@ -307,6 +307,7 @@ class UsersMaintenanceController extends Controller
      */
     public function store_student(Request $request)
     {
+        ini_set('max_execution_time', 300);
         ini_set('memory_limit', '4096M');
         $users = new User();
 
@@ -320,17 +321,17 @@ class UsersMaintenanceController extends Controller
         ]);
 
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|min:10|regex:/^[0-9]+$/u',
+            'rfid'          => 'nullable|string|min:10|regex:/^[0-9]+$/u',
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
             'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'id_number'     => 'required|string|min:12|regex:/^[0-9]+$/u',
+            'id_number'     => 'required|string|min:6',
             'level'         => 'required|numeric|min:7|max:12',
             'section'       => 'required|max:50',
-            'email'         => 'required|string|email|unique:' . $users->getTable() . ',email',
+            'email'         => 'nullable|string|email|unique:' . $users->getTable() . ',email',
         ], [
             'email.unique' => 'The email has already been registered.',
         ]);
@@ -364,7 +365,7 @@ class UsersMaintenanceController extends Controller
                 'id_number'     => $request->input('id_number'),
                 'level'         => $request->input('level'),
                 'section'       => $request->input('section'),
-                'email'         => $request->input('email'),
+                'email'         => empty($request->input('email')) ? null : $request->input('email'),
                 'password'      => Hash::make($password),
                 'user_type'     => "student",
             ]);
@@ -388,7 +389,9 @@ class UsersMaintenanceController extends Controller
             ]);
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage())->withInput();
         }
-        $this->account_notification(User::where('email', $request->input('email'))->first(), $password);
+        if (!empty($request->input('email'))) {
+            $this->account_notification(User::where('email', $request->input('email'))->first(), $password);
+        }
         return redirect()->route('maintenance.users')->with('toast-success', 'User added successfully');
     }
     /**
@@ -402,6 +405,7 @@ class UsersMaintenanceController extends Controller
      */
     public function store_employee(Request $request)
     {
+        ini_set('max_execution_time', 300);
         ini_set('memory_limit', '4096M');
         $users = new User();
 
@@ -415,16 +419,16 @@ class UsersMaintenanceController extends Controller
         ]);
 
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|min:10|regex:/^[0-9]+$/u',
+            'rfid'          => 'nullable|string|min:10|regex:/^[0-9]+$/u',
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'suffix'        => 'nullable|string|max:10||regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
             'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'employee_id'   => 'required|string|min:6|max:12|regex:/^[0-9]+$/u',
+            'employee_id'   => 'required|string|min:6|max:12',
             'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
-            'email'         => 'required|string|email|unique:' . $users->getTable() . ',email',
+            'email'         => 'nullable|string|email|unique:' . $users->getTable() . ',email',
         ],
         [
             'email.unique' => 'The email has already been registered.',
@@ -458,7 +462,7 @@ class UsersMaintenanceController extends Controller
                 'profile_image' => $request->input('profile-image') == '' ? null : $request->input('profile-image'),
                 'employee_id'   => $request->input('employee_id'),
                 'employee_role' => $request->input('employee_role'),
-                'email'         => $request->input('email'),
+                'email'         => empty($request->input('email')) ? null : $request->input('email'),
                 'password'      => Hash::make($password),
                 'user_type'     => "employee",
             ]);
@@ -482,7 +486,9 @@ class UsersMaintenanceController extends Controller
             ]);
             return redirect()->back()->with('toast-error', 'Error code: ' . $e->getMessage())->withInput();
         }
-        $this->account_notification(User::where('email', $request->input('email'))->first(), $password);
+        if (!empty($request->input('email'))) {
+            $this->account_notification(User::where('email', $request->input('email'))->first(), $password);
+        }
         return redirect()->route('maintenance.users')->with('toast-success', 'User added successfully');
     }
     /**
@@ -599,17 +605,17 @@ class UsersMaintenanceController extends Controller
         ]);
 
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|min:10|regex:/^[0-9]+$/u',
+            'rfid'          => 'nullable|string|min:10|regex:/^[0-9]+$/u',
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
-            'id_number'     => 'required|string|min:12|regex:/^[0-9]+$/u',
+            'id_number'     => 'required|string|min:6',
             'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'level'         => 'required|numeric|min:7|max:12',
             'section'       => 'required|max:50',
-            'email'         => 'required|string|email',
+            'email'         => 'nullable|string|email',
         ]);
         if ($validator->fails()) {
             Log::warning('Users Maintenance: Student update validation failed', [
@@ -640,7 +646,7 @@ class UsersMaintenanceController extends Controller
                     'last_name'     => $request->input('last-name'),
                     'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
                     'gender'        => $request->input('gender'),
-                    'email'         => $request->input('email'),
+                    'email'         => empty($request->input('email')) ? null : $request->input('email'),
                     'profile_image' => $profileImage,
                 ];
 
@@ -692,16 +698,16 @@ class UsersMaintenanceController extends Controller
         ]);
 
         $validator = Validator::make($request->all(), [
-            'rfid'          => 'required|string|min:10|regex:/^[0-9]+$/u',
+            'rfid'          => 'nullable|string|min:10|regex:/^[0-9]+$/u',
             'first-name'    => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'middle-name'   => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'last-name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
             'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
             'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'employee_id'   => 'required|string|min:6|max:12|regex:/^[0-9]+$/u',
+            'employee_id'   => 'required|string|min:6|max:12',
             'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
-            'email'         => 'required|string|email',
+            'email'         => 'nullable|string|email',
         ]);
         if ($validator->fails()) {
             Log::warning('Users Maintenance: Employee update validation failed', [
@@ -736,7 +742,7 @@ class UsersMaintenanceController extends Controller
                 'last_name'     => $request->input('last-name'),
                 'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
                 'gender'        => $request->input('gender'),
-                'email'         => $request->input('email'),
+                'email'         => empty($request->input('email')) ? null : $request->input('email'),
                 'profile_image' => $profileImage,
                 'privilege_id'  => $privileges[$request->input('employee_role')],
             ];
@@ -792,7 +798,7 @@ class UsersMaintenanceController extends Controller
             'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
             'gender'        => 'required|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
             'profile-image' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
-            'email'         => 'required|string|email',
+            'email'         => 'nullable|string|email',
             'school_org'   => 'required|string|max:100',
         ]);
         if ($validator->fails()) {
@@ -822,7 +828,7 @@ class UsersMaintenanceController extends Controller
                 'last_name'     => $request->input('last-name'),
                 'suffix'        => $request->input('suffix')        == '' ? null : $request->input('suffix'),
                 'gender'        => $request->input('gender'),
-                'email'         => $request->input('email'),
+                'email'         => empty($request->input('email')) ? null : $request->input('email'),
                 'profile_image' => $profileImage,
             ];
 
@@ -1099,6 +1105,11 @@ class UsersMaintenanceController extends Controller
      */
     private function account_notification($user, $password)
     {
+        if (!$user || empty($user->email)) {
+            Log::info('Users Maintenance: Skip sending email, no email provided');
+            return;
+        }
+
         Log::info('Users Maintenance: Sending account notification email', [
             'recipient_email' => $user->email,
             'timestamp' => now(),

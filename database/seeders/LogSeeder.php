@@ -13,7 +13,7 @@ class LogSeeder extends Seeder
      */
     public function run(): void
     {
-        Log::factory()->count(50000)->create();
+        Log::factory()->count(180)->create();
         // Log::create([
         //     'user_id'       => 5,
         //     'computer_use'  => 'Yes',

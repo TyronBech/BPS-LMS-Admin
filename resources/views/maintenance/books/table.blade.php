@@ -47,7 +47,8 @@
         <th scope="col" class="px-6 py-3">Title</th>
         <th scope="col" class="px-6 py-3 hidden md:table-cell">Accession</th>
         <th scope="col" class="px-6 py-3 hidden lg:table-cell">Call Number</th>
-        <th scope="col" class="px-6 py-3 hidden xl:table-cell">Remarks</th>
+        <th scope="col" class="px-6 py-3 hidden xl:table-cell">ISBN</th>
+        <th scope="col" class="px-6 py-3 hidden 2xl:table-cell">Remarks</th>
         <th scope="col" class="px-6 py-3">Actions</th>
       </tr>
     </thead>
@@ -63,10 +64,18 @@
         <th scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white max-w-[15rem] sm:max-w-xs md:max-w-sm lg:max-w-md">
           <div class="text-base font-semibold break-words">{{ $item->title }}</div>
           <div class="font-normal text-gray-500 md:hidden">Acc: {{ $item->accession }}</div>
+          @if($item->subject)
+          <div class="mt-1">
+            <span class="inline-flex items-center rounded-md bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200">
+              Subject: {{ $item->subject->name }}
+            </span>
+          </div>
+          @endif
         </th>
         <td class="px-6 py-4 hidden md:table-cell">{{ $item->accession }}</td>
         <td class="px-6 py-4 hidden lg:table-cell">{{ $item->call_number }}</td>
-        <td class="px-6 py-4 hidden xl:table-cell">{{ $item->remarks }}</td>
+        <td class="px-6 py-4 hidden xl:table-cell">{{ $item->isbn ?? '-' }}</td>
+        <td class="px-6 py-4 hidden 2xl:table-cell">{{ $item->remarks }}</td>
         <td class="px-6 py-4">
           <div class="flex items-center space-x-2">
             <a href="{{ route('maintenance.view-book', ['accession' => $item->accession, 'return_to' => request()->fullUrl()]) }}" class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-yellow-500 rounded-lg hover:bg-yellow-600 focus:ring-4 focus:outline-none focus:ring-yellow-300 dark:bg-yellow-400 dark:hover:bg-yellow-500 dark:focus:ring-yellow-800">View</a>
@@ -83,7 +92,7 @@
       </tr>
       @empty
       <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-        <td colspan="6" class="px-6 py-4 text-center">No books found.</td>
+        <td colspan="7" class="px-6 py-4 text-center">No books found.</td>
       </tr>
       @endforelse
     </tbody>
@@ -94,7 +103,7 @@
 </div>
 <div id="delete-book-modal" tabindex="-1" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
   <div class="relative p-4 w-full max-w-md max-h-full">
-    <div class="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
+    <div class="relative bg-white rounded-lg dark:bg-gray-700 shadow-md">
       <button type="button" class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="delete-book-modal">
         <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
@@ -113,7 +122,7 @@
           <button data-modal-hide="delete-book-modal" type="submit" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
             Yes, I'm sure
           </button>
-          <button data-modal-hide="delete-book-modal" type="button" class="skip-loader py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-500 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-50 dark:border-gray-600 dark:hover:text-primary-50 dark:hover:bg-gray-700">No, cancel</button>
+          <button data-modal-hide="delete-book-modal" type="button" class="skip-loader py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-500 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-50 dark:border-gray-600 dark:hover:text-primary-50 dark:hover:bg-gray-700 shadow-md">No, cancel</button>
         </form>
       </div>
     </div>
@@ -121,7 +130,7 @@
 </div>
 <div id="bulk-delete-book-modal" tabindex="-1" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
   <div class="relative p-4 w-full max-w-md max-h-full">
-    <div class="relative bg-white rounded-lg shadow-sm dark:bg-gray-700">
+    <div class="relative bg-white rounded-lg dark:bg-gray-700 shadow-md">
       <button type="button" class="absolute top-3 end-2.5 text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm w-8 h-8 ms-auto inline-flex justify-center items-center dark:hover:bg-gray-600 dark:hover:text-white" data-modal-hide="bulk-delete-book-modal">
         <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
           <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6" />
@@ -140,7 +149,7 @@
           <button id="bulkDeleteBookBtn" data-modal-hide="bulk-delete-book-modal" type="submit" class="text-white bg-red-600 hover:bg-red-800 focus:ring-4 focus:outline-none focus:ring-red-300 dark:focus:ring-red-800 font-medium rounded-lg text-sm inline-flex items-center px-5 py-2.5 text-center">
             Yes, I'm sure
           </button>
-          <button data-modal-hide="bulk-delete-book-modal" type="button" class="skip-loader py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-500 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-50 dark:border-gray-600 dark:hover:text-primary-50 dark:hover:bg-gray-700">No, cancel</button>
+          <button data-modal-hide="bulk-delete-book-modal" type="button" class="skip-loader py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-500 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-50 dark:border-gray-600 dark:hover:text-primary-50 dark:hover:bg-gray-700 shadow-md">No, cancel</button>
         </form>
       </div>
     </div>

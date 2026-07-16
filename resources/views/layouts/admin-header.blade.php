@@ -1,13 +1,13 @@
 @use('App\Enum\PermissionsEnum')
 <header class="sticky top-0 z-50">
-  <nav class="bg-primary-500 border-gray-200 dark:bg-primary-500">
+  <nav class="bg-primary-600 border-gray-200 dark:bg-primary-600">
     <div class="max-w-screen-xl flex flex-wrap items-center justify-between mx-auto p-4">
       <a href="{{ route('dashboard') }}" class="flex items-center space-x-3 rtl:space-x-reverse">
         <img class="rounded-full w-16 h-16 md:w-20 md:h-20" src="{{ $settings->org_logo_base64 ?? '' }}" alt="School Logo">
         <div class="flex flex-col justify-center">
           <h1 class="text-sm md:text-lg lg:text-xl text-white font-semibold text-start">{{ $settings->org_name ?? 'School Name' }}</h1>
           <hr class="h-px my-1 bg-gray-200 border-0">
-          <h1 class="text-sm md:text-lg lg:text-xl text-white font-semibold text-start">Library Management System</h1>
+          <h1 class="text-xs md:text-base lg:text-lg text-white font-semibold text-start">{{ config('app.name') }} - Library Management System</h1>
         </div>
       </a>
       <button data-collapse-toggle="navbar-dropdown" type="button" class="inline-flex items-center p-2 w-10 h-10 justify-center text-sm text-white rounded-lg lg:hidden hover:bg-tertiary-500 focus:outline-none focus:ring-2 focus:ring-gray-200 dark:text-white dark:hover:bg-tertiary-500 dark:focus:ring-gray-600" aria-controls="navbar-dropdown" aria-expanded="false">
@@ -17,7 +17,7 @@
         </svg>
       </button>
       <div class="hidden w-full lg:block lg:w-auto" id="navbar-dropdown">
-        <ul class="flex flex-col font-medium p-3 lg:p-0 mt-4 border border-gray-100 rounded-lg lg:flex-row lg:items-center lg:space-x-6 rtl:space-x-reverse lg:mt-0 lg:border-0 lg:bg-primary-500 dark:bg-gray-800 lg:dark:bg-primary-500 dark:border-gray-700">
+        <ul class="flex flex-col font-medium p-3 lg:p-0 mt-4 border border-gray-100 rounded-lg lg:flex-row lg:items-center lg:space-x-6 rtl:space-x-reverse lg:mt-0 lg:border-0 dark:border-gray-700">
           <li>
             <a href="{{ route('dashboard') }}" class="block py-2 px-3 text-white rounded hover:bg-tertiary-500 lg:hover:bg-transparent lg:border-0 lg:hover:text-tertiary-500 lg:p-0 dark:text-white lg:dark:hover:text-tertiary-500 dark:hover:bg-tertiary-500 dark:hover:text-white lg:dark:hover:bg-transparent" aria-current="page">Home</a>
           </li>
@@ -30,13 +30,15 @@
           || auth()->user()->can(PermissionsEnum::VIEW_SUMMARY_REPORTS)
           || auth()->user()->can(PermissionsEnum::VIEW_INVENTORY_REPORTS)
           || auth()->user()->can(PermissionsEnum::VIEW_TRANSACTION_REPORTS)
-          || auth()->user()->can(PermissionsEnum::VIEW_BOOK_CIRCULATION_REPORTS))
+          || auth()->user()->can(PermissionsEnum::VIEW_BOOK_CIRCULATION_REPORTS)
+          || auth()->user()->can(PermissionsEnum::VIEW_NON_CIRCULATION_REPORTS)
+          || auth()->user()->can(PermissionsEnum::VIEW_PRINTING_REPORTS))
           <li>
             <button id="dropdownNavbarLink" data-dropdown-toggle="navbarReport" class="flex items-center justify-between w-full py-2 px-3 text-white rounded hover:bg-tertiary-500 lg:hover:bg-transparent lg:border-0 lg:hover:text-tertiary-500 lg:p-0 lg:w-auto dark:text-white lg:dark:hover:text-tertiary-500 dark:hover:bg-tertiary-500 dark:hover:text-white lg:dark:hover:bg-transparent">Reports <svg class="w-2.5 h-2.5 ms-2.5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 10 6">
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
               </svg></button>
             <!-- Dropdown menu -->
-            <div id="navbarReport" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
+            <div id="navbarReport" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg w-44 dark:bg-gray-700 dark:divide-gray-600 shadow-md">
               <ul class="py-2 text-sm text-gray-900" aria-labelledby="dropdownLargeButton">
                 @can(PermissionsEnum::VIEW_USER_REPORTS)
                 <li>
@@ -87,6 +89,36 @@
                   </a>
                 </li>
                 @endcan
+                @can(PermissionsEnum::VIEW_NON_CIRCULATION_REPORTS)
+                <li>
+                  <a href="{{ route('report.non-circulation') }}" class="flex pl-2 py-2 hover:bg-tertiary-100 dark:text-white dark:hover:bg-tertiary-700">
+                    <svg class="min-w-6 min-h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                      <path fill-rule="evenodd" d="M8 3a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1h2a2 2 0 0 1 2 2v15a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h2Zm6 1h-4v2H9a1 1 0 0 0 0 2h6a1 1 0 1 0 0-2h-1V4Zm-3 8a1 1 0 0 1 1-1h3a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1Zm-2-1a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H9Zm2 5a1 1 0 0 1 1-1h3a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1Zm-2-1a1 1 0 1 0 0 2h.01a1 1 0 1 0 0-2H9Z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="ms-2">Evaluation and Review Collection</span>
+                  </a>
+                </li>
+                @endcan
+                @can(PermissionsEnum::VIEW_PRINTING_REPORTS)
+                <li>
+                  <a href="{{ route('report.printing') }}" class="flex pl-2 py-2 hover:bg-tertiary-100 dark:text-white dark:hover:bg-tertiary-700">
+                    <svg class="min-w-6 min-h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                      <path fill-rule="evenodd" d="M8 3a2 2 0 0 0-2 2v3h12V5a2 2 0 0 0-2-2H8Zm-3 7a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h1v-4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v4h1a2 2 0 0 0 2-2v-5a2 2 0 0 0-2-2H5Zm4 11a1 1 0 0 1-1-1v-4h8v4a1 1 0 0 1-1 1H9Z" clip-rule="evenodd" />
+                    </svg>
+                    <span class="ms-2">Printing & Photocopying Records</span>
+                  </a>
+                </li>
+                @endcan
+                @can(PermissionsEnum::VIEW_BIBLIOGRAPHY_REPORTS)
+                <li>
+                  <a href="{{ route('report.bibliography') }}" class="flex pl-2 py-2 hover:bg-tertiary-100 dark:text-white dark:hover:bg-tertiary-700">
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M9 6c0-1.65685 1.3431-3 3-3s3 1.34315 3 3-1.3431 3-3 3-3-1.34315-3-3Zm2 3.62992c-.1263-.04413-.25-.08799-.3721-.13131-1.33928-.47482-2.49256-.88372-4.77995-.8482C4.84875 8.66593 4 9.46413 4 10.5v7.2884c0 1.0878.91948 1.8747 1.92888 1.8616 1.283-.0168 2.04625.1322 2.79671.3587.29285.0883.57733.1863.90372.2987l.00249.0008c.11983.0413.24534.0845.379.1299.2989.1015.6242.2088.9892.3185V9.62992Zm2-.00374V20.7551c.5531-.1678 1.0379-.3374 1.4545-.4832.2956-.1034.5575-.1951.7846-.2653.7257-.2245 1.4655-.3734 2.7479-.3566.5019.0065.9806-.1791 1.3407-.4788.3618-.3011.6723-.781.6723-1.3828V10.5c0-.58114-.2923-1.05022-.6377-1.3503-.3441-.29904-.8047-.49168-1.2944-.49929-2.2667-.0352-3.386.36906-4.6847.83812-.1256.04539-.253.09138-.3832.13765Z" />
+                    </svg>
+                    <span class="ms-2">Bibliography</span>
+                  </a>
+                </li>
+                @endcan
                 @can(PermissionsEnum::VIEW_BOOK_CIRCULATION_REPORTS)
                 <li>
                   <a href="{{ route('report.accession-list') }}" class="flex pl-2 py-2 hover:bg-tertiary-100 dark:text-white dark:hover:bg-tertiary-700">
@@ -127,7 +159,7 @@
                 <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
               </svg></button>
             <!-- Dropdown menu -->
-            <div id="navbarImport" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
+            <div id="navbarImport" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg w-44 dark:bg-gray-700 dark:divide-gray-600 shadow-md">
               <ul class="py-2 text-sm text-gray-900" aria-labelledby="dropdownLargeButton">
                 @can(PermissionsEnum::IMPORT_USERS)
                 <li>
@@ -166,6 +198,7 @@
           @endif
           @if(auth()->user()->can(PermissionsEnum::VIEW_USERS_MAINTENANCE) ||
           auth()->user()->can(PermissionsEnum::VIEW_BOOKS_MAINTENANCE) ||
+          auth()->user()->can(PermissionsEnum::VIEW_SUBJECTS_MAINTENANCE) ||
           auth()->user()->can(PermissionsEnum::VIEW_BOOK_CATEGORIES_MAINTENANCE) ||
           auth()->user()->can(PermissionsEnum::VIEW_PRIVILEGES_MAINTENANCE) ||
           auth()->user()->can(PermissionsEnum::VIEW_PENALTY_RULES_MAINTENANCE) ||
@@ -180,7 +213,7 @@
               </svg>
             </button>
             <!-- Dropdown menu -->
-            <div id="navbarMaintenance" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
+            <div id="navbarMaintenance" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg w-44 dark:bg-gray-700 dark:divide-gray-600 shadow-md">
               <ul class="py-2 text-sm text-gray-900" aria-labelledby="dropdownLargeButton">
                 @can(PermissionsEnum::VIEW_USERS_MAINTENANCE)
                 <li>
@@ -199,6 +232,17 @@
                       <path fill-rule="evenodd" d="M6 2a2 2 0 0 0-2 2v15a3 3 0 0 0 3 3h12a1 1 0 1 0 0-2h-2v-2h2a1 1 0 0 0 1-1V4a2 2 0 0 0-2-2h-8v16h5v2H7a1 1 0 1 1 0-2h1V2H6Z" clip-rule="evenodd" />
                     </svg>
                     <span class="ms-2">Books</span>
+                  </a>
+                </li>
+                @endcan
+                @can(PermissionsEnum::VIEW_SUBJECTS_MAINTENANCE)
+                <li>
+                  <a href="{{ route('maintenance.subjects') }}" class="flex pl-2 py-2 hover:bg-tertiary-100 dark:text-white dark:hover:bg-tertiary-700">
+                    <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
+                      <path fill-rule="evenodd" d="M12 2a4 4 0 0 0-4 4v1.126A4.002 4.002 0 0 0 10 15h4a4.002 4.002 0 0 0 2-7.874V6a4 4 0 0 0-4-4Zm2 7h-4a2 2 0 1 0 0 4h4a2 2 0 1 0 0-4Z" clip-rule="evenodd" />
+                      <path d="M5 19a3 3 0 0 1 3-3h8a3 3 0 1 1 0 6H8a3 3 0 0 1-3-3Z" />
+                    </svg>
+                    <span class="ms-2">Subjects</span>
                   </a>
                 </li>
                 @endcan
@@ -291,7 +335,7 @@
                       <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m1 1 4 4 4-4" />
                     </svg>
                   </button>
-                  <div id="doubleDropdown" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg shadow-sm w-44 dark:bg-gray-700">
+                  <div id="doubleDropdown" class="z-10 hidden bg-white divide-y divide-gray-100 rounded-lg w-44 dark:bg-gray-700 shadow-md">
                     <ul class="py-2 text-sm text-gray-700 dark:text-gray-200" aria-labelledby="doubleDropdownButton">
                       <li>
                         <a href="{{ route('maintenance.admins') }}" class="flex pl-2 py-2 hover:bg-tertiary-100 dark:hover:bg-tertiary-700">
@@ -343,7 +387,7 @@
               </svg>
             </button>
             <!-- Dropdown menu -->
-            <div id="userSettings" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg shadow w-44 dark:bg-gray-700 dark:divide-gray-600">
+            <div id="userSettings" class="z-10 hidden font-normal bg-white divide-y divide-gray-100 rounded-lg w-44 dark:bg-gray-700 dark:divide-gray-600 shadow-md">
               <ul class="py-2 text-sm text-gray-900" aria-labelledby="dropdownLargeButton">
                 <li>
                   <a href="{{ route('profile') }}" class="flex pl-2 py-2 hover:bg-tertiary-100 dark:text-white dark:hover:bg-tertiary-700">
@@ -353,6 +397,7 @@
                     <span class="ms-2">Account Settings</span>
                   </a>
                 </li>
+                @can(PermissionsEnum::MODIFY_UI_SETTINGS)
                 <li>
                   <a href="{{ route('settings.ui-settings') }}" class="flex pl-2 py-2 hover:bg-tertiary-100 dark:text-white dark:hover:bg-tertiary-700">
                     <svg class="w-6 h-6 text-gray-800 dark:text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24">
@@ -361,6 +406,7 @@
                     <span class="ms-2">System Settings</span>
                   </a>
                 </li>
+                @endcan
                 <li>
                   <form action="{{ route('admin.logout') }}" method="POST" class="flex pl-2 py-2 hover:bg-tertiary-100 dark:text-white dark:hover:bg-tertiary-700">
                     @csrf

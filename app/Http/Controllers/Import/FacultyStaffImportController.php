@@ -68,6 +68,9 @@ class FacultyStaffImportController extends Controller
      */
     public function store(Request $request)
     {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '4096M');
+
         Log::info('Faculty/Staff Import: Store process initiated', [
             'user_id' => Auth::id(),
             'user_name' => Auth::user()->full_name,
@@ -79,23 +82,20 @@ class FacultyStaffImportController extends Controller
         $newEmployeesFromSession = $request->session()->get('new_employee_data', []);
         $existingEmployeesFromSession = $request->session()->get('existing_employee_data', []);
 
-        Log::debug('Faculty/Staff Import: Retrieved session data', [
-            'new_employees_count' => count($newEmployeesFromSession),
-            'existing_employees_count' => count($existingEmployeesFromSession),
-            'user_id' => Auth::id(),
-        ]);
-
-        // Merge last submitted data
         $submittedNew = $request->input('new_employees', []);
         foreach ($submittedNew as $index => $employee) {
-            if (isset($newEmployeesFromSession[$index])) {
+            if (empty($newEmployeesFromSession) && !empty($submittedNew)) {
+                $newEmployeesFromSession = $submittedNew;
+            } else if (isset($newEmployeesFromSession[$index])) {
                 $newEmployeesFromSession[$index] = array_merge($newEmployeesFromSession[$index], $employee);
             }
         }
 
         $submittedExisting = $request->input('existing_employees', []);
         foreach ($submittedExisting as $index => $employee) {
-            if (isset($existingEmployeesFromSession[$index])) {
+            if (empty($existingEmployeesFromSession) && !empty($submittedExisting)) {
+                $existingEmployeesFromSession = $submittedExisting;
+            } else if (isset($existingEmployeesFromSession[$index])) {
                 $existingEmployeesFromSession[$index] = array_merge($existingEmployeesFromSession[$index], $employee);
             }
         }
@@ -145,9 +145,9 @@ class FacultyStaffImportController extends Controller
                 'last_name'     => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
                 'suffix'        => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
                 'gender'        => 'required|string|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
-                'email'         => 'required|string|email|max:255',
+                'email'         => 'nullable|string|email|max:255',
                 'employee_role' => 'required|string|in:' . implode(',', UserGroup::pluck('category')->toArray()),
-                'employee_id'   => 'required|string|min:6|max:12|regex:/^[0-9]+$/u',
+                'employee_id'   => 'required|string|min:6|max:12',
             ]);
 
             if ($validator->fails()) {
@@ -168,9 +168,22 @@ class FacultyStaffImportController extends Controller
 
             try {
                 $password = Str::password(8, true, true, true, false);
-                $existingEmployee = User::wherehas('employees', function ($query) use ($item) {
-                    $query->where('employee_id', $item['employee_id']);
-                })->with('employees')->first();
+                $existingEmployee = User::withTrashed()
+                    ->where(function ($query) use ($item) {
+                        $query->whereHas('employees', function ($q) use ($item) {
+                            $q->where('employee_id', $item['employee_id'])->withTrashed();
+                        });
+                        if (!empty($item['email'])) {
+                            $query->orWhere('email', $item['email']);
+                        }
+                        if (!empty($item['rfid'])) {
+                            $query->orWhere('rfid', $item['rfid']);
+                        }
+                    })
+                    ->with(['employees' => function ($query) {
+                        $query->withTrashed();
+                    }])
+                    ->first();
 
                 if ($existingEmployee) {
                     Log::info('Faculty/Staff Import: Existing employee found', [
@@ -180,23 +193,21 @@ class FacultyStaffImportController extends Controller
                         'user_id' => Auth::id(),
                     ]);
 
-                    if (
-                        $existingEmployee->rfid                         == $item['rfid']
-                        && $existingEmployee->first_name                == $item['first_name']
-                        && $existingEmployee->middle_name               == $item['middle_name']
-                        && $existingEmployee->last_name                 == $item['last_name']
-                        && $existingEmployee->suffix                    == $item['suffix']
-                        && $existingEmployee->gender                    == $item['gender']
-                        && $existingEmployee->email                     == $item['email']
-                        && $existingEmployee->employees->employee_role  == $item['employee_role']
-                        && $existingEmployee->employees->employee_id    == $item['employee_id']
-                    ) {
-                        Log::debug('Faculty/Staff Import: No changes detected, skipping update', [
-                            'employee_id' => $existingEmployee->id,
-                            'employee_number' => $item['employee_id'],
-                            'user_id' => Auth::id(),
+                    // Restore user if soft-deleted
+                    if ($existingEmployee->trashed()) {
+                        $existingEmployee->restore();
+                    }
+
+                    // Ensure details record exists and restore if soft-deleted
+                    if (!$existingEmployee->employees) {
+                        $existingEmployee->employees()->create([
+                            'employee_id'   => $item['employee_id'],
+                            'employee_role' => $item['employee_role'],
                         ]);
-                        continue;
+                        // reload the relation to avoid null checks
+                        $existingEmployee->load(['employees' => function($q) { $q->withTrashed(); }]);
+                    } else if ($existingEmployee->employees->trashed()) {
+                        $existingEmployee->employees->restore();
                     }
 
                     $oldData = [
@@ -207,17 +218,18 @@ class FacultyStaffImportController extends Controller
                         'suffix' => $existingEmployee->suffix,
                         'gender' => $existingEmployee->gender,
                         'email' => $existingEmployee->email,
-                        'employee_role' => $existingEmployee->employees->employee_role,
-                        'employee_id' => $existingEmployee->employees->employee_id,
+                        'employee_role' => $existingEmployee->employees->employee_role ?? null,
+                        'employee_id' => $existingEmployee->employees->employee_id ?? null,
                     ];
 
                     $existingEmployee->update([
+                        'rfid'          => $item['rfid'],
                         'first_name'    => $item['first_name'],
                         'middle_name'   => $item['middle_name'],
                         'last_name'     => $item['last_name'],
                         'suffix'        => $item['suffix'],
                         'gender'        => $item['gender'],
-                        'email'         => $item['email'],
+                        'email'         => empty($item['email']) ? null : $item['email'],
                     ]);
 
                     $existingEmployee->employees()->update([
@@ -243,7 +255,7 @@ class FacultyStaffImportController extends Controller
                         'user_id' => Auth::id(),
                     ]);
 
-                    if (StagingUser::where('email', $item['email'])->exists()) {
+                    if (!empty($item['email']) && (User::withTrashed()->where('email', $item['email'])->exists() || StagingUser::where('email', $item['email'])->exists())) {
                         DB::rollBack();
                         $errors = "Email already exists for user: " . $item['first_name'] . " " . $item['last_name'];
 
@@ -255,7 +267,7 @@ class FacultyStaffImportController extends Controller
                         ]);
 
                         return redirect()->route('import.import-faculties-staffs')->with('toast-error', $errors);
-                    } else if (StagingUser::where('rfid', $item['rfid'])->exists()) {
+                    } else if (!empty($item['rfid']) && (User::withTrashed()->where('rfid', $item['rfid'])->exists() || StagingUser::where('rfid', $item['rfid'])->exists())) {
                         DB::rollBack();
                         $errors = "RFID already exists for user: " . $item['first_name'] . " " . $item['last_name'];
 
@@ -286,7 +298,7 @@ class FacultyStaffImportController extends Controller
                         'last_name'     => $item['last_name'],
                         'suffix'        => $item['suffix'],
                         'gender'        => $item['gender'],
-                        'email'         => $item['email'],
+                        'email'         => empty($item['email']) ? null : $item['email'],
                         'password'      => Hash::make($password),
                         'employee_id'   => $item['employee_id'],
                         'employee_role' => $item['employee_role'],
@@ -366,6 +378,9 @@ class FacultyStaffImportController extends Controller
         ]);
 
         foreach ($staged_users as $user) {
+            if (empty($user['email'])) {
+                continue;
+            }
             $employee = User::where('email', $user['email'])->first();
             if ($employee == null) {
                 Log::warning('Faculty/Staff Import: Employee not found for email notification', [
@@ -414,6 +429,9 @@ class FacultyStaffImportController extends Controller
      */
     public function upload(Request $request)
     {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '4096M');
+
         Log::info('Faculty/Staff Import: Upload process initiated', [
             'user_id' => Auth::id(),
             'user_name' => Auth::user()->full_name,
@@ -737,6 +755,11 @@ class FacultyStaffImportController extends Controller
      */
     private function account_notification($user, $password)
     {
+        if (!$user || empty($user->email)) {
+            Log::info('Faculty/Staff Import: Skip sending email, no email provided');
+            return;
+        }
+
         Log::info('Faculty/Staff Import: Sending account notification email', [
             'user_id' => $user->id,
             'user_email' => $user->email,

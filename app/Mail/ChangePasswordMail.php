@@ -35,17 +35,18 @@ class ChangePasswordMail extends Mailable
         // Get logo from settings or fallback to default
         $this->logoData = $settings->org_logo ? base64_decode($settings->org_logo) : null;
         $this->defaultLogoPath = public_path('img/OwlQuery.png');
+        $brandName = trim(($settings->org_initial ?? '') . ' ' . config('app.name'));
 
         // Message-driven copy (formal + emojis)
         $this->msg = array_replace([
             'org_initial'     => $settings->org_initial ?? '',
-            'brand_name'      => ($settings->org_initial ?? '') . ' Library Management System',
+            'brand_name'      => $brandName,
             // 'brand_logo' removed
             'brand_logo_alt'  => ($settings->org_initial ?? '') . ' Logo',
             'subject'         => '🔐 Password Change Confirmation',
             'title'           => 'Password Updated Successfully ✅',
             'greeting'        => "Dear {$displayName},",
-            'intro'           => 'This is to confirm that the password for your ' . ($settings->org_initial ?? '') . ' Library account has been updated successfully.',
+            'intro'           => 'This is to confirm that the password for your ' . $brandName . ' account has been updated successfully.',
             'details_title'   => 'Change details',
             'email_label'     => 'Account email',
             'security_note'   => 'If you did not make this change, please reset your password immediately and contact support. 🛡️',

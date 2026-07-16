@@ -16,7 +16,7 @@
           <p class="text-yellow-100 text-xs md:text-sm font-medium mb-1">Pending Requests</p>
           <h3 class="text-3xl md:text-4xl font-bold">{{ $pendingExtensionCount ?? 0 }}</h3>
         </div>
-        <div class="bg-white bg-opacity-30 rounded-full p-3 md:p-4">
+        <div class="bg-white bg-opacity-30 rounded-full p-3 md:p-4 shadow-md">
           <svg class="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
@@ -31,7 +31,7 @@
           <p class="text-green-100 text-xs md:text-sm font-medium mb-1">Approved This Month</p>
           <h3 class="text-3xl md:text-4xl font-bold">{{ $approvedCount ?? 0 }}</h3>
         </div>
-        <div class="bg-white bg-opacity-30 rounded-full p-3 md:p-4">
+        <div class="bg-white bg-opacity-30 rounded-full p-3 md:p-4 shadow-md">
           <svg class="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
           </svg>
@@ -46,7 +46,7 @@
           <p class="text-primary-100 text-xs md:text-sm font-medium mb-1">Active Borrowings</p>
           <h3 class="text-3xl md:text-4xl font-bold">{{ $activeBorrowings ?? 0 }}</h3>
         </div>
-        <div class="bg-white bg-opacity-30 rounded-full p-3 md:p-4">
+        <div class="bg-white bg-opacity-30 rounded-full p-3 md:p-4 shadow-md">
           <svg class="w-6 h-6 md:w-8 md:h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
           </svg>
@@ -56,7 +56,7 @@
   </div>
 
   <!-- Search and Filter Section -->
-  <div class="bg-white dark:bg-gray-800 rounded-lg md:rounded-xl shadow-md p-4 md:p-6 mb-4 md:mb-6">
+  <div class="bg-white dark:bg-gray-800 rounded-lg md:rounded-xl p-4 md:p-6 mb-4 md:mb-6 shadow-md">
     <form action="{{ route('maintenance.search-extension') }}" method="GET" class="flex flex-col sm:flex-row gap-3 md:gap-4">
       <div class="flex-1">
         <input
@@ -78,7 +78,7 @@
   </div>
 
   <!-- Table Section -->
-  <div class="bg-white dark:bg-gray-800 rounded-lg md:rounded-xl shadow-md overflow-hidden">
+  <div class="bg-white dark:bg-gray-800 rounded-lg md:rounded-xl overflow-hidden shadow-md">
     <div class="bg-gradient-to-r from-primary-600 to-primary-700 px-4 md:px-6 py-3 md:py-4">
       <h2 class="text-lg md:text-xl font-bold text-white flex items-center gap-2">
         <svg class="w-5 h-5 md:w-6 md:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -157,7 +157,7 @@
                   <tr>
                     <td align="left" class="font"
                       style="color:#ffffff; font-weight:600; font-size:16px;">
-                      {{ $msg['brand_name'] ?? 'Library Management System' }}
+                      {{ $msg['brand_name'] ?? config('app.name') }}
                     </td>
                     <td align="right">
                       @if(isset($logoData) && $logoData)

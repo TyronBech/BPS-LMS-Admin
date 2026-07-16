@@ -21,11 +21,13 @@ class Book extends Model
         'author',
         'description',
         'edition',
+        'isbn',
         'place_of_publication',
         'publisher',
         'copyrights',
         'remarks',
         'category_id',
+        'subject_id',
         'cover_image',
         'digital_copy_url',
         'barcode',
@@ -37,16 +39,21 @@ class Book extends Model
     {
         return (new self())->getTable();
     }
-    public function category() : BelongsTo
+    public function category(): BelongsTo
     {
         return $this->belongsTo(Category::class, 'category_id', 'id');
     }
-    public function transactions() : HasMany
+    public function transactions(): HasMany
     {
         return $this->hasMany(Transaction::class, 'book_id', 'id');
     }
-    public function inventory() : HasMany
+    public function inventory(): HasMany
     {
         return $this->hasMany(Inventory::class, 'book_id', 'id');
+    }
+
+    public function subject(): BelongsTo
+    {
+        return $this->belongsTo(Subject::class, 'subject_id', 'id');
     }
 }

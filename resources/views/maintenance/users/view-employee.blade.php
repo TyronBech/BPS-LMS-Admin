@@ -3,7 +3,7 @@
 <div class="container mx-auto px-4 sm:px-6 lg:px-8">
   <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Employee Information</h1>
 
-  <div class="max-w-md mx-auto bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 p-6">
+  <div class="max-w-md mx-auto bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 p-6 shadow-md">
     <div class="flex flex-col items-center">
 
       {{-- Profile Image --}}

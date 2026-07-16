@@ -25,7 +25,6 @@ class VisitorDetailFactory extends Factory
     public function definition(): array
     {
         return [
-            'visitor_id' => $this->faker->unique()->numerify('VIS-######'),
             'school_org' => $this->faker->company(),
             'purpose' => $this->faker->sentence(),
         ];

@@ -86,8 +86,6 @@ class FetchDataController extends Controller
                 'timestamp' => now(),
             ]);
 
-            session()->flash('toast-success', 'All users have been timed out successfully.');
-
             return response()->json([
                 'message' => 'All users have been timed out successfully.'
             ]);
@@ -99,8 +97,6 @@ class FetchDataController extends Controller
                 'error_trace' => $e->getTraceAsString(),
                 'timestamp' => now(),
             ]);
-
-            session()->flash('toast-error', 'An error occurred while executing the auto time out command.');
 
             return response()->json([
                 'error' => 'An error occurred while processing the request.'

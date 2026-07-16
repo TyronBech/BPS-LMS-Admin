@@ -5,7 +5,7 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<meta name="csrf-token" content="{{ csrf_token() }}">
-	<title>{{ $settings->org_initial ?? 'BPS' }} Library Management System</title>
+	<title>{{ trim(($settings->org_initial ?? 'BPS') . ' ' . config('app.name')) }}</title>
 	@vite(['resources/css/app.css', 'resources/js/app.js'])
 	<link rel="icon" href="{{ $settings->getOrgLogoBase64Attribute() ?? asset('img/BPSLogo.png') }}" type="image/png">
 	<style>
@@ -41,7 +41,7 @@
 					<div class="flex flex-col justify-center">
 						<h1 class="lg:text-2xl md:text-lg text-white font-semibold text-center">{{ $settings->org_name ?? 'Bicutan Parochial School' }}</h1>
 						<hr class="h-px bg-gray-200 border-0">
-						<h1 class="lg:text-xl md:text-md text-white font-semibold text-center">Library Management System</h1>
+						<h1 class="lg:text-xl md:text-md text-white font-semibold text-center">{{ config('app.name') }}</h1>
 					</div>
 				</a>
 			</div>
@@ -51,7 +51,7 @@
 		<div class="flex flex-col items-center justify-center h-[calc(100vh-17rem)] w-full">
 			<img class="w-20 h-20 block mb-4 dark:hidden" src="{{ asset('img/OwlQuery.png') }}" alt="OwlQuery">
 			<img class="hidden dark:block w-20 h-20 mb-4" src="{{ asset('img/OwlQuery Dark.png') }}" alt="OwlQuery">
-			<div class="block max-w-lg p-6 bg-white border border-gray-200 rounded-lg shadow-sm dark:bg-gray-800 dark:border-gray-700">
+			<div class="block max-w-lg p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
 				<p class="font-normal mb-4 text-gray-700 dark:text-gray-400">Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.</p>
 				@if(session('status'))
 				<div class="mb-4 font-medium text-sm text-green-600">

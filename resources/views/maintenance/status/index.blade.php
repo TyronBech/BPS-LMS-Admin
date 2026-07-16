@@ -15,7 +15,7 @@
   <div id="alertContainer" class="mb-6"></div>
 
   <!-- Main Status Card -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 mb-8 overflow-hidden">
+  <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 mb-8 overflow-hidden shadow-md">
     <div class="bg-gray-50 dark:bg-gray-700/50 px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
       <h5 class="text-lg font-semibold text-gray-900 dark:text-white flex items-center gap-2">
         <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
@@ -55,7 +55,7 @@
 
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <!-- How it works -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-primary-100 dark:border-primary-900/30 h-full flex flex-col">
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-primary-100 dark:border-primary-900/30 h-full flex flex-col shadow-md">
       <div class="p-6 flex-grow">
         <h6 class="text-primary-600 dark:text-primary-400 font-bold text-lg mb-4 flex items-center gap-2">
           <div class="p-1.5 bg-secondary-500 dark:bg-primary-900/30 rounded-lg">
@@ -85,7 +85,7 @@
     </div>
 
     <!-- Queue Snapshot -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 h-full flex flex-col">
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 h-full flex flex-col shadow-md">
       <div class="p-6 flex-grow">
         <h6 class="font-bold text-lg text-gray-900 dark:text-white mb-4 flex items-center gap-2">
           <div class="p-1.5 bg-gray-100 dark:bg-gray-700 rounded-lg">

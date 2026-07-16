@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
+use Illuminate\Support\Facades\DB;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
@@ -13,11 +13,34 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // User::factory(10)->create();
+        DB::statement("SET @current_user_id = 'seeder'");
 
-        User::factory()->create([
-            'name' => 'Test User',
-            'email' => 'test@example.com',
+        $this->call([
+            RolePermissionSeeder::class,
+            SyncPermissionsSeeder::class,
+            UserGroupSeeder::class,
+            SystemSettingSeeder::class,
+            UISettingSeeder::class,
+            CategorySeeder::class,
+            BookSeeder::class,
+            SubjectSeeder::class,
+            SubjectAccessCodeSeeder::class,
+            UserSeeder::class,
+            StudentDetailSeeder::class,
+            EmployeeDetailSeeder::class,
+            VisitorDetailSeeder::class,
+            InventorySeeder::class,
+            PenaltyRuleSeeder::class,
+            TransactionSeeder::class,
+            PenaltySeeder::class,
+            ReservationSeeder::class,
+            LogSeeder::class,
+            NotificationSeeder::class,
+            ArchiveInventorySeeder::class,
+            AuditTrailSeeder::class,
+            StagingUserSeeder::class,
+            SuperAdminSeeder::class,
+            ResetBookMatrix::class,
         ]);
     }
 }

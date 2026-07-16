@@ -66,6 +66,9 @@ class StudentImportController extends Controller
      */
     public function store(Request $request)
     {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '4096M');
+
         Log::info('Student Import: Store process initiated', [
             'user_id' => Auth::id(),
             'user_name' => Auth::user()->full_name,
@@ -77,23 +80,20 @@ class StudentImportController extends Controller
         $newStudentsFromSession = $request->session()->get('new_student_data', []);
         $existingStudentsFromSession = $request->session()->get('existing_student_data', []);
 
-        Log::debug('Student Import: Retrieved session data', [
-            'new_students_count' => count($newStudentsFromSession),
-            'existing_students_count' => count($existingStudentsFromSession),
-            'user_id' => Auth::id(),
-        ]);
-
-        // Merge last submitted data
         $submittedNew = $request->input('new_students', []);
         foreach ($submittedNew as $index => $student) {
-            if (isset($newStudentsFromSession[$index])) {
+            if (empty($newStudentsFromSession) && !empty($submittedNew)) {
+                $newStudentsFromSession = $submittedNew;
+            } else if (isset($newStudentsFromSession[$index])) {
                 $newStudentsFromSession[$index] = array_merge($newStudentsFromSession[$index], $student);
             }
         }
 
         $submittedExisting = $request->input('existing_students', []);
         foreach ($submittedExisting as $index => $student) {
-            if (isset($existingStudentsFromSession[$index])) {
+            if (empty($existingStudentsFromSession) && !empty($submittedExisting)) {
+                $existingStudentsFromSession = $submittedExisting;
+            } else if (isset($existingStudentsFromSession[$index])) {
                 $existingStudentsFromSession[$index] = array_merge($existingStudentsFromSession[$index], $student);
             }
         }
@@ -140,11 +140,11 @@ class StudentImportController extends Controller
                 'middle_name' => 'nullable|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
                 'last_name' => 'required|string|max:50|regex:/^[\pL\s\-\'\.]+$/u',
                 'suffix' => 'nullable|string|max:10|regex:/^[\pL\s\-\'\.]+$/u',
-                'id_number' => 'required|string|min:10|regex:/^[0-9]+$/u',
+                'id_number' => 'required|string|min:6',
                 'grade_level' => 'required|numeric|min:7|max:12',
                 'section' => 'required|string|max:50',
                 'gender' => 'required|string|in:' . implode(',', $this->extract_enums($users->getTable(), 'gender')),
-                'email' => 'required|string|email',
+                'email' => 'nullable|string|email',
             ]);
 
             if ($validator->fails()) {
@@ -164,9 +164,22 @@ class StudentImportController extends Controller
             }
 
             try {
-                $existingStudent = User::whereHas('students', function ($query) use ($item) {
-                    $query->where('id_number', $item['id_number']);
-                })->with('students')->first();
+                $existingStudent = User::withTrashed()
+                    ->where(function ($query) use ($item) {
+                        $query->whereHas('students', function ($q) use ($item) {
+                            $q->where('id_number', $item['id_number'])->withTrashed();
+                        });
+                        if (!empty($item['email'])) {
+                            $query->orWhere('email', $item['email']);
+                        }
+                        if (!empty($item['rfid'])) {
+                            $query->orWhere('rfid', $item['rfid']);
+                        }
+                    })
+                    ->with(['students' => function ($query) {
+                        $query->withTrashed();
+                    }])
+                    ->first();
 
                 if ($existingStudent) {
                     Log::info('Student Import: Existing student found', [
@@ -176,23 +189,22 @@ class StudentImportController extends Controller
                         'user_id' => Auth::id(),
                     ]);
 
-                    if (
-                        $existingStudent->rfid == $item['rfid']
-                        && $existingStudent->first_name == $item['first_name']
-                        && $existingStudent->middle_name == $item['middle_name']
-                        && $existingStudent->last_name == $item['last_name']
-                        && $existingStudent->suffix == $item['suffix']
-                        && $existingStudent->gender == $item['gender']
-                        && $existingStudent->email == $item['email']
-                        && $existingStudent->students->level == $item['grade_level']
-                        && $existingStudent->students->section == $item['section']
-                    ) {
-                        Log::debug('Student Import: No changes detected, skipping update', [
-                            'student_id' => $existingStudent->id,
+                    // Restore user if soft-deleted
+                    if ($existingStudent->trashed()) {
+                        $existingStudent->restore();
+                    }
+
+                    // Ensure details record exists and restore if soft-deleted
+                    if (!$existingStudent->students) {
+                        $existingStudent->students()->create([
                             'id_number' => $item['id_number'],
-                            'user_id' => Auth::id(),
+                            'level'     => $item['grade_level'],
+                            'section'   => $item['section'],
                         ]);
-                        continue;
+                        // reload the relation to avoid null checks
+                        $existingStudent->load(['students' => function($q) { $q->withTrashed(); }]);
+                    } else if ($existingStudent->students->trashed()) {
+                        $existingStudent->students->restore();
                     }
 
                     $oldData = [
@@ -203,8 +215,8 @@ class StudentImportController extends Controller
                         'suffix' => $existingStudent->suffix,
                         'gender' => $existingStudent->gender,
                         'email' => $existingStudent->email,
-                        'level' => $existingStudent->students->level,
-                        'section' => $existingStudent->students->section,
+                        'level' => $existingStudent->students->level ?? null,
+                        'section' => $existingStudent->students->section ?? null,
                     ];
 
                     $existingStudent->update([
@@ -214,12 +226,13 @@ class StudentImportController extends Controller
                         'last_name' => $item['last_name'],
                         'suffix' => $item['suffix'],
                         'gender' => $item['gender'],
-                        'email' => $item['email'],
+                        'email' => empty($item['email']) ? null : $item['email'],
                     ]);
 
                     $existingStudent->students()->update([
                         'level' => $item['grade_level'],
                         'section' => $item['section'],
+                        'id_number' => $item['id_number'],
                     ]);
 
                     Log::info('Student Import: Student updated successfully', [
@@ -240,7 +253,7 @@ class StudentImportController extends Controller
                         'user_id' => Auth::id(),
                     ]);
 
-                    if (User::where('email', $item['email'])->exists()) {
+                    if (!empty($item['email']) && (User::withTrashed()->where('email', $item['email'])->exists() || StagingUser::where('email', $item['email'])->exists())) {
                         DB::rollBack();
                         $errors = "Email already exists for student: " . $item['first_name'] . " " . $item['last_name'];
 
@@ -252,7 +265,7 @@ class StudentImportController extends Controller
                         ]);
 
                         return redirect()->route('import.import-students')->with('toast-error', $errors);
-                    } else if (User::where('rfid', $item['rfid'])->exists()) {
+                    } else if (!empty($item['rfid']) && (User::withTrashed()->where('rfid', $item['rfid'])->exists() || StagingUser::where('rfid', $item['rfid'])->exists())) {
                         DB::rollBack();
                         $errors = "RFID already exists for student: " . $item['first_name'] . " " . $item['last_name'];
 
@@ -286,7 +299,7 @@ class StudentImportController extends Controller
                         'last_name' => $item['last_name'],
                         'suffix' => $item['suffix'],
                         'gender' => $item['gender'],
-                        'email' => $item['email'],
+                        'email' => empty($item['email']) ? null : $item['email'],
                         'password' => Hash::make($password),
                         'id_number' => $item['id_number'],
                         'level' => $item['grade_level'],
@@ -367,6 +380,9 @@ class StudentImportController extends Controller
         ]);
 
         foreach ($staged_users as $user) {
+            if (empty($user['email'])) {
+                continue;
+            }
             $student = User::where('email', $user['email'])->first();
             if (!$student) {
                 Log::warning('Student Import: Student not found for email notification', [
@@ -418,6 +434,9 @@ class StudentImportController extends Controller
      */
     public function upload(Request $request)
     {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '4096M');
+
         Log::info('Student Import: Upload process initiated', [
             'user_id' => Auth::id(),
             'user_name' => Auth::user()->full_name,
@@ -738,6 +757,11 @@ class StudentImportController extends Controller
      */
     private function account_notification($user, $password)
     {
+        if (!$user || empty($user->email)) {
+            Log::info('Student Import: Skip sending email, no email provided');
+            return;
+        }
+
         Log::info('Student Import: Sending account notification email', [
             'user_id' => $user->id,
             'user_email' => $user->email,

@@ -15,16 +15,14 @@ class VisitorDetail extends Model
     public $timestamps = true;
     protected $fillable = [
         'user_id',
-        'visitor_id',
         'school_org',
         'purpose',
-        'gender',
     ];
     public static function getTableName()
     {
         return (new self())->getTable();
     }
-    public function users() : BelongsTo
+    public function users(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
     }

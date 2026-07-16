@@ -36,18 +36,19 @@ class AccountEmailMessage extends Mailable
         // Get logo from settings or fallback to default
         $this->logoData = $settings->org_logo ? base64_decode($settings->org_logo) : null;
         $this->defaultLogoPath = public_path('img/OwlQuery.png');
+        $brandName = trim(($settings->org_initial ?? '') . ' ' . config('app.name'));
 
         $this->msg = array_replace([
             // UI/brand text now message-driven
-            'brand_name'     => ($settings->org_initial ?? '') . ' Library Management System',
+            'brand_name'     => $brandName,
             // 'brand_logo' removed to prevent clipping
             'brand_logo_alt' => ($settings->org_initial ?? '') . ' Logo',
 
             // Formal copy with emojis
-            'subject'        => '📚 Your ' . ($settings->org_initial ?? '') . ' Library Account Details',
-            'title'          => ($settings->org_initial ?? '') . ' Library Account 📩',
+            'subject'        => '📚 Your ' . $brandName . ' Account Details',
+            'title'          => $brandName . ' Account 📩',
             'greeting'       => "Dear {$displayName},",
-            'intro'          => 'We are pleased to inform you that your ' . ($settings->org_initial ?? '') . ' Library Management System account has been successfully created.',
+            'intro'          => 'We are pleased to inform you that your ' . $brandName . ' account has been successfully created.',
             'instruction'    => 'To begin, please sign in using the credentials provided below.',
             'details_title'  => 'Account credentials 🔐',
             'email_label'    => 'Email',
