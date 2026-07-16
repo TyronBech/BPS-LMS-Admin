@@ -66,6 +66,9 @@ class StudentImportController extends Controller
      */
     public function store(Request $request)
     {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '4096M');
+
         Log::info('Student Import: Store process initiated', [
             'user_id' => Auth::id(),
             'user_name' => Auth::user()->full_name,
@@ -431,6 +434,9 @@ class StudentImportController extends Controller
      */
     public function upload(Request $request)
     {
+        ini_set('max_execution_time', 300);
+        ini_set('memory_limit', '4096M');
+
         Log::info('Student Import: Upload process initiated', [
             'user_id' => Auth::id(),
             'user_name' => Auth::user()->full_name,
