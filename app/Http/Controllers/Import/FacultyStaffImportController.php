@@ -226,7 +226,7 @@ class FacultyStaffImportController extends Controller
                         'last_name'     => $item['last_name'],
                         'suffix'        => $item['suffix'],
                         'gender'        => $item['gender'],
-                        'email'         => $item['email'],
+                        'email'         => empty($item['email']) ? null : $item['email'],
                     ]);
 
                     $existingEmployee->employees()->update([
@@ -295,7 +295,7 @@ class FacultyStaffImportController extends Controller
                         'last_name'     => $item['last_name'],
                         'suffix'        => $item['suffix'],
                         'gender'        => $item['gender'],
-                        'email'         => $item['email'],
+                        'email'         => empty($item['email']) ? null : $item['email'],
                         'password'      => Hash::make($password),
                         'employee_id'   => $item['employee_id'],
                         'employee_role' => $item['employee_role'],
@@ -375,6 +375,9 @@ class FacultyStaffImportController extends Controller
         ]);
 
         foreach ($staged_users as $user) {
+            if (empty($user['email'])) {
+                continue;
+            }
             $employee = User::where('email', $user['email'])->first();
             if ($employee == null) {
                 Log::warning('Faculty/Staff Import: Employee not found for email notification', [
