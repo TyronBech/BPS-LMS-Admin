@@ -277,6 +277,7 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
             Route::put('update-visitor', 'update_visitor')->name('maintenance.update-visitor');
             Route::get('show-users', 'show')->name('maintenance.show-users');
             Route::delete('delete-user', 'destroy')->name('maintenance.delete-user');
+            Route::get('export-users', 'exportExcel')->name('maintenance.export-users');
             Route::delete('bulk-delete-student', 'bulk_delete_student')->name('maintenance.bulk-delete-student');
             Route::delete('bulk-delete-employee', 'bulk_delete_employee')->name('maintenance.bulk-delete-employee');
             Route::delete('bulk-delete-visitor', 'bulk_delete_visitor')->name('maintenance.bulk-delete-visitor');

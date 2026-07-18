@@ -7,7 +7,7 @@
     <div class="flex flex-col md:flex-row md:justify-between md:items-center space-y-4 md:space-y-0">
       <h5 class="mb-1 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Users</h5>
       <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-        <form action="{{ route('maintenance.show-users') }}" method="GET" class="flex items-center w-full sm:w-auto">
+        <form action="{{ route('maintenance.show-users') }}" method="GET" class="flex items-center w-full sm:w-auto gap-2">
           @csrf
           <input type="hidden" name="tab" id="users-tab-input" value="{{ request('tab', 'students') }}" />
           <label for="search-users" class="sr-only">Search</label>
@@ -19,11 +19,17 @@
             </div>
             <input type="text" id="search-users" name="search-users" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Search..." value="{{ old('search-users', $search) }}" />
           </div>
-          <button type="submit" class="p-2.5 ms-2 text-sm font-medium text-white bg-primary-500 rounded-lg border border-primary-500 hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">
+          <button type="submit" class="p-2.5 text-sm font-medium text-white bg-primary-500 rounded-lg border border-primary-500 hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">
             <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 20">
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
             </svg>
             <span class="sr-only">Search</span>
+          </button>
+          <button type="submit" name="submit" value="excel" formaction="{{ route('maintenance.export-users') }}" class="p-2.5 text-sm font-medium text-white bg-green-500 rounded-lg border border-green-500 hover:bg-green-600 focus:ring-4 focus:outline-none focus:ring-green-400 flex items-center justify-center" title="Export to Excel">
+            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 16 18">
+              <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 1v11m0 0 4-4m-4 4L4 8m11 4v3a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2v-3"/>
+            </svg>
+            <span class="sr-only">Export</span>
           </button>
         </form>
         @can(PermissionsEnum::ADD_USERS, 'admin')

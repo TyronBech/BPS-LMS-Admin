@@ -16,7 +16,11 @@ use Illuminate\Support\Facades\Mail;
 use App\Mail\AccountEmailMessage;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-
+use App\Models\UISetting;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx as WriterXlsx;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Worksheet\Drawing;
+use Carbon\Carbon;
 class UsersMaintenanceController extends Controller
 {
     /**
@@ -1150,5 +1154,231 @@ class UsersMaintenanceController extends Controller
             $enumValues = str_getcsv($matches[1], ',', "'");
         }
         return $enumValues;
+    }
+
+    /**
+     * Export users to Excel.
+     *
+     * @param Request $request
+     * @return \Illuminate\Http\Response
+     */
+    public function exportExcel(Request $request)
+    {
+        ini_set('memory_limit', '4096M');
+        $tab = strtolower($request->input('tab', 'students'));
+        $search = strtolower($request->input('search-users', ''));
+        
+        Log::info('Users Maintenance: Exporting users to Excel', [
+            'user_id' => Auth::guard('admin')->id(),
+            'tab' => $tab,
+            'search_term' => $search,
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
+        $searchFilter = function ($query) use ($search) {
+            $query->where(DB::raw('lower(first_name)'), 'like', "%{$search}%")
+                ->orWhere(DB::raw('lower(middle_name)'), 'like', "%{$search}%")
+                ->orWhere(DB::raw('lower(last_name)'), 'like', "%{$search}%")
+                ->orWhere(DB::raw('lower(concat(first_name, " ", middle_name, " ", last_name))'), 'like', "%{$search}%")
+                ->orWhere(DB::raw('lower(concat(middle_name, " ", last_name, ", ", first_name))'), 'like', "%{$search}%")
+                ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name, " ", middle_name))'), 'like', "%{$search}%")
+                ->orWhere(DB::raw('lower(concat(last_name, ", ", first_name))'), 'like', "%{$search}%")
+                ->orWhere(DB::raw('lower(concat(first_name, " ", last_name))'), 'like', "%{$search}%")
+                ->orWhere('email', 'like', "%{$search}%")
+                ->orWhere('rfid', 'like', "%{$search}%");
+        };
+
+        $data = collect();
+        if ($tab === 'students') {
+            $data = User::whereHas('students')
+                ->with('students')
+                ->where(function ($q) use ($searchFilter) { $searchFilter($q); })
+                ->orWhereHas('students', function ($q) use ($search) {
+                    $q->where('id_number', 'like', "%{$search}%")
+                      ->orWhere('level', 'like', "%{$search}%")
+                      ->orWhere('section', 'like', "%{$search}%");
+                })
+                ->orderBy('id', 'asc')
+                ->get();
+        } else if ($tab === 'employees') {
+            $data = User::whereHas('employees')
+                ->with('employees')
+                ->where(function ($q) use ($searchFilter) { $searchFilter($q); })
+                ->orWhereHas('employees', function ($q) use ($search) {
+                    $q->where('employee_id', 'like', "%{$search}%");
+                })
+                ->orderBy('id', 'asc')
+                ->get();
+        } else if ($tab === 'visitors') {
+            $data = User::whereHas('visitors')
+                ->with('visitors')
+                ->where(function ($q) use ($searchFilter) { $searchFilter($q); })
+                ->orWhereHas('visitors', function ($q) use ($search) {
+                    $q->where('school_org', 'like', "%{$search}%")
+                      ->orWhere('purpose', 'like', "%{$search}%");
+                })
+                ->orderBy('id', 'asc')
+                ->get();
+        }
+
+        $spreadsheet = new Spreadsheet();
+        $logo = new Drawing();
+        $settings = UISetting::first() ?? new UISetting();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $tempLogoPath = public_path('img/orgLogoFull.png');
+        if (!empty($settings->org_logo_full)) {
+            $decodedLogo = base64_decode($settings->org_logo_full);
+            file_put_contents($tempLogoPath, $decodedLogo);
+            $logo->setPath($tempLogoPath);
+        } else {
+            $logo->setPath(public_path('img/BPSLogoFull.png'));
+        }
+
+        $logo->setName(($settings->org_initial ?? 'BPS') . ' Logo');
+        $logo->setDescription(($settings->org_initial ?? 'BPS') . ' Logo');
+        $logo->setHeight(90);
+        $logo->setCoordinates('C1');
+        $logo->setOffsetX(10);
+        $logo->setOffsetY(5);
+        $logo->setWorksheet($sheet);
+
+        $sheet->setTitle(ucfirst($tab) . ' Data Export');
+        $sheet->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_LEGAL);
+        $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_LANDSCAPE);
+        $sheet->getPageSetup()->setFitToWidth(1);
+        $sheet->getPageSetup()->setFitToHeight(0);
+
+        $lastCol = $tab === 'students' ? 'G' : ($tab === 'employees' ? 'F' : 'E');
+        $colCount = 0;
+
+        $sheet->mergeCells('A6:' . $lastCol . '6');
+        $sheet->setCellValue('A6', ucfirst($tab) . ' Record List');
+        $sheet->getStyle('A6:' . $lastCol . '6')->getFont()->setBold(true);
+        $sheet->getStyle('A6:' . $lastCol . '6')->getFont()->setSize(14);
+        $sheet->getStyle('A6:' . $lastCol . '6')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A6:' . $lastCol . '6')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+
+        $sheet->mergeCells('A7:' . $lastCol . '7');
+        $sheet->setCellValue('A7', 'as of ' . date('F j, Y'));
+        $sheet->getStyle('A7:' . $lastCol . '7')->getFont()->setBold(true);
+        $sheet->getStyle('A7:' . $lastCol . '7')->getFont()->setSize(10);
+        $sheet->getStyle('A7:' . $lastCol . '7')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A7:' . $lastCol . '7')->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER);
+        
+        $sheet->getStyle('A9:' . $lastCol . '9')->getFont()->setSize(10);
+        $sheet->getStyle('A9:' . $lastCol . '9')->getFont()->setBold(true);
+        $sheet->getStyle('A9:' . $lastCol . '9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A9:' . $lastCol . '9')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+
+        // Headers
+        $sheet->setCellValue('A9', 'Name');
+        $sheet->setCellValue('B9', 'Gender');
+        $sheet->setCellValue('C9', 'Email');
+
+        if ($tab === 'students') {
+            $sheet->setCellValue('D9', 'RFID');
+            $sheet->setCellValue('E9', 'ID Number');
+            $sheet->setCellValue('F9', 'Level');
+            $sheet->setCellValue('G9', 'Section');
+            $colCount = 7;
+            $sheet->getColumnDimension('A')->setWidth(30);
+            $sheet->getColumnDimension('B')->setWidth(15);
+            $sheet->getColumnDimension('C')->setWidth(30);
+            $sheet->getColumnDimension('D')->setWidth(25);
+            $sheet->getColumnDimension('E')->setWidth(30);
+            $sheet->getColumnDimension('F')->setWidth(15);
+            $sheet->getColumnDimension('G')->setWidth(15);
+        } else if ($tab === 'employees') {
+            $sheet->setCellValue('D9', 'RFID');
+            $sheet->setCellValue('E9', 'Employee ID');
+            $sheet->setCellValue('F9', 'Role');
+            $colCount = 6;
+            $sheet->getColumnDimension('A')->setWidth(30);
+            $sheet->getColumnDimension('B')->setWidth(15);
+            $sheet->getColumnDimension('C')->setWidth(30);
+            $sheet->getColumnDimension('D')->setWidth(25);
+            $sheet->getColumnDimension('E')->setWidth(30);
+            $sheet->getColumnDimension('F')->setWidth(20);
+        } else if ($tab === 'visitors') {
+            $sheet->setCellValue('D9', 'School/Organization');
+            $sheet->setCellValue('E9', 'Purpose');
+            $colCount = 5;
+            $sheet->getColumnDimension('A')->setWidth(30);
+            $sheet->getColumnDimension('B')->setWidth(15);
+            $sheet->getColumnDimension('C')->setWidth(30);
+            $sheet->getColumnDimension('D')->setWidth(30);
+            $sheet->getColumnDimension('E')->setWidth(30);
+        }
+
+        $row = 10;
+        foreach ($data as $item) {
+            $fullName = $item->last_name . ', ' . $item->first_name;
+            if (!empty($item->middle_name)) {
+                $fullName .= ' ' . $item->middle_name;
+            }
+            if (!empty($item->suffix)) {
+                $fullName .= ' ' . $item->suffix;
+            }
+
+            $sheet->setCellValue('A' . $row, $fullName);
+            $sheet->setCellValue('B' . $row, $item->gender);
+            $sheet->setCellValue('C' . $row, $item->email);
+
+            if ($tab === 'students') {
+                $sheet->setCellValueExplicit('D' . $row, $item->rfid ?? '', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                $sheet->setCellValueExplicit('E' . $row, $item->students->id_number ?? '', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                $sheet->setCellValue('F' . $row, $item->students->level ?? '');
+                $sheet->setCellValue('G' . $row, $item->students->section ?? '');
+            } else if ($tab === 'employees') {
+                $sheet->setCellValueExplicit('D' . $row, $item->rfid ?? '', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                $sheet->setCellValueExplicit('E' . $row, $item->employees->employee_id ?? '', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                $sheet->setCellValue('F' . $row, $item->employees->employee_role ?? '');
+            } else if ($tab === 'visitors') {
+                $sheet->setCellValue('D' . $row, $item->visitors->school_org ?? '');
+                $sheet->setCellValue('E' . $row, $item->visitors->purpose ?? '');
+            }
+
+            $colLetter = chr(64 + $colCount); // Convert to column letter (A, B, C...)
+            $sheet->getStyle('A' . $row . ':' . $colLetter . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle('A' . $row . ':' . $colLetter . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+            $sheet->getStyle('A' . $row . ':' . $colLetter . $row)->getAlignment()->setWrapText(true);
+            $row++;
+        }
+
+        $colLetter = chr(64 + $colCount);
+        $styleArray = [
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                ],
+            ],
+        ];
+        $sheet->getStyle('A9:' . $colLetter . ($row - 1))->applyFromArray($styleArray);
+
+        $row += 2;
+        $sheet->mergeCells('A' . $row . ':D' . $row);
+        $sheet->setCellValue('A' . $row, 'Report Generated By: ' . Auth::guard('admin')->user()->first_name . ' ' . Auth::guard('admin')->user()->last_name);
+
+        $styleRange = 'A' . $row . ':D' . $row;
+        $sheet->getStyle($styleRange)->getFont()->setBold(true);
+        $sheet->getStyle($styleRange)->getFont()->setSize(10);
+        $sheet->getStyle($styleRange)->getAlignment()->setHorizontal('left');
+        $sheet->getStyle($styleRange)->getAlignment()->setVertical('left');
+        $sheet->getStyle($styleRange)->getAlignment()->setWrapText(true);
+
+        $writer = new WriterXlsx($spreadsheet);
+        $fileName = $tab . '-export-' . date('Y-m-d') . '.xlsx';
+        
+        // Output stream
+        header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        header("Content-Disposition: attachment;filename=\"$fileName\"");
+        $writer->save("php://output");
+
+        if (file_exists($tempLogoPath)) {
+            unlink($tempLogoPath);
+        }
+        exit;
     }
 }
