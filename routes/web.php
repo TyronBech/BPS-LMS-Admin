@@ -121,6 +121,11 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
         Route::get('most-borrowed-students', 'mostBorrowedStudents')->name('fetch-most-borrowed-students');
         Route::get('top-books-borrowed', 'topBooksBorrowed')->name('fetch-top-books-borrowed');
         Route::get('top-categories-borrowed', 'topCategoriesBorrowed')->name('fetch-top-categories-borrowed');
+        
+        Route::post('most-visited-students/export', 'exportMostVisitedStudentsPdf')->name('export-most-visited-students');
+        Route::post('most-borrowed-students/export', 'exportMostBorrowedStudentsPdf')->name('export-most-borrowed-students');
+        Route::post('top-books-borrowed/export', 'exportTopBooksBorrowedPdf')->name('export-top-books-borrowed');
+        Route::post('top-categories-borrowed/export', 'exportTopCategoriesBorrowedPdf')->name('export-top-categories-borrowed');
     });
 
     Route::prefix('report')->group(function () {
