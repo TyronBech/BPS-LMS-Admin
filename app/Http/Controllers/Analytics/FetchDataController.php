@@ -13,6 +13,9 @@ use App\Models\User;
 use App\Models\StudentDetail;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log as LogFacade;
+use Dompdf\Dompdf;
+use Dompdf\Options;
+use App\Models\UISetting;
 
 class FetchDataController extends Controller
 {
@@ -718,5 +721,216 @@ class FetchDataController extends Controller
                 'trace' => $e->getTraceAsString(),
             ], 500);
         }
+    }
+    public function exportMostVisitedStudentsPdf(Request $request)
+    {
+        $start = $request->input('start_date');
+        $end = $request->input('end_date');
+        
+        $hasRange = false;
+        $startDT = null;
+        $endDT = null;
+        $rangeText = 'For the current year';
+
+        if ($start && $end) {
+            try {
+                $startDT = Carbon::parse($start)->startOfDay();
+                $endDT = Carbon::parse($end)->endOfDay();
+                $hasRange = true;
+                $rangeText = 'From ' . $startDT->format('F d, Y') . ' to ' . $endDT->format('F d, Y');
+            } catch (\Throwable $e) {}
+        }
+        
+        $sections = StudentDetail::whereNotNull('section')->where('section', '!=', '')->distinct()->pluck('section')->sort()->values();
+        $results = collect();
+        
+        foreach ($sections as $section) {
+            $topStudents = User::whereHas('students', function ($q) use ($section) {
+                $q->where('section', $section);
+            })
+                ->with('students')
+                ->withCount(['logs as logs_count' => function ($query) use ($hasRange, $startDT, $endDT) {
+                    $query->whereNotNull('time_in');
+                    if ($hasRange) {
+                        $query->whereBetween('time_in', [$startDT, $endDT]);
+                    } else {
+                        $query->whereYear('time_in', Carbon::now()->year);
+                    }
+                    $query->select(DB::raw('COUNT(DISTINCT DATE(time_in))'));
+                }])
+                ->orderByDesc('logs_count')
+                ->take(5)
+                ->get();
+            
+            $filtered = $topStudents->filter(fn($s) => $s->logs_count > 0);
+            if ($filtered->isNotEmpty()) {
+                $results->push([
+                    'section' => $section,
+                    'students' => $filtered,
+                ]);
+            }
+        }
+        
+        $settings = UISetting::first() ?? new UISetting();
+        $items = [
+            'title'       => 'Top 5 Most Visited Students per Section',
+            'school'      => $settings->org_name ?? "Bicutan Parochial School, Inc.",
+            'address'     => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
+            'logo'        => $settings->org_logo_full ?? base64_encode(file_get_contents(public_path('img/BPSLogoFull.png'))),
+            'user'        => Auth::user()->first_name . ' ' . Auth::user()->last_name,
+            'date'        => now()->format('F d, Y'),
+            'range'       => $rangeText,
+            'results'     => $results,
+            'settings'    => $settings,
+        ];
+
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isPhpEnabled', true);
+        $options->set('isRemoteEnabled', true);
+
+        $pdf = new Dompdf($options);
+        $pdf->setPaper('legal', 'portrait');
+        $pdf->loadHtml(view('pdf.top-students-visited-pdf', $items)->render());
+        $pdf->render();
+
+        return response($pdf->output(), 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="top-visited-students-' . date('Y-m-d') . '.pdf"');
+    }
+
+    public function exportMostBorrowedStudentsPdf(Request $request)
+    {
+        $start = $request->input('start_date');
+        $end = $request->input('end_date');
+        
+        $hasRange = false;
+        $startDT = null;
+        $endDT = null;
+        $rangeText = 'For the current year';
+
+        if ($start && $end) {
+            try {
+                $startDT = Carbon::parse($start)->startOfDay();
+                $endDT = Carbon::parse($end)->endOfDay();
+                $hasRange = true;
+                $rangeText = 'From ' . $startDT->format('F d, Y') . ' to ' . $endDT->format('F d, Y');
+            } catch (\Throwable $e) {}
+        }
+        
+        $sections = StudentDetail::whereNotNull('section')->where('section', '!=', '')->distinct()->pluck('section')->sort()->values();
+        $results = collect();
+        
+        foreach ($sections as $section) {
+            $topStudents = User::whereHas('students', function ($q) use ($section) {
+                $q->where('section', $section);
+            })
+                ->with('students')
+                ->withCount(['transactions as borrow_count' => function ($query) use ($hasRange, $startDT, $endDT) {
+                    if ($hasRange) {
+                        $query->whereBetween('created_at', [$startDT, $endDT]);
+                    } else {
+                        $query->whereYear('created_at', Carbon::now()->year);
+                    }
+                }])
+                ->orderByDesc('borrow_count')
+                ->take(5)
+                ->get();
+            
+            $filtered = $topStudents->filter(fn($s) => $s->borrow_count > 0);
+            if ($filtered->isNotEmpty()) {
+                $results->push([
+                    'section' => $section,
+                    'students' => $filtered,
+                ]);
+            }
+        }
+        
+        $settings = UISetting::first() ?? new UISetting();
+        $items = [
+            'title'       => 'Top 5 Students with the Most Borrowed Books per Section',
+            'school'      => $settings->org_name ?? "Bicutan Parochial School, Inc.",
+            'address'     => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
+            'logo'        => $settings->org_logo_full ?? base64_encode(file_get_contents(public_path('img/BPSLogoFull.png'))),
+            'user'        => Auth::user()->first_name . ' ' . Auth::user()->last_name,
+            'date'        => now()->format('F d, Y'),
+            'range'       => $rangeText,
+            'results'     => $results,
+            'settings'    => $settings,
+        ];
+
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isPhpEnabled', true);
+        $options->set('isRemoteEnabled', true);
+
+        $pdf = new Dompdf($options);
+        $pdf->setPaper('legal', 'portrait');
+        $pdf->loadHtml(view('pdf.top-students-borrowed-pdf', $items)->render());
+        $pdf->render();
+
+        return response($pdf->output(), 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="top-borrowed-students-' . date('Y-m-d') . '.pdf"');
+    }
+
+    public function exportTopBooksBorrowedPdf(Request $request)
+    {
+        $chart = $request->input('chart');
+        
+        $settings = UISetting::first() ?? new UISetting();
+        $items = [
+            'title'       => 'Top 10 Most Borrowed Books',
+            'school'      => $settings->org_name ?? "Bicutan Parochial School, Inc.",
+            'address'     => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
+            'logo'        => $settings->org_logo_full ?? base64_encode(file_get_contents(public_path('img/BPSLogoFull.png'))),
+            'user'        => Auth::user()->first_name . ' ' . Auth::user()->last_name,
+            'date'        => now()->format('F d, Y'),
+            'chart'       => $chart,
+        ];
+
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isPhpEnabled', true);
+        $options->set('isRemoteEnabled', true);
+
+        $pdf = new Dompdf($options);
+        $pdf->setPaper('legal', 'landscape');
+        $pdf->loadHtml(view('pdf.dashboard-chart-pdf', $items)->render());
+        $pdf->render();
+
+        return response($pdf->output(), 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="top-books-borrowed-' . date('Y-m-d') . '.pdf"');
+    }
+
+    public function exportTopCategoriesBorrowedPdf(Request $request)
+    {
+        $chart = $request->input('chart');
+        
+        $settings = UISetting::first() ?? new UISetting();
+        $items = [
+            'title'       => 'Top 10 Most Borrowed Books per Category',
+            'school'      => $settings->org_name ?? "Bicutan Parochial School, Inc.",
+            'address'     => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
+            'logo'        => $settings->org_logo_full ?? base64_encode(file_get_contents(public_path('img/BPSLogoFull.png'))),
+            'user'        => Auth::user()->first_name . ' ' . Auth::user()->last_name,
+            'date'        => now()->format('F d, Y'),
+            'chart'       => $chart,
+        ];
+
+        $options = new Options();
+        $options->set('isHtml5ParserEnabled', true);
+        $options->set('isPhpEnabled', true);
+        $options->set('isRemoteEnabled', true);
+
+        $pdf = new Dompdf($options);
+        $pdf->setPaper('legal', 'landscape');
+        $pdf->loadHtml(view('pdf.dashboard-chart-pdf', $items)->render());
+        $pdf->render();
+
+        return response($pdf->output(), 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'attachment; filename="top-categories-borrowed-' . date('Y-m-d') . '.pdf"');
     }
 }
