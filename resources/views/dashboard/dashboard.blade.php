@@ -891,6 +891,7 @@
         }]
       },
       options: {
+        devicePixelRatio: 3,
         responsive: true,
         maintainAspectRatio: false,
         indexAxis: 'y',
@@ -930,6 +931,7 @@
         }]
       },
       options: {
+        devicePixelRatio: 3,
         responsive: true,
         maintainAspectRatio: false,
         indexAxis: 'y',

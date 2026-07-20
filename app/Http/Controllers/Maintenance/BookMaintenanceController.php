@@ -741,7 +741,7 @@ class BookMaintenanceController extends Controller
             return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e))->withInput();
         }
         DB::commit();
-        Log::info('Book Maintenance: Book updated successfully', [
+        Log::info('Book Maintenance: Material updated successfully', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name,
             'book_id' => $request->input('id'),

@@ -21,7 +21,7 @@
     }
 
     .logo img {
-      max-width: 300px;
+      max-width: 600px;
     }
 
     .title {
@@ -45,7 +45,7 @@
     img.chart {
       margin: 0 auto;
       margin-top: 10px;
-      width: 100%;
+      width: 85%;
       max-height: 480px;
     }
   </style>
