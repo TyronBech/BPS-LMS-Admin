@@ -72,6 +72,23 @@
         </div>
       </div>
 
+      {{-- Add Videos Section --}}
+      <div class="mt-8 mb-6 border-t border-gray-200 dark:border-gray-700 pt-6">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
+              <div>
+                  <h3 class="text-xl font-bold text-gray-900 dark:text-white">Add New Videos</h3>
+                  <p class="text-sm text-gray-500 dark:text-gray-400">You can optionally add videos directly to this folder.</p>
+              </div>
+              <button type="button" id="add-video-btn" class="mt-4 sm:mt-0 text-white bg-green-500 hover:bg-green-600 focus:ring-4 focus:ring-green-300 font-medium rounded-lg text-sm px-4 py-2 dark:bg-green-600 dark:hover:bg-green-700 focus:outline-none dark:focus:ring-green-800 flex items-center">
+                  <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                  Add Video
+              </button>
+          </div>
+          <div id="videos-container" class="space-y-4">
+              <!-- Dynamic video items will be appended here -->
+          </div>
+      </div>
+
       <div class="flex justify-end mt-6 gap-4">
         <a href="{{ route('maintenance.library-website.gallery.show-video-album', ['id' => $folder->album_id]) }}" class="skip-loader py-2.5 px-5 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-500 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600 dark:hover:text-primary-50 dark:hover:bg-gray-700 shadow-md">Cancel</a>
         <button type="submit" class="text-white bg-primary-500 hover:bg-primary-400 focus:ring-4 focus:ring-primary-400 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-400 dark:hover:bg-primary-500 focus:outline-none dark:focus:ring-primary-500">Update Folder</button>
@@ -79,4 +96,68 @@
     </form>
   </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        let videoCount = 0;
+        const container = document.getElementById('videos-container');
+        const addBtn = document.getElementById('add-video-btn');
+
+        addBtn.addEventListener('click', function() {
+            const index = videoCount++;
+            const template = `
+                <div class="p-4 bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600 relative video-item shadow-sm">
+                    <button type="button" class="remove-video-btn absolute top-3 right-3 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 bg-white dark:bg-gray-800 rounded-full p-1 shadow-sm">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pr-8">
+                        <div>
+                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Title <span class="text-red-500">*</span></label>
+                            <input type="text" name="new_videos[${index}][title]" required class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">URL <span class="text-red-500">*</span></label>
+                            <input type="url" name="new_videos[${index}][url]" required class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>
+                            <textarea name="new_videos[${index}][description]" rows="2" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white"></textarea>
+                        </div>
+                        <div>
+                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Video Provider</label>
+                            <input type="text" name="new_videos[${index}][video_provider]" placeholder="e.g. YouTube, Vimeo" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Thumbnail URL</label>
+                            <input type="url" name="new_videos[${index}][thumbnail_url]" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Duration (seconds)</label>
+                            <input type="number" name="new_videos[${index}][duration]" min="0" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Sort Order</label>
+                            <input type="number" name="new_videos[${index}][sort_order]" min="0" value="0" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                        </div>
+                        <div class="md:col-span-2 flex items-center">
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" name="new_videos[${index}][is_featured]" value="1" class="sr-only peer">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-primary-600"></div>
+                                <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Is Featured</span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', template);
+        });
+
+        container.addEventListener('click', function(e) {
+            const removeBtn = e.target.closest('.remove-video-btn');
+            if (removeBtn) {
+                removeBtn.closest('.video-item').remove();
+            }
+        });
+    });
+</script>
 @endsection
