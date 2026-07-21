@@ -91,6 +91,15 @@ class PrintingController extends Controller
 
     public function store(Request $request)
     {
+        $messages = [
+            'student_id.required_if' => 'Please select a valid student from the suggestions. The name entered might not exist.',
+            'student_id.exists' => 'The selected student does not exist.',
+            'faculty_id.required_if' => 'Please select a valid faculty/staff from the suggestions. The name entered might not exist.',
+            'faculty_id.exists' => 'The selected faculty/staff does not exist.',
+            'visitor_id.required_if' => 'Please select a valid visitor from the suggestions. The name entered might not exist.',
+            'visitor_id.exists' => 'The selected visitor does not exist.',
+        ];
+
         $validator = Validator::make($request->all(), [
             'modal_user_type'   => 'required|in:student,faculty,visitor',
             'student_id'        => 'required_if:modal_user_type,student|nullable|exists:usr_users,id',
@@ -102,7 +111,7 @@ class PrintingController extends Controller
             'title_of_material' => 'required_if:type,photocopy|nullable|string|max:255',
             'amount'            => 'required|numeric|min:0',
             'printed_at'        => 'nullable|date'
-        ]);
+        ], $messages);
 
         if ($validator->fails()) {
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
@@ -124,7 +133,7 @@ class PrintingController extends Controller
         if ($request->modal_user_type === 'student') {
             $studentUser = User::with('students')->find($request->student_id);
             if (!$studentUser || !$studentUser->students) {
-                return redirect()->back()->with('toast-warning', 'Invalid student selected.')->withInput();
+                return redirect()->back()->with('toast-warning', 'The selected name does not exist in the student records.')->withInput();
             }
             $printing->student_id = $studentUser->students->id;
             $printing->faculty_id = null;
@@ -132,7 +141,7 @@ class PrintingController extends Controller
         } elseif ($request->modal_user_type === 'faculty') {
             $facultyUser = User::with('employees')->find($request->faculty_id);
             if (!$facultyUser || !$facultyUser->employees) {
-                return redirect()->back()->with('toast-warning', 'Invalid faculty/staff selected.')->withInput();
+                return redirect()->back()->with('toast-warning', 'The selected name does not exist in the faculty/staff records.')->withInput();
             }
             $printing->faculty_id = $facultyUser->employees->id;
             $printing->student_id = null;
@@ -140,7 +149,7 @@ class PrintingController extends Controller
         } else {
             $visitorUser = User::with('visitors')->find($request->visitor_id);
             if (!$visitorUser || !$visitorUser->visitors) {
-                return redirect()->back()->with('toast-warning', 'Invalid visitor selected.')->withInput();
+                return redirect()->back()->with('toast-warning', 'The selected name does not exist in the visitor records.')->withInput();
             }
             $printing->visitor_id = $visitorUser->visitors->id;
             $printing->student_id = null;

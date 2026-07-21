@@ -72,6 +72,67 @@
         </div>
       </div>
 
+      {{-- Existing Videos Section --}}
+      @if(isset($folder->items) && $folder->items->count() > 0)
+      <div class="mt-8 border-t border-gray-200 dark:border-gray-700 pt-6">
+          <div class="mb-4">
+              <h3 class="text-xl font-bold text-gray-900 dark:text-white">Existing Videos</h3>
+              <p class="text-sm text-gray-500 dark:text-gray-400">Update properties of existing videos in this folder.</p>
+          </div>
+          <div class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+              @foreach($folder->items as $video)
+                  <details class="group bg-gray-50 border border-gray-200 rounded-lg dark:bg-gray-700 dark:border-gray-600 shadow-sm video-item">
+                      <summary class="flex justify-between items-center cursor-pointer font-medium text-gray-900 dark:text-white p-4 list-none [&::-webkit-details-marker]:hidden">
+                          <span class="flex items-center gap-2">
+                              <svg class="w-5 h-5 transition-transform group-open:rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                              {{ $video->title }}
+                          </span>
+                      </summary>
+                      <div class="p-4 border-t border-gray-200 dark:border-gray-600">
+                          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div>
+                                  <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Title <span class="text-red-500">*</span></label>
+                                  <input type="text" name="existing_videos[{{ $video->id }}][title]" value="{{ old('existing_videos.'.$video->id.'.title', $video->title) }}" required class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                              </div>
+                              <div>
+                                  <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">URL <span class="text-red-500">*</span></label>
+                                  <input type="url" name="existing_videos[{{ $video->id }}][url]" value="{{ old('existing_videos.'.$video->id.'.url', $video->url) }}" required class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                              </div>
+                              <div class="md:col-span-2">
+                                  <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Description</label>
+                                  <textarea name="existing_videos[{{ $video->id }}][description]" rows="2" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">{{ old('existing_videos.'.$video->id.'.description', $video->description) }}</textarea>
+                              </div>
+                              <div>
+                                  <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Video Provider</label>
+                                  <input type="text" name="existing_videos[{{ $video->id }}][video_provider]" value="{{ old('existing_videos.'.$video->id.'.video_provider', $video->video_provider) }}" placeholder="e.g. YouTube, Vimeo" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                              </div>
+                              <div>
+                                  <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Thumbnail URL</label>
+                                  <input type="url" name="existing_videos[{{ $video->id }}][thumbnail_url]" value="{{ old('existing_videos.'.$video->id.'.thumbnail_url', $video->thumbnail_url) }}" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                              </div>
+                              <div>
+                                  <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Duration (seconds)</label>
+                                  <input type="number" name="existing_videos[{{ $video->id }}][duration]" value="{{ old('existing_videos.'.$video->id.'.duration', $video->duration) }}" min="0" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                              </div>
+                              <div>
+                                  <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Sort Order</label>
+                                  <input type="number" name="existing_videos[{{ $video->id }}][sort_order]" value="{{ old('existing_videos.'.$video->id.'.sort_order', $video->sort_order) }}" min="0" class="bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-800 dark:border-gray-600 dark:text-white">
+                              </div>
+                              <div class="md:col-span-2 flex items-center">
+                                  <label class="relative inline-flex items-center cursor-pointer">
+                                      <input type="checkbox" name="existing_videos[{{ $video->id }}][is_featured]" value="1" class="sr-only peer" {{ old('existing_videos.'.$video->id.'.is_featured', $video->is_featured) ? 'checked' : '' }}>
+                                      <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-primary-300 dark:peer-focus:ring-primary-800 rounded-full peer dark:bg-gray-600 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-500 peer-checked:bg-primary-600"></div>
+                                      <span class="ml-3 text-sm font-medium text-gray-900 dark:text-gray-300">Is Featured</span>
+                                  </label>
+                              </div>
+                          </div>
+                      </div>
+                  </details>
+              @endforeach
+          </div>
+      </div>
+      @endif
+
       {{-- Add Videos Section --}}
       <div class="mt-8 mb-6 border-t border-gray-200 dark:border-gray-700 pt-6">
           <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4">
