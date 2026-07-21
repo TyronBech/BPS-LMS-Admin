@@ -146,6 +146,8 @@
               {{ $item->student->users->rfid ?? 'N/A' }}
             @elseif($item->faculty && $item->faculty->users && !$item->student)
               {{ $item->faculty->users->rfid ?? 'N/A' }}
+            @elseif($item->visitor && $item->visitor->users)
+              {{ $item->visitor->users->rfid ?? 'N/A' }}
             @else
               N/A
             @endif
@@ -155,6 +157,8 @@
               {{ $item->student->users->last_name }}, {{ $item->student->users->first_name }} {{ $item->student->users->middle_name }}
             @elseif($item->faculty && $item->faculty->users && !$item->student)
               {{ $item->faculty->users->last_name }}, {{ $item->faculty->users->first_name }} {{ $item->faculty->users->middle_name }}
+            @elseif($item->visitor && $item->visitor->users)
+              {{ $item->visitor->users->last_name }}, {{ $item->visitor->users->first_name }} {{ $item->visitor->users->middle_name }}
             @else
               N/A
             @endif
@@ -164,6 +168,8 @@
               {{ $item->student->level }} - {{ $item->student->section }}
             @elseif($item->faculty && !$item->student)
               {{ $item->faculty->employee_role }}
+            @elseif($item->visitor)
+              Visitor
             @else
               N/A
             @endif

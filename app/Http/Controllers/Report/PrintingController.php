@@ -92,9 +92,10 @@ class PrintingController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'modal_user_type'   => 'required|in:student,faculty',
+            'modal_user_type'   => 'required|in:student,faculty,visitor',
             'student_id'        => 'required_if:modal_user_type,student|nullable|exists:usr_users,id',
             'faculty_id'        => 'required_if:modal_user_type,faculty|nullable|exists:usr_users,id',
+            'visitor_id'        => 'required_if:modal_user_type,visitor|nullable|exists:usr_users,id',
             'type'              => 'required|in:print,photocopy',
             'topic'             => 'required|string|max:255',
             'pages'             => 'required|integer|min:1',
@@ -127,18 +128,28 @@ class PrintingController extends Controller
             }
             $printing->student_id = $studentUser->students->id;
             $printing->faculty_id = null;
-        } else {
+            $printing->visitor_id = null;
+        } elseif ($request->modal_user_type === 'faculty') {
             $facultyUser = User::with('employees')->find($request->faculty_id);
             if (!$facultyUser || !$facultyUser->employees) {
                 return redirect()->back()->with('toast-warning', 'Invalid faculty/staff selected.')->withInput();
             }
             $printing->faculty_id = $facultyUser->employees->id;
             $printing->student_id = null;
+            $printing->visitor_id = null;
+        } else {
+            $visitorUser = User::with('visitors')->find($request->visitor_id);
+            if (!$visitorUser || !$visitorUser->visitors) {
+                return redirect()->back()->with('toast-warning', 'Invalid visitor selected.')->withInput();
+            }
+            $printing->visitor_id = $visitorUser->visitors->id;
+            $printing->student_id = null;
+            $printing->faculty_id = null;
         }
 
         $printing->save();
 
-        $userType = $request->modal_user_type === 'student' ? 'students' : 'employees';
+        $userType = $request->modal_user_type === 'student' ? 'students' : ($request->modal_user_type === 'faculty' ? 'employees' : 'visitors');
 
         return redirect()->route('report.printing', [
             'user_type' => $userType,
@@ -166,9 +177,11 @@ class PrintingController extends Controller
             $users->has('students');
         } else if ($typeParam === 'faculty') {
             $users->has('employees');
+        } else if ($typeParam === 'visitor') {
+            $users->has('visitors');
         } else {
             $users->where(function($query) {
-                $query->has('students')->orHas('employees');
+                $query->has('students')->orHas('employees')->orHas('visitors');
             });
         }
             
@@ -177,7 +190,7 @@ class PrintingController extends Controller
         $formatted_users = [];
 
         foreach ($users as $user) {
-            $type = $user->students ? 'Student' : 'Faculty/Staff';
+            $type = $user->students ? 'Student' : ($user->employees ? 'Faculty/Staff' : 'Visitor');
             $formatted_users[] = [
                 'id' => $user->id,
                 'text' => $user->first_name . ' ' . $user->last_name . ' (' . $type . ')',
@@ -346,6 +359,10 @@ class PrintingController extends Controller
                 $rfid = $item->faculty->users->rfid ?? 'N/A';
                 $sheet->setCellValue('D' . $row, $item->faculty->users->last_name . ', ' . $item->faculty->users->first_name . ' ' . $item->faculty->users->middle_name);
                 $sheet->setCellValue('E' . $row, $item->faculty->employee_role);
+            } elseif ($item->visitor && $item->visitor->users) {
+                $rfid = $item->visitor->users->rfid ?? 'N/A';
+                $sheet->setCellValue('D' . $row, $item->visitor->users->last_name . ', ' . $item->visitor->users->first_name . ' ' . $item->visitor->users->middle_name);
+                $sheet->setCellValue('E' . $row, 'Visitor');
             } else {
                 $sheet->setCellValue('D' . $row, 'N/A');
                 $sheet->setCellValue('E' . $row, 'N/A');
@@ -421,12 +438,14 @@ class PrintingController extends Controller
         $printingType   = $request->input('printing_type', 'all');
 
         $query = $model->newQuery()
-            ->with(['student.users', 'faculty.users']);
+            ->with(['student.users', 'faculty.users', 'visitor.users']);
 
         if ($userType === 'students') {
             $query->whereNotNull('student_id');
         } elseif ($userType === 'employees') {
             $query->whereNotNull('faculty_id')->whereNull('student_id');
+        } elseif ($userType === 'visitors') {
+            $query->whereNotNull('visitor_id');
         }
 
         if ($printingType === 'print') {
@@ -455,6 +474,16 @@ class PrintingController extends Controller
                         }
                     });
                 })->orWhereHas('faculty.users', function ($sub) use ($searchTerms) {
+                    $sub->where(function ($queryWrapper) use ($searchTerms) {
+                        foreach ($searchTerms as $term) {
+                            $queryWrapper->where(function ($subQ) use ($term) {
+                                $subQ->whereRaw('LOWER(first_name) LIKE ?', ["%{$term}%"])
+                                    ->orWhereRaw('LOWER(middle_name) LIKE ?', ["%{$term}%"])
+                                    ->orWhereRaw('LOWER(last_name) LIKE ?', ["%{$term}%"]);
+                            });
+                        }
+                    });
+                })->orWhereHas('visitor.users', function ($sub) use ($searchTerms) {
                     $sub->where(function ($queryWrapper) use ($searchTerms) {
                         foreach ($searchTerms as $term) {
                             $queryWrapper->where(function ($subQ) use ($term) {
