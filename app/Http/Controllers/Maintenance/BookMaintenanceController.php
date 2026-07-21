@@ -1472,7 +1472,7 @@ class BookMaintenanceController extends Controller
         }
 
         $nextNumber = $maxNumber + 1;
-        $nextAccession = $prefix . str_pad((string)$nextNumber, 5, '0', STR_PAD_LEFT);
+        $nextAccession = $prefix . str_pad((string)$nextNumber, 6, '0', STR_PAD_LEFT);
 
         return response()->json(['next_accession' => $nextAccession]);
     }
