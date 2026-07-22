@@ -419,7 +419,9 @@ class GalleryMaintenanceController extends Controller
         if (!$this->authAdmin->can(PermissionsEnum::EDIT_GALLERY)) {
             return redirect()->route('maintenance.library-website.gallery')->with('toast-error', 'Permission denied.');
         }
-        $folder = VideoFolder::with('album')->findOrFail($request->id);
+        $folder = VideoFolder::with(['album', 'items' => function($query) {
+            $query->orderBy('sort_order');
+        }])->findOrFail($request->id);
         return view('maintenance.library-website.gallery.edit-video-folder', compact('folder'));
     }
 
@@ -437,6 +439,24 @@ class GalleryMaintenanceController extends Controller
             'sort_order' => 'nullable|integer|min:0',
             'thumbnail' => 'nullable|image|mimes:jpeg,png,jpg,gif,webp|max:5120',
             'is_active' => 'nullable|boolean',
+            'new_videos' => 'nullable|array',
+            'new_videos.*.title' => 'required_with:new_videos|string|max:255',
+            'new_videos.*.url' => 'required_with:new_videos|url|max:500',
+            'new_videos.*.description' => 'nullable|string',
+            'new_videos.*.sort_order' => 'nullable|integer|min:0',
+            'new_videos.*.video_provider' => 'nullable|string|max:100',
+            'new_videos.*.thumbnail_url' => 'nullable|url|max:500',
+            'new_videos.*.duration' => 'nullable|integer|min:0',
+            'new_videos.*.is_featured' => 'nullable|boolean',
+            'existing_videos' => 'nullable|array',
+            'existing_videos.*.title' => 'required_with:existing_videos|string|max:255',
+            'existing_videos.*.url' => 'required_with:existing_videos|url|max:500',
+            'existing_videos.*.description' => 'nullable|string',
+            'existing_videos.*.sort_order' => 'nullable|integer|min:0',
+            'existing_videos.*.video_provider' => 'nullable|string|max:100',
+            'existing_videos.*.thumbnail_url' => 'nullable|url|max:500',
+            'existing_videos.*.duration' => 'nullable|integer|min:0',
+            'existing_videos.*.is_featured' => 'nullable|boolean',
         ]);
 
         if ($validator->fails()) {
@@ -463,6 +483,44 @@ class GalleryMaintenanceController extends Controller
         }
 
         $folder->update($updateData);
+
+        if ($request->has('new_videos') && is_array($request->new_videos)) {
+            foreach ($request->new_videos as $videoData) {
+                if (empty($videoData['title']) || empty($videoData['url'])) {
+                    continue;
+                }
+                
+                VideoItem::create([
+                    'folder_id' => $folder->id,
+                    'title' => $videoData['title'],
+                    'url' => $videoData['url'],
+                    'description' => $videoData['description'] ?? null,
+                    'sort_order' => $videoData['sort_order'] ?? 0,
+                    'video_provider' => $videoData['video_provider'] ?? null,
+                    'thumbnail_url' => $videoData['thumbnail_url'] ?? null,
+                    'duration' => $videoData['duration'] ?? null,
+                    'is_featured' => isset($videoData['is_featured']) ? (bool) $videoData['is_featured'] : false,
+                ]);
+            }
+        }
+
+        if ($request->has('existing_videos') && is_array($request->existing_videos)) {
+            foreach ($request->existing_videos as $id => $videoData) {
+                $item = VideoItem::where('folder_id', $folder->id)->find($id);
+                if ($item) {
+                    $item->update([
+                        'title' => $videoData['title'],
+                        'url' => $videoData['url'],
+                        'description' => $videoData['description'] ?? null,
+                        'sort_order' => $videoData['sort_order'] ?? 0,
+                        'video_provider' => $videoData['video_provider'] ?? null,
+                        'thumbnail_url' => $videoData['thumbnail_url'] ?? null,
+                        'duration' => $videoData['duration'] ?? null,
+                        'is_featured' => isset($videoData['is_featured']) ? (bool) $videoData['is_featured'] : false,
+                    ]);
+                }
+            }
+        }
 
         return redirect()->route('maintenance.library-website.gallery.show-video-album', ['id' => $folder->album_id])
             ->with('toast-success', 'Video Folder updated successfully.');

@@ -122,6 +122,17 @@
           </div>
           <input id="datepicker-range-end-top-students" name="end_top_students" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-400 dark:focus:border-primary-400" placeholder="End date">
         </div>
+        <form id="export-most-visited-students-form" method="POST" action="{{ route('export-most-visited-students') }}" class="ms-4">
+          @csrf
+          <input type="hidden" name="start_date" id="export-most-visited-start">
+          <input type="hidden" name="end_date" id="export-most-visited-end">
+          <button type="submit" class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800 transition-colors shadow-sm">
+            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M14.707 7.793a1 1 0 0 0-1.414 0L11 10.086V1.5a1 1 0 0 0-2 0v8.586L6.707 7.793a1 1 0 1 0-1.414 1.414l4 4a1 1 0 0 0 1.416 0l4-4a1 1 0 0 0-.002-1.414Z"/>
+              <path d="M18 12h-2.55l-2.975 2.975a3.5 3.5 0 0 1-4.95 0L4.55 12H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Zm-3 5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+            </svg>
+          </button>
+        </form>
       </div>
     </div>
     <div id="top-students-container" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -151,6 +162,17 @@
           </div>
           <input id="datepicker-range-end-top-borrowed" name="end_top_borrowed" type="text" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full ps-10 p-2.5  dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-400 dark:focus:border-primary-400" placeholder="End date">
         </div>
+        <form id="export-most-borrowed-students-form" method="POST" action="{{ route('export-most-borrowed-students') }}" class="ms-4">
+          @csrf
+          <input type="hidden" name="start_date" id="export-most-borrowed-start">
+          <input type="hidden" name="end_date" id="export-most-borrowed-end">
+          <button type="submit" class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800 transition-colors shadow-sm">
+            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M14.707 7.793a1 1 0 0 0-1.414 0L11 10.086V1.5a1 1 0 0 0-2 0v8.586L6.707 7.793a1 1 0 1 0-1.414 1.414l4 4a1 1 0 0 0 1.416 0l4-4a1 1 0 0 0-.002-1.414Z"/>
+              <path d="M18 12h-2.55l-2.975 2.975a3.5 3.5 0 0 1-4.95 0L4.55 12H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Zm-3 5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+            </svg>
+          </button>
+        </form>
       </div>
     </div>
     <div id="top-borrowed-container" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -158,13 +180,37 @@
     </div>
   </div>
   <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
-    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 10 Most Borrowed Books</h5>
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-2 gap-4">
+      <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 10 Most Borrowed Books</h5>
+      <form id="export-top-books-borrowed-form" method="POST" action="{{ route('export-top-books-borrowed') }}">
+        @csrf
+        <input type="hidden" name="chart" id="export-top-books-chart-input">
+        <button type="submit" class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800 transition-colors shadow-sm">
+          <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M14.707 7.793a1 1 0 0 0-1.414 0L11 10.086V1.5a1 1 0 0 0-2 0v8.586L6.707 7.793a1 1 0 1 0-1.414 1.414l4 4a1 1 0 0 0 1.416 0l4-4a1 1 0 0 0-.002-1.414Z"/>
+            <path d="M18 12h-2.55l-2.975 2.975a3.5 3.5 0 0 1-4.95 0L4.55 12H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Zm-3 5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+          </svg>
+        </button>
+      </form>
+    </div>
     <div class="relative h-full">
       <canvas id="top-borrowed-books"></canvas>
     </div>
   </div>
   <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
-    <h5 class="mb-2 text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 10 Most Borrowed Books per Category</h5>
+    <div class="flex flex-col md:flex-row md:items-center justify-between mb-2 gap-4">
+      <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 10 Most Borrowed Books per Category</h5>
+      <form id="export-top-categories-borrowed-form" method="POST" action="{{ route('export-top-categories-borrowed') }}">
+        @csrf
+        <input type="hidden" name="chart" id="export-top-categories-chart-input">
+        <button type="submit" class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800 transition-colors shadow-sm">
+          <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+            <path d="M14.707 7.793a1 1 0 0 0-1.414 0L11 10.086V1.5a1 1 0 0 0-2 0v8.586L6.707 7.793a1 1 0 1 0-1.414 1.414l4 4a1 1 0 0 0 1.416 0l4-4a1 1 0 0 0-.002-1.414Z"/>
+            <path d="M18 12h-2.55l-2.975 2.975a3.5 3.5 0 0 1-4.95 0L4.55 12H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Zm-3 5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+          </svg>
+        </button>
+      </form>
+    </div>
     <div class="relative h-full">
       <canvas id="top-borrowed-categories"></canvas>
     </div>
@@ -615,6 +661,35 @@
   let yearlyBooksChart = null;
   let topBorrowedBooksChart = null;
   let topBorrowedCategoriesChart = null;
+
+  // Setup Export Forms
+  document.getElementById('export-most-visited-students-form').addEventListener('submit', function(e) {
+    document.getElementById('export-most-visited-start').value = document.getElementById('datepicker-range-start-top-students').value;
+    document.getElementById('export-most-visited-end').value = document.getElementById('datepicker-range-end-top-students').value;
+  });
+
+  document.getElementById('export-most-borrowed-students-form').addEventListener('submit', function(e) {
+    document.getElementById('export-most-borrowed-start').value = document.getElementById('datepicker-range-start-top-borrowed').value;
+    document.getElementById('export-most-borrowed-end').value = document.getElementById('datepicker-range-end-top-borrowed').value;
+  });
+
+  document.getElementById('export-top-books-borrowed-form').addEventListener('submit', function(e) {
+    if (topBorrowedBooksChart) {
+      document.getElementById('export-top-books-chart-input').value = topBorrowedBooksChart.toBase64Image();
+    } else {
+      e.preventDefault();
+      showToast('Chart is not fully loaded yet.', 'warning');
+    }
+  });
+
+  document.getElementById('export-top-categories-borrowed-form').addEventListener('submit', function(e) {
+    if (topBorrowedCategoriesChart) {
+      document.getElementById('export-top-categories-chart-input').value = topBorrowedCategoriesChart.toBase64Image();
+    } else {
+      e.preventDefault();
+      showToast('Chart is not fully loaded yet.', 'warning');
+    }
+  });
   // Create a line graph for monthly logs
   function monthlyLogsLineGraph(labels, counts) {
     const ctx = document.getElementById('monthly-logs').getContext('2d');
@@ -816,6 +891,7 @@
         }]
       },
       options: {
+        devicePixelRatio: 3,
         responsive: true,
         maintainAspectRatio: false,
         indexAxis: 'y',
@@ -855,6 +931,7 @@
         }]
       },
       options: {
+        devicePixelRatio: 3,
         responsive: true,
         maintainAspectRatio: false,
         indexAxis: 'y',

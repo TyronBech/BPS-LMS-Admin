@@ -135,8 +135,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 const skipAjaxValues = ['pdf', 'excel', 'barcode', 'callNumber'];
                 if (
                     (submitter && skipAjaxValues.includes(submitter.value)) ||
-                    (submitter && (submitter.name === 'submit' || submitter.classList.contains('btn-export')))
+                    (submitter && (submitter.name === 'submit' || submitter.classList.contains('btn-export'))) ||
+                    (form.action && (form.action.toLowerCase().includes('export') || form.action.toLowerCase().includes('download')))
                 ) {
+                    isExporting = true;
+                    setTimeout(() => {
+                        isExporting = false;
+                    }, 10000);
                     return;
                 }
 
