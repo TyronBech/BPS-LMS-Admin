@@ -214,7 +214,7 @@ class BookMaintenanceController extends Controller
             'description.Content notes' => 'nullable|string',
             'description.Abstract'      => 'nullable|string',
             'description.Reviews'       => 'nullable|string',
-            'description.Extent'        => 'required_with:description|string',
+            'description.Extent'        => 'required_unless:book_type,Non-print|string|nullable',
             'description.Acc Material'  => 'nullable|string',
             'edition'           => 'nullable|string|max:50',
             'publication'       => 'nullable|string|max:50',
@@ -635,7 +635,7 @@ class BookMaintenanceController extends Controller
             'description.Content notes' => 'nullable|string',
             'description.Abstract'      => 'nullable|string',
             'description.Reviews'       => 'nullable|string',
-            'description.Extent'        => 'required_with:description|string',
+            'description.Extent'        => 'required_unless:book_type,Non-print|string|nullable',
             'description.Acc Material'  => 'nullable|string',
             'edition'           => 'nullable|string|max:50',
             'publication'       => 'nullable|string|max:50',
@@ -741,7 +741,7 @@ class BookMaintenanceController extends Controller
             return redirect()->back()->with('toast-error', $this->friendlyErrorMessage($e))->withInput();
         }
         DB::commit();
-        Log::info('Book Maintenance: Book updated successfully', [
+        Log::info('Book Maintenance: Material updated successfully', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name,
             'book_id' => $request->input('id'),
@@ -797,7 +797,7 @@ class BookMaintenanceController extends Controller
             'description.Content notes' => 'nullable|string',
             'description.Abstract'      => 'nullable|string',
             'description.Reviews'       => 'nullable|string',
-            'description.Extent'        => 'required_with:description|string',
+            'description.Extent'        => 'required_unless:book_type,Non-print|string|nullable',
             'description.Acc Material'  => 'nullable|string',
             'edition'           => 'nullable|string|max:50',
             'publication'       => 'nullable|string|max:50',
@@ -1472,7 +1472,7 @@ class BookMaintenanceController extends Controller
         }
 
         $nextNumber = $maxNumber + 1;
-        $nextAccession = $prefix . str_pad((string)$nextNumber, 5, '0', STR_PAD_LEFT);
+        $nextAccession = $prefix . str_pad((string)$nextNumber, 6, '0', STR_PAD_LEFT);
 
         return response()->json(['next_accession' => $nextAccession]);
     }

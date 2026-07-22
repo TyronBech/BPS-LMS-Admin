@@ -21,6 +21,7 @@ class Printing extends Model
         'pages',
         'amount',
         'printed_at',
+        'visitor_id',
     ];
 
     public function student()
@@ -31,5 +32,10 @@ class Printing extends Model
     public function faculty()
     {
         return $this->belongsTo(EmployeeDetail::class, 'faculty_id');
+    }
+
+    public function visitor()
+    {
+        return $this->belongsTo(VisitorDetail::class, 'visitor_id');
     }
 }

@@ -58,6 +58,10 @@
                 <input type="radio" name="modal_user_type" value="faculty" class="text-primary-600 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600">
                 <span class="ms-2 text-sm text-gray-900 dark:text-white">Faculty & Staff</span>
               </label>
+              <label class="inline-flex items-center">
+                <input type="radio" name="modal_user_type" value="visitor" class="text-primary-600 focus:ring-primary-500 dark:bg-gray-700 dark:border-gray-600">
+                <span class="ms-2 text-sm text-gray-900 dark:text-white">Visitor</span>
+              </label>
             </div>
           </div>
 
@@ -78,6 +82,16 @@
               <input type="text" id="faculty_search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Search faculty/staff by name..." autocomplete="off">
               <input type="hidden" name="faculty_id" id="faculty_id">
               <div id="faculty_suggestions" class="absolute z-10 w-full bg-white rounded shadow dark:bg-gray-700 hidden max-h-48 overflow-y-auto mt-1 border border-gray-200 dark:border-gray-600"></div>
+            </div>
+          </div>
+
+          {{-- Visitor Selection --}}
+          <div class="mb-4 hidden" id="visitor_search_container">
+            <label for="visitor_search" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Visitor Name</label>
+            <div class="relative">
+              <input type="text" id="visitor_search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Search visitor by name..." autocomplete="off">
+              <input type="hidden" name="visitor_id" id="visitor_id">
+              <div id="visitor_suggestions" class="absolute z-10 w-full bg-white rounded shadow dark:bg-gray-700 hidden max-h-48 overflow-y-auto mt-1 border border-gray-200 dark:border-gray-600"></div>
             </div>
           </div>
 
@@ -138,8 +152,13 @@
     const facultyIdInput = document.getElementById('faculty_id');
     const facultySuggestionsBox = document.getElementById('faculty_suggestions');
 
+    const visitorSearchInput = document.getElementById('visitor_search');
+    const visitorIdInput = document.getElementById('visitor_id');
+    const visitorSuggestionsBox = document.getElementById('visitor_suggestions');
+
     const studentContainer = document.getElementById('student_search_container');
     const facultyContainer = document.getElementById('faculty_search_container');
+    const visitorContainer = document.getElementById('visitor_search_container');
 
     const typeSelect = document.getElementById('type');
     const titleContainer = document.getElementById('title_container');
@@ -184,6 +203,10 @@
               facultySearchInput.value = data.name;
               facultyIdInput.value = data.id;
               facultySuggestionsBox.classList.add('hidden');
+            } else if (data.type === 'visitor') {
+              visitorSearchInput.value = data.name;
+              visitorIdInput.value = data.id;
+              visitorSuggestionsBox.classList.add('hidden');
             }
           } else {
             rfidStatus.textContent = data.message || 'RFID not found.';
@@ -240,19 +263,40 @@
           studentSearchInput.setAttribute('required', 'required');
           facultyContainer.classList.add('hidden');
           facultySearchInput.removeAttribute('required');
+          visitorContainer.classList.add('hidden');
+          visitorSearchInput.removeAttribute('required');
           
-          // Clear faculty
+          // Clear others
           facultySearchInput.value = '';
           facultyIdInput.value = '';
-        } else {
+          visitorSearchInput.value = '';
+          visitorIdInput.value = '';
+        } else if (this.value === 'faculty') {
           facultyContainer.classList.remove('hidden');
           facultySearchInput.setAttribute('required', 'required');
           studentContainer.classList.add('hidden');
           studentSearchInput.removeAttribute('required');
+          visitorContainer.classList.add('hidden');
+          visitorSearchInput.removeAttribute('required');
           
-          // Clear student
+          // Clear others
           studentSearchInput.value = '';
           studentIdInput.value = '';
+          visitorSearchInput.value = '';
+          visitorIdInput.value = '';
+        } else {
+          visitorContainer.classList.remove('hidden');
+          visitorSearchInput.setAttribute('required', 'required');
+          studentContainer.classList.add('hidden');
+          studentSearchInput.removeAttribute('required');
+          facultyContainer.classList.add('hidden');
+          facultySearchInput.removeAttribute('required');
+          
+          // Clear others
+          studentSearchInput.value = '';
+          studentIdInput.value = '';
+          facultySearchInput.value = '';
+          facultyIdInput.value = '';
         }
       });
     });
@@ -263,9 +307,15 @@
       if (activeRadio.value === 'student') {
         studentSearchInput.setAttribute('required', 'required');
         facultySearchInput.removeAttribute('required');
-      } else {
+        visitorSearchInput.removeAttribute('required');
+      } else if (activeRadio.value === 'faculty') {
         facultySearchInput.setAttribute('required', 'required');
         studentSearchInput.removeAttribute('required');
+        visitorSearchInput.removeAttribute('required');
+      } else {
+        visitorSearchInput.setAttribute('required', 'required');
+        studentSearchInput.removeAttribute('required');
+        facultySearchInput.removeAttribute('required');
       }
     }
 
@@ -360,6 +410,7 @@
 
     setupAutoSuggest(studentSearchInput, studentIdInput, studentSuggestionsBox, 'student');
     setupAutoSuggest(facultySearchInput, facultyIdInput, facultySuggestionsBox, 'faculty');
+    setupAutoSuggest(visitorSearchInput, visitorIdInput, visitorSuggestionsBox, 'visitor');
 
     document.addEventListener('click', function(e) {
       if (e.target !== studentSearchInput && e.target !== studentSuggestionsBox) {
@@ -367,6 +418,9 @@
       }
       if (e.target !== facultySearchInput && e.target !== facultySuggestionsBox) {
         facultySuggestionsBox.classList.add('hidden');
+      }
+      if (e.target !== visitorSearchInput && e.target !== visitorSuggestionsBox) {
+        visitorSuggestionsBox.classList.add('hidden');
       }
     });
 
