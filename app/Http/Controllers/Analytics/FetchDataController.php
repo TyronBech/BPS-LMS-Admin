@@ -773,7 +773,7 @@ class FetchDataController extends Controller
         
         $settings = UISetting::first() ?? new UISetting();
         $items = [
-            'title'       => 'Top 5 Most Visited Students per Section',
+            'title'       => 'Top 5 Students with the most library visit per section',
             'school'      => $settings->org_name ?? "Bicutan Parochial School, Inc.",
             'address'     => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'        => $settings->org_logo_full ?? base64_encode(file_get_contents(public_path('img/BPSLogoFull.png'))),
