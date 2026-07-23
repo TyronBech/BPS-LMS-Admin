@@ -340,6 +340,8 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
             Route::controller(LibraryClassReservationController::class)->group(function () {
                 Route::get('class-reservations', 'index')->name('maintenance.class-reservations');
                 Route::get('class-reservations/pending-count', 'pendingCount')->name('maintenance.class-reservations.pending-count');
+                Route::get('class-reservations/check-conflict', 'checkConflict')->name('maintenance.class-reservations.check-conflict');
+                Route::post('class-reservations/store', 'store')->name('maintenance.class-reservations.store');
                 Route::post('class-reservations/approve/{id}', 'approve')->name('maintenance.class-reservations.approve');
                 Route::post('class-reservations/reject/{id}', 'reject')->name('maintenance.class-reservations.reject');
                 Route::get('class-reservations/search', 'search')->name('maintenance.class-reservations.search');
