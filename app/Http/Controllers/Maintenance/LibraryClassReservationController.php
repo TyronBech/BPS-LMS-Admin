@@ -77,6 +77,8 @@ class LibraryClassReservationController extends Controller
         $rejectedCount = LibraryClassReservation::where('status', 'Rejected')->count();
         $cancelledCount = LibraryClassReservation::where('status', 'Cancelled')->count();
 
+        $users = \App\Models\User::orderBy('first_name')->get();
+
         return view('maintenance.class-reservations.index', compact(
             'reservations',
             'pendingCount',
@@ -85,7 +87,8 @@ class LibraryClassReservationController extends Controller
             'cancelledCount',
             'perPage',
             'activeTab',
-            'calendarReservations'
+            'calendarReservations',
+            'users'
         ));
     }
 
@@ -158,6 +161,8 @@ class LibraryClassReservationController extends Controller
                 ->get();
         }
 
+        $users = \App\Models\User::orderBy('first_name')->get();
+
         return view('maintenance.class-reservations.index', compact(
             'reservations',
             'pendingCount',
@@ -166,8 +171,131 @@ class LibraryClassReservationController extends Controller
             'cancelledCount',
             'perPage',
             'activeTab',
-            'calendarReservations'
+            'calendarReservations',
+            'users'
         ));
+    }
+
+    /**
+     * Store a new class reservation directly added by the admin.
+     */
+    public function store(Request $request)
+    {
+        Log::info('Library Class Reservation: Admin creating reservation directly', [
+            'admin_id' => Auth::guard('admin')->id(),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
+        $validated = $request->validate([
+            'user_id' => 'required|exists:usr_users,id',
+            'faculty_user_id' => 'nullable|exists:usr_users,id',
+            'reservation_date' => 'required|date',
+            'start_time' => 'required|date_format:H:i',
+            'end_time' => 'nullable|date_format:H:i|after:start_time',
+            'purpose' => 'required|string|max:500',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
+
+            // Check if there is an already approved overlapping reservation
+            $overlappingApproved = LibraryClassReservation::where('status', 'Approved')
+                ->where('reservation_date', $validated['reservation_date'])
+                ->where(function ($query) use ($validated) {
+                    $endTime = $validated['end_time'] ?? $validated['start_time'];
+                    $query->where('start_time', '<', $endTime)
+                          ->where(DB::raw('COALESCE(end_time, start_time)'), '>', $validated['start_time']);
+                })
+                ->exists();
+
+            if ($overlappingApproved) {
+                DB::rollBack();
+                return redirect()->back()->with('toast-warning', 'Cannot create reservation because an overlapping reservation already exists on this date and time.');
+            }
+
+            $admin = Auth::guard('admin')->user();
+            $adminName = $admin->first_name . ' ' . $admin->last_name;
+
+            $reservation = new LibraryClassReservation();
+            $reservation->user_id = $validated['user_id'];
+            $reservation->faculty_user_id = $validated['faculty_user_id'];
+            $reservation->reservation_date = $validated['reservation_date'];
+            $reservation->start_time = $validated['start_time'];
+            $reservation->end_time = $validated['end_time'];
+            $reservation->purpose = $validated['purpose'];
+            $reservation->status = 'Approved';
+            $reservation->approved_by = Auth::guard('admin')->id();
+            $reservation->approved_at = now();
+            $reservation->remarks = 'DIRECTLY ADDED and APPROVED by Admin: ' . $adminName . ' on ' . now()->format('F d, Y H:i:s');
+            $reservation->save();
+
+            // Automatically cancel other pending overlapping reservations in database
+            $overlappingPending = LibraryClassReservation::where('status', 'Pending')
+                ->where('id', '!=', $reservation->id)
+                ->where('reservation_date', $reservation->reservation_date)
+                ->where(function ($query) use ($reservation) {
+                    $endTime = $reservation->end_time ?? $reservation->start_time;
+                    $query->where('start_time', '<', $endTime)
+                          ->where(DB::raw('COALESCE(end_time, start_time)'), '>', $reservation->start_time);
+                })
+                ->get();
+
+            foreach ($overlappingPending as $other) {
+                $other->status = 'Cancelled';
+                $appendOtherRemarks = 'CANCELLED automatically due to overlapping approved reservation #' . $reservation->id . ' on ' . now()->format('F d, Y H:i:s');
+                $other->remarks = $other->remarks ? ($other->remarks . ' || ' . $appendOtherRemarks) : $appendOtherRemarks;
+                $other->save();
+            }
+
+            DB::commit();
+
+            // Notify each of the cancelled reservation requesters
+            foreach ($overlappingPending as $other) {
+                $this->sendReservationEmail($other->user, $other, 'Cancelled', 'Cancelled due to overlapping reservation approval.');
+            }
+
+            Log::info('Library Class Reservation: Admin created and approved successfully', [
+                'admin_id' => Auth::guard('admin')->id(),
+                'reservation_id' => $reservation->id,
+                'timestamp' => now(),
+            ]);
+
+            return redirect()->back()->with('toast-success', 'Library class reservation has been successfully added and approved.');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Library Class Reservation: Failed to create request', [
+                'admin_id' => Auth::guard('admin')->id(),
+                'error_message' => $e->getMessage(),
+                'timestamp' => now(),
+            ]);
+            return redirect()->back()->with('toast-error', 'Failed to add reservation. Please try again.');
+        }
+    }
+
+    /**
+     * Check for overlapping approved reservations dynamically via AJAX.
+     */
+    public function checkConflict(Request $request)
+    {
+        $date = $request->query('date');
+        $startTime = $request->query('start_time');
+        $endTime = $request->query('end_time');
+
+        if (!$date || !$startTime || !$endTime) {
+            return response()->json(['conflict' => false]);
+        }
+
+        $conflict = LibraryClassReservation::where('status', 'Approved')
+            ->where('reservation_date', $date)
+            ->where(function ($query) use ($startTime, $endTime) {
+                $query->where('start_time', '<', $endTime)
+                      ->where(DB::raw('COALESCE(end_time, start_time)'), '>', $startTime);
+            })
+            ->exists();
+
+        return response()->json(['conflict' => $conflict]);
     }
 
     /**
