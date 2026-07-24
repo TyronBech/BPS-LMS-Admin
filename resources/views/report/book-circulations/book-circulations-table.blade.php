@@ -12,38 +12,38 @@
       </form>
     </div>
     <div class="overflow-x-auto">
-      <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+      <table class="w-full text-xs text-left text-gray-500 dark:text-gray-400">
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
-            <th scope="col" class="px-6 py-3">Accession</th>
-            <th scope="col" class="px-6 py-3">Author</th>
-            <th scope="col" class="px-6 py-3">Title</th>
-            <th scope="col" class="px-6 py-3">Publication</th>
-            <th scope="col" class="px-6 py-3">Publisher</th>
-            <th scope="col" class="px-6 py-3">Call Number</th>
-            <th scope="col" class="px-6 py-3">ISBN</th>
-            <th scope="col" class="px-6 py-3">Copyright</th>
-            <th scope="col" class="px-6 py-3">Status</th>
+            <th scope="col" class="px-4 py-2">Accession</th>
+            <th scope="col" class="px-4 py-2">Author</th>
+            <th scope="col" class="px-4 py-2">Title</th>
+            <th scope="col" class="px-4 py-2">Publication</th>
+            <th scope="col" class="px-4 py-2">Publisher</th>
+            <th scope="col" class="px-4 py-2">Call Number</th>
+            <th scope="col" class="px-4 py-2">ISBN</th>
+            <th scope="col" class="px-4 py-2">Copyright</th>
+            <th scope="col" class="px-4 py-2">Status</th>
           </tr>
         </thead>
         <tbody>
           @forelse($data as $item)
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-            <td class="px-6 py-4">{{ $item->accession }}</td>
-            <td class="px-6 py-4">{{ $item->author ?? 'N/A' }}</td>
-            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+            <td class="px-4 py-2">{{ $item->accession }}</td>
+            <td class="px-4 py-2">{{ $item->author ?? 'N/A' }}</td>
+            <th scope="row" class="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
               {{ $item->title }}
             </th>
-            <td class="px-6 py-4">{{ $item->place_of_publication ?? 'N/A' }}</td>
-            <td class="px-6 py-4">{{ $item->publisher ?? 'N/A' }}</td>
-            <td class="px-6 py-4">{{ $item->call_number ?? 'N/A' }}</td>
-            <td class="px-6 py-4">{{ $item->isbn ?? 'N/A' }}</td>
-            <td class="px-6 py-4">{{ $item->copyrights ?? 'N/A' }}</td>
-            <td class="px-6 py-4">{{ $item->remarks ?? 'N/A' }}</td>
+            <td class="px-4 py-2">{{ $item->place_of_publication ?? 'N/A' }}</td>
+            <td class="px-4 py-2">{{ $item->publisher ?? 'N/A' }}</td>
+            <td class="px-4 py-2">{{ $item->call_number ?? 'N/A' }}</td>
+            <td class="px-4 py-2">{{ $item->isbn ?? 'N/A' }}</td>
+            <td class="px-4 py-2">{{ $item->copyrights ?? 'N/A' }}</td>
+            <td class="px-4 py-2">{{ $item->remarks ?? 'N/A' }}</td>
           </tr>
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-            <td colspan="9" class="px-6 py-4 text-center">No data found.</td>
+            <td colspan="9" class="px-4 py-2 text-center">No data found.</td>
           </tr>
           @endforelse
         </tbody>

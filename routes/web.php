@@ -157,6 +157,7 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
             Route::get('non-circulation', 'index')->name('report.non-circulation');
             Route::post('non-circulation', 'search')->name('report.non-circulation-search');
             Route::post('non-circulation/store', 'store')->name('report.non-circulation-store');
+            Route::post('non-circulation/return', 'returnBook')->name('report.non-circulation-return');
             Route::get('non-circulation/search-user', 'searchUser')->name('report.non-circulation-search-user');
             Route::get('lookup-rfid', 'lookupRfid')->name('report.lookup-rfid');
             Route::delete('non-circulation/delete', 'destroy')->name('report.non-circulation-delete');
