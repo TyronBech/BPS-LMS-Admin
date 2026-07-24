@@ -17,6 +17,7 @@ class BkNonCirculation extends Model
         'faculty_id',
         'subject',
         'borrowed_at',
+        'returned_at',
     ];
 
     public function student()

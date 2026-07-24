@@ -4,50 +4,50 @@
     <h2 class="text-center mb-4 font-semibold text-2xl dark:text-white">Report Table for Materials</h2>
   </div>
   <div class="overflow-x-auto">
-    <table class="w-full text-sm text-center text-gray-500 dark:text-gray-400">
+    <table class="w-full text-xs text-center text-gray-500 dark:text-gray-400">
       <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
         <tr>
-          <th scope="col" class="text-left px-6 py-3">Legend</th>
-          <th scope="col" class="text-left px-6 py-3">Description</th>
-          <th scope="col" class="px-6 py-3">Previous Inventory</th>
-          <th scope="col" class="px-6 py-3">Newly Acquired</th>
-          <th scope="col" class="px-6 py-3">Lost and Paid For</th>
-          <th scope="col" class="px-6 py-3">Lost and Replaced</th>
-          <th scope="col" class="px-6 py-3">Unreturned</th>
-          <th scope="col" class="px-6 py-3">Missing</th>
-          <th scope="col" class="px-6 py-3">Discarded</th>
-          <th scope="col" class="px-6 py-3">Present Inventory</th>
+          <th scope="col" class="text-left px-4 py-2">Legend</th>
+          <th scope="col" class="text-left px-4 py-2">Description</th>
+          <th scope="col" class="px-4 py-2">Previous Inventory</th>
+          <th scope="col" class="px-4 py-2">Newly Acquired</th>
+          <th scope="col" class="px-4 py-2">Lost and Paid For</th>
+          <th scope="col" class="px-4 py-2">Lost and Replaced</th>
+          <th scope="col" class="px-4 py-2">Unreturned</th>
+          <th scope="col" class="px-4 py-2">Missing</th>
+          <th scope="col" class="px-4 py-2">Discarded</th>
+          <th scope="col" class="px-4 py-2">Present Inventory</th>
         </tr>
       </thead>
       <tbody>
         @forelse($data as $item)
         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-          <th scope="row" class="text-left px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ $item->legend }}</th>
-          <td class="text-left px-6 py-4">{{ $item->name }}</td>
-          <td class="px-6 py-4 text-center">{{ $item->previous_inventory }}</td>
-          <td class="px-6 py-4 text-center">{{ $item->newly_acquired }}</td>
-          <td class="px-6 py-4 text-center">{{ $item->lost_and_paid_for }}</td>
-          <td class="px-6 py-4 text-center">{{ $item->lost_and_replaced }}</td>
-          <td class="px-6 py-4 text-center">{{ $item->unreturned }}</td>
-          <td class="px-6 py-4 text-center">{{ $item->missing }}</td>
-          <td class="px-6 py-4 text-center">{{ $item->discarded }}</td>
-          <td class="px-6 py-4 text-center">{{ $item->present_inventory }}</td>
+          <th scope="row" class="text-left px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">{{ $item->legend }}</th>
+          <td class="text-left px-4 py-2">{{ $item->name }}</td>
+          <td class="px-4 py-2 text-center">{{ $item->previous_inventory }}</td>
+          <td class="px-4 py-2 text-center">{{ $item->newly_acquired }}</td>
+          <td class="px-4 py-2 text-center">{{ $item->lost_and_paid_for }}</td>
+          <td class="px-4 py-2 text-center">{{ $item->lost_and_replaced }}</td>
+          <td class="px-4 py-2 text-center">{{ $item->unreturned }}</td>
+          <td class="px-4 py-2 text-center">{{ $item->missing }}</td>
+          <td class="px-4 py-2 text-center">{{ $item->discarded }}</td>
+          <td class="px-4 py-2 text-center">{{ $item->present_inventory }}</td>
         </tr>
         @empty
         <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-          <td colspan="10" class="px-6 py-4 text-center">No data found.</td>
+          <td colspan="10" class="px-4 py-2 text-center">No data found.</td>
         </tr>
         @endforelse
         <tr class="bg-gray-50 font-bold dark:bg-gray-700 dark:text-gray-300">
-          <td class="px-6 py-4 text-right" colspan="2">Total:</td>
-          <td class="px-6 py-4 text-center">{{ $data->sum('previous_inventory') }}</td>
-          <td class="px-6 py-4 text-center">{{ $data->sum('newly_acquired') }}</td>
-          <td class="px-6 py-4 text-center">{{ $data->sum('lost_and_paid_for') }}</td>
-          <td class="px-6 py-4 text-center">{{ $data->sum('lost_and_replaced') }}</td>
-          <td class="px-6 py-4 text-center">{{ $data->sum('unreturned') }}</td>
-          <td class="px-6 py-4 text-center">{{ $data->sum('missing') }}</td>
-          <td class="px-6 py-4 text-center">{{ $data->sum('discarded') }}</td>
-          <td class="px-6 py-4 text-center">{{ $data->sum('present_inventory') }}</td>
+          <td class="px-4 py-2 text-right" colspan="2">Total:</td>
+          <td class="px-4 py-2 text-center">{{ $data->sum('previous_inventory') }}</td>
+          <td class="px-4 py-2 text-center">{{ $data->sum('newly_acquired') }}</td>
+          <td class="px-4 py-2 text-center">{{ $data->sum('lost_and_paid_for') }}</td>
+          <td class="px-4 py-2 text-center">{{ $data->sum('lost_and_replaced') }}</td>
+          <td class="px-4 py-2 text-center">{{ $data->sum('unreturned') }}</td>
+          <td class="px-4 py-2 text-center">{{ $data->sum('missing') }}</td>
+          <td class="px-4 py-2 text-center">{{ $data->sum('discarded') }}</td>
+          <td class="px-4 py-2 text-center">{{ $data->sum('present_inventory') }}</td>
         </tr>
       </tbody>
     </table>

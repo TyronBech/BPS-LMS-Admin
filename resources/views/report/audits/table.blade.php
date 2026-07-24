@@ -19,18 +19,18 @@
       </form>
     </div>
     <div class="overflow-x-auto">
-      <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+      <table class="w-full text-xs text-left text-gray-500 dark:text-gray-400">
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
-            <th scope="col" class="px-6 py-3 whitespace-nowrap">Record</th>
-            <th scope="col" class="px-6 py-3 whitespace-nowrap">Source</th>
-            <th scope="col" class="px-6 py-3 whitespace-nowrap">Field Changed</th>
-            <th scope="col" class="px-6 py-3 whitespace-nowrap w-48">Old Value</th>
-            <th scope="col" class="px-6 py-3 whitespace-nowrap w-48">New Value</th>
-            <th scope="col" class="px-6 py-3 whitespace-nowrap">Change By</th>
-            <th scope="col" class="px-6 py-3 whitespace-nowrap">Change Type</th>
-            <th scope="col" class="px-6 py-3 whitespace-nowrap">Date</th>
-            <th scope="col" class="px-6 py-3 whitespace-nowrap">Time</th>
+            <th scope="col" class="px-4 py-2 whitespace-nowrap">Record</th>
+            <th scope="col" class="px-4 py-2 whitespace-nowrap">Source</th>
+            <th scope="col" class="px-4 py-2 whitespace-nowrap">Field Changed</th>
+            <th scope="col" class="px-4 py-2 whitespace-nowrap w-48">Old Value</th>
+            <th scope="col" class="px-4 py-2 whitespace-nowrap w-48">New Value</th>
+            <th scope="col" class="px-4 py-2 whitespace-nowrap">Change By</th>
+            <th scope="col" class="px-4 py-2 whitespace-nowrap">Change Type</th>
+            <th scope="col" class="px-4 py-2 whitespace-nowrap">Date</th>
+            <th scope="col" class="px-4 py-2 whitespace-nowrap">Time</th>
           </tr>
         </thead>
         <tbody>
@@ -39,72 +39,72 @@
             <!-- Record -->
             @if(in_array($item->source_table, [User::getTableName(), EmployeeDetail::getTableName(), StudentDetail::getTableName(), VisitorDetail::getTableName()]))
             @if($item->user)
-            <td class="px-6 py-4 max-w-md">
+            <td class="px-4 py-2 max-w-md">
               <div class="break-words">
                 {{ $item->user->last_name ?? '' }}, {{ $item->user->first_name ?? '' }} {{ $item->user->middle_name ?? '' }}
               </div>
             </td>
             @elseif($item->visitor)
-            <td class="px-6 py-4 max-w-md">
+            <td class="px-4 py-2 max-w-md">
               <div class="break-words">
                 {{ $item->visitor->last_name ?? '' }}, {{ $item->visitor->first_name ?? '' }} {{ $item->visitor->middle_name ?? '' }}
               </div>
             </td>
             @else
-            <td class="px-6 py-4 max-w-md">
+            <td class="px-4 py-2 max-w-md">
               <div class="break-words">user data</div>
             </td>
             @endif
             @elseif($item->source_table == Book::getTableName())
-            <td class="px-6 py-4 max-w-md">
+            <td class="px-4 py-2 max-w-md">
               <div class="break-words">
                 {{ $item->book->title ?? 'book data' }}
               </div>
             </td>
             @elseif($item->source_table == Transaction::getTableName())
-            <td class="px-6 py-4 max-w-md">
+            <td class="px-4 py-2 max-w-md">
               <div class="break-words">
                 {{ $item->transaction->book->title ?? 'transaction data' }}
               </div>
             </td>
             @elseif($item->source_table == VisitorDetail::getTableName())
-            <td class="px-6 py-4 max-w-md">
+            <td class="px-4 py-2 max-w-md">
               <div class="break-words">Visitor Data</div>
             </td>
             @else
-            <td class="px-6 py-4 max-w-md">
+            <td class="px-4 py-2 max-w-md">
               <div class="break-words">Session Record</div>
             </td>
             @endif
             @if($item->source_table == User::getTableName())
-            <td class="px-6 py-4 whitespace-nowrap">User</td>
+            <td class="px-4 py-2 whitespace-nowrap">User</td>
             @elseif($item->source_table == EmployeeDetail::getTableName())
-            <td class="px-6 py-4 whitespace-nowrap">Employee</td>
+            <td class="px-4 py-2 whitespace-nowrap">Employee</td>
             @elseif($item->source_table == StudentDetail::getTableName())
-            <td class="px-6 py-4 whitespace-nowrap">Student</td>
+            <td class="px-4 py-2 whitespace-nowrap">Student</td>
             @elseif($item->source_table == VisitorDetail::getTableName())
-            <td class="px-6 py-4 whitespace-nowrap">Visitor</td>
+            <td class="px-4 py-2 whitespace-nowrap">Visitor</td>
             @elseif($item->source_table == Book::getTableName())
-            <td class="px-6 py-4 whitespace-nowrap">Book</td>
+            <td class="px-4 py-2 whitespace-nowrap">Book</td>
             @elseif($item->source_table == Transaction::getTableName())
-            <td class="px-6 py-4 whitespace-nowrap">Transaction</td>
+            <td class="px-4 py-2 whitespace-nowrap">Transaction</td>
             @elseif($item->source_table == 'sessions')
-            <td class="px-6 py-4 whitespace-nowrap">Authentication</td>
+            <td class="px-4 py-2 whitespace-nowrap">Authentication</td>
             @endif
-            <td class="px-6 py-4 whitespace-nowrap">{{ str_replace('_', ' ', $item->field_changed) ?? $item->field_changed ?? 'unknown field' }}</td>
+            <td class="px-4 py-2 whitespace-nowrap">{{ str_replace('_', ' ', $item->field_changed) ?? $item->field_changed ?? 'unknown field' }}</td>
             @if($item->field_changed == 'password')
-            <td class="px-6 py-4 whitespace-nowrap italic">hidden</td>
+            <td class="px-4 py-2 whitespace-nowrap italic">hidden</td>
             @else
-            <td class="px-6 py-4 max-w-xs">
+            <td class="px-4 py-2 max-w-xs">
               <div class="break-words">
                 {{ $item->old_value ?? 'null' }}
               </div>
             </td>
             @endif
             @if($item->field_changed == 'password')
-            <td class="px-6 py-4 whitespace-nowrap italic">hidden</td>
+            <td class="px-4 py-2 whitespace-nowrap italic">hidden</td>
             @else
-            <td class="px-6 py-4 max-w-xs">
+            <td class="px-4 py-2 max-w-xs">
               <div class="break-words">
                 {{ $item->new_value ?? 'null' }}
               </div>
@@ -112,17 +112,17 @@
             @endif
             <!-- Changed By -->
             @if($item->changedBy)
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->changedBy->last_name }}, {{ $item->changedBy->first_name }} {{ $item->changedBy->middle_name ?? '' }}</td>
+            <td class="px-4 py-2 whitespace-nowrap">{{ $item->changedBy->last_name }}, {{ $item->changedBy->first_name }} {{ $item->changedBy->middle_name ?? '' }}</td>
             @else
-            <td class="px-6 py-4 whitespace-nowrap">System</td>
+            <td class="px-4 py-2 whitespace-nowrap">System</td>
             @endif
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->action_type ?? 'null' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ \Carbon\Carbon::parse($item->created_at)->format('Y-m-d') ?? 'null' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ \Carbon\Carbon::parse($item->created_at)->format('g:i A') ?? 'null' }}</td>
+            <td class="px-4 py-2 whitespace-nowrap">{{ $item->action_type ?? 'null' }}</td>
+            <td class="px-4 py-2 whitespace-nowrap">{{ \Carbon\Carbon::parse($item->created_at)->format('Y-m-d') ?? 'null' }}</td>
+            <td class="px-4 py-2 whitespace-nowrap">{{ \Carbon\Carbon::parse($item->created_at)->format('g:i A') ?? 'null' }}</td>
           </tr>
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-            <td colspan="9" class="px-6 py-4 text-center">No data found.</td>
+            <td colspan="9" class="px-4 py-2 text-center">No data found.</td>
           </tr>
           @endforelse
         </tbody>

@@ -13,39 +13,39 @@
       </form>
     </div>
     <div class="overflow-x-auto">
-      <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+      <table class="w-full text-xs text-left text-gray-500 dark:text-gray-400">
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
-            <th scope="col" class="px-6 py-3">Name</th>
+            <th scope="col" class="px-4 py-2">Name</th>
             @if($userType == 'students')
-            <th scope="col" class="px-6 py-3">Level</th>
-            <th scope="col" class="px-6 py-3">Section</th>
+            <th scope="col" class="px-4 py-2">Level</th>
+            <th scope="col" class="px-4 py-2">Section</th>
             @elseif($userType == 'employees')
-            <th scope="col" class="px-6 py-3">Role</th>
+            <th scope="col" class="px-4 py-2">Role</th>
             @endif
-            <th scope="col" class="px-6 py-3">Date</th>
-            <th scope="col" class="px-6 py-3">Time</th>
+            <th scope="col" class="px-4 py-2">Date</th>
+            <th scope="col" class="px-4 py-2">Time</th>
           </tr>
         </thead>
         <tbody>
           @forelse($data as $item)
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+            <th scope="row" class="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
               {{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}
             </th>
             @if($userType == 'students')
-            <td class="px-6 py-4">{{ $item->user->students->level }}</td>
-            <td class="px-6 py-4">{{ $item->user->students->section }}</td>
+            <td class="px-4 py-2">{{ $item->user->students->level }}</td>
+            <td class="px-4 py-2">{{ $item->user->students->section }}</td>
             @elseif($userType == 'employees')
-            <td class="px-6 py-4">{{ ucwords($item->user->employees->employee_role) }}</td>
+            <td class="px-4 py-2">{{ ucwords($item->user->employees->employee_role) }}</td>
             @endif
             @php $start = \Carbon\Carbon::parse($item->start); @endphp
-            <td class="px-6 py-4">{{ $start->format('Y-m-d') }}</td>
-            <td class="px-6 py-4">{{ $start->format('g:i A') }}</td>
+            <td class="px-4 py-2">{{ $start->format('Y-m-d') }}</td>
+            <td class="px-4 py-2">{{ $start->format('g:i A') }}</td>
           </tr>
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-            <td colspan="5" class="px-6 py-4 text-center">No data found.</td>
+            <td colspan="5" class="px-4 py-2 text-center">No data found.</td>
           </tr>
           @endforelse
         </tbody>
