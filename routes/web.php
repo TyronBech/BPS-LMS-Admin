@@ -287,6 +287,7 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
 
         Route::prefix('users')->middleware(UserAuthentication::class)->controller(UsersMaintenanceController::class)->group(function () {
             Route::get('users', 'index')->name('maintenance.users');
+            Route::get('export-users', 'export')->name('maintenance.export-users');
             Route::get('view-student', 'view_student')->name('maintenance.view-student');
             Route::get('view-employee', 'view_employee')->name('maintenance.view-employee');
             Route::get('add-student', 'create_student')->name('maintenance.create-student');
