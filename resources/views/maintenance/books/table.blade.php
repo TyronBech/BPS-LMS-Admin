@@ -11,14 +11,14 @@
       <form action="{{ route('maintenance.export-barcode') }}" method="GET" class="flex skip-loader">
         @csrf
         <input type="hidden" name="ids" id="export_barcode_ids" value="" />
-        <button id="exportBarcodeBtn" type="submit" title="Export Barcode" value="" class="exportBarcode text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
+        <button id="exportBarcodeBtn" type="submit" title="Export Barcode" value="barcode" class="exportBarcode skip-loader text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
           Generate Barcode
         </button>
       </form>
       <form action="{{ route('maintenance.export-call-number') }}" method="GET" class="flex skip-loader">
         @csrf
         <input type="hidden" name="ids" id="export_call_number_ids" value="" />
-        <button id="exportCallNumberBtn" type="submit" title="Export Call Number" value="" class="exportCallNumber text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
+        <button id="exportCallNumberBtn" type="submit" title="Export Call Number" value="callNumber" class="exportCallNumber skip-loader text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
           Generate Call Number
         </button>
       </form>
