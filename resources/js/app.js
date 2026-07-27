@@ -97,15 +97,19 @@ document.addEventListener("DOMContentLoaded", () => {
         if (element.classList?.contains("skip-loader") || (element.closest && element.closest(".skip-loader"))) return true;
         if (element.hasAttribute && element.hasAttribute("download")) return true;
 
-        const skipAjaxValues = ['pdf', 'excel', 'barcode', 'callNumber'];
+        const skipAjaxValues = ['pdf', 'excel', 'barcode', 'callNumber', 'exportBarcode', 'exportCallNumber'];
         if (element.value && skipAjaxValues.includes(element.value)) return true;
-        if (element.name === 'submit' || (element.classList && element.classList.contains('btn-export')) || element.id === 'downloadPDF') return true;
+        if (element.id === 'exportBarcodeBtn' || element.id === 'exportCallNumberBtn' || element.id === 'exportBarcode' || element.id === 'exportCallNumber') return true;
+        if (element.classList && (element.classList.contains('exportBarcode') || element.classList.contains('exportCallNumber') || element.classList.contains('btn-export'))) return true;
+        if (element.name === 'submit' || element.id === 'downloadPDF') return true;
 
-        const href = url || (element.getAttribute ? element.getAttribute("href") : "") || "";
-        if (href && (
-            href.toLowerCase().includes("export") ||
-            href.toLowerCase().includes("download") ||
-            /\.(pdf|xlsx|xls|csv)$/i.test(href)
+        const actionUrl = url || (element.getAttribute ? (element.getAttribute("href") || element.getAttribute("action")) : "") || element.action || "";
+        if (actionUrl && (
+            actionUrl.toLowerCase().includes("export") ||
+            actionUrl.toLowerCase().includes("download") ||
+            actionUrl.toLowerCase().includes("barcode") ||
+            actionUrl.toLowerCase().includes("call-number") ||
+            /\.(pdf|xlsx|xls|csv)$/i.test(actionUrl)
         )) {
             return true;
         }
@@ -137,33 +141,34 @@ document.addEventListener("DOMContentLoaded", () => {
     }, true);
 
     // --- 1️⃣ Handle form submissions (standard page changes) ---
-    document.querySelectorAll("form").forEach((form) => {
-        form.addEventListener("submit", (e) => {
-            const submitter = e.submitter || activeSubmitter;
+    document.addEventListener("submit", (e) => {
+        const form = e.target;
+        if (!form || form.tagName !== "FORM") return;
 
-            setTimeout(() => {
-                activeSubmitter = null;
+        const submitter = e.submitter || activeSubmitter;
 
-                if (e.defaultPrevented) return;
+        setTimeout(() => {
+            activeSubmitter = null;
 
-                if (
-                    form.classList.contains("skip-loader") || 
-                    form.closest(".skip-loader") ||
-                    form.target === "_blank" ||
-                    isDownloadOrSkipAction(form, form.action) ||
-                    (submitter && isDownloadOrSkipAction(submitter))
-                ) {
-                    setExportingFlag();
-                    return;
-                }
+            if (e.defaultPrevented) return;
 
-                if (form.classList.contains('auto-search-form')) {
-                    return;
-                }
+            if (
+                form.classList.contains("skip-loader") || 
+                form.closest(".skip-loader") ||
+                form.target === "_blank" ||
+                isDownloadOrSkipAction(form, form.action) ||
+                (submitter && isDownloadOrSkipAction(submitter))
+            ) {
+                setExportingFlag();
+                return;
+            }
 
-                showLoader();
-            }, 0);
-        });
+            if (form.classList.contains('auto-search-form')) {
+                return;
+            }
+
+            showLoader();
+        }, 0);
     });
 
     // --- 2️⃣ Handle anchor (<a>) clicks (standard navigation) ---
