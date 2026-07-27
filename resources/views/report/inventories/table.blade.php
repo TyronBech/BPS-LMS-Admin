@@ -23,35 +23,35 @@
       </form>
     </div>
     <div class="overflow-x-auto">
-      <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+      <table class="w-full text-xs text-left text-gray-500 dark:text-gray-400">
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
-            <th scope="col" class="px-6 py-3">Accession</th>
-            <th scope="col" class="px-6 py-3">Author</th>
-            <th scope="col" class="px-6 py-3">Title</th>
-            <th scope="col" class="px-6 py-3">Description</th>
-            <th scope="col" class="px-6 py-3">Remarks</th>
+            <th scope="col" class="px-4 py-2">Accession</th>
+            <th scope="col" class="px-4 py-2">Author</th>
+            <th scope="col" class="px-4 py-2">Title</th>
+            <th scope="col" class="px-4 py-2">Description</th>
+            <th scope="col" class="px-4 py-2">Remarks</th>
           </tr>
         </thead>
         <tbody>
           @forelse($data as $item)
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-            <td class="px-6 py-4">{{ $item->accession ?? 'No Accession' }}</td>
-            <td class="px-6 py-4">{{ $item->author ?? 'No Author' }}</td>
-            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+            <td class="px-4 py-2">{{ $item->accession ?? 'No Accession' }}</td>
+            <td class="px-4 py-2">{{ $item->author ?? 'No Author' }}</td>
+            <th scope="row" class="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
               {{ $item->title ?? 'No Title' }}
             </th>
-            <td class="px-6 py-4">
+            <td class="px-4 py-2">
               @php
                 $descArr = is_array($item->book->description) ? $item->book->description : json_decode($item->book->description, true);
               @endphp
               {{ is_array($descArr) ? implode(', ', $descArr) : ($descArr ?? 'No Description') }}
             </td>
-            <td class="px-6 py-4">{{ $item->remarks ?? 'No Remarks' }}</td>
+            <td class="px-4 py-2">{{ $item->remarks ?? 'No Remarks' }}</td>
           </tr>
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-            <td colspan="5" class="px-6 py-4 text-center">No data found.</td>
+            <td colspan="5" class="px-4 py-2 text-center">No data found.</td>
           </tr>
           @endforelse
         </tbody>

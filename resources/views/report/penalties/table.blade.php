@@ -13,33 +13,33 @@
       </form>
     </div>
     <div class="overflow-x-auto">
-      <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+      <table class="w-full text-xs text-left text-gray-500 dark:text-gray-400">
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
-            <th scope="col" class="px-6 py-3 whitespace-nowrap">Name</th>
-            <th scope="col" class="px-6 py-3">Accession</th>
-            <th scope="col" class="px-6 py-3">Book</th>
-            <th scope="col" class="px-6 py-3 whitespace-nowrap">Borrowed</th>
-            <th scope="col" class="px-6 py-3 whitespace-nowrap">Due</th>
-            <th scope="col" class="px-6 py-3 whitespace-nowrap">Returned</th>
-            <th scope="col" class="px-6 py-3">Violation</th>
-            <th scope="col" class="px-6 py-3 whitespace-nowrap">Amount</th>
-            <th scope="col" class="px-6 py-3">Status</th>
+            <th scope="col" class="px-4 py-2 whitespace-nowrap">Name</th>
+            <th scope="col" class="px-4 py-2">Accession</th>
+            <th scope="col" class="px-4 py-2">Book</th>
+            <th scope="col" class="px-4 py-2 whitespace-nowrap">Borrowed</th>
+            <th scope="col" class="px-4 py-2 whitespace-nowrap">Due</th>
+            <th scope="col" class="px-4 py-2 whitespace-nowrap">Returned</th>
+            <th scope="col" class="px-4 py-2">Violation</th>
+            <th scope="col" class="px-4 py-2 whitespace-nowrap">Amount</th>
+            <th scope="col" class="px-4 py-2">Status</th>
           </tr>
         </thead>
         <tbody>
           @forelse($data as $item)
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-            <th scope="row" class="px-6 py-4 font-medium text-gray-900 whitespace-nowrap dark:text-white">
+            <th scope="row" class="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
               {{ $item->user->first_name }} {{ $item->user->last_name }}
             </th>
-            <td class="px-6 py-4">{{ $item->book->accession }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->book->title }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->borrowed }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->due ?? 'No Due Date' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">{{ $item->returned ?? 'Unreturned' }}</td>
-            <td class="px-6 py-4">{{ ucwords($item->violation) ?? 'No Violation' }}</td>
-            <td class="px-6 py-4 whitespace-nowrap">
+            <td class="px-4 py-2">{{ $item->book->accession }}</td>
+            <td class="px-4 py-2 whitespace-nowrap">{{ $item->book->title }}</td>
+            <td class="px-4 py-2 whitespace-nowrap">{{ $item->borrowed }}</td>
+            <td class="px-4 py-2 whitespace-nowrap">{{ $item->due ?? 'No Due Date' }}</td>
+            <td class="px-4 py-2 whitespace-nowrap">{{ $item->returned ?? 'Unreturned' }}</td>
+            <td class="px-4 py-2">{{ ucwords($item->violation) ?? 'No Violation' }}</td>
+            <td class="px-4 py-2 whitespace-nowrap">
               @if($item->has_discount)
               <div class="flex items-start gap-2">
                 <div>
@@ -52,11 +52,11 @@
               ₱ {{ number_format($item->total, 2) ?? '0.00' }}
               @endif
             </td>
-            <td class="px-6 py-4">{{ ucwords($item->status) ?? 'No Status' }}</td>
+            <td class="px-4 py-2">{{ ucwords($item->status) ?? 'No Status' }}</td>
           </tr>
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-            <td colspan="9" class="px-6 py-4 text-center">No data found.</td>
+            <td colspan="9" class="px-4 py-2 text-center">No data found.</td>
           </tr>
           @endforelse
         </tbody>

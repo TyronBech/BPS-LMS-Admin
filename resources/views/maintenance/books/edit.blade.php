@@ -364,6 +364,7 @@
     </div>
   </div>
 </div>
+@include('layouts.NotationGuide')
 @endsection
 @section('scripts')
 <script type="application/json" id="book-categories-data">

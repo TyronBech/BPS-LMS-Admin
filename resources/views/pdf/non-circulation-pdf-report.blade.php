@@ -131,6 +131,7 @@
           <th>Grade & Section / Role</th>
           <th>Subject</th>
           <th>Teacher</th>
+          <th>Status</th>
         </tr>
       </thead>
       <tbody>
@@ -173,10 +174,17 @@
               N/A
             @endif
           </td>
+          <td>
+            @if($item->returned_at)
+              Returned<br>{{ \Carbon\Carbon::parse($item->returned_at)->format('M j, Y g:i A') }}
+            @else
+              Not Returned
+            @endif
+          </td>
         </tr>
         @empty
         <tr>
-          <td colspan="7" style="text-align: center;">No non-circulation entries found.</td>
+          <td colspan="8" style="text-align: center;">No non-circulation entries found.</td>
         </tr>
         @endforelse
       </tbody>

@@ -67,20 +67,6 @@
             </svg>
             <span class="sr-only">Clear Filters</span>
           </button>
-
-          <button type="submit" title="Export Barcode" name="barcodeBtn" id="exportBarcode" value="barcode" class="p-2.5 text-sm font-medium text-white bg-gray-700 rounded-lg border border-gray-700 hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800">
-            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-              <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M2.9917 4.9834V18.917M9.96265 4.9834V18.917M15.9378 4.9834V18.917m2.9875-13.9336V18.917" />
-              <path stroke="currentColor" stroke-linecap="round" d="M5.47925 4.4834V19.417m1.9917-14.9336V19.417M21.4129 4.4834V19.417M13.4461 4.4834V19.417" />
-            </svg>
-            <span class="sr-only">Export Barcode</span>
-          </button>
-          <button type="submit" title="Export Call Number" name="callNumberBtn" id="exportCallNumber" value="callNumber" class="p-2.5 text-sm font-medium text-white bg-gray-700 rounded-lg border border-gray-700 hover:bg-gray-800 focus:ring-4 focus:outline-none focus:ring-gray-300 dark:bg-gray-600 dark:hover:bg-gray-700 dark:focus:ring-gray-800">
-            <svg class="w-4 h-4 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="none" viewBox="0 0 24 24">
-              <path stroke="currentColor" stroke-linecap="round" stroke-width="2" d="M5 7h14M5 12h14M5 17h10" />
-            </svg>
-            <span class="sr-only">Export Call Number</span>
-          </button>
         </div>
       </div>
     </form>
@@ -140,7 +126,7 @@
       }
 
       const filteredBooks = books.filter(book =>
-        book.title.toLowerCase().includes(query) ||
+        book.title.toLowerCase().includes(query) |
         (book.author && book.author.toLowerCase().includes(query)) ||
         (book.isbn && book.isbn.toLowerCase().includes(query))
       );

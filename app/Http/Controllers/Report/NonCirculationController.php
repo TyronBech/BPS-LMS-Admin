@@ -27,10 +27,12 @@ class NonCirculationController extends Controller
         $toInputDate    = $request->input('end', '');
         $perPage        = $request->input('perPage', 10);
         $userType       = $request->input('user_type', 'students');
+        $returnStatus   = $request->input('return_status', 'all');
 
         $validator = Validator::make($request->all(), [
             'search'        => 'nullable|string|max:255',
             'user_type'     => 'nullable|string|max:255',
+            'return_status' => 'nullable|string|max:255',
             'start'         => 'nullable|date',
             'end'           => 'nullable|date|after_or_equal:start',
             'perPage'       => 'nullable|integer|min:1|max:500',
@@ -42,13 +44,14 @@ class NonCirculationController extends Controller
 
         $data = $this->generateData($request, new BkNonCirculation(), false);
 
-        return view('report.non-circulations.index', compact('data', 'search', 'userType', 'fromInputDate', 'toInputDate', 'perPage'));
+        return view('report.non-circulations.index', compact('data', 'search', 'userType', 'returnStatus', 'fromInputDate', 'toInputDate', 'perPage'));
     }
 
     public function search(Request $request)
     {
         $search         = $request->input('search', '');
         $userType       = $request->input('user_type', 'students');
+        $returnStatus   = $request->input('return_status', 'all');
         $fromInputDate  = $request->input('start', '');
         $toInputDate    = $request->input('end', '');
         $perPage        = $request->input('perPage', 10);
@@ -58,6 +61,7 @@ class NonCirculationController extends Controller
             'end'           => 'nullable|date|after_or_equal:start',
             'search'        => 'nullable|string|max:255',
             'user_type'     => 'nullable|string|max:255',
+            'return_status' => 'nullable|string|max:255',
             'perPage'       => 'nullable|integer|min:1|max:500'
         ]);
 
@@ -82,7 +86,7 @@ class NonCirculationController extends Controller
         }
 
         $data = $this->generateData($request, new BkNonCirculation(), false);
-        return view('report.non-circulations.index', compact('data', 'search', 'userType', 'fromInputDate', 'toInputDate', 'perPage'));
+        return view('report.non-circulations.index', compact('data', 'search', 'userType', 'returnStatus', 'fromInputDate', 'toInputDate', 'perPage'));
     }
 
     public function store(Request $request)
@@ -202,6 +206,34 @@ class NonCirculationController extends Controller
         ]);
     }
 
+    public function returnBook(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'id' => 'required|integer|exists:bk_non_circulations,id',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+        }
+
+        $nonCirculation = BkNonCirculation::findOrFail($request->input('id'));
+        
+        if ($nonCirculation->returned_at) {
+            return redirect()->back()->with('toast-warning', 'This entry has already been returned.');
+        }
+
+        $nonCirculation->returned_at = now();
+        $nonCirculation->save();
+
+        Log::info('Non-Circulation Report: Entry returned successfully', [
+            'user_id' => Auth::guard('admin')->id(),
+            'non_circulation_id' => $nonCirculation->id,
+            'timestamp' => now(),
+        ]);
+
+        return redirect()->back()->with('toast-success', 'Entry returned successfully.');
+    }
+
     public function destroy(Request $request)
     {
         Log::warning('Non-Circulation Report: Attempting to delete non-circulation entry', [
@@ -301,11 +333,11 @@ class NonCirculationController extends Controller
         $sheet->getPageSetup()->setFitToWidth(1);
         $sheet->getPageSetup()->setFitToHeight(0);
 
-        $sheet->mergeCells('A6:G6');
-        $sheet->getStyle('A6:G6')->getFont()->setBold(true);
-        $sheet->getStyle('A6:G6')->getFont()->setSize(14);
-        $sheet->getStyle('A6:G6')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('A6:G6')->getAlignment()->setVertical('center');
+        $sheet->mergeCells('A6:H6');
+        $sheet->getStyle('A6:H6')->getFont()->setBold(true);
+        $sheet->getStyle('A6:H6')->getFont()->setSize(14);
+        $sheet->getStyle('A6:H6')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A6:H6')->getAlignment()->setVertical('center');
         $sheet->setCellValue('A6', \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Non-Circulation Report', request('start'), request('end'), $data, 'borrowed_at'));
 
         $sheet->getColumnDimension('A')->setWidth(15); // Date
@@ -315,20 +347,21 @@ class NonCirculationController extends Controller
         $sheet->getColumnDimension('E')->setWidth(20); // Grade & Section / Role
         $sheet->getColumnDimension('F')->setWidth(30); // Subject
         $sheet->getColumnDimension('G')->setWidth(30); // Teacher
+        $sheet->getColumnDimension('H')->setWidth(25); // Status
         
-        $sheet->mergeCells('A7:G7');
+        $sheet->mergeCells('A7:H7');
         
         $sheet->setCellValue('A7', 'as of ' . date('F j, Y'));
         
-        $sheet->getStyle('A7:G7')->getFont()->setBold(true);
-        $sheet->getStyle('A7:G7')->getFont()->setSize(10);
-        $sheet->getStyle('A7:G7')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('A7:G7')->getAlignment()->setVertical('center');
-        $sheet->getStyle('A7:G7')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A9:G9')->getFont()->setSize(10);
-        $sheet->getStyle('A9:G9')->getFont()->setBold(true);
-        $sheet->getStyle('A9:G9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A9:G9')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+        $sheet->getStyle('A7:H7')->getFont()->setBold(true);
+        $sheet->getStyle('A7:H7')->getFont()->setSize(10);
+        $sheet->getStyle('A7:H7')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A7:H7')->getAlignment()->setVertical('center');
+        $sheet->getStyle('A7:H7')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A9:H9')->getFont()->setSize(10);
+        $sheet->getStyle('A9:H9')->getFont()->setBold(true);
+        $sheet->getStyle('A9:H9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A9:H9')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
 
         $sheet->setCellValue('A9', 'Date');
         $sheet->setCellValue('B9', 'Time');
@@ -337,6 +370,7 @@ class NonCirculationController extends Controller
         $sheet->setCellValue('E9', 'Grade & Section / Role');
         $sheet->setCellValue('F9', 'Subject');
         $sheet->setCellValue('G9', 'Teacher');
+        $sheet->setCellValue('H9', 'Status');
         
         $row = 10;
         foreach ($data as $item) {
@@ -367,9 +401,12 @@ class NonCirculationController extends Controller
             $sheet->setCellValueExplicit('C' . $row, $rfid, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
             $sheet->setCellValue('F' . $row, $item->subject);
 
-            $sheet->getStyle('A' . $row . ':G' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-            $sheet->getStyle('A' . $row . ':G' . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
-            $sheet->getStyle('A' . $row . ':G' . $row)->getAlignment()->setWrapText(true);
+            $statusStr = $item->returned_at ? 'Returned (' . Carbon::parse($item->returned_at)->format('M j, Y g:i A') . ')' : 'Not Returned';
+            $sheet->setCellValue('H' . $row, $statusStr);
+
+            $sheet->getStyle('A' . $row . ':H' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle('A' . $row . ':H' . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+            $sheet->getStyle('A' . $row . ':H' . $row)->getAlignment()->setWrapText(true);
             $row++;
         }
 
@@ -380,13 +417,13 @@ class NonCirculationController extends Controller
                 ],
             ],
         ];
-        $sheet->getStyle('A9:G' . ($row - 1))->applyFromArray($styleArray);
+        $sheet->getStyle('A9:H' . ($row - 1))->applyFromArray($styleArray);
 
         $row += 2;
-        $sheet->mergeCells('A' . $row . ':G' . $row);
+        $sheet->mergeCells('A' . $row . ':H' . $row);
         $sheet->setCellValue('A' . $row, 'Report Generated By: ' . Auth::user()->first_name . ' ' . Auth::user()->last_name);
 
-        $styleRange = 'A' . $row . ':G' . $row;
+        $styleRange = 'A' . $row . ':H' . $row;
         $sheet->getStyle($styleRange)->getFont()->setBold(true);
         $sheet->getStyle($styleRange)->getFont()->setSize(10);
         $sheet->getStyle($styleRange)->getAlignment()->setHorizontal('left');
@@ -412,6 +449,7 @@ class NonCirculationController extends Controller
         $search     = strtolower($request->input('search'));
         $perPage    = $request->input('perPage', 10);
         $userType   = $request->input('user_type', 'students');
+        $returnStatus = $request->input('return_status', 'all');
 
         $query = $model->newQuery()
             ->with(['student.users', 'faculty.users']);
@@ -420,6 +458,12 @@ class NonCirculationController extends Controller
             $query->whereNotNull('student_id');
         } elseif ($userType === 'employees') {
             $query->whereNotNull('faculty_id')->whereNull('student_id');
+        }
+
+        if ($returnStatus === 'returned') {
+            $query->whereNotNull('returned_at');
+        } elseif ($returnStatus === 'not_returned') {
+            $query->whereNull('returned_at');
         }
 
         if ($startStr && $endStr) {

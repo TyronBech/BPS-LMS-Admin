@@ -70,6 +70,12 @@
   <div class="w-full p-4 sm:p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 gap-3">
       <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Class Room Reservations Approval</h5>
+      <button data-modal-target="create-reservation-modal" data-modal-toggle="create-reservation-modal" class="text-white bg-primary-600 hover:bg-primary-700 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800 flex items-center gap-2">
+        <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 18 18">
+          <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 1v16M1 9h16"/>
+        </svg>
+        Add Reservation
+      </button>
     </div>
 
     <hr class="h-px my-3 bg-gray-200 border-0 dark:bg-gray-700">
@@ -136,4 +142,5 @@
     </div>
   </div>
 </div>
+@include('maintenance.class-reservations.create-modal')
 @endsection
