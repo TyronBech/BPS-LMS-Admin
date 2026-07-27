@@ -102,7 +102,7 @@
   <div class="flex flex-col col-span-1 md:col-span-2 lg:col-span-4 justify-between p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
       <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">
-        Top 5 Most Visited Students per Section
+        Top 5 Students with the Most Library Visits per Section
       </h5>
       <div id="date-range-picker" date-rangepicker class="flex items-center">
         <div class="relative">

@@ -157,6 +157,7 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
             Route::get('non-circulation', 'index')->name('report.non-circulation');
             Route::post('non-circulation', 'search')->name('report.non-circulation-search');
             Route::post('non-circulation/store', 'store')->name('report.non-circulation-store');
+            Route::post('non-circulation/return', 'returnBook')->name('report.non-circulation-return');
             Route::get('non-circulation/search-user', 'searchUser')->name('report.non-circulation-search-user');
             Route::get('lookup-rfid', 'lookupRfid')->name('report.lookup-rfid');
             Route::delete('non-circulation/delete', 'destroy')->name('report.non-circulation-delete');
@@ -286,6 +287,7 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
 
         Route::prefix('users')->middleware(UserAuthentication::class)->controller(UsersMaintenanceController::class)->group(function () {
             Route::get('users', 'index')->name('maintenance.users');
+            Route::get('export-users', 'export')->name('maintenance.export-users');
             Route::get('view-student', 'view_student')->name('maintenance.view-student');
             Route::get('view-employee', 'view_employee')->name('maintenance.view-employee');
             Route::get('add-student', 'create_student')->name('maintenance.create-student');
@@ -340,6 +342,8 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
             Route::controller(LibraryClassReservationController::class)->group(function () {
                 Route::get('class-reservations', 'index')->name('maintenance.class-reservations');
                 Route::get('class-reservations/pending-count', 'pendingCount')->name('maintenance.class-reservations.pending-count');
+                Route::get('class-reservations/check-conflict', 'checkConflict')->name('maintenance.class-reservations.check-conflict');
+                Route::post('class-reservations/store', 'store')->name('maintenance.class-reservations.store');
                 Route::post('class-reservations/approve/{id}', 'approve')->name('maintenance.class-reservations.approve');
                 Route::post('class-reservations/reject/{id}', 'reject')->name('maintenance.class-reservations.reject');
                 Route::get('class-reservations/search', 'search')->name('maintenance.class-reservations.search');

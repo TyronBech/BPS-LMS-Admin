@@ -91,104 +91,111 @@ document.addEventListener("DOMContentLoaded", () => {
     // Track the last clicked submit button as a fallback/polyfill for e.submitter
     let isExporting = false;
     let activeSubmitter = null;
-    document.addEventListener("click", (e) => {
-        const target = e.target.closest("button[type='submit'], input[type='submit']");
-        if (target) {
-            activeSubmitter = target;
 
-            // Set exporting flag if the clicked button is for PDF/Excel export
-            const skipAjaxValues = ['pdf', 'excel', 'barcode', 'callNumber'];
-            if (
-                skipAjaxValues.includes(target.value) ||
-                target.name === 'submit' ||
-                target.classList.contains('btn-export') ||
-                target.id === 'downloadPDF'
-            ) {
-                isExporting = true;
-                setTimeout(() => {
-                    isExporting = false;
-                }, 10000);
+    function isDownloadOrSkipAction(element, url = "") {
+        if (!element) return false;
+        if (element.classList?.contains("skip-loader") || (element.closest && element.closest(".skip-loader"))) return true;
+        if (element.hasAttribute && element.hasAttribute("download")) return true;
+
+        const skipAjaxValues = ['pdf', 'excel', 'barcode', 'callNumber', 'exportBarcode', 'exportCallNumber'];
+        if (element.value && skipAjaxValues.includes(element.value)) return true;
+        if (element.id === 'exportBarcodeBtn' || element.id === 'exportCallNumberBtn' || element.id === 'exportBarcode' || element.id === 'exportCallNumber') return true;
+        if (element.classList && (element.classList.contains('exportBarcode') || element.classList.contains('exportCallNumber') || element.classList.contains('btn-export'))) return true;
+        if (element.name === 'submit' || element.id === 'downloadPDF') return true;
+
+        const actionUrl = url || (element.getAttribute ? (element.getAttribute("href") || element.getAttribute("action")) : "") || element.action || "";
+        if (actionUrl && (
+            actionUrl.toLowerCase().includes("export") ||
+            actionUrl.toLowerCase().includes("download") ||
+            actionUrl.toLowerCase().includes("barcode") ||
+            actionUrl.toLowerCase().includes("call-number") ||
+            /\.(pdf|xlsx|xls|csv)$/i.test(actionUrl)
+        )) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function setExportingFlag() {
+        isExporting = true;
+        hideLoader();
+        setTimeout(() => {
+            isExporting = false;
+        }, 10000);
+    }
+
+    // Global capture click listener to set isExporting and hide loader for any download/skip action
+    document.addEventListener("click", (e) => {
+        const target = e.target.closest ? e.target.closest("button, input, a") : null;
+        if (target) {
+            if (target.matches("button[type='submit'], input[type='submit']")) {
+                activeSubmitter = target;
+            }
+
+            const href = target.getAttribute ? target.getAttribute("href") : "";
+            if (isDownloadOrSkipAction(target, href)) {
+                setExportingFlag();
             }
         }
     }, true);
 
     // --- 1️⃣ Handle form submissions (standard page changes) ---
-    document.querySelectorAll("form").forEach((form) => {
-        form.addEventListener("submit", (e) => {
-            const submitter = e.submitter || activeSubmitter;
+    document.addEventListener("submit", (e) => {
+        const form = e.target;
+        if (!form || form.tagName !== "FORM") return;
 
-            // Wait a tick to check if the submission was prevented by client-side or AJAX logic
-            setTimeout(() => {
-                // Clear activeSubmitter reference after event loop tick
-                activeSubmitter = null;
+        const submitter = e.submitter || activeSubmitter;
 
-                if (e.defaultPrevented) return;
+        setTimeout(() => {
+            activeSubmitter = null;
 
-                if (
-                    form.classList.contains("skip-loader") || 
-                    form.closest(".skip-loader") ||
-                    form.target === "_blank"
-                ) {
-                    return;
-                }
-                
-                const skipAjaxValues = ['pdf', 'excel', 'barcode', 'callNumber'];
-                if (
-                    (submitter && skipAjaxValues.includes(submitter.value)) ||
-                    (submitter && (submitter.name === 'submit' || submitter.classList.contains('btn-export'))) ||
-                    (form.action && (form.action.toLowerCase().includes('export') || form.action.toLowerCase().includes('download')))
-                ) {
-                    isExporting = true;
-                    setTimeout(() => {
-                        isExporting = false;
-                    }, 10000);
-                    return;
-                }
+            if (e.defaultPrevented) return;
 
-                if (form.classList.contains('auto-search-form')) {
-                    return;
-                }
+            if (
+                form.classList.contains("skip-loader") || 
+                form.closest(".skip-loader") ||
+                form.target === "_blank" ||
+                isDownloadOrSkipAction(form, form.action) ||
+                (submitter && isDownloadOrSkipAction(submitter))
+            ) {
+                setExportingFlag();
+                return;
+            }
 
-                showLoader();
-            }, 0);
-        });
+            if (form.classList.contains('auto-search-form')) {
+                return;
+            }
+
+            showLoader();
+        }, 0);
     });
 
     // --- 2️⃣ Handle anchor (<a>) clicks (standard navigation) ---
-    document.querySelectorAll("a[href]").forEach((link) => {
-        link.addEventListener("click", (e) => {
-            // Wait a tick to check if navigation was prevented by a custom click handler
-            setTimeout(() => {
-                if (e.defaultPrevented) return;
+    document.addEventListener("click", (e) => {
+        const link = e.target.closest ? e.target.closest("a[href]") : null;
+        if (!link) return;
 
-                const href = link.getAttribute("href");
+        setTimeout(() => {
+            if (e.defaultPrevented) return;
 
-                // Skip internal anchors, new tabs, JS voids, file downloads, or dropdown triggers
-                if (
-                    !href ||
-                    href.startsWith("#") ||
-                    href.startsWith("javascript:") ||
-                    link.id === "dropdownNavbarLink" ||
-                    link.closest("#dropdownNavbarLink") || // nested inside dropdown button
-                    link.target === "_blank" ||
-                    link.classList.contains("skip-loader") || // skip-loader class
-                    link.closest(".skip-loader") || // skip-loader parent
-                    link.hasAttribute("download") || // download attribute
-                    href.toLowerCase().includes("export") ||
-                    href.toLowerCase().includes("download") ||
-                    /\.(pdf|xlsx|xls|csv)$/i.test(href)
-                ) {
-                    // Set exporting flag to skip beforeunload loader
-                    isExporting = true;
-                    setTimeout(() => {
-                        isExporting = false;
-                    }, 10000);
-                    return;
-                }
+            const href = link.getAttribute("href");
 
-                showLoader();
-            }, 0);
-        });
+            if (
+                !href ||
+                href.startsWith("#") ||
+                href.startsWith("javascript:") ||
+                link.id === "dropdownNavbarLink" ||
+                link.closest("#dropdownNavbarLink") ||
+                link.target === "_blank" ||
+                isDownloadOrSkipAction(link, href)
+            ) {
+                setExportingFlag();
+                return;
+            }
+
+            showLoader();
+        }, 0);
     });
 
     // --- 3️⃣ Handle page unload (direct location change / refresh / reload) ---

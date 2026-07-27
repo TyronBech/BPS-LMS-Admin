@@ -50,6 +50,16 @@
         </select>
       </div>
 
+      {{-- Return Status Selector --}}
+      <div class="flex flex-col w-full lg:w-auto lg:flex-1 lg:max-w-[180px]">
+        <label for="return_status" class="block text-xs font-medium mb-1 text-gray-500 dark:text-gray-400">Status</label>
+        <select id="return_status" name="return_status" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+          <option value="all" {{ ($returnStatus ?? 'all') == 'all' ? 'selected' : '' }}>All</option>
+          <option value="returned" {{ ($returnStatus ?? 'all') == 'returned' ? 'selected' : '' }}>Returned</option>
+          <option value="not_returned" {{ ($returnStatus ?? 'all') == 'not_returned' ? 'selected' : '' }}>Not Returned</option>
+        </select>
+      </div>
+
       {{-- Action Buttons --}}
       <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
         <button type="button" data-clear-url="{{ route('report.non-circulation') }}" class="btn-clear-filters bg-white hover:bg-gray-100 text-gray-900 border border-gray-300 font-bold py-2.5 px-4 rounded whitespace-nowrap transition-colors dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-300 dark:border-gray-600 text-sm w-full sm:w-auto" title="Clear Filters">Clear</button>

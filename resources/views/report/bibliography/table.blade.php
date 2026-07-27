@@ -12,26 +12,26 @@
       </form>
     </div>
     <div class="overflow-x-auto">
-      <table class="w-full text-sm text-left text-gray-500 dark:text-gray-400">
+      <table class="w-full text-xs text-left text-gray-500 dark:text-gray-400">
         <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
           <tr>
-            <th scope="col" class="px-6 py-3 w-20">No.</th>
-            <th scope="col" class="px-6 py-3">Bibliography Entry</th>
+            <th scope="col" class="px-4 py-2 w-20">No.</th>
+            <th scope="col" class="px-4 py-2">Bibliography Entry</th>
           </tr>
         </thead>
         <tbody>
           @forelse($data as $item)
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-            <td class="px-6 py-4 align-top">
+            <td class="px-4 py-2 align-top">
               {{ method_exists($data, 'firstItem') ? ($data->firstItem() + $loop->index) : ($loop->iteration) }}
             </td>
-            <td class="px-6 py-4 align-top">
+            <td class="px-4 py-2 align-top">
               <p class="text-gray-900 dark:text-white leading-7">{{ $item->bibliography_entry }}</p>
             </td>
           </tr>
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-            <td colspan="2" class="px-6 py-4 text-center">No data found.</td>
+            <td colspan="2" class="px-4 py-2 text-center">No data found.</td>
           </tr>
           @endforelse
         </tbody>

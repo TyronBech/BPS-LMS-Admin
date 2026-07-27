@@ -26,12 +26,18 @@
             <span class="sr-only">Clear Filters</span>
           </button>
         </form>
-        @can(PermissionsEnum::ADD_USERS, 'admin')
         <div class="flex items-stretch sm:items-center gap-2 flex-col sm:flex-row">
+          <a id="export-users-btn" href="{{ route('maintenance.export-users', ['tab' => request('tab', 'students'), 'search-users' => request('search-users', '')]) }}" class="skip-loader inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-center text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 focus:ring-4 focus:outline-none focus:ring-emerald-300 dark:bg-emerald-600 dark:hover:bg-emerald-700 dark:focus:ring-emerald-800" title="Export users data to Excel">
+            <svg class="w-4 h-4 me-1.5 text-white" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>
+            </svg>
+            Export Excel
+          </a>
+          @can(PermissionsEnum::ADD_USERS, 'admin')
           <a href="{{ route('maintenance.create-employee', ['return_to' => request()->fullUrl()]) }}" class="inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-center text-white bg-primary-500 rounded-lg hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">Add new employee</a>
           <a href="{{ route('maintenance.create-student', ['return_to' => request()->fullUrl()]) }}" class="inline-flex items-center justify-center px-3 py-2 text-sm font-medium text-center text-white bg-primary-500 rounded-lg hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">Add new student</a>
+          @endcan
         </div>
-        @endcan
       </div>
     </div>
 
@@ -80,8 +86,21 @@
   document.addEventListener('DOMContentLoaded', () => {
     const buttons = document.querySelectorAll('.js-user-toggle');
     const hiddenTabInput = document.getElementById('users-tab-input');
+    const exportUsersBtn = document.getElementById('export-users-btn');
     const activeBtnClasses = ['bg-primary-400', 'text-white'];
     const inactiveBtnClasses = ['bg-white', 'text-gray-700', 'hover:bg-gray-50', 'dark:bg-gray-700', 'dark:text-gray-200', 'dark:hover:bg-gray-600'];
+
+    function updateExportUrl(tab) {
+      if (!exportUsersBtn) return;
+      const searchInput = document.getElementById('search-users');
+      const searchVal = searchInput ? searchInput.value : '';
+      const url = new URL("{{ route('maintenance.export-users') }}", window.location.origin);
+      url.searchParams.set('tab', tab);
+      if (searchVal) {
+        url.searchParams.set('search-users', searchVal);
+      }
+      exportUsersBtn.href = url.toString();
+    }
 
     function setActive(tab) {
       // Re-query sections from the live DOM each time to handle AJAX content replacement
@@ -105,6 +124,8 @@
 
       // Keep the search form in sync
       if (hiddenTabInput) hiddenTabInput.value = tab;
+
+      updateExportUrl(tab);
     }
 
     // Initial tab from URL or default to students
@@ -116,6 +137,15 @@
     buttons.forEach(btn => {
       btn.addEventListener('click', () => setActive(btn.dataset.table));
     });
+
+    if (exportUsersBtn) {
+      exportUsersBtn.addEventListener('click', () => {
+        const currentTab = hiddenTabInput ? hiddenTabInput.value : (new URLSearchParams(window.location.search).get('tab') || 'students');
+        updateExportUrl(currentTab);
+        const loader = document.getElementById('form-loader');
+        if (loader) loader.classList.add('hidden');
+      });
+    }
   });
 </script>
 @endsection
