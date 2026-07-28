@@ -24,6 +24,7 @@ use App\Http\Controllers\Maintenance\PrivilegeMaintenanceController;
 use App\Http\Controllers\Inventory\InventoryController;
 use App\Http\Controllers\Report\CategoriesController;
 use App\Http\Controllers\Report\InventoriesController;
+use App\Http\Controllers\Report\ClassReservationsController;
 use App\Http\Controllers\Analytics\FetchDataController;
 use App\Http\Controllers\Report\ComputerUseController;
 use App\Http\Controllers\Report\PenaltiesController;
@@ -193,6 +194,11 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
             Route::post('inventory-report', 'search')->name('report.inventory-search');
         });
 
+        Route::controller(ClassReservationsController::class)->middleware(\App\Http\Middleware\ViewLibraryReservationReportsMiddleware::class)->group(function () {
+            Route::get('class-reservations', 'index')->name('report.class-reservations');
+            Route::post('class-reservations', 'search')->name('report.class-reservations-search');
+        });
+
         Route::controller(PenaltiesController::class)->middleware(ViewPenaltyReportsMiddleware::class)->group(function () {
             Route::get('penalties', 'index')->name('report.penalties');
             Route::post('penalties', 'search')->name('report.penalties-search');
@@ -343,9 +349,9 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
                 Route::get('class-reservations', 'index')->name('maintenance.class-reservations');
                 Route::get('class-reservations/pending-count', 'pendingCount')->name('maintenance.class-reservations.pending-count');
                 Route::get('class-reservations/check-conflict', 'checkConflict')->name('maintenance.class-reservations.check-conflict');
-                Route::post('class-reservations/store', 'store')->name('maintenance.class-reservations.store');
-                Route::post('class-reservations/approve/{id}', 'approve')->name('maintenance.class-reservations.approve');
-                Route::post('class-reservations/reject/{id}', 'reject')->name('maintenance.class-reservations.reject');
+                Route::post('class-reservations/store', 'store')->name('maintenance.class-reservations.store')->middleware(\App\Http\Middleware\AddLibraryReservationMiddleware::class);
+                Route::post('class-reservations/approve/{id}', 'approve')->name('maintenance.class-reservations.approve')->middleware(\App\Http\Middleware\LibraryReservationApprovalMiddleware::class);
+                Route::post('class-reservations/reject/{id}', 'reject')->name('maintenance.class-reservations.reject')->middleware(\App\Http\Middleware\LibraryReservationApprovalMiddleware::class);
                 Route::get('class-reservations/search', 'search')->name('maintenance.class-reservations.search');
             });
 

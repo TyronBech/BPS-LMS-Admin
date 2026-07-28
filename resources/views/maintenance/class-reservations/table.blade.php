@@ -14,8 +14,7 @@
   <table class="w-full text-sm text-left rtl:text-right text-gray-500 dark:text-gray-400">
     <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
       <tr>
-        <th scope="col" class="px-6 py-3">User Info</th>
-        <th scope="col" class="px-6 py-3">Faculty Sponsor</th>
+        <th scope="col" class="px-6 py-3">Requestor Name</th>
         <th scope="col" class="px-6 py-3">Date & Time</th>
         <th scope="col" class="px-6 py-3">Purpose</th>
         <th scope="col" class="px-6 py-3">Submitted</th>
@@ -34,16 +33,6 @@
         <td class="px-6 py-4 font-medium text-gray-900 dark:text-white">
           <div class="font-semibold text-sm">{{ $reservation->user->first_name }} {{ $reservation->user->last_name }}</div>
           <div class="text-xs text-gray-500 dark:text-gray-400">{{ $reservation->user->email }}</div>
-        </td>
-
-        <!-- Faculty Sponsor -->
-        <td class="px-6 py-4">
-          @if($reservation->faculty)
-            <div class="text-sm text-gray-900 dark:text-white">{{ $reservation->faculty->first_name }} {{ $reservation->faculty->last_name }}</div>
-            <div class="text-xs text-gray-500 dark:text-gray-400">{{ $reservation->faculty->email }}</div>
-          @else
-            <span class="text-xs text-gray-400 dark:text-gray-500 italic">None</span>
-          @endif
         </td>
 
         <!-- Date & Time -->
@@ -109,6 +98,7 @@
         @if($activeTab === 'Pending')
           <td class="px-6 py-4 text-center sticky right-0 z-10 bg-white dark:bg-gray-800 group-hover:bg-gray-50 dark:group-hover:bg-gray-600">
             <div class="flex items-center justify-center space-x-2">
+              @can(PermissionsEnum::LIBRARY_RESERVATION_APPROVAL)
               <button
                 type="button"
                 data-modal-target="approve-modal-{{ $reservation->id }}"
@@ -123,6 +113,7 @@
                 class="skip-loader inline-flex items-center px-3 py-1.5 text-xs font-medium text-center text-white bg-red-600 rounded-lg hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 dark:bg-red-500 dark:hover:bg-red-600 dark:focus:ring-red-800">
                 Reject
               </button>
+              @endcan
             </div>
           </td>
         @endif
@@ -131,7 +122,7 @@
       @include('maintenance.class-reservations.modals', ['reservation' => $reservation])
       @empty
       <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-        <td colspan="{{ $activeTab === 'Pending' ? 6 : 6 }}" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
+        <td colspan="{{ $activeTab === 'Pending' ? 5 : 5 }}" class="px-6 py-4 text-center text-gray-500 dark:text-gray-400">
           No {{ strtolower($activeTab) }} class reservation requests found.
         </td>
       </tr>

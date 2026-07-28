@@ -267,9 +267,7 @@
                   ? `<span class="inline-flex items-center px-2 py-0.5 text-xs font-semibold text-green-800 bg-green-100 rounded-full dark:bg-green-900/30 dark:text-green-400">Approved</span>`
                   : `<span class="inline-flex items-center px-2 py-0.5 text-xs font-semibold text-yellow-800 bg-yellow-100 rounded-full dark:bg-yellow-900/30 dark:text-yellow-400">Pending</span>`;
                   
-              const facultyHtml = res.faculty 
-                  ? `<div class="text-xs text-gray-500 dark:text-gray-400 mt-2">Faculty Sponsor: <span class="font-medium text-gray-700 dark:text-gray-300">${res.faculty.first_name} ${res.faculty.last_name}</span></div>`
-                  : '';
+              const facultyHtml = '';
                   
               const actionButtons = isPending 
                   ? `
