@@ -1,3 +1,4 @@
+@use('App\Enum\PermissionsEnum')
 <div class="relative overflow-x-auto shadow-md sm:rounded-lg">
   <div class="flex items-center justify-between w-full p-4 bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-600">
     <form method="GET" class="flex items-center skip-loader">
