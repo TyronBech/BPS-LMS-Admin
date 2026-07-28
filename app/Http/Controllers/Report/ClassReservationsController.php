@@ -143,11 +143,16 @@ class ClassReservationsController extends Controller
         ini_set('max_execution_time', 300);
 
         $settings = UISetting::first() ?? new UISetting();
+        $logoPath = public_path('storage/' . ($settings->org_logo_img ?? ''));
+        if (!file_exists($logoPath) || is_dir($logoPath)) {
+            $logoPath = public_path('img/BPSLogo.png');
+        }
+
         $items = [
             'title' => 'Tabular Presentation of Class Reservations Report',
             'school' => $settings->org_name ?? 'Bicutan Parochial School, Inc.',
             'address' => $settings->org_address ?? 'Manuel L. Quezon St., Lower Bicutan, Taguig City',
-            'logo' => $settings->org_logo_full ?? base64_encode(file_get_contents(public_path('img/BPSLogoFull.png'))),
+            'logo' => base64_encode(file_get_contents($logoPath)),
             'user' => Auth::user()->first_name . ' ' . Auth::user()->last_name,
             'date' => 'as of ' . date('F j, Y'),
             'data' => $data,
@@ -176,7 +181,7 @@ class ClassReservationsController extends Controller
         $settings = UISetting::first() ?? new UISetting();
         $logoPath = public_path('storage/' . ($settings->org_logo_img ?? ''));
         if (!file_exists($logoPath) || is_dir($logoPath)) {
-            $logoPath = public_path('img/BPSLogoFull.png');
+            $logoPath = public_path('img/BPSLogo.png');
         }
 
         if (file_exists($logoPath)) {
@@ -184,11 +189,20 @@ class ClassReservationsController extends Controller
             $drawing->setName('Logo');
             $drawing->setDescription('Logo');
             $drawing->setPath($logoPath);
-            $drawing->setHeight(70);
-            $drawing->setCoordinates('C2');
-            $drawing->setOffsetX(30);
+            $drawing->setHeight(60);
+            $drawing->setCoordinates('B1');
+            $drawing->setOffsetX(20);
+            $drawing->setOffsetY(10);
             $drawing->setWorksheet($sheet);
         }
+
+        $schoolName = $settings->org_name ?? 'Bicutan Parochial School, Inc.';
+        $schoolAddress = $settings->org_address ?? 'Manuel L. Quezon St., Lower Bicutan, Taguig City';
+        
+        $sheet->setCellValue('C2', $schoolName);
+        $sheet->getStyle('C2')->getFont()->setBold(true)->setSize(14);
+        $sheet->setCellValue('C3', $schoolAddress);
+        $sheet->getStyle('C3')->getFont()->setSize(10);
 
         $sheet->setCellValue('A6', 'Class Reservations Report');
         $sheet->mergeCells('A6:H6');

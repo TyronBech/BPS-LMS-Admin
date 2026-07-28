@@ -29,13 +29,34 @@
       margin-bottom: 10px;
     }
 
-    .logo img {
-      max-width: 500px;
-      margin-right: 10px;
+    .logo-img {
+      display: inline-block;
+      vertical-align: middle;
+    }
+
+    .logo-img img {
+      width: 60px;
+      height: auto;
+      margin-right: 15px;
     }
 
     .school-info {
-      text-align: center;
+      display: inline-block;
+      vertical-align: middle;
+      text-align: left;
+    }
+
+    .school-info h2 {
+      font-size: 16px;
+      margin: 0;
+      padding: 0;
+    }
+
+    .school-info p {
+      font-size: 10px;
+      margin: 0;
+      padding: 0;
+      color: #333;
     }
 
     h2,
@@ -78,14 +99,14 @@
     table {
       width: 100%;
       border-collapse: collapse;
-      table-layout: auto;
+      table-layout: fixed;
     }
 
     th,
     td {
       border: 1px solid #ddd;
-      padding: 4px;
-      font-size: 10px;
+      padding: 5px;
+      font-size: 9px;
       word-break: break-word;
       text-align: left;
     }
@@ -95,6 +116,16 @@
       font-weight: bold;
       text-align: center;
     }
+
+    /* Column Widths */
+    th:nth-child(1) { width: 9%; } /* Date */
+    th:nth-child(2) { width: 12%; } /* Time */
+    th:nth-child(3) { width: 13%; } /* Requestor Name */
+    th:nth-child(4) { width: 14%; } /* Purpose */
+    th:nth-child(5) { width: 8%; } /* Status */
+    th:nth-child(6) { width: 9%; } /* Submitted */
+    th:nth-child(7) { width: 11%; } /* Action Date */
+    th:nth-child(8) { width: 24%; } /* Remarks */
 
     @media print {
       table {
@@ -112,10 +143,16 @@
 
 <body>
   <header>
-    <div class="logo">
+    <div style="text-align: center; margin-bottom: 10px;">
       @if(isset($logo))
-      <img src="data:image/png;base64,{{ $logo }}" alt="Organization Logo" style="max-height: 70px;">
+      <div class="logo-img">
+        <img src="data:image/png;base64,{{ $logo }}" alt="Organization Logo">
+      </div>
       @endif
+      <div class="school-info">
+        <h2>{{ $school }}</h2>
+        <p>{{ $address }}</p>
+      </div>
     </div>
   </header>
 
