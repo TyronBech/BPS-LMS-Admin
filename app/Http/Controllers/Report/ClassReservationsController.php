@@ -174,7 +174,7 @@ class ClassReservationsController extends Controller
 
         $settings = UISetting::first() ?? new UISetting();
         
-        $tempLogoPath = public_path('img/orgLogoFull.png');
+        $tempLogoPath = storage_path('app/orgLogoFull.png');
         $decodedLogo = $settings->org_logo_full ? base64_decode($settings->org_logo_full) : null;
         if ($decodedLogo) {
             file_put_contents($tempLogoPath, $decodedLogo);
