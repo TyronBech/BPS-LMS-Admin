@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Report;
 
+use App\Helpers\ReportHelper;
 use App\Http\Controllers\Controller;
 use App\Models\LibraryClassReservation;
 use App\Models\SystemSetting;
@@ -143,21 +144,14 @@ class ClassReservationsController extends Controller
         ini_set('max_execution_time', 300);
 
         $settings = UISetting::first() ?? new UISetting();
-        $logoPath = public_path('storage/' . ($settings->org_logo_img ?? ''));
-        if (!file_exists($logoPath) || is_dir($logoPath)) {
-            $logoPath = public_path('img/BPSLogo.png');
-        }
-
         $items = [
             'title' => 'Tabular Presentation of Class Reservations Report',
-            'school' => $settings->org_name ?? 'Bicutan Parochial School, Inc.',
-            'address' => $settings->org_address ?? 'Manuel L. Quezon St., Lower Bicutan, Taguig City',
-            'logo' => base64_encode(file_get_contents($logoPath)),
+            'logo' => $settings->org_logo_full ?? base64_encode(file_get_contents(public_path('img/BPSLogoFull.png'))),
             'user' => Auth::user()->first_name . ' ' . Auth::user()->last_name,
             'date' => 'as of ' . date('F j, Y'),
             'data' => $data,
             'totalCount' => $data->count(),
-            'schoolYear' => \App\Helpers\ReportHelper::getSchoolYear(request('start'), request('end'), $data, 'reservation_date')
+            'schoolYear' => "School Year: " . ReportHelper::getSchoolYear(request('start'), request('end'), $data, 'reservation_date')
         ];
 
         $options = new Options();
@@ -179,40 +173,38 @@ class ClassReservationsController extends Controller
         $sheet->setTitle('Class Reservations Report');
 
         $settings = UISetting::first() ?? new UISetting();
-        $logoPath = public_path('storage/' . ($settings->org_logo_img ?? ''));
-        if (!file_exists($logoPath) || is_dir($logoPath)) {
-            $logoPath = public_path('img/BPSLogo.png');
-        }
-
-        if (file_exists($logoPath)) {
-            $drawing = new Drawing();
-            $drawing->setName('Logo');
-            $drawing->setDescription('Logo');
-            $drawing->setPath($logoPath);
-            $drawing->setHeight(60);
-            $drawing->setCoordinates('B1');
-            $drawing->setOffsetX(20);
-            $drawing->setOffsetY(10);
-            $drawing->setWorksheet($sheet);
-        }
-
-        $schoolName = $settings->org_name ?? 'Bicutan Parochial School, Inc.';
-        $schoolAddress = $settings->org_address ?? 'Manuel L. Quezon St., Lower Bicutan, Taguig City';
         
-        $sheet->setCellValue('C2', $schoolName);
-        $sheet->getStyle('C2')->getFont()->setBold(true)->setSize(14);
-        $sheet->setCellValue('C3', $schoolAddress);
-        $sheet->getStyle('C3')->getFont()->setSize(10);
+        $tempLogoPath = public_path('img/orgLogoFull.png');
+        $decodedLogo = $settings->org_logo_full ? base64_decode($settings->org_logo_full) : null;
+        if ($decodedLogo) {
+            file_put_contents($tempLogoPath, $decodedLogo);
+        }
+
+        $drawing = new Drawing();
+        $drawing->setName(($settings->org_initial ?? 'BPS') . ' Logo');
+        $drawing->setDescription(($settings->org_initial ?? 'BPS') . ' Logo');
+        $drawing->setPath(($decodedLogo && file_exists($tempLogoPath)) ? $tempLogoPath : public_path('img/BPSLogoFull.png'));
+        $drawing->setHeight(100);
+        $drawing->setCoordinates('D1');
+        $drawing->setOffsetX(100);
+        $drawing->setOffsetY(1);
+        $drawing->setWorksheet($sheet);
 
         $sheet->setCellValue('A6', 'Class Reservations Report');
         $sheet->mergeCells('A6:H6');
         $sheet->getStyle('A6:H6')->getFont()->setBold(true)->setSize(16);
         $sheet->getStyle('A6:H6')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
-        $sheet->setCellValue('A8', 'Date Extracted: ' . date('Y-m-d'));
-        $schoolYear = \App\Helpers\ReportHelper::getSchoolYear(request('start'), request('end'), $data, 'reservation_date');
-        $sheet->setCellValue('D8', 'School Year: ' . $schoolYear);
-        $sheet->setCellValue('H8', 'Prepared by: ' . Auth::user()->first_name . ' ' . Auth::user()->last_name);
+        $schoolYear = ReportHelper::getSchoolYear(request('start'), request('end'), $data, 'reservation_date');
+        $sheet->setCellValue('A7', 'School Year: ' . $schoolYear);
+        $sheet->mergeCells('A7:H7');
+        $sheet->getStyle('A7:H7')->getFont()->setBold(true)->setSize(12);
+        $sheet->getStyle('A7:H7')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+
+        $sheet->setCellValue('A8', 'as of ' . date('F j, Y'));
+        $sheet->mergeCells('A8:H8');
+        $sheet->getStyle('A8:H8')->getFont()->setItalic(true)->setSize(10);
+        $sheet->getStyle('A8:H8')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
 
         $sheet->setCellValue('A10', 'Date');
         $sheet->setCellValue('B10', 'Time');
@@ -223,9 +215,12 @@ class ClassReservationsController extends Controller
         $sheet->setCellValue('G10', 'Action Date');
         $sheet->setCellValue('H10', 'Remarks');
 
+        $primaryColor = $settings->theme_colors['primary'] ?? '#20246c';
+        $primaryArgb = 'FF' . ltrim($primaryColor, '#');
+
         $headerStyleArray = [
             'font' => ['bold' => true, 'color' => ['argb' => 'FFFFFFFF']],
-            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['argb' => 'FF1F4E78']],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'color' => ['argb' => $primaryArgb]],
             'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
             'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]]
         ];
@@ -263,6 +258,10 @@ class ClassReservationsController extends Controller
             'borders' => ['allBorders' => ['borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN]]
         ];
         $sheet->getStyle('A10:H' . ($row - 1))->applyFromArray($styleArray);
+
+        $row += 2;
+        $sheet->setCellValue('A' . $row, 'Generated by: ' . Auth::user()->first_name . ' ' . Auth::user()->last_name);
+        $sheet->mergeCells('A' . $row . ':H' . $row);
 
         $fileName = 'class-reservations-report ' . date('Y-m-d') . '.xlsx';
         header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');

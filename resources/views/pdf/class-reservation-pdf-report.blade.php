@@ -29,34 +29,13 @@
       margin-bottom: 10px;
     }
 
-    .logo-img {
-      display: inline-block;
-      vertical-align: middle;
-    }
-
-    .logo-img img {
-      width: 60px;
-      height: auto;
-      margin-right: 15px;
+    .logo img {
+      max-width: 500px;
+      margin-right: 10px;
     }
 
     .school-info {
-      display: inline-block;
-      vertical-align: middle;
-      text-align: left;
-    }
-
-    .school-info h2 {
-      font-size: 16px;
-      margin: 0;
-      padding: 0;
-    }
-
-    .school-info p {
-      font-size: 10px;
-      margin: 0;
-      padding: 0;
-      color: #333;
+      text-align: center;
     }
 
     h2,
@@ -143,22 +122,16 @@
 
 <body>
   <header>
-    <div style="text-align: center; margin-bottom: 10px;">
+    <div class="logo">
       @if(isset($logo))
-      <div class="logo-img">
-        <img src="data:image/png;base64,{{ $logo }}" alt="Organization Logo">
-      </div>
+      <img src="data:image/png;base64,{{ $logo }}" alt="Organization Logo" style="max-height: 70px;">
       @endif
-      <div class="school-info">
-        <h2>{{ $school }}</h2>
-        <p>{{ $address }}</p>
-      </div>
     </div>
   </header>
 
   <div class="title">{{ $title }}</div>
   <h4>{{ $schoolYear }}</h4>
-  <div class="generated-date">Date Extracted: {{ date('Y-m-d') }}</div>
+  <div class="generated-date">{{ $date }}</div>
 
   <div class="table-container">
     <table>
