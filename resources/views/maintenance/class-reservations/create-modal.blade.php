@@ -20,7 +20,7 @@
         @csrf
         <div class="grid gap-4 mb-4 grid-cols-2">
           <div class="col-span-2 sm:col-span-1">
-            <label for="user_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">User <span class="text-red-500">*</span></label>
+            <label for="user_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Requestor Name <span class="text-red-500">*</span></label>
             <select id="user_id" name="user_id" required class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
               <option value="" disabled selected>Select User</option>
               @foreach($users as $user)
@@ -28,15 +28,7 @@
               @endforeach
             </select>
           </div>
-          <div class="col-span-2 sm:col-span-1">
-            <label for="faculty_user_id" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Faculty Sponsor</label>
-            <select id="faculty_user_id" name="faculty_user_id" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
-              <option value="" selected>No Sponsor</option>
-              @foreach($users as $user)
-                <option value="{{ $user->id }}">{{ $user->first_name }} {{ $user->last_name }} ({{ $user->email }})</option>
-              @endforeach
-            </select>
-          </div>
+
           <div class="col-span-2 sm:col-span-1">
             <label for="reservation_date" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Date <span class="text-red-500">*</span></label>
             <input type="date" name="reservation_date" id="reservation_date" required class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-600 focus:border-primary-600 block w-full p-2.5 dark:bg-gray-600 dark:border-gray-500 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
