@@ -63,6 +63,9 @@ class RolePermissionSeeder extends Seeder
         Permission::create(['name' => 'View Non-Circulation Reports',        'guard_name' => 'admin']);
         Permission::create(['name' => 'Create Printing Entry',               'guard_name' => 'admin']);
         Permission::create(['name' => 'View Printing Reports',               'guard_name' => 'admin']);
+        Permission::create(['name' => 'Library Reservation Approval',        'guard_name' => 'admin']);
+        Permission::create(['name' => 'Add Library Reservation',             'guard_name' => 'admin']);
+        Permission::create(['name' => 'View Library Reservation Reports',    'guard_name' => 'admin']);
 
 
         $role1 = Role::create(['name' => 'Super Admin',  'guard_name' => 'admin']);
@@ -119,6 +122,9 @@ class RolePermissionSeeder extends Seeder
             'View Non-Circulation Reports',
             'Create Printing Entry',
             'View Printing Reports',
+            'Library Reservation Approval',
+            'Add Library Reservation',
+            'View Library Reservation Reports',
         ]);
 
         // Librarian gets book, inventory, and circulation management permissions
@@ -147,6 +153,9 @@ class RolePermissionSeeder extends Seeder
             'View Non-Circulation Reports',
             'Create Printing Entry',
             'View Printing Reports',
+            'Library Reservation Approval',
+            'Add Library Reservation',
+            'View Library Reservation Reports',
         ]);
 
         app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();

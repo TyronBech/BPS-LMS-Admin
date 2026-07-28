@@ -189,7 +189,6 @@ class LibraryClassReservationController extends Controller
 
         $validated = $request->validate([
             'user_id' => 'required|exists:usr_users,id',
-            'faculty_user_id' => 'nullable|exists:usr_users,id',
             'reservation_date' => 'required|date',
             'start_time' => 'required|date_format:H:i',
             'end_time' => 'nullable|date_format:H:i|after:start_time',
@@ -220,7 +219,6 @@ class LibraryClassReservationController extends Controller
 
             $reservation = new LibraryClassReservation();
             $reservation->user_id = $validated['user_id'];
-            $reservation->faculty_user_id = $validated['faculty_user_id'];
             $reservation->reservation_date = $validated['reservation_date'];
             $reservation->start_time = $validated['start_time'];
             $reservation->end_time = $validated['end_time'];

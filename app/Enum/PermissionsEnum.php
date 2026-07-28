@@ -60,4 +60,7 @@ enum PermissionsEnum: string
     case VIEW_NON_CIRCULATION_REPORTS       = 'View Non-Circulation Reports';
     case CREATE_PRINTING_ENTRY              = 'Create Printing Entry';
     case VIEW_PRINTING_REPORTS              = 'View Printing Reports';
+    case LIBRARY_RESERVATION_APPROVAL       = 'Library Reservation Approval';
+    case ADD_LIBRARY_RESERVATION            = 'Add Library Reservation';
+    case VIEW_LIBRARY_RESERVATION_REPORTS   = 'View Library Reservation Reports';
 }
