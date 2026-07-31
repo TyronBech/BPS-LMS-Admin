@@ -261,12 +261,25 @@ class PrintingController extends Controller
         ini_set('max_execution_time', 300);
 
         $settings = UISetting::first() ?? new UISetting();
+        $authUser = Auth::user() ?? Auth::guard('admin')->user();
+        $userPosition = 'School Librarian';
+        if ($authUser) {
+            if (isset($authUser->employees->employee_role) && !empty($authUser->employees->employee_role)) {
+                $userPosition = $authUser->employees->employee_role;
+            } elseif (isset($authUser->privileges->category) && !empty($authUser->privileges->category)) {
+                $userPosition = $authUser->privileges->category;
+            } elseif ($authUser->roles && $authUser->roles->first()) {
+                $userPosition = ucwords($authUser->roles->first()->name);
+            }
+        }
+
         $items = [
             'title'         => \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Printing & Photocopy Report', request('start'), request('end'), $data, 'printed_at'),
             'school'        => $settings->org_name ?? "Bicutan Parochial School, Inc.",
             'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
             'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
-            'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
+            'user'          => $authUser ? ($authUser->first_name . ' ' . $authUser->last_name) : 'System User',
+            'userPosition'  => $userPosition,
             'date'          => "as of " . date('F j, Y'),
             'data'          => $data,
             'totalCount'    => $data->count(),
@@ -299,7 +312,7 @@ class PrintingController extends Controller
         $logo->setDescription(($settings->org_initial ?? 'BPS') . ' Logo');
         $logo->setPath($tempLogoPath ?? public_path('img/BPSLogoFull.png'));
         $logo->setHeight(100);
-        $logo->setCoordinates('D1');
+        $logo->setCoordinates('C1');
         $logo->setOffsetX(80);
         $logo->setOffsetY(1);
         $logo->setWorksheet($sheet);
@@ -310,51 +323,58 @@ class PrintingController extends Controller
         $sheet->getPageSetup()->setFitToWidth(1);
         $sheet->getPageSetup()->setFitToHeight(0);
 
-        $sheet->mergeCells('A6:J6');
-        $sheet->getStyle('A6:J6')->getFont()->setBold(true);
-        $sheet->getStyle('A6:J6')->getFont()->setSize(14);
-        $sheet->getStyle('A6:J6')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('A6:J6')->getAlignment()->setVertical('center');
-        $sheet->setCellValue('A6', \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Printing & Photocopy Report', request('start'), request('end'), $data, 'printed_at'));
+        // Header: The Library
+        $sheet->mergeCells('A6:I6');
+        $sheet->getStyle('A6:I6')->getFont()->setSize(11);
+        $sheet->getStyle('A6:I6')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A6:I6')->getAlignment()->setVertical('center');
+        $sheet->getStyle('A6:I6')->getFont()->setBold(true);
+        $sheet->setCellValue('A6', 'The Library');
+
+        // Header: Report Title
+        $sheet->mergeCells('A7:I7');
+        $sheet->getStyle('A7:I7')->getFont()->setBold(true);
+        $sheet->getStyle('A7:I7')->getFont()->setSize(14);
+        $sheet->getStyle('A7:I7')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A7:I7')->getAlignment()->setVertical('center');
+        $sheet->setCellValue('A7', \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Printing & Photocopy Report', request('start'), request('end'), $data, 'printed_at'));
+
+        // Header: Subtitle Date
+        $sheet->mergeCells('A8:I8');
+        $sheet->getStyle('A8:I8')->getFont()->setBold(true);
+        $sheet->getStyle('A8:I8')->getFont()->setSize(10);
+        $sheet->getStyle('A8:I8')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A8:I8')->getAlignment()->setVertical('center');
+        $sheet->getStyle('A8:I8')->getAlignment()->setWrapText(true);
+        $sheet->setCellValue('A8', 'as of ' . date('F j, Y'));
 
         $sheet->getColumnDimension('A')->setWidth(15); // Date
         $sheet->getColumnDimension('B')->setWidth(15); // Time
         $sheet->getColumnDimension('C')->setWidth(25); // RFID
         $sheet->getColumnDimension('D')->setWidth(30); // User Name
         $sheet->getColumnDimension('E')->setWidth(25); // Grade & Section / Role
-        $sheet->getColumnDimension('F')->setWidth(15); // Type
-        $sheet->getColumnDimension('G')->setWidth(25); // Topic
-        $sheet->getColumnDimension('H')->setWidth(30); // Title of Material
-        $sheet->getColumnDimension('I')->setWidth(10); // Pages
-        $sheet->getColumnDimension('J')->setWidth(15); // Amount
-        
-        $sheet->mergeCells('A7:J7');
-        
-        $sheet->setCellValue('A7', 'as of ' . date('F j, Y'));
-        
-        $sheet->getStyle('A7:J7')->getFont()->setBold(true);
-        $sheet->getStyle('A7:J7')->getFont()->setSize(10);
-        $sheet->getStyle('A7:J7')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('A7:J7')->getAlignment()->setVertical('center');
-        $sheet->getStyle('A7:J7')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A9:J9')->getFont()->setSize(10);
-        $sheet->getStyle('A9:J9')->getFont()->setBold(true);
-        $sheet->getStyle('A9:J9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A9:J9')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+        $sheet->getColumnDimension('F')->setWidth(25); // Topic
+        $sheet->getColumnDimension('G')->setWidth(30); // Title of Material
+        $sheet->getColumnDimension('H')->setWidth(10); // Pages
+        $sheet->getColumnDimension('I')->setWidth(15); // Amount
 
-        $sheet->setCellValue('A9', 'Date');
-        $sheet->setCellValue('B9', 'Time');
-        $sheet->setCellValue('C9', 'RFID');
-        $sheet->setCellValue('D9', 'User Name');
-        $sheet->setCellValue('E9', 'Grade & Section / Role');
-        $sheet->setCellValue('F9', 'Type');
-        $sheet->setCellValue('G9', 'Topic');
-        $sheet->setCellValue('H9', 'Title of Material');
-        $sheet->setCellValue('I9', 'Pages');
-        $sheet->setCellValue('J9', 'Amount');
+        $sheet->getStyle('A10:I10')->getFont()->setSize(10);
+        $sheet->getStyle('A10:I10')->getFont()->setBold(true);
+        $sheet->getStyle('A10:I10')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A10:I10')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+
+        $sheet->setCellValue('A10', 'Date');
+        $sheet->setCellValue('B10', 'Time');
+        $sheet->setCellValue('C10', 'RFID');
+        $sheet->setCellValue('D10', 'User Name');
+        $sheet->setCellValue('E10', 'Grade & Section / Role');
+        $sheet->setCellValue('F10', 'Topic');
+        $sheet->setCellValue('G10', 'Title of Material');
+        $sheet->setCellValue('H10', 'Pages');
+        $sheet->setCellValue('I10', 'Amount');
         
         $totalAmount = 0;
-        $row = 10;
+        $row = 11;
         foreach ($data as $item) {
             $sheet->setCellValue('A' . $row, Carbon::parse($item->printed_at)->format('M j, Y'));
             $sheet->setCellValue('B' . $row, Carbon::parse($item->printed_at)->format('g:i A'));
@@ -378,32 +398,31 @@ class PrintingController extends Controller
             }
             
             $sheet->setCellValueExplicit('C' . $row, $rfid, \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-            $sheet->setCellValue('F' . $row, ucfirst($item->type));
-            $sheet->setCellValue('G' . $row, $item->topic);
-            $sheet->setCellValue('H' . $row, $item->title_of_material ?? 'N/A');
-            $sheet->setCellValue('I' . $row, $item->pages);
+            $sheet->setCellValue('F' . $row, $item->topic);
+            $sheet->setCellValue('G' . $row, $item->title_of_material ?? 'N/A');
+            $sheet->setCellValue('H' . $row, $item->pages);
             
             if (isset($item->amount)) {
-                $sheet->setCellValue('J' . $row, '₱ ' . number_format($item->amount, 2));
+                $sheet->setCellValue('I' . $row, '₱ ' . number_format($item->amount, 2));
                 $totalAmount += $item->amount;
             } else {
-                $sheet->setCellValue('J' . $row, 'N/A');
+                $sheet->setCellValue('I' . $row, 'N/A');
             }
 
-            $sheet->getStyle('A' . $row . ':J' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-            $sheet->getStyle('A' . $row . ':J' . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
-            $sheet->getStyle('A' . $row . ':J' . $row)->getAlignment()->setWrapText(true);
+            $sheet->getStyle('A' . $row . ':I' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle('A' . $row . ':I' . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+            $sheet->getStyle('A' . $row . ':I' . $row)->getAlignment()->setWrapText(true);
             $row++;
         }
 
         // Add Total row
-        $sheet->mergeCells('A' . $row . ':I' . $row);
+        $sheet->mergeCells('A' . $row . ':H' . $row);
         $sheet->setCellValue('A' . $row, 'Total Amount:');
-        $sheet->setCellValue('J' . $row, '₱ ' . number_format($totalAmount, 2));
+        $sheet->setCellValue('I' . $row, '₱ ' . number_format($totalAmount, 2));
         
-        $sheet->getStyle('A' . $row . ':J' . $row)->getFont()->setBold(true);
+        $sheet->getStyle('A' . $row . ':I' . $row)->getFont()->setBold(true);
         $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_RIGHT);
-        $sheet->getStyle('J' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        $sheet->getStyle('I' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
 
         $styleArray = [
             'borders' => [
@@ -412,18 +431,36 @@ class PrintingController extends Controller
                 ],
             ],
         ];
-        $sheet->getStyle('A10:J' . $row)->applyFromArray($styleArray);
+        $sheet->getStyle('A10:I' . $row)->applyFromArray($styleArray);
+
+        // Report Generated By
+        $authUser = Auth::user() ?? Auth::guard('admin')->user();
+        $userName = $authUser ? ($authUser->first_name . ' ' . $authUser->last_name) : 'System User';
+        $userPosition = 'School Librarian';
+        if ($authUser) {
+            if (isset($authUser->employees->employee_role) && !empty($authUser->employees->employee_role)) {
+                $userPosition = $authUser->employees->employee_role;
+            } elseif (isset($authUser->privileges->category) && !empty($authUser->privileges->category)) {
+                $userPosition = $authUser->privileges->category;
+            } elseif ($authUser->roles && $authUser->roles->first()) {
+                $userPosition = ucwords($authUser->roles->first()->name);
+            }
+        }
 
         $row += 2;
-        $sheet->mergeCells('A' . $row . ':J' . $row);
-        $sheet->setCellValue('A' . $row, 'Report Generated By: ' . Auth::user()->first_name . ' ' . Auth::user()->last_name);
-
-        $styleRange = 'A' . $row . ':J' . $row;
+        $sheet->mergeCells('A' . $row . ':I' . $row);
+        $sheet->setCellValue('A' . $row, 'Report Generated By: ' . $userName);
+        $styleRange = 'A' . $row . ':I' . $row;
         $sheet->getStyle($styleRange)->getFont()->setBold(true);
         $sheet->getStyle($styleRange)->getFont()->setSize(10);
         $sheet->getStyle($styleRange)->getAlignment()->setHorizontal('left');
-        $sheet->getStyle($styleRange)->getAlignment()->setVertical('left');
-        $sheet->getStyle($styleRange)->getAlignment()->setWrapText(true);
+
+        $row += 1;
+        $sheet->mergeCells('A' . $row . ':I' . $row);
+        $sheet->setCellValue('A' . $row, '                  ' . $userPosition);
+        $styleRangePos = 'A' . $row . ':I' . $row;
+        $sheet->getStyle($styleRangePos)->getFont()->setSize(10);
+        $sheet->getStyle($styleRangePos)->getAlignment()->setHorizontal('left');
 
         $writer     = new WriterXlsx($spreadsheet);
         $fileName = 'printing-report ' . date('Y-m-d') . '.xlsx';
