@@ -85,7 +85,6 @@
             @endphp
             <td>
               <div class="label">
-                <p class="library-name">{{ $category }}</p>
                 @forelse ($segments as $segment)
                   <p>{{ $segment }}</p>
                 @empty

@@ -14,7 +14,6 @@
             Role
           @endif
         </th>
-        <th scope="col" class="px-4 py-2 whitespace-nowrap">Type</th>
         <th scope="col" class="px-4 py-2 whitespace-nowrap">Topic</th>
         <th scope="col" class="px-4 py-2 whitespace-nowrap">Title of Material</th>
         <th scope="col" class="px-4 py-2 whitespace-nowrap">Pages</th>
@@ -66,13 +65,6 @@
             N/A
           @endif
         </td>
-        <td class="px-4 py-2 whitespace-nowrap capitalize font-semibold">
-          @if($item->type == 'photocopy')
-            <span class="text-blue-600 dark:text-blue-400">Photocopy</span>
-          @else
-            <span class="text-purple-600 dark:text-purple-400">Print</span>
-          @endif
-        </td>
         <td class="px-4 py-2">
           {{ $item->topic }}
         </td>
@@ -99,7 +91,7 @@
       </tr>
       @empty
       <tr>
-        <td colspan="@can(PermissionsEnum::CREATE_PRINTING_ENTRY->value, 'admin') 11 @else 10 @endcan" class="px-4 py-2 text-center text-gray-500 dark:text-gray-400">
+        <td colspan="@can(PermissionsEnum::CREATE_PRINTING_ENTRY->value, 'admin') 10 @else 9 @endcan" class="px-4 py-2 text-center text-gray-500 dark:text-gray-400">
           No printing/photocopy entries found.
         </td>
       </tr>
