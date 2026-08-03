@@ -403,15 +403,18 @@ class FetchDataController extends Controller
             'user_name' => Auth::user()->full_name ?? 'N/A',
             'start_date' => $start,
             'end_date' => $end,
-            'timestamp' => now(),
         ]);
 
         try {
-            $sections = StudentDetail::whereNotNull('section')
+            $levelSections = StudentDetail::select('level', 'section')
+                ->whereNotNull('section')
                 ->where('section', '!=', '')
                 ->distinct()
-                ->pluck('section')
-                ->sort()
+                ->get()
+                ->sortBy(function ($item) {
+                    $weight = $this->getGradeLevelWeight($item->level);
+                    return sprintf('%04d_%s', $weight, strtolower(trim($item->section)));
+                })
                 ->values();
             $results = collect();
 
@@ -439,8 +442,14 @@ class FetchDataController extends Controller
                 }
             }
 
-            foreach ($sections as $section) {
-                $topStudents = User::whereHas('students', function ($q) use ($section) {
+            foreach ($levelSections as $ls) {
+                $level   = $ls->level;
+                $section = $ls->section;
+
+                $topStudents = User::whereHas('students', function ($q) use ($level, $section) {
+                    if (!empty($level)) {
+                        $q->where('level', $level);
+                    }
                     $q->where('section', $section);
                 })
                     ->with('students')
@@ -458,19 +467,26 @@ class FetchDataController extends Controller
                     ->get();
 
                 LogFacade::debug('Analytics: Fetched top students for section', [
+                    'level' => $level,
                     'section' => $section,
                     'students_count' => $topStudents->count(),
                     'user_id' => Auth::id(),
                 ]);
 
-                $results->push([
-                    'section' => $section,
-                    'students' => $topStudents,
-                ]);
+                $filtered = $topStudents->filter(fn($s) => $s->logs_count > 0);
+                if ($filtered->isNotEmpty()) {
+                    $results->push([
+                        'level'         => $level,
+                        'level_label'   => $this->formatGradeLevelLabel($level),
+                        'section'       => $section,
+                        'section_title' => $this->formatSectionTitle($level, $section),
+                        'students'      => $filtered->values(),
+                    ]);
+                }
             }
 
             LogFacade::info('Analytics: Most visited students fetched successfully', [
-                'sections_processed' => count($sections),
+                'sections_processed' => count($levelSections),
                 'total_students' => $results->sum(fn($r) => count($r['students'])),
                 'user_id' => Auth::id(),
                 'timestamp' => now(),
@@ -514,12 +530,17 @@ class FetchDataController extends Controller
         ]);
 
         try {
-            $sections = StudentDetail::whereNotNull('section')
+            $levelSections = StudentDetail::select('level', 'section')
+                ->whereNotNull('section')
                 ->where('section', '!=', '')
                 ->distinct()
-                ->pluck('section')
-                ->sort()
+                ->get()
+                ->sortBy(function ($item) {
+                    $weight = $this->getGradeLevelWeight($item->level);
+                    return sprintf('%04d_%s', $weight, strtolower(trim($item->section)));
+                })
                 ->values();
+
             $results = collect();
 
             $hasRange = false;
@@ -546,8 +567,14 @@ class FetchDataController extends Controller
                 }
             }
 
-            foreach ($sections as $section) {
-                $topStudents = User::whereHas('students', function ($q) use ($section) {
+            foreach ($levelSections as $ls) {
+                $level   = $ls->level;
+                $section = $ls->section;
+
+                $topStudents = User::whereHas('students', function ($q) use ($level, $section) {
+                    if (!empty($level)) {
+                        $q->where('level', $level);
+                    }
                     $q->where('section', $section);
                 })
                     ->with('students')
@@ -563,19 +590,26 @@ class FetchDataController extends Controller
                     ->get();
 
                 LogFacade::debug('Analytics: Fetched top borrowers for section', [
+                    'level' => $level,
                     'section' => $section,
                     'students_count' => $topStudents->count(),
                     'user_id' => Auth::id(),
                 ]);
 
-                $results->push([
-                    'section' => $section,
-                    'students' => $topStudents,
-                ]);
+                $filtered = $topStudents->filter(fn($s) => $s->borrow_count > 0);
+                if ($filtered->isNotEmpty()) {
+                    $results->push([
+                        'level'         => $level,
+                        'level_label'   => $this->formatGradeLevelLabel($level),
+                        'section'       => $section,
+                        'section_title' => $this->formatSectionTitle($level, $section),
+                        'students'      => $filtered->values(),
+                    ]);
+                }
             }
 
             LogFacade::info('Analytics: Most borrowed students fetched successfully', [
-                'sections_processed' => count($sections),
+                'sections_processed' => count($levelSections),
                 'total_students' => $results->sum(fn($r) => count($r['students'])),
                 'user_id' => Auth::id(),
                 'timestamp' => now(),
@@ -739,11 +773,27 @@ class FetchDataController extends Controller
             } catch (\Throwable $e) {}
         }
         
-        $sections = StudentDetail::whereNotNull('section')->where('section', '!=', '')->distinct()->pluck('section')->sort()->values();
+        $levelSections = StudentDetail::select('level', 'section')
+            ->whereNotNull('section')
+            ->where('section', '!=', '')
+            ->distinct()
+            ->get()
+            ->sortBy(function ($item) {
+                $weight = $this->getGradeLevelWeight($item->level);
+                return sprintf('%04d_%s', $weight, strtolower(trim($item->section)));
+            })
+            ->values();
+
         $results = collect();
         
-        foreach ($sections as $section) {
-            $topStudents = User::whereHas('students', function ($q) use ($section) {
+        foreach ($levelSections as $ls) {
+            $level   = $ls->level;
+            $section = $ls->section;
+
+            $topStudents = User::whereHas('students', function ($q) use ($level, $section) {
+                if (!empty($level)) {
+                    $q->where('level', $level);
+                }
                 $q->where('section', $section);
             })
                 ->with('students')
@@ -763,8 +813,11 @@ class FetchDataController extends Controller
             $filtered = $topStudents->filter(fn($s) => $s->logs_count > 0);
             if ($filtered->isNotEmpty()) {
                 $results->push([
-                    'section' => $section,
-                    'students' => $filtered,
+                    'level'         => $level,
+                    'level_label'   => $this->formatGradeLevelLabel($level),
+                    'section'       => $section,
+                    'section_title' => $this->formatSectionTitle($level, $section),
+                    'students'      => $filtered->values(),
                 ]);
             }
         }
@@ -816,11 +869,27 @@ class FetchDataController extends Controller
             } catch (\Throwable $e) {}
         }
         
-        $sections = StudentDetail::whereNotNull('section')->where('section', '!=', '')->distinct()->pluck('section')->sort()->values();
+        $levelSections = StudentDetail::select('level', 'section')
+            ->whereNotNull('section')
+            ->where('section', '!=', '')
+            ->distinct()
+            ->get()
+            ->sortBy(function ($item) {
+                $weight = $this->getGradeLevelWeight($item->level);
+                return sprintf('%04d_%s', $weight, strtolower(trim($item->section)));
+            })
+            ->values();
+
         $results = collect();
         
-        foreach ($sections as $section) {
-            $topStudents = User::whereHas('students', function ($q) use ($section) {
+        foreach ($levelSections as $ls) {
+            $level   = $ls->level;
+            $section = $ls->section;
+
+            $topStudents = User::whereHas('students', function ($q) use ($level, $section) {
+                if (!empty($level)) {
+                    $q->where('level', $level);
+                }
                 $q->where('section', $section);
             })
                 ->with('students')
@@ -838,8 +907,11 @@ class FetchDataController extends Controller
             $filtered = $topStudents->filter(fn($s) => $s->borrow_count > 0);
             if ($filtered->isNotEmpty()) {
                 $results->push([
-                    'section' => $section,
-                    'students' => $filtered,
+                    'level'         => $level,
+                    'level_label'   => $this->formatGradeLevelLabel($level),
+                    'section'       => $section,
+                    'section_title' => $this->formatSectionTitle($level, $section),
+                    'students'      => $filtered->values(),
                 ]);
             }
         }
@@ -930,5 +1002,86 @@ class FetchDataController extends Controller
         return response($pdf->output(), 200)
             ->header('Content-Type', 'application/pdf')
             ->header('Content-Disposition', 'attachment; filename="top-categories-borrowed-' . date('Y-m-d') . '.pdf"');
+    }
+
+    /**
+     * Get numeric sorting weight for a given grade level string.
+     *
+     * @param string|null $level
+     * @return int
+     */
+    private function getGradeLevelWeight(?string $level): int
+    {
+        if (empty($level)) {
+            return 999;
+        }
+
+        $clean = strtoupper(trim($level));
+
+        if (str_contains($clean, 'NURSERY')) {
+            return 1;
+        }
+
+        if (str_contains($clean, 'KINDERGARTEN') || str_contains($clean, 'KINDER')) {
+            return 2;
+        }
+
+        if (preg_match('/(\d+)/', $clean, $matches)) {
+            return 2 + (int) $matches[1];
+        }
+
+        return 500;
+    }
+
+    /**
+     * Format grade level string into a presentable label.
+     *
+     * @param string|null $level
+     * @return string
+     */
+    private function formatGradeLevelLabel(?string $level): string
+    {
+        if (empty($level)) {
+            return 'N/A';
+        }
+
+        $clean = strtoupper(trim($level));
+
+        if ($clean === 'NURSERY') {
+            return 'Nursery';
+        }
+
+        if ($clean === 'KINDERGARTEN' || $clean === 'KINDER') {
+            return 'Kindergarten';
+        }
+
+        if (str_starts_with($clean, 'GRADE ')) {
+            return ucwords(strtolower($level));
+        }
+
+        if (is_numeric($clean)) {
+            return 'Grade ' . $clean;
+        }
+
+        return 'Grade ' . ucwords(strtolower($level));
+    }
+
+    /**
+     * Format grade level and section into a section title.
+     *
+     * @param string|null $level
+     * @param string|null $section
+     * @return string
+     */
+    private function formatSectionTitle(?string $level, ?string $section): string
+    {
+        $label = $this->formatGradeLevelLabel($level);
+        $sec = trim($section ?? '');
+
+        if (empty($sec)) {
+            return $label;
+        }
+
+        return $label . ' - ' . $sec;
     }
 }
