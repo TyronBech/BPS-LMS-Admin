@@ -8,9 +8,11 @@ use App\Models\EmployeeDetail;
 use App\Models\ImportProgress;
 use App\Models\StudentDetail;
 use App\Models\User;
+use Illuminate\Bus\Batch;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -21,6 +23,9 @@ class UserImageImportController extends Controller
 
     /** Allowed image extensions. */
     private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png'];
+
+    /** Number of files per queue job chunk in batch. */
+    private const JOB_CHUNK_SIZE = 10;
 
     /**
      * Display the User Images import page.
@@ -39,7 +44,7 @@ class UserImageImportController extends Controller
         ]);
 
         // Clear session data and temp files when visiting fresh (no pagination params)
-        if (!$request->has('page') && !$request->has('perPage')) {
+        if (!$request->has('page') && !$request->has('perPage') && !$request->has('matched') && !$request->has('unmatched')) {
             $this->cleanupTempFiles($request);
             $request->session()->forget([
                 'user_image_import_folder',
@@ -57,9 +62,10 @@ class UserImageImportController extends Controller
 
     /**
      * Handle uploaded folder images and preview matched/unmatched files.
+     * Supports chunked file uploading to bypass PHP max_file_uploads (20) limit.
      *
      * @param Request $request
-     * @return \Illuminate\Http\Response
+     * @return \Illuminate\Http\Response|\Illuminate\Http\JsonResponse
      */
     public function upload(Request $request)
     {
@@ -68,25 +74,30 @@ class UserImageImportController extends Controller
             'user_name'  => Auth::user()->full_name,
             'ip_address' => $request->ip(),
             'has_files'  => $request->hasFile('images'),
+            'is_chunk'   => $request->boolean('is_chunk'),
+            'append'     => $request->boolean('append'),
             'timestamp'  => now(),
         ]);
 
         try {
-            // If the user uploaded new files from the folder picker
+            $isChunk = $request->boolean('is_chunk') || $request->expectsJson();
+            $append  = $request->boolean('append');
+
+            // If the user uploaded new files (or a chunk of files)
             if ($request->isMethod('post') && $request->hasFile('images')) {
-                // Clean up any previously uploaded temp files
-                $this->cleanupTempFiles($request);
+                // If not appending, clean up any previously stored temp files and reset session arrays
+                if (!$append) {
+                    $this->cleanupTempFiles($request);
+                    $request->session()->forget([
+                        'user_image_import_folder',
+                        'user_image_import_matched',
+                        'user_image_import_unmatched',
+                        'user_image_import_oversized',
+                    ]);
+                }
 
                 $uploadedFiles = $request->file('images');
-                $folderName    = 'Uploaded folder';
-
-                // Derive folder name from the first file's relative path
-                if (!empty($uploadedFiles)) {
-                    $firstFile  = $uploadedFiles[0];
-                    $clientPath = $firstFile->getClientOriginalName();
-                    // The webkitRelativePath isn't available server-side, so use a hidden input or just the first file
-                    $folderName = 'Selected folder';
-                }
+                $folderName    = $request->input('folder_name', 'Uploaded folder');
 
                 // Filter to only allowed image extensions and store temporarily
                 $storedFiles = [];
@@ -104,20 +115,41 @@ class UserImageImportController extends Controller
                     ];
                 }
 
-                if (empty($storedFiles)) {
+                if (empty($storedFiles) && !$append) {
+                    if ($isChunk) {
+                        return response()->json([
+                            'error'   => true,
+                            'message' => 'No valid image files (.jpg, .jpeg, .png) found in the upload.',
+                        ], 422);
+                    }
                     return redirect()
                         ->route('import.import-user-images')
                         ->with('toast-warning', 'No valid image files (.jpg, .jpeg, .png) found in the selected folder.');
                 }
 
-                // Categorize files
-                [$matched, $unmatched, $oversized] = $this->categorizeUploadedFiles($storedFiles);
+                // Categorize files for this upload chunk
+                [$newMatched, $newUnmatched, $newOversized] = $this->categorizeUploadedFiles($storedFiles);
 
-                // Store in session
+                // Append to existing session data
+                $matched   = array_merge($request->session()->get('user_image_import_matched', []), $newMatched);
+                $unmatched = array_merge($request->session()->get('user_image_import_unmatched', []), $newUnmatched);
+                $oversized = array_merge($request->session()->get('user_image_import_oversized', []), $newOversized);
+
+                // Save in session
                 $request->session()->put('user_image_import_folder', $folderName);
                 $request->session()->put('user_image_import_matched', $matched);
                 $request->session()->put('user_image_import_unmatched', $unmatched);
                 $request->session()->put('user_image_import_oversized', $oversized);
+
+                if ($isChunk) {
+                    return response()->json([
+                        'success'         => true,
+                        'matched_count'   => count($matched),
+                        'unmatched_count' => count($unmatched),
+                        'oversized_count' => count($oversized),
+                        'total_files'     => count($matched) + count($unmatched) + count($oversized),
+                    ]);
+                }
             }
 
             // Retrieve from session
@@ -162,6 +194,14 @@ class UserImageImportController extends Controller
                 'error_message' => $e->getMessage(),
                 'user_id'       => Auth::id(),
             ]);
+
+            if ($request->expectsJson() || $request->boolean('is_chunk')) {
+                return response()->json([
+                    'error'   => true,
+                    'message' => 'An error occurred while uploading images: ' . $e->getMessage(),
+                ], 500);
+            }
+
             return redirect()
                 ->route('import.import-user-images')
                 ->with('toast-error', 'An error occurred while processing the uploaded images: ' . $e->getMessage());
@@ -182,7 +222,7 @@ class UserImageImportController extends Controller
     }
 
     /**
-     * Dispatch the user image import job to the queue.
+     * Dispatch the user image import jobs as a batch to the queue.
      *
      * @param Request $request
      * @return \Illuminate\Http\JsonResponse
@@ -194,8 +234,6 @@ class UserImageImportController extends Controller
         // Global one-active-import-at-a-time lock
         $activeImport = ImportProgress::whereIn('status', ['pending', 'processing'])->first();
         if ($activeImport) {
-            // Check if this is the SAME user starting the SAME import type and it was created very recently (e.g. within 2 mins)
-            // This handles proxy timeouts and automatic retries gracefully.
             if ($activeImport->type === 'user_images' && $activeImport->initiated_by === Auth::id() && $activeImport->created_at->gt(now()->subMinutes(2))) {
                 return response()->json([
                     'success'     => true,
@@ -230,7 +268,49 @@ class UserImageImportController extends Controller
                 'total_rows'   => $totalRows,
             ]);
 
-            ProcessUserImageImport::dispatch($matched, $progress->id, Auth::id());
+            // Chunk matched files into smaller batches (10 per job) to avoid memory_limit errors
+            $chunks = array_chunk($matched, self::JOB_CHUNK_SIZE);
+            $jobs   = [];
+
+            foreach ($chunks as $chunk) {
+                $jobs[] = new ProcessUserImageImport($chunk, $progress->id, Auth::id());
+            }
+
+            $progressId = $progress->id;
+
+            Bus::batch($jobs)
+                ->name("User Image Import #{$progressId}")
+                ->then(function (Batch $batch) use ($progressId) {
+                    $progressRecord = ImportProgress::find($progressId);
+                    if ($progressRecord && $progressRecord->isActive()) {
+                        $progressRecord->update(['status' => 'completed']);
+                    }
+                    Log::info('User Image Import Batch: Completed', ['progress_id' => $progressId]);
+                })
+                ->catch(function (Batch $batch, \Throwable $e) use ($progressId) {
+                    $progressRecord = ImportProgress::find($progressId);
+                    if ($progressRecord && $progressRecord->isActive()) {
+                        $progressRecord->update([
+                            'status'        => 'failed',
+                            'error_message' => $e->getMessage(),
+                        ]);
+                    }
+                    Log::error('User Image Import Batch: Failed', [
+                        'progress_id'   => $progressId,
+                        'error_message' => $e->getMessage(),
+                    ]);
+                })
+                ->finally(function (Batch $batch) use ($progressId) {
+                    $activeImport = ImportProgress::where('type', 'user_images')
+                        ->where('id', '!=', $progressId)
+                        ->whereIn('status', ['pending', 'processing'])
+                        ->exists();
+
+                    if (!$activeImport && Storage::exists('temp_user_images')) {
+                        Storage::deleteDirectory('temp_user_images');
+                    }
+                })
+                ->dispatch();
 
             $request->session()->forget([
                 'user_image_import_folder',
@@ -239,9 +319,10 @@ class UserImageImportController extends Controller
                 'user_image_import_oversized',
             ]);
 
-            Log::info('User Image Import: Job dispatched', [
+            Log::info('User Image Import: Job batch dispatched', [
                 'progress_id' => $progress->id,
                 'total_files' => $totalRows,
+                'total_jobs'  => count($jobs),
                 'user_id'     => Auth::id(),
             ]);
 
@@ -258,7 +339,7 @@ class UserImageImportController extends Controller
                 ]);
             }
 
-            Log::error('User Image Import: Failed to dispatch job', [
+            Log::error('User Image Import: Failed to dispatch job batch', [
                 'error_message' => $e->getMessage(),
                 'user_id'       => Auth::id(),
             ]);
@@ -275,10 +356,6 @@ class UserImageImportController extends Controller
     /**
      * Returns the current progress of a user image import job as JSON.
      *
-     * Cross-references the `failed_jobs` table to detect jobs that were
-     * killed by the queue worker (timeout, OOM) before the try-catch
-     * inside handle() could update the progress record.
-     *
      * @param Request $request
      * @param int     $id
      * @return \Illuminate\Http\JsonResponse
@@ -291,9 +368,7 @@ class UserImageImportController extends Controller
             return response()->json(['error' => true, 'message' => 'Import record not found.'], 404);
         }
 
-        // Safety net: if the progress record is still active but the
-        // underlying queue job has already been moved to failed_jobs,
-        // mark the import as failed so the frontend can stop polling.
+        // Safety net for failed jobs
         if ($progress->isActive()) {
             $failedJob = \Illuminate\Support\Facades\DB::table('failed_jobs')
                 ->where(function ($query) use ($id) {
@@ -329,9 +404,7 @@ class UserImageImportController extends Controller
 
     /**
      * Categorize uploaded files into matched, unmatched, and oversized.
-     *
-     * Files are already stored in temp_user_images/ via Laravel Storage.
-     * Each entry has: stored_path, original_name, size.
+     * Bulk checks student and employee details to prevent N+1 queries.
      *
      * @param array<int, array{stored_path: string, original_name: string, size: int}> $storedFiles
      * @return array{0: array, 1: array, 2: array} [matched, unmatched, oversized]
@@ -341,6 +414,23 @@ class UserImageImportController extends Controller
         $matched   = [];
         $unmatched = [];
         $oversized = [];
+
+        if (empty($storedFiles)) {
+            return [$matched, $unmatched, $oversized];
+        }
+
+        // Bulk-lookup user details by id_number / employee_id to avoid N+1 queries
+        $filenames = array_map(fn($f) => pathinfo($f['original_name'], PATHINFO_FILENAME), $storedFiles);
+
+        $students = StudentDetail::whereIn('id_number', $filenames)
+            ->with('user')
+            ->get()
+            ->keyBy('id_number');
+
+        $employees = EmployeeDetail::whereIn('employee_id', $filenames)
+            ->with('user')
+            ->get()
+            ->keyBy('employee_id');
 
         foreach ($storedFiles as $fileInfo) {
             $storedPath   = $fileInfo['stored_path'];
@@ -361,20 +451,17 @@ class UserImageImportController extends Controller
                 continue;
             }
 
-            // Look up user: student first, then employee
             $user     = null;
             $userType = null;
 
-            $studentDetail = StudentDetail::where('id_number', $filename)->first();
-            if ($studentDetail) {
-                $user     = User::find($studentDetail->user_id);
+            $studentDetail = $students->get($filename);
+            if ($studentDetail && $studentDetail->user) {
+                $user     = $studentDetail->user;
                 $userType = 'Student';
-            }
-
-            if (!$user) {
-                $employeeDetail = EmployeeDetail::where('employee_id', $filename)->first();
-                if ($employeeDetail) {
-                    $user     = User::find($employeeDetail->user_id);
+            } else {
+                $employeeDetail = $employees->get($filename);
+                if ($employeeDetail && $employeeDetail->user) {
+                    $user     = $employeeDetail->user;
                     $userType = 'Employee';
                 }
             }
@@ -408,7 +495,6 @@ class UserImageImportController extends Controller
      */
     private function cleanupTempFiles(Request $request): void
     {
-        // Don't clean up if there is an active import running, to avoid deleting files the job is using
         $activeImport = ImportProgress::where('type', 'user_images')
             ->whereIn('status', ['pending', 'processing'])
             ->exists();
@@ -439,3 +525,4 @@ class UserImageImportController extends Controller
         return $bytes . ' B';
     }
 }
+
