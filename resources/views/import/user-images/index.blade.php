@@ -132,11 +132,12 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-  // --- Folder picker logic ---
+  // --- Folder picker & Chunked Upload logic ---
   const folderInput = document.getElementById('folder_input');
   const folderLabel = document.getElementById('folder-label');
   const folderInfo  = document.getElementById('folder-info');
   const btnScan     = document.getElementById('btn-scan');
+  const uploadForm  = folderInput ? folderInput.closest('form') : null;
   const allowedExts = ['jpg', 'jpeg', 'png'];
 
   if (folderInput) {
@@ -164,6 +165,82 @@ document.addEventListener('DOMContentLoaded', function () {
       if (btnScan) {
         btnScan.disabled = imageCount === 0;
       }
+    });
+  }
+
+  if (uploadForm && folderInput) {
+    uploadForm.addEventListener('submit', async function (e) {
+      if (!folderInput.files || folderInput.files.length === 0) return;
+
+      const allowedFiles = Array.from(folderInput.files).filter(file => {
+        const ext = file.name.split('.').pop().toLowerCase();
+        return allowedExts.includes(ext);
+      });
+
+      if (allowedFiles.length === 0) return;
+
+      // Intercept submit to send files in chunks of 15 to bypass PHP max_file_uploads (20)
+      e.preventDefault();
+
+      if (btnScan) {
+        btnScan.disabled = true;
+        btnScan.textContent = 'Uploading 0/' + allowedFiles.length + ' images…';
+      }
+
+      const chunkSize = 15; // Safe batch size per HTTP request
+      const totalFiles = allowedFiles.length;
+      let uploadedCount = 0;
+      const csrfToken = document.querySelector('input[name="_token"]')?.value || '';
+
+      for (let i = 0; i < totalFiles; i += chunkSize) {
+        const chunk = allowedFiles.slice(i, i + chunkSize);
+        const formData = new FormData();
+        formData.append('_token', csrfToken);
+        formData.append('is_chunk', '1');
+        formData.append('append', i > 0 ? '1' : '0');
+        formData.append('folder_name', 'Selected folder (' + totalFiles + ' files)');
+
+        chunk.forEach(file => {
+          formData.append('images[]', file);
+        });
+
+        try {
+          const response = await fetch('{{ route("import.upload-user-images") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'Accept': 'application/json',
+            },
+          });
+
+          const data = await response.json().catch(() => ({}));
+
+          if (!response.ok || data.error) {
+            alert(data.message || 'An error occurred while uploading image chunk.');
+            if (btnScan) {
+              btnScan.disabled = false;
+              btnScan.textContent = 'Upload & Preview';
+            }
+            return;
+          }
+
+          uploadedCount += chunk.length;
+          if (btnScan) {
+            btnScan.textContent = 'Uploading ' + Math.min(uploadedCount, totalFiles) + '/' + totalFiles + ' images…';
+          }
+        } catch (err) {
+          alert('Network error while uploading images: ' + err.message);
+          if (btnScan) {
+            btnScan.disabled = false;
+            btnScan.textContent = 'Upload & Preview';
+          }
+          return;
+        }
+      }
+
+      // All upload chunks complete — load preview table
+      window.location.href = '{{ route("import.upload-user-images") }}';
     });
   }
 
@@ -222,3 +299,4 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 </script>
 @endsection
+
