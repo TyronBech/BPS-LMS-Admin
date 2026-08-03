@@ -88,7 +88,7 @@
   <div class="generated-date">Generated on: {{ $date }}</div>
 
   @forelse($results as $sectionData)
-    <div class="section-title">Section {{ $sectionData['section'] }}</div>
+    <div class="section-title">{{ $sectionData['section_title'] ?? ('Section ' . $sectionData['section']) }}</div>
     <table>
       <thead>
         <tr>
@@ -104,7 +104,7 @@
             <td class="text-center">{{ $index + 1 }}</td>
             <td>{{ trim($student->last_name . ', ' . $student->first_name . ' ' . $student->middle_name) }}</td>
             <td class="text-center">{{ $student->logs_count }}</td>
-            <td>Grade {{ $student->students->level ?? '-' }}</td>
+            <td>{{ $sectionData['level_label'] ?? ('Grade ' . ($student->students->level == 'NURSERY' ? 'Nursery' : ($student->students->level == 'KINDERGARTEN' ? 'Kindergarten' : ucwords($student->students->level) ?? '-'))) }}</td>
           </tr>
         @endforeach
       </tbody>
