@@ -98,4 +98,5 @@
     </div>
   </div>
 </div>
+@include('layouts.NotationGuide')
 @endsection

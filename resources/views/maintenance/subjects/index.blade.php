@@ -50,6 +50,7 @@
     @include('maintenance.subjects.table')
   </div>
 </div>
+@include('layouts.NotationGuide')
 @endsection
 
 @section('scripts')

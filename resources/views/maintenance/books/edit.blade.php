@@ -287,6 +287,7 @@
         </div>
     </div>
 </div>
+@include('layouts.NotationGuide')
 @endsection
 @section('scripts')
 <script>

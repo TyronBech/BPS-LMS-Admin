@@ -81,6 +81,7 @@
     @include('maintenance.books.table')
   </div>
 </div>
+@include('layouts.NotationGuide')
 @endsection
 
 @section('scripts')
