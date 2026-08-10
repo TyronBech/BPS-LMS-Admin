@@ -50,7 +50,7 @@ class ProcessUserImageImport implements ShouldQueue
         if ($progress && $progress->isActive()) {
             $progress->update([
                 'status'        => 'failed',
-                'error_message' => $progress->error_message ?: $exception->getMessage(),
+                'error_message' => $progress->error_message ?: 'An unexpected error occurred during processing. Please check system logs for details.',
             ]);
         }
 
@@ -215,7 +215,7 @@ class ProcessUserImageImport implements ShouldQueue
             if ($progress->status !== 'cancelled') {
                 $progress->update([
                     'status'        => 'failed',
-                    'error_message' => $e->getMessage(),
+                    'error_message' => 'An unexpected error occurred during processing. Please check system logs for details.',
                 ]);
             }
 
