@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Import;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessUserImageImport;
+use App\Jobs\UserImageImportBatchCompleted;
+use App\Jobs\UserImageImportBatchFailed;
+use App\Jobs\UserImageImportBatchFinished;
 use App\Models\EmployeeDetail;
 use App\Models\ImportProgress;
 use App\Models\StudentDetail;
@@ -280,36 +283,9 @@ class UserImageImportController extends Controller
 
             Bus::batch($jobs)
                 ->name("User Image Import #{$progressId}")
-                ->then(static function (Batch $batch) use ($progressId) {
-                    $progressRecord = ImportProgress::find($progressId);
-                    if ($progressRecord && $progressRecord->isActive()) {
-                        $progressRecord->update(['status' => 'completed']);
-                    }
-                    Log::info('User Image Import Batch: Completed', ['progress_id' => $progressId]);
-                })
-                ->catch(static function (Batch $batch, \Throwable $e) use ($progressId) {
-                    $progressRecord = ImportProgress::find($progressId);
-                    if ($progressRecord && $progressRecord->isActive()) {
-                        $progressRecord->update([
-                            'status'        => 'failed',
-                            'error_message' => $e->getMessage(),
-                        ]);
-                    }
-                    Log::error('User Image Import Batch: Failed', [
-                        'progress_id'   => $progressId,
-                        'error_message' => $e->getMessage(),
-                    ]);
-                })
-                ->finally(static function (Batch $batch) use ($progressId) {
-                    $activeImport = ImportProgress::where('type', 'user_images')
-                        ->where('id', '!=', $progressId)
-                        ->whereIn('status', ['pending', 'processing'])
-                        ->exists();
-
-                    if (!$activeImport && Storage::exists('temp_user_images')) {
-                        Storage::deleteDirectory('temp_user_images');
-                    }
-                })
+                ->then(new UserImageImportBatchCompleted($progressId))
+                ->catch(new UserImageImportBatchFailed($progressId))
+                ->finally(new UserImageImportBatchFinished($progressId))
                 ->dispatch();
 
             $request->session()->forget([
