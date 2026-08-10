@@ -53,12 +53,12 @@ return [
          * with our own email template design.
          */
         'notifications' => [
-            \Spatie\Backup\Events\BackupHasFailed::class => [],
-            \Spatie\Backup\Events\UnhealthyBackupWasFound::class => [],
-            \Spatie\Backup\Events\CleanupHasFailed::class => [],
-            \Spatie\Backup\Events\BackupWasSuccessful::class => [],
-            \Spatie\Backup\Events\HealthyBackupWasFound::class => [],
-            \Spatie\Backup\Events\CleanupWasSuccessful::class => [],
+            \Spatie\Backup\Events\BackupHasFailed::class => [\App\Notifications\DummyBackupNotification::class],
+            \Spatie\Backup\Events\UnhealthyBackupWasFound::class => [\App\Notifications\DummyBackupNotification::class],
+            \Spatie\Backup\Events\CleanupHasFailed::class => [\App\Notifications\DummyBackupNotification::class],
+            \Spatie\Backup\Events\BackupWasSuccessful::class => [\App\Notifications\DummyBackupNotification::class],
+            \Spatie\Backup\Events\HealthyBackupWasFound::class => [\App\Notifications\DummyBackupNotification::class],
+            \Spatie\Backup\Events\CleanupWasSuccessful::class => [\App\Notifications\DummyBackupNotification::class],
         ],
         'notifiable' => \Spatie\Backup\Notifications\Notifiable::class,
 
