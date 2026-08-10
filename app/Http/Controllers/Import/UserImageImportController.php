@@ -423,12 +423,12 @@ class UserImageImportController extends Controller
         $filenames = array_map(fn($f) => pathinfo($f['original_name'], PATHINFO_FILENAME), $storedFiles);
 
         $students = StudentDetail::whereIn('id_number', $filenames)
-            ->with('user')
+            ->with('users')
             ->get()
             ->keyBy('id_number');
 
         $employees = EmployeeDetail::whereIn('employee_id', $filenames)
-            ->with('user')
+            ->with('users')
             ->get()
             ->keyBy('employee_id');
 
@@ -455,13 +455,13 @@ class UserImageImportController extends Controller
             $userType = null;
 
             $studentDetail = $students->get($filename);
-            if ($studentDetail && $studentDetail->user) {
-                $user     = $studentDetail->user;
+            if ($studentDetail && $studentDetail->users) {
+                $user     = $studentDetail->users;
                 $userType = 'Student';
             } else {
                 $employeeDetail = $employees->get($filename);
-                if ($employeeDetail && $employeeDetail->user) {
-                    $user     = $employeeDetail->user;
+                if ($employeeDetail && $employeeDetail->users) {
+                    $user     = $employeeDetail->users;
                     $userType = 'Employee';
                 }
             }
