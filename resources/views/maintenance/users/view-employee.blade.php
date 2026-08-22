@@ -8,7 +8,7 @@
 
       {{-- Profile Image --}}
       @if($employee->profile_image && $mimeType)
-      <img class="rounded-full w-32 h-32 md:w-40 md:h-40 object-cover mb-4 shadow-md" src="data:{{ $mimeType }};base64, {{ $employee->profile_image }}" alt="Employee Image">
+      <img class="rounded-full w-32 h-32 md:w-40 md:h-40 object-fill mb-4 shadow-md" src="data:{{ $mimeType }};base64, {{ $employee->profile_image }}" alt="Employee Image">
       @else
       <img class="hidden rounded-full w-32 h-32 md:w-40 md:h-40 object-cover mb-4 shadow-md dark:block" src="{{ asset('img/User-dark.png') }}" alt="Employee Image">
       <img class="rounded-full w-32 h-32 md:w-40 md:h-40 object-cover mb-4 shadow-md dark:hidden" src="{{ asset('img/User-light.png') }}" alt="Employee Image">
