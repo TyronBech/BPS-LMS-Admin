@@ -243,7 +243,7 @@ class FetchDataController extends Controller
     public function fetchTransactionHistory(Request $request)
     {
         $now = Carbon::now();
-        $startDT = $now->copy()->subMonths(11)->startOfMonth();
+        $startDT = $now->copy()->subMonthsNoOverflow(11)->startOfMonth();
         $endDT = $now->copy()->endOfMonth();
 
         LogFacade::info('Analytics: Fetching transaction history', [
@@ -262,7 +262,7 @@ class FetchDataController extends Controller
                 'key' => $cursor->format('Y-m'),
                 'label' => $cursor->format('Y F'),
             ]);
-            $cursor->addMonth();
+            $cursor->addMonthNoOverflow();
         }
 
         LogFacade::debug('Analytics: Generated months list for transaction history', [
