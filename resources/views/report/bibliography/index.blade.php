@@ -2,7 +2,7 @@
 @section('content')
 @use('App\Enum\PermissionsEnum')
 <div class="container mx-auto px-4">
-  <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Bibliography of Books</h1>
+  <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Bibliography of Material Collections</h1>
   <form action="{{ route('report.bibliography-search') }}" method="POST" class="auto-search-form">
     @csrf
     <div class="flex flex-col md:flex-row md:flex-nowrap md:items-end md:justify-center gap-4 mb-4">
@@ -31,6 +31,10 @@
             <option value="{{ $subject->id }}" {{ $subjectId == $subject->id ? 'selected' : '' }}>{{ $subject->access_code }}</option>
           @endforeach
         </select>
+      </div>
+      <div class="relative w-full sm:w-auto">
+        <label for="copyright_year" class="block mb-1 text-xs font-medium text-gray-500 dark:text-gray-400">Copyright (From)</label>
+        <input type="number" name="copyright_year" id="copyright_year" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g. 2015" value="{{ $copyright_year ?? '' }}">
       </div>
       <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
         <button type="button" data-clear-url="{{ route('report.bibliography') }}" class="btn-clear-filters bg-white hover:bg-gray-100 text-gray-900 border border-gray-300 font-bold py-2.5 px-4 rounded whitespace-nowrap transition-colors dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-300 dark:border-gray-600 text-sm w-full sm:w-auto" title="Clear Filters">Clear</button>

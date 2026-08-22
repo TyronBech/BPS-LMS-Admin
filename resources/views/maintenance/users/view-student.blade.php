@@ -8,10 +8,10 @@
 
       {{-- Profile Image --}}
       @if($student->profile_image && $mimeType)
-      <img class="rounded-full w-32 h-32 md:w-40 md:h-40 object-fill mb-4 shadow-md" src="data:{{ $mimeType }};base64, {{ $student->profile_image }}" alt="Student Image">
+      <img class="rounded-full w-32 h-32 md:w-40 md:h-40 object-cover object-top mb-4 shadow-md" src="data:{{ $mimeType }};base64, {{ $student->profile_image }}" alt="Student Image">
       @else
-      <img class="hidden rounded-full w-32 h-32 md:w-40 md:h-40 object-cover mb-4 shadow-md dark:block" src="{{ asset('img/User-dark.png') }}" alt="Student Image">
-      <img class="rounded-full w-32 h-32 md:w-40 md:h-40 object-cover mb-4 shadow-md dark:hidden" src="{{ asset('img/User-light.png') }}" alt="Student Image">
+      <img class="hidden rounded-full w-32 h-32 md:w-40 md:h-40 object-cover object-top mb-4 shadow-md dark:block" src="{{ asset('img/User-dark.png') }}" alt="Student Image">
+      <img class="rounded-full w-32 h-32 md:w-40 md:h-40 object-cover object-top mb-4 shadow-md dark:hidden" src="{{ asset('img/User-light.png') }}" alt="Student Image">
       @endif
 
       {{-- Name and ID --}}

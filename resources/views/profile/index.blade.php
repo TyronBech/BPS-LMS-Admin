@@ -16,10 +16,10 @@
           <div class="relative mb-6 group">
             {{-- Image Preview --}}
             @if($user->profile_image === null)
-            <img id="preview-image-dark" class="hidden rounded-full w-40 h-40 md:w-48 md:h-48 object-fill shadow-md dark:block" src="{{ asset('img/User-dark.png') }}" alt="Profile Image">
-            <img id="preview-image-light" class="rounded-full w-40 h-40 md:w-48 md:h-48 object-fill shadow-md dark:hidden" src="{{ asset('img/User-light.png') }}" alt="Profile Image">
+            <img id="preview-image-dark" class="hidden rounded-full w-40 h-40 md:w-48 md:h-48 object-cover object-top shadow-md dark:block" src="{{ asset('img/User-dark.png') }}" alt="Profile Image">
+            <img id="preview-image-light" class="rounded-full w-40 h-40 md:w-48 md:h-48 object-cover object-top shadow-md dark:hidden" src="{{ asset('img/User-light.png') }}" alt="Profile Image">
             @else
-            <img id="preview-image-custom" class="rounded-full w-40 h-40 md:w-48 md:h-48 object-fill shadow-md" src="data:image/jpeg;base64, {{ $user->profile_image }}" alt="Profile Image">
+            <img id="preview-image-custom" class="rounded-full w-40 h-40 md:w-48 md:h-48 object-cover object-top shadow-md" src="data:image/jpeg;base64, {{ $user->profile_image }}" alt="Profile Image">
             @endif
 
             {{-- Upload Label (Hidden by default, shown in Edit Mode) --}}
