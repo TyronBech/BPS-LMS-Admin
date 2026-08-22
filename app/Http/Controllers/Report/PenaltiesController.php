@@ -185,6 +185,83 @@ class PenaltiesController extends Controller
         $summary = $this->calculateSummary($full);
         return view('report.penalties.index', compact('data', 'summary', 'search', 'fromInputDate', 'toInputDate', 'perPage', 'penaltyStatus', 'penaltyStatuses', 'subjects', 'subjectId'));
     }
+    
+    /**
+     * Updates the penalty status, amount, and discount for a specific transaction.
+     *
+     * @param \Illuminate\Http\Request $request
+     * @return \Illuminate\Http\RedirectResponse
+     */
+    public function updateStatus(Request $request)
+    {
+        Log::info('Penalties Report: Attempting to update penalty status', [
+            'user_id' => Auth::guard('admin')->id(),
+            'transaction_id' => $request->input('transaction_id'),
+            'ip_address' => $request->ip(),
+            'timestamp' => now(),
+        ]);
+
+        $penaltyStatuses = $this->extract_enums((new Transaction())->getTableName(), 'penalty_status');
+        
+        $validator = Validator::make($request->all(), [
+            'transaction_id' => 'required|exists:tr_transactions,id',
+            'penalty_status' => 'required|in:' . implode(',', $penaltyStatuses),
+            'penalty_total'  => 'nullable|numeric|min:0',
+            'discount'       => 'required_if:penalty_status,Discounted|nullable|numeric|between:0,100',
+        ]);
+
+        if ($validator->fails()) {
+            Log::warning('Penalties Report: Penalty update validation failed', [
+                'user_id' => Auth::guard('admin')->id(),
+                'errors' => $validator->errors(),
+                'ip_address' => $request->ip(),
+            ]);
+            return redirect()->back()->with('toast-warning', $validator->errors()->first());
+        }
+
+        try {
+            DB::beginTransaction();
+            DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
+            
+            $transaction = Transaction::findOrFail($request->input('transaction_id'));
+            
+            $normalizedDiscount = null;
+            if ($request->input('penalty_status') === 'Discounted' || $request->input('penalty_status') === 'Paid') {
+                $discountInput = $request->input('discount');
+                if ($discountInput !== null && $discountInput !== '') {
+                    $discountValue = (float) $discountInput;
+                    if ($discountValue > 1) {
+                        $discountValue /= 100;
+                    }
+                    $normalizedDiscount = round(max(0, min($discountValue, 1)), 2);
+                }
+            }
+
+            $transaction->update([
+                'penalty_status' => $request->input('penalty_status'),
+                'penalty_total'  => $request->input('penalty_total') ?? 0,
+                'discount'       => $normalizedDiscount,
+            ]);
+
+            DB::commit();
+            
+            Log::info('Penalties Report: Penalty updated successfully', [
+                'user_id' => Auth::guard('admin')->id(),
+                'transaction_id' => $transaction->id,
+            ]);
+            
+            return redirect()->back()->with('toast-success', 'Penalty updated successfully');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Penalties Report: Database error during penalty update', [
+                'user_id' => Auth::guard('admin')->id(),
+                'transaction_id' => $request->input('transaction_id'),
+                'error_message' => $e->getMessage(),
+            ]);
+            return redirect()->back()->with('toast-error', 'An error occurred while updating the penalty.');
+        }
+    }
+
     /**
      * Generates a PDF report for the overdue fines report.
      *
