@@ -70,7 +70,7 @@ class BookMaintenanceController extends Controller
         }
 
         $categories = Category::select('id', 'name')->get();
-        $booksQuery = Book::with(['category', 'subject']);
+        $booksQuery = Book::with(['category', 'subjects']);
 
         if ($sortBy && $sortOrder) {
             $booksQuery->orderBy($sortBy, $sortOrder)->orderBy('id', 'desc');
@@ -150,7 +150,8 @@ class BookMaintenanceController extends Controller
             'call_number'       => 'nullable|string|max:50',
             'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:150',
-            'subject_id'        => 'nullable|integer|exists:bk_subjects,id,deleted_at,NULL',
+            'subject_ids'       => 'nullable|array',
+            'subject_ids.*'     => 'integer|exists:bk_subjects,id,deleted_at,NULL',
             'authors'           => 'nullable|string|max:1024',
             'description'       => 'nullable|string',
             'edition'           => 'nullable|string|max:50',
@@ -202,7 +203,7 @@ class BookMaintenanceController extends Controller
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
-            $subjectId = $request->filled('subject_id') ? (int) $request->input('subject_id') : null;
+            $subjectIds = $request->input('subject_ids', []);
             $accessions = collect(explode(',', (string) $request->input('accession')))
                 ->map(fn($item) => trim((string) $item))
                 ->filter(fn($item) => $item !== '')
@@ -227,12 +228,12 @@ class BookMaintenanceController extends Controller
                     'digital_copy_url'      => $request->input('digital_copy_url') ?? null,
                     'remarks'               => $request->input('remarks'),
                     'category_id'           => $request->input('category'),
-                    'subject_id'            => $subjectId,
                     'book_type'             => $request->input('book_type'),
                     'condition_status'      => $request->input('condition'),
                     'availability_status'   => $request->input('availability'),
                 ]);
 
+                $createdBook->subjects()->sync($subjectIds);
                 $createdBookIds[] = $createdBook->id;
             }
             // After creating books, update remarks/availability and create inventory entries within the same transaction
@@ -294,8 +295,8 @@ class BookMaintenanceController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            $book = Book::with(['subject.accessCodes'])->findOrFail($id);
-            $linkedSubjectId = $book->subject_id;
+            $book = Book::with(['subjects.accessCodes'])->findOrFail($id);
+            $linkedSubjectIds = $book->subjects->pluck('id')->toArray();
             $books = new Book();
             $categories     = Category::pluck('name', 'id');
             $condition      = $this->extract_enums($books->getTable(), 'condition_status');
@@ -311,7 +312,7 @@ class BookMaintenanceController extends Controller
             ]);
             return redirect()->back()->with('toast-error', 'Something went wrong!')->withInput();
         }
-        return view('maintenance.books.edit', compact('book', 'linkedSubjectId', 'categories', 'condition', 'availability', 'remarks', 'book_types', 'subjects'));
+        return view('maintenance.books.edit', compact('book', 'linkedSubjectIds', 'categories', 'condition', 'availability', 'remarks', 'book_types', 'subjects'));
     }
     /**
      * Show books
@@ -391,7 +392,7 @@ class BookMaintenanceController extends Controller
             $trimmed_accessions = array_map('trim', $accessions);
         }
         // Start query
-        $books = Book::with(['category', 'subject']);
+        $books = Book::with(['category', 'subjects']);
 
         // Apply category filter if provided
         if ($category) {
@@ -526,7 +527,8 @@ class BookMaintenanceController extends Controller
             'call_number'       => 'nullable|string|max:50',
             'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:150',
-            'subject_id'        => 'nullable|integer|exists:bk_subjects,id,deleted_at,NULL',
+            'subject_ids'       => 'nullable|array',
+            'subject_ids.*'     => 'integer|exists:bk_subjects,id,deleted_at,NULL',
             'authors'           => 'nullable|string|max:1024',
             'description'       => 'nullable|string',
             'edition'           => 'nullable|string|max:50',
@@ -572,7 +574,7 @@ class BookMaintenanceController extends Controller
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
             $barcode = new DNS1D();
             $book = Book::findOrFail($request->input('id'));
-            $subjectId = $request->filled('subject_id') ? (int) $request->input('subject_id') : null;
+            $subjectIds = $request->input('subject_ids', []);
 
             $book->update([
                 'accession'             => $request->input('accession'),
@@ -590,11 +592,11 @@ class BookMaintenanceController extends Controller
                 'digital_copy_url'      => $request->input('digital_copy_url'),
                 'remarks'               => $request->input('remarks'),
                 'category_id'           => $request->input('category'),
-                'subject_id'            => $subjectId,
                 'book_type'             => $request->input('book_type'),
                 'condition_status'      => $request->input('condition'),
                 'availability_status'   => $request->input('availability'),
             ]);
+            $book->subjects()->sync($subjectIds);
         } catch (\Illuminate\Database\QueryException $e) {
             DB::rollBack();
             Log::error('Book Maintenance: Database error during update', [
@@ -650,7 +652,8 @@ class BookMaintenanceController extends Controller
             'call_number'       => 'nullable|string|max:50',
             'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:150',
-            'subject_id'        => 'nullable|integer|exists:bk_subjects,id,deleted_at,NULL',
+            'subject_ids'       => 'nullable|array',
+            'subject_ids.*'     => 'integer|exists:bk_subjects,id,deleted_at,NULL',
             'authors'           => 'nullable|string|max:1024',
             'description'       => 'nullable|string',
             'edition'           => 'nullable|string|max:50',
@@ -693,7 +696,7 @@ class BookMaintenanceController extends Controller
         DB::beginTransaction();
         try {
             DB::statement("SET @current_user_id = ?", [Auth::guard('admin')->user()->id]);
-            $subjectId = $request->filled('subject_id') ? (int) $request->input('subject_id') : null;
+            $subjectIds = $request->input('subject_ids', []);
             $accessions = collect(explode(',', (string) $request->input('accession')))
                 ->map(fn($item) => trim((string) $item))
                 ->filter(fn($item) => $item !== '')
@@ -718,12 +721,12 @@ class BookMaintenanceController extends Controller
                     'digital_copy_url'      => $request->input('digital_copy_url') ?? null,
                     'remarks'               => "Missing",
                     'category_id'           => $request->input('category'),
-                    'subject_id'            => $subjectId,
                     'book_type'             => $request->input('book_type'),
                     'condition_status'      => $request->input('condition'),
                     'availability_status'   => "Unavailable",
                 ]);
 
+                $copiedBook->subjects()->sync($subjectIds);
                 $copiedBookIds[] = $copiedBook->id;
             }
             // After copying books, update remarks/availability and create inventory entries within the same transaction

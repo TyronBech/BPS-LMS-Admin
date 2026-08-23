@@ -69,6 +69,18 @@
           <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">{{ $book->category->name }}</p>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+          <p class="font-semibold text-gray-900 dark:text-white">Subjects:</p>
+          <div class="sm:col-span-2 flex flex-wrap gap-2">
+            @forelse($book->subjects as $subject)
+              <span class="inline-flex items-center rounded-md bg-emerald-100 px-2 py-0.5 text-xs font-medium text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-200">
+                {{ $subject->name }}
+              </span>
+            @empty
+              <span class="text-gray-700 dark:text-gray-300">-</span>
+            @endforelse
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <p class="font-semibold text-gray-900 dark:text-white">Digital Copy:</p>
           @if(empty($book->digital_copy_url))
           <p class="sm:col-span-2 text-gray-700 dark:text-gray-300">-</p>
