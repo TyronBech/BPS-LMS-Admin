@@ -31,6 +31,7 @@ class BibliographyController extends Controller
         $author = $request->input('author', '');
         $category = $request->input('category', '');
         $subjectId = $request->input('subject_id', 'All');
+        $copyright_year = $request->input('copyright_year', '');
         $perPage = $request->input('perPage', 10);
 
         Log::info('Bibliography Report: Page accessed', [
@@ -67,7 +68,7 @@ class BibliographyController extends Controller
         $subjects = SubjectAccessCode::orderBy('access_code')->get();
         $data = $this->generateData($request, new Book(), false);
 
-        return view('report.bibliography.index', compact('data', 'title', 'author', 'category', 'subjectId', 'perPage', 'categories', 'subjects'));
+        return view('report.bibliography.index', compact('data', 'title', 'author', 'category', 'subjectId', 'copyright_year', 'perPage', 'categories', 'subjects'));
     }
 
     public function search(Request $request)
@@ -76,6 +77,7 @@ class BibliographyController extends Controller
         $author = $request->input('author', '');
         $category = $request->input('category', 'All');
         $subjectId = $request->input('subject_id', 'All');
+        $copyright_year = $request->input('copyright_year', '');
         $perPage = $request->input('perPage', 10);
         $categoryOptions = Category::pluck('id')->map(fn ($id) => (string) $id)->prepend('All')->all();
 
@@ -106,6 +108,14 @@ class BibliographyController extends Controller
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
 
+        $dynamicTitle = 'Bibliography of Material Collections';
+        if ($category !== 'All' && !empty($category)) {
+            $categoryObj = Category::find($category);
+            if ($categoryObj) {
+                $dynamicTitle = 'Bibliography of ' . $categoryObj->name . ' Collections';
+            }
+        }
+
         if ($request->input('submit') === 'pdf') {
             Log::info('Bibliography Report: Generating PDF export', [
                 'user_id' => Auth::guard('admin')->id(),
@@ -116,7 +126,7 @@ class BibliographyController extends Controller
             if ($data->isEmpty()) {
                 return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
             }
-            $this->generatePDF($data);
+            $this->generatePDF($data, $dynamicTitle);
 
             return redirect()->route('report.bibliography')->with('toast-success', 'Successfully exported to PDF');
         }
@@ -131,7 +141,7 @@ class BibliographyController extends Controller
             if ($data->isEmpty()) {
                 return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
             }
-            $this->exportExcel($data);
+            $this->exportExcel($data, $dynamicTitle);
 
             return redirect()->route('report.bibliography')->with('toast-success', 'Successfully exported to Excel');
         }
@@ -149,17 +159,21 @@ class BibliographyController extends Controller
             return redirect()->route('report.bibliography')->with('toast-error', 'No data found.');
         }
 
-        return view('report.bibliography.index', compact('data', 'title', 'author', 'category', 'perPage', 'categories', 'subjects', 'subjectId'));
+        return view('report.bibliography.index', compact('data', 'title', 'author', 'category', 'copyright_year', 'perPage', 'categories', 'subjects', 'subjectId'));
     }
 
-    private function generatePDF(Collection $data): void
+    private function generatePDF(Collection $data, string $title = 'Bibliography of Material Collections'): void
     {
         ini_set('memory_limit', '2048M');
         ini_set('max_execution_time', 300);
 
         $settings = UISetting::first() ?? new UISetting();
+        $now = \Carbon\Carbon::now();
+        $syStart = $now->month >= 6 ? $now->year : $now->year - 1;
+        $syEnd = $syStart + 1;
+        
         $items = [
-            'title' => 'Tabular Presentation of Bibliography of Books',
+            'title' => $title,
             'school' => $settings->org_name ?? 'Bicutan Parochial School, Inc.',
             'address' => $settings->org_address ?? 'Manuel L. Quezon St., Lower Bicutan, Taguig City',
             'logo' => $this->resolveLogoBase64($settings),
@@ -167,7 +181,7 @@ class BibliographyController extends Controller
             'date' => 'as of ' . date('F j, Y'),
             'data' => $data,
             'totalCount' => $data->count(),
-            'schoolYear' => \App\Helpers\ReportHelper::getSchoolYear(null, null, $data, 'created_at')
+            'schoolYear' => "{$syStart}-{$syEnd}"
         ];
 
         $options = new Options();
@@ -183,7 +197,7 @@ class BibliographyController extends Controller
         exit;
     }
 
-    private function exportExcel(Collection $data): void
+    private function exportExcel(Collection $data, string $title = 'Bibliography of Material Collections'): void
     {
         $spreadsheet = new Spreadsheet();
         $logo = new Drawing();
@@ -216,41 +230,40 @@ class BibliographyController extends Controller
         $sheet->getPageMargins()->setBottom(0.5);
         $sheet->getPageMargins()->setLeft(0.3);
 
-        $sheet->mergeCells('A6:B6');
-        $sheet->setCellValue('A6', 'Bibliography of Books');
-        $sheet->getStyle('A6:B6')->getFont()->setBold(true)->setSize(14);
-        $sheet->getStyle('A6:B6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->mergeCells('A6:A6');
+        $sheet->setCellValue('A6', $title);
+        $sheet->getStyle('A6')->getFont()->setBold(true)->setSize(14);
+        $sheet->getStyle('A6')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
 
-        $sheet->mergeCells('A7:B7');
-        $sheet->setCellValue('A7', 'as of ' . date('F j, Y'));
-        $sheet->mergeCells('A8:B8');
-        $sheet->setCellValue('A8', 'Total Entries: ' . $data->count());
-        $sheet->getStyle('A7:B7')->getFont()->setBold(true)->setSize(10);
-        $sheet->getStyle('A7:B7')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setWrapText(true);
-        $sheet->getStyle('A8:B8')->getFont()->setBold(true)->setSize(10);
-        $sheet->getStyle('A8:B8')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT)->setWrapText(true);
+        $now = \Carbon\Carbon::now();
+        $syStart = $now->month >= 6 ? $now->year : $now->year - 1;
+        $syEnd = $syStart + 1;
+        
+        $sheet->setCellValue('A7', "School Year {$syStart}-{$syEnd}");
+        $sheet->getStyle('A7')->getFont()->setBold(true)->setSize(11);
+        $sheet->getStyle('A7')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setWrapText(true);
 
-        $sheet->getColumnDimension('A')->setWidth(8);
-        $sheet->getColumnDimension('B')->setWidth(115);
+        $sheet->setCellValue('A8', 'as of ' . date('F j, Y'));
+        $sheet->getStyle('A8')->getFont()->setBold(true)->setSize(10);
+        $sheet->getStyle('A8')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setWrapText(true);
 
-        $sheet->setCellValue('A10', 'No.');
-        $sheet->setCellValue('B10', 'Bibliography Entry');
-        $sheet->getStyle('A10:B10')->getFont()->setBold(true)->setSize(10);
-        $sheet->getStyle('A10:B10')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
-        $sheet->getStyle('A10:B10')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+        $sheet->getColumnDimension('A')->setWidth(120);
+
+        $sheet->setCellValue('A10', 'Bibliography Entry');
+        $sheet->getStyle('A10')->getFont()->setBold(true)->setSize(10);
+        $sheet->getStyle('A10')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER)->setVertical(Alignment::VERTICAL_CENTER);
+        $sheet->getStyle('A10')->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
 
         $row = 11;
         foreach ($data->values() as $index => $item) {
-            $sheet->setCellValue('A' . $row, $index + 1);
-            $sheet->setCellValue('B' . $row, $item->bibliography_entry);
-            $sheet->getStyle('A' . $row . ':B' . $row)->getAlignment()->setVertical(Alignment::VERTICAL_TOP)->setWrapText(true);
-            $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-            $sheet->getStyle('B' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
+            $sheet->setCellValue('A' . $row, $item->bibliography_entry);
+            $sheet->getStyle('A' . $row)->getAlignment()->setVertical(Alignment::VERTICAL_TOP)->setWrapText(true);
+            $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT);
             $row++;
         }
 
         $lastDataRow = max(10, $row - 1);
-        $sheet->getStyle('A10:B' . $lastDataRow)->applyFromArray([
+        $sheet->getStyle('A10:A' . $lastDataRow)->applyFromArray([
             'borders' => [
                 'allBorders' => [
                     'borderStyle' => Border::BORDER_THIN,
@@ -261,10 +274,14 @@ class BibliographyController extends Controller
         $sheet->freezePane('A11');
 
         $row += 2;
-        $sheet->mergeCells('A' . $row . ':B' . $row);
+        $sheet->setCellValue('A' . $row, 'Total Entries: ' . $data->count());
+        $sheet->getStyle('A' . $row)->getFont()->setBold(true)->setSize(10);
+        $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT)->setWrapText(true);
+
+        $row++;
         $sheet->setCellValue('A' . $row, 'Report Generated By: ' . $this->currentAdminName());
-        $sheet->getStyle('A' . $row . ':B' . $row)->getFont()->setBold(true)->setSize(10);
-        $sheet->getStyle('A' . $row . ':B' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT)->setWrapText(true);
+        $sheet->getStyle('A' . $row)->getFont()->setBold(true)->setSize(10);
+        $sheet->getStyle('A' . $row)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_LEFT)->setWrapText(true);
 
         $writer = new WriterXlsx($spreadsheet);
         $fileName = 'bibliography-report ' . date('Y-m-d') . '.xlsx';
@@ -285,6 +302,7 @@ class BibliographyController extends Controller
         $author = $request->input('author');
         $category = $request->input('category', 'All');
         $subjectId = $request->input('subject_id', 'All');
+        $copyrightYear = $request->input('copyright_year');
         $perPage = $request->input('perPage', 10);
 
         $query = $model->newQuery()
@@ -311,10 +329,12 @@ class BibliographyController extends Controller
                 $sq->where('bk_subject_access_codes.id', $subjectId);
             });
         }
+        
+        if ($copyrightYear) {
+            $query->where('copyrights', '>=', $copyrightYear);
+        }
 
         $query->join('bk_categories as categories', 'bk_books.category_id', '=', 'categories.id')
-            ->orderBy('categories.category_type', 'asc')
-            ->orderBy('categories.name', 'asc')
             ->orderBy('bk_books.title', 'asc')
             ->select('bk_books.*');
 

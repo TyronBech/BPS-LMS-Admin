@@ -265,7 +265,7 @@ class TransactionController extends Controller
                 'year' => $current->year,
                 'count' => 0,
             ];
-            $current->addMonth();
+            $current->addMonthNoOverflow();
             $countMonths++;
         }
 
@@ -385,7 +385,7 @@ class TransactionController extends Controller
                 'student_total' => 0,
                 'employee_total' => 0,
             ];
-            $current->addMonth();
+            $current->addMonthNoOverflow();
             $countMonths++;
         }
 
