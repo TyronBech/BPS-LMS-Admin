@@ -781,7 +781,7 @@ class ComputerUseController extends Controller
                 $key = $current->format('Y-m');
                 $labels->push($current->format('F Y'));
                 $counts->push($monthlyData[$key] ?? 0);
-                $current->addMonth();
+                $current->addMonthNoOverflow();
             }
 
             if ($hasCustomDates) {
@@ -851,7 +851,7 @@ class ComputerUseController extends Controller
                 $key = $current->format('Y-m');
                 $labels->push($current->format('F Y'));
                 $counts->push($monthlyData[$key] ?? 0);
-                $current->addMonth();
+                $current->addMonthNoOverflow();
             }
 
             $syStartYear = $start->year;
