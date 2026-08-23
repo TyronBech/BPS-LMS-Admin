@@ -246,12 +246,13 @@ class UsersMaintenanceController extends Controller
         // Common search filter closure
         $searchTerms = array_filter(explode(' ', $search));
         $searchFilter = function ($query) use ($searchTerms) {
+            if (empty($searchTerms)) return;
             $query->where(function ($q) use ($searchTerms) {
                 foreach ($searchTerms as $term) {
                     $q->where(function ($sub) use ($term) {
-                        $sub->where(DB::raw('lower(first_name)'), 'like', "%{$term}%")
-                            ->orWhere(DB::raw('lower(middle_name)'), 'like', "%{$term}%")
-                            ->orWhere(DB::raw('lower(last_name)'), 'like', "%{$term}%")
+                        $sub->where('first_name', 'like', "%{$term}%")
+                            ->orWhere('middle_name', 'like', "%{$term}%")
+                            ->orWhere('last_name', 'like', "%{$term}%")
                             ->orWhere('email', 'like', "%{$term}%")
                             ->orWhere('rfid', 'like', "%{$term}%");
                     });
@@ -260,16 +261,18 @@ class UsersMaintenanceController extends Controller
         };
 
         // Students query
-        $students = User::whereHas('students')
-            ->where(function ($q) use ($searchFilter) {
-                $searchFilter($q);
-            })
-            ->orWhereHas('students', function ($q) use ($search) {
-                $q->where('id_number', 'like', "%{$search}%")
-                    ->orWhere('level', 'like', "%{$search}%")
-                    ->orWhere('section', 'like', "%{$search}%");
-            })
-            ->orderBy('id', 'asc')
+        $studentsQuery = User::whereHas('students')->with('students');
+        if (!empty($search)) {
+            $studentsQuery->where(function ($q) use ($searchFilter, $search) {
+                $q->where($searchFilter)
+                  ->orWhereHas('students', function ($subQ) use ($search) {
+                      $subQ->where('id_number', 'like', "%{$search}%")
+                           ->orWhere('level', 'like', "%{$search}%")
+                           ->orWhere('section', 'like', "%{$search}%");
+                  });
+            });
+        }
+        $students = $studentsQuery->orderBy('id', 'asc')
             ->paginate($perStudentPage, ['*'], 'students_page')
             ->appends([
                 'perStudentPage' => $perStudentPage,
@@ -277,14 +280,16 @@ class UsersMaintenanceController extends Controller
             ]);
 
         // Employees query
-        $employees = User::whereHas('employees')
-            ->where(function ($q) use ($searchFilter) {
-                $searchFilter($q);
-            })
-            ->orWhereHas('employees', function ($q) use ($search) {
-                $q->where('employee_id', 'like', "%{$search}%");
-            })
-            ->orderBy('id', 'asc')
+        $employeesQuery = User::whereHas('employees')->with('employees');
+        if (!empty($search)) {
+            $employeesQuery->where(function ($q) use ($searchFilter, $search) {
+                $q->where($searchFilter)
+                  ->orWhereHas('employees', function ($subQ) use ($search) {
+                      $subQ->where('employee_id', 'like', "%{$search}%");
+                  });
+            });
+        }
+        $employees = $employeesQuery->orderBy('id', 'asc')
             ->paginate($perEmployeePage, ['*'], 'employees_page')
             ->appends([
                 'perEmployeePage' => $perEmployeePage,
@@ -292,15 +297,17 @@ class UsersMaintenanceController extends Controller
             ]);
 
         // Visitors query
-        $visitors = User::whereHas('visitors')
-            ->where(function ($q) use ($searchFilter) {
-                $searchFilter($q);
-            })
-            ->orWhereHas('visitors', function ($q) use ($search) {
-                $q->where('school_org', 'like', "%{$search}%")
-                    ->orWhere('purpose', 'like', "%{$search}%");
-            })
-            ->orderBy('id', 'asc')
+        $visitorsQuery = User::whereHas('visitors')->with('visitors');
+        if (!empty($search)) {
+            $visitorsQuery->where(function ($q) use ($searchFilter, $search) {
+                $q->where($searchFilter)
+                  ->orWhereHas('visitors', function ($subQ) use ($search) {
+                      $subQ->where('school_org', 'like', "%{$search}%")
+                           ->orWhere('purpose', 'like', "%{$search}%");
+                  });
+            });
+        }
+        $visitors = $visitorsQuery->orderBy('id', 'asc')
             ->paginate($perVisitorPage, ['*'], 'visitors_page')
             ->appends([
                 'perVisitorPage' => $perVisitorPage,
@@ -1180,12 +1187,13 @@ class UsersMaintenanceController extends Controller
 
         $searchTerms = array_filter(explode(' ', $search));
         $searchFilter = function ($query) use ($searchTerms) {
+            if (empty($searchTerms)) return;
             $query->where(function ($q) use ($searchTerms) {
                 foreach ($searchTerms as $term) {
                     $q->where(function ($sub) use ($term) {
-                        $sub->where(DB::raw('lower(first_name)'), 'like', "%{$term}%")
-                            ->orWhere(DB::raw('lower(middle_name)'), 'like', "%{$term}%")
-                            ->orWhere(DB::raw('lower(last_name)'), 'like', "%{$term}%")
+                        $sub->where('first_name', 'like', "%{$term}%")
+                            ->orWhere('middle_name', 'like', "%{$term}%")
+                            ->orWhere('last_name', 'like', "%{$term}%")
                             ->orWhere('email', 'like', "%{$term}%")
                             ->orWhere('rfid', 'like', "%{$term}%");
                     });

@@ -202,6 +202,7 @@ Route::prefix('admin')->middleware(['auth:admin', AdminAuthentication::class])->
         Route::controller(PenaltiesController::class)->middleware(ViewPenaltyReportsMiddleware::class)->group(function () {
             Route::get('penalties', 'index')->name('report.penalties');
             Route::post('penalties', 'search')->name('report.penalties-search');
+            Route::put('penalties/update-status', 'updateStatus')->name('report.penalties-update-status');
         });
 
         Route::middleware(AuditReportAuthentication::class)->controller(AuditTrailController::class)->group(function () {

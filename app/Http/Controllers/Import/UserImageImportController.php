@@ -4,6 +4,9 @@ namespace App\Http\Controllers\Import;
 
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessUserImageImport;
+use App\Jobs\UserImageImportBatchCompleted;
+use App\Jobs\UserImageImportBatchFailed;
+use App\Jobs\UserImageImportBatchFinished;
 use App\Models\EmployeeDetail;
 use App\Models\ImportProgress;
 use App\Models\StudentDetail;
@@ -198,13 +201,13 @@ class UserImageImportController extends Controller
             if ($request->expectsJson() || $request->boolean('is_chunk')) {
                 return response()->json([
                     'error'   => true,
-                    'message' => 'An error occurred while uploading images: ' . $e->getMessage(),
+                    'message' => 'An error occurred while uploading images. Please check system logs for details.',
                 ], 500);
             }
 
             return redirect()
                 ->route('import.import-user-images')
-                ->with('toast-error', 'An error occurred while processing the uploaded images: ' . $e->getMessage());
+                ->with('toast-error', 'An error occurred while processing the uploaded images. Please check system logs for details.');
         }
 
         return view('import.user-images.index', compact(
@@ -280,36 +283,9 @@ class UserImageImportController extends Controller
 
             Bus::batch($jobs)
                 ->name("User Image Import #{$progressId}")
-                ->then(function (Batch $batch) use ($progressId) {
-                    $progressRecord = ImportProgress::find($progressId);
-                    if ($progressRecord && $progressRecord->isActive()) {
-                        $progressRecord->update(['status' => 'completed']);
-                    }
-                    Log::info('User Image Import Batch: Completed', ['progress_id' => $progressId]);
-                })
-                ->catch(function (Batch $batch, \Throwable $e) use ($progressId) {
-                    $progressRecord = ImportProgress::find($progressId);
-                    if ($progressRecord && $progressRecord->isActive()) {
-                        $progressRecord->update([
-                            'status'        => 'failed',
-                            'error_message' => $e->getMessage(),
-                        ]);
-                    }
-                    Log::error('User Image Import Batch: Failed', [
-                        'progress_id'   => $progressId,
-                        'error_message' => $e->getMessage(),
-                    ]);
-                })
-                ->finally(function (Batch $batch) use ($progressId) {
-                    $activeImport = ImportProgress::where('type', 'user_images')
-                        ->where('id', '!=', $progressId)
-                        ->whereIn('status', ['pending', 'processing'])
-                        ->exists();
-
-                    if (!$activeImport && Storage::exists('temp_user_images')) {
-                        Storage::deleteDirectory('temp_user_images');
-                    }
-                })
+                ->then(new UserImageImportBatchCompleted($progressId))
+                ->catch(new UserImageImportBatchFailed($progressId))
+                ->finally(new UserImageImportBatchFinished($progressId))
                 ->dispatch();
 
             $request->session()->forget([
@@ -335,7 +311,7 @@ class UserImageImportController extends Controller
             if ($progress) {
                 $progress->update([
                     'status'        => 'failed',
-                    'error_message' => $e->getMessage(),
+                    'error_message' => 'An unexpected error occurred while starting the import. Please check system logs for details.',
                 ]);
             }
 
@@ -346,9 +322,7 @@ class UserImageImportController extends Controller
 
             return response()->json([
                 'error'   => true,
-                'message' => $e instanceof \Exception
-                    ? 'Unable to start image import: ' . $e->getMessage()
-                    : 'Unable to start image import.',
+                'message' => 'Unable to start image import due to a system error. Please contact the administrator.',
             ], 422);
         }
     }
@@ -379,12 +353,10 @@ class UserImageImportController extends Controller
                 ->first();
 
             if ($failedJob) {
-                $errorSnippet = \Illuminate\Support\Str::limit($failedJob->exception, 200);
-
                 $progress->update([
                     'status'        => 'failed',
                     'error_message' => $progress->error_message
-                        ?: 'The import job failed unexpectedly: ' . $errorSnippet,
+                        ?: 'The import job failed unexpectedly. Please check system logs for details.',
                 ]);
             }
         }

@@ -52,7 +52,17 @@
               ₱ {{ number_format($item->total, 2) ?? '0.00' }}
               @endif
             </td>
-            <td class="px-4 py-2">{{ ucwords($item->status) ?? 'No Status' }}</td>
+            <td class="px-4 py-2">
+              <button type="button" 
+                      class="edit-penalty-btn text-blue-600 dark:text-blue-400 hover:underline font-medium focus:outline-none"
+                      data-id="{{ $item->id }}"
+                      data-status="{{ $item->status }}"
+                      data-amount="{{ $item->actual_total }}"
+                      data-discount="{{ $item->discount_rate * 100 }}"
+                      title="Edit Penalty Status">
+                {{ ucwords($item->status) ?? 'No Status' }}
+              </button>
+            </td>
           </tr>
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
