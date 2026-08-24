@@ -256,13 +256,21 @@ class FetchDataController extends Controller
 
         // Build months list between startDT and endDT (inclusive)
         $months = collect();
-        $cursor = $startDT->copy()->startOfMonth();
-        while ($cursor->lte($endDT)) {
+        $y = $startDT->year;
+        $m = $startDT->month;
+        $endY = $endDT->year;
+        $endM = $endDT->month;
+
+        while ($y < $endY || ($y == $endY && $m <= $endM)) {
             $months->push([
-                'key' => $cursor->format('Y-m'),
-                'label' => $cursor->format('Y F'),
+                'key' => $y . '-' . str_pad($m, 2, '0', STR_PAD_LEFT),
+                'label' => Carbon::create($y, $m, 1)->format('Y F'),
             ]);
-            $cursor->addMonthNoOverflow();
+            $m++;
+            if ($m > 12) {
+                $m = 1;
+                $y++;
+            }
         }
 
         LogFacade::debug('Analytics: Generated months list for transaction history', [

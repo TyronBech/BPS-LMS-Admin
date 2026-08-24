@@ -253,19 +253,30 @@ class TransactionController extends Controller
         }
 
         $monthsList = [];
-        $current = $startDate->copy()->startOfMonth();
-        $endMonth = $endDate->copy()->startOfMonth();
+        $startYear = $startDate->year;
+        $startMonth = $startDate->month;
+        $endYear = $endDate->year;
+        $endMonthNum = $endDate->month;
 
         $maxMonths = 60;
         $countMonths = 0;
-        while ($current->lte($endMonth) && $countMonths < $maxMonths) {
+        
+        $y = $startYear;
+        $m = $startMonth;
+
+        while (($y < $endYear || ($y == $endYear && $m <= $endMonthNum)) && $countMonths < $maxMonths) {
             $monthsList[] = [
-                'label' => $current->format('F Y'),
-                'month' => $current->month,
-                'year' => $current->year,
+                'label' => Carbon::create($y, $m, 1)->format('F Y'),
+                'month' => $m,
+                'year' => $y,
                 'count' => 0,
             ];
-            $current->addMonthNoOverflow();
+            
+            $m++;
+            if ($m > 12) {
+                $m = 1;
+                $y++;
+            }
             $countMonths++;
         }
 
@@ -371,21 +382,33 @@ class TransactionController extends Controller
 
         // Generate list of months
         $monthsList = [];
-        $current = $startDate->copy()->startOfMonth();
-        $endMonth = $endDate->copy()->startOfMonth();
+        $startYear = $startDate->year;
+        $startMonth = $startDate->month;
+        $endYear = $endDate->year;
+        $endMonthNum = $endDate->month;
 
         $maxMonths = 60;
         $countMonths = 0;
-        while ($current->lte($endMonth) && $countMonths < $maxMonths) {
+        
+        $y = $startYear;
+        $m = $startMonth;
+
+        while (($y < $endYear || ($y == $endYear && $m <= $endMonthNum)) && $countMonths < $maxMonths) {
             $monthsList[] = [
-                'label' => $current->format('F Y'),
-                'month' => $current->month,
-                'year' => $current->year,
-                'student_sections' => [],
+                'label' => Carbon::create($y, $m, 1)->format('F Y'),
+                'month' => $m,
+                'year' => $y,
+                'total' => 0,
                 'student_total' => 0,
                 'employee_total' => 0,
+                'student_sections' => [],
             ];
-            $current->addMonthNoOverflow();
+            
+            $m++;
+            if ($m > 12) {
+                $m = 1;
+                $y++;
+            }
             $countMonths++;
         }
 
