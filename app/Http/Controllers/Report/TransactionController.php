@@ -298,6 +298,7 @@ class TransactionController extends Controller
                 }
             }
         }
+        unset($m);
 
         $labels = [];
         $counts = [];
@@ -314,7 +315,7 @@ class TransactionController extends Controller
     /**
      * Exports the transaction report to an Excel file.
      *
-     * @param  Illuminate\Database\Eloquent\Collection  $data  The data to be included in the report.
+     * @param  \Illuminate\Database\Eloquent\Collection  $data  The data to be included in the report.
      * @param  string  $type  The type of report to be generated.
      *
      * @return void
