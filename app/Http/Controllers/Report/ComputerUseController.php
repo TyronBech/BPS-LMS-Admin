@@ -775,13 +775,21 @@ class ComputerUseController extends Controller
             }
 
             // Generate labels for each month in the range (in order)
-            $current = $start->copy()->startOfMonth();
-            $endMonth = $end->copy()->startOfMonth();
-            while ($current->lte($endMonth)) {
-                $key = $current->format('Y-m');
-                $labels->push($current->format('F Y'));
+            $y = $start->year;
+            $m = $start->month;
+            $endY = $end->year;
+            $endM = $end->month;
+
+            while ($y < $endY || ($y == $endY && $m <= $endM)) {
+                $key = $y . '-' . str_pad($m, 2, '0', STR_PAD_LEFT);
+                $labels->push(Carbon::create($y, $m, 1)->format('F Y'));
                 $counts->push($monthlyData[$key] ?? 0);
-                $current->addMonthNoOverflow();
+                
+                $m++;
+                if ($m > 12) {
+                    $m = 1;
+                    $y++;
+                }
             }
 
             if ($hasCustomDates) {
@@ -845,13 +853,21 @@ class ComputerUseController extends Controller
                 $monthlyData[$key] = $row->count;
             }
 
-            $current = $start->copy()->startOfMonth();
-            $endMonth = $end->copy()->startOfMonth();
-            while ($current->lte($endMonth)) {
-                $key = $current->format('Y-m');
-                $labels->push($current->format('F Y'));
+            $y = $start->year;
+            $m = $start->month;
+            $endY = $end->year;
+            $endM = $end->month;
+
+            while ($y < $endY || ($y == $endY && $m <= $endM)) {
+                $key = $y . '-' . str_pad($m, 2, '0', STR_PAD_LEFT);
+                $labels->push(Carbon::create($y, $m, 1)->format('F Y'));
                 $counts->push($monthlyData[$key] ?? 0);
-                $current->addMonthNoOverflow();
+                
+                $m++;
+                if ($m > 12) {
+                    $m = 1;
+                    $y++;
+                }
             }
 
             $syStartYear = $start->year;
