@@ -249,7 +249,7 @@ class BookMaintenanceController extends Controller
             ->filter(fn($item) => $item !== '')
             ->values();
 
-        $existingBooks = Book::withTrashed()->whereIn('accession', $accessions)->pluck('accession');
+        $existingBooks = Book::whereIn('accession', $accessions)->pluck('accession');
         if ($existingBooks->isNotEmpty()) {
             Log::warning('Book Maintenance: Creation failed - Accession already exists', [
                 'user_id' => Auth::guard('admin')->id(),
@@ -669,8 +669,7 @@ class BookMaintenanceController extends Controller
         $accession = trim((string) $request->input('accession'));
         $bookId = $request->input('id');
 
-        $existingBook = Book::withTrashed()
-            ->where('accession', $accession)
+        $existingBook = Book::where('accession', $accession)
             ->where('id', '!=', $bookId)
             ->first();
 
