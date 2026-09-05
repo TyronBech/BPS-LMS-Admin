@@ -83,7 +83,7 @@
             <select name="subject_ids[]" id="subject_ids" class="hidden" multiple>
               @foreach($subjects as $subject)
               <option value="{{ $subject->id }}" {{ in_array($subject->id, old('subject_ids', [])) ? 'selected' : '' }}>
-                {{ $subject->name }}{{ $subject->ddc ? ' (DDC: '.$subject->ddc.')' : '' }}
+                {{ $subject->access_code }}
               </option>
               @endforeach
             </select>
