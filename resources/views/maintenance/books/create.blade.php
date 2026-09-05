@@ -366,6 +366,17 @@
                 subjectDropdown.classList.add('hidden');
                 updateTags();
             }
+          } else {
+            const id = value;
+            allSubjects.push({ id: id, text: value });
+            const opt = document.createElement('option');
+            opt.value = id;
+            opt.text = value;
+            opt.selected = true;
+            subjectHiddenSelect.appendChild(opt);
+            subjectSearch.value = '';
+            subjectDropdown.classList.add('hidden');
+            updateTags();
           }
         }
       }

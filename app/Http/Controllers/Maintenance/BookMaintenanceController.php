@@ -118,6 +118,23 @@ class BookMaintenanceController extends Controller
         $subjects = Subject::with('accessCodes')->orderBy('name')->get();
         return view('maintenance.books.create', compact('categories', 'condition', 'availability', 'remarks', 'book_types', 'subjects'));
     }
+    private function processSubjectIds(Request $request)
+    {
+        $subjectIds = $request->input('subject_ids', []);
+        $processedSubjectIds = [];
+        if (is_array($subjectIds)) {
+            foreach ($subjectIds as $id) {
+                if (!is_numeric($id) && trim($id) !== '') {
+                    $newSubject = Subject::firstOrCreate(['name' => trim($id)]);
+                    $processedSubjectIds[] = $newSubject->id;
+                } else if (is_numeric($id)) {
+                    $processedSubjectIds[] = $id;
+                }
+            }
+            $request->merge(['subject_ids' => $processedSubjectIds]);
+        }
+    }
+
     /**
      * Store a new book
      *
@@ -145,6 +162,7 @@ class BookMaintenanceController extends Controller
             'timestamp' => now(),
         ]);
 
+        $this->processSubjectIds($request);
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string',
             'call_number'       => 'nullable|string|max:50',
@@ -522,6 +540,7 @@ class BookMaintenanceController extends Controller
             'timestamp' => now(),
         ]);
 
+        $this->processSubjectIds($request);
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string|max:50',
             'call_number'       => 'nullable|string|max:50',
@@ -647,6 +666,7 @@ class BookMaintenanceController extends Controller
             'timestamp' => now(),
         ]);
 
+        $this->processSubjectIds($request);
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string',
             'call_number'       => 'nullable|string|max:50',
