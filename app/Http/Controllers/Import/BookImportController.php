@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 use App\Models\Book;
 use App\Models\Category;
 use App\Models\Inventory;
-use App\Models\Subject;
+use App\Models\SubjectAccessCode;
 use Milon\Barcode\DNS1D;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
@@ -397,18 +397,19 @@ class BookImportController extends Controller
                 if (!empty($item['subject'])) {
                     $subjects = preg_split('/\s*[;,|]\s*/', $item['subject']);
                     $subjectNames = array_unique(array_filter(array_map('trim', $subjects)));
-                    $subjectName = reset($subjectNames);
-
-                    if ($subjectName !== false) {
-                        $subject = Subject::firstOrCreate([
-                            'name' => $subjectName,
-                        ], [
-                            'name' => $subjectName,
-                        ]);
-
-                        $newBook->update([
-                            'subject_id' => $subject->id,
-                        ]);
+                    
+                    $subjectIds = [];
+                    foreach ($subjectNames as $subjectName) {
+                        if ($subjectName !== '') {
+                            $subject = SubjectAccessCode::firstOrCreate([
+                                'access_code' => $subjectName,
+                            ]);
+                            $subjectIds[] = $subject->id;
+                        }
+                    }
+                    
+                    if (!empty($subjectIds)) {
+                        $newBook->subjects()->sync($subjectIds);
                     }
                 }
 

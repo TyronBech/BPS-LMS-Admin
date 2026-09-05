@@ -17,22 +17,16 @@ class SubjectAccessCode extends Model
     public $timestamps = true;
 
     protected $fillable = [
-        'subject_id',
         'access_code',
     ];
 
-    public function subject(): BelongsTo
-    {
-        return $this->belongsTo(Subject::class, 'subject_id', 'id');
-    }
-
-    public function subjects(): BelongsToMany
+    public function books(): BelongsToMany
     {
         return $this->belongsToMany(
-            Subject::class,
-            'bk_subject_access_code_subject',
+            Book::class,
+            'bk_book_subject_access_code',
             'subject_access_code_id',
-            'subject_id'
+            'book_id'
         )->withTimestamps();
     }
 }

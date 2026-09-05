@@ -3,8 +3,6 @@
 namespace App\Http\Controllers\Maintenance;
 
 use App\Http\Controllers\Controller;
-use App\Models\Book;
-use App\Models\Subject;
 use App\Models\SubjectAccessCode;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -35,7 +33,7 @@ class SubjectMaintenanceController extends Controller
     $validator = Validator::make($request->all(), [
       'perPage' => 'nullable|integer|min:1|max:500',
       'search' => 'nullable|string|max:255',
-      'sort_by' => 'nullable|in:ddc,name,updated_at',
+      'sort_by' => 'nullable|in:access_code,updated_at',
       'sort_order' => 'nullable|in:asc,desc',
     ]);
 
@@ -43,21 +41,16 @@ class SubjectMaintenanceController extends Controller
       return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
     }
 
-    $subjectsQuery = Subject::with([
-      'accessCodes:id,access_code',
-      'books:id,subject_id,accession,title',
+    $subjectsQuery = SubjectAccessCode::with([
+      'books:id,accession,title',
     ]);
 
     if ($search !== '') {
       $subjectsQuery->where(function ($query) use ($search) {
-        $query->where('name', 'like', "%{$search}%")
-          ->orWhere('ddc', 'like', "%{$search}%")
+        $query->where('access_code', 'like', "%{$search}%")
           ->orWhereHas('books', function ($bookQuery) use ($search) {
             $bookQuery->where('title', 'like', "%{$search}%")
               ->orWhere('accession', 'like', "%{$search}%");
-          })
-          ->orWhereHas('accessCodes', function ($accessCodeQuery) use ($search) {
-            $accessCodeQuery->where('access_code', 'like', "%{$search}%");
           });
       });
     }
@@ -79,27 +72,20 @@ class SubjectMaintenanceController extends Controller
 
   public function store(Request $request)
   {
-    Log::info('Subject Maintenance: Attempting to create subject', [
+    Log::info('Subject Maintenance: Attempting to create subject access code', [
       'user_id' => Auth::guard('admin')->id(),
       'user_name' => Auth::guard('admin')->user()->full_name,
-      'subject_name' => $request->input('name'),
+      'access_code' => $request->input('access_code'),
       'ip_address' => $request->ip(),
       'timestamp' => now(),
     ]);
 
     $validator = Validator::make($request->all(), [
-      'ddc' => 'nullable|string|max:50',
-      'name' => 'required|string|max:255',
-      'access_codes' => 'required|string',
+      'access_code' => 'required|string|max:255|unique:bk_subject_access_codes,access_code',
     ]);
 
     if ($validator->fails()) {
       return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
-    }
-
-    $accessCodes = $this->parseAccessCodes($request->input('access_codes'));
-    if (count($accessCodes) === 0) {
-      return redirect()->back()->with('toast-warning', 'Please add at least one subject access code.')->withInput();
     }
 
     DB::beginTransaction();
@@ -107,13 +93,10 @@ class SubjectMaintenanceController extends Controller
     try {
       DB::statement('SET @current_user_id = ?', [Auth::guard('admin')->user()->id]);
 
-      $subject = Subject::create([
-        'ddc' => $request->input('ddc') ?: null,
-        'name' => trim((string) $request->input('name')),
+      SubjectAccessCode::create([
+        'access_code' => trim((string) $request->input('access_code')),
       ]);
 
-      $accessCodeIds = $this->resolveAccessCodeIds($accessCodes, $subject->id);
-      $subject->accessCodes()->sync($accessCodeIds);
     } catch (\Throwable $e) {
       DB::rollBack();
       Log::error('Subject Maintenance: Database error during creation', [
@@ -123,7 +106,7 @@ class SubjectMaintenanceController extends Controller
         'timestamp' => now(),
       ]);
 
-      return redirect()->back()->with('toast-error', 'Error occurred while creating subject.')->withInput();
+      return redirect()->back()->with('toast-error', 'Error occurred while creating subject access code.')->withInput();
     }
 
     DB::commit();
@@ -142,19 +125,12 @@ class SubjectMaintenanceController extends Controller
     ]);
 
     $validator = Validator::make($request->all(), [
-      'edit_subject_id' => 'required|integer|exists:bk_subjects,id',
-      'ddc' => 'nullable|string|max:50',
-      'name' => 'required|string|max:255',
-      'access_codes' => 'required|string',
+      'edit_subject_id' => 'required|integer|exists:bk_subject_access_codes,id',
+      'access_code' => 'required|string|max:255|unique:bk_subject_access_codes,access_code,' . $request->input('edit_subject_id'),
     ]);
 
     if ($validator->fails()) {
       return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
-    }
-
-    $accessCodes = $this->parseAccessCodes($request->input('access_codes'));
-    if (count($accessCodes) === 0) {
-      return redirect()->back()->with('toast-warning', 'Please add at least one subject access code.')->withInput();
     }
 
     DB::beginTransaction();
@@ -162,14 +138,11 @@ class SubjectMaintenanceController extends Controller
     try {
       DB::statement('SET @current_user_id = ?', [Auth::guard('admin')->user()->id]);
 
-      $subject = Subject::findOrFail($request->input('edit_subject_id'));
+      $subject = SubjectAccessCode::findOrFail($request->input('edit_subject_id'));
       $subject->update([
-        'ddc' => $request->input('ddc') ?: null,
-        'name' => trim((string) $request->input('name')),
+        'access_code' => trim((string) $request->input('access_code')),
       ]);
 
-      $accessCodeIds = $this->resolveAccessCodeIds($accessCodes, $subject->id);
-      $subject->accessCodes()->sync($accessCodeIds);
     } catch (\Throwable $e) {
       DB::rollBack();
       Log::error('Subject Maintenance: Database error during update', [
@@ -180,7 +153,7 @@ class SubjectMaintenanceController extends Controller
         'timestamp' => now(),
       ]);
 
-      return redirect()->back()->with('toast-error', 'Error occurred while updating subject.')->withInput();
+      return redirect()->back()->with('toast-error', 'Error occurred while updating subject access code.')->withInput();
     }
 
     DB::commit();
@@ -199,7 +172,7 @@ class SubjectMaintenanceController extends Controller
     ]);
 
     $validator = Validator::make($request->all(), [
-      'delete_subject_id' => 'required|integer|exists:bk_subjects,id',
+      'delete_subject_id' => 'required|integer|exists:bk_subject_access_codes,id',
     ]);
 
     if ($validator->fails()) {
@@ -211,12 +184,10 @@ class SubjectMaintenanceController extends Controller
     try {
       DB::statement('SET @current_user_id = ?', [Auth::guard('admin')->user()->id]);
 
-      $subject = Subject::with('accessCodes')->findOrFail($request->input('delete_subject_id'));
-      Book::withTrashed()->where('subject_id', $subject->id)->update(['subject_id' => null]);
-      $subject->accessCodes()->detach();
+      $subject = SubjectAccessCode::with('books')->findOrFail($request->input('delete_subject_id'));
+      $subject->books()->detach();
       $subject->delete();
 
-      SubjectAccessCode::whereDoesntHave('subjects')->delete();
     } catch (\Throwable $e) {
       DB::rollBack();
       Log::error('Subject Maintenance: Database error during deletion', [
@@ -227,7 +198,7 @@ class SubjectMaintenanceController extends Controller
         'timestamp' => now(),
       ]);
 
-      return redirect()->back()->with('toast-error', 'Error occurred while deleting subject.')->withInput();
+      return redirect()->back()->with('toast-error', 'Error occurred while deleting subject access code.')->withInput();
     }
 
     DB::commit();
@@ -235,71 +206,4 @@ class SubjectMaintenanceController extends Controller
     return redirect()->route('maintenance.subjects')->with('toast-success', 'Subject deleted successfully.');
   }
 
-  public function suggestAccessCodes(Request $request)
-  {
-    $query = trim((string) $request->input('q', ''));
-
-    if ($query === '') {
-      return response()->json([]);
-    }
-
-    $accessCodes = SubjectAccessCode::query()
-      ->select('access_code')
-      ->where('access_code', 'like', "%{$query}%")
-      ->groupBy('access_code')
-      ->orderByRaw('LENGTH(access_code) asc')
-      ->orderBy('access_code', 'asc')
-      ->limit(10)
-      ->pluck('access_code')
-      ->values();
-
-    return response()->json($accessCodes);
-  }
-
-  private function parseAccessCodes(string $rawAccessCodes): array
-  {
-    $decoded = json_decode($rawAccessCodes, true);
-
-    if (!is_array($decoded)) {
-      $decoded = explode(',', $rawAccessCodes);
-    }
-
-    $parsed = collect($decoded)
-      ->map(function ($item) {
-        return trim((string) $item);
-      })
-      ->filter(function ($item) {
-        return $item !== '';
-      })
-      ->unique(function ($item) {
-        return strtolower($item);
-      })
-      ->values()
-      ->all();
-
-    return $parsed;
-  }
-
-  private function resolveAccessCodeIds(array $accessCodes, int $subjectId): array
-  {
-    $ids = [];
-
-    foreach ($accessCodes as $accessCode) {
-      $existing = SubjectAccessCode::whereRaw('LOWER(access_code) = ?', [strtolower($accessCode)])->first();
-
-      if ($existing) {
-        $ids[] = $existing->id;
-        continue;
-      }
-
-      $created = SubjectAccessCode::create([
-        'subject_id' => $subjectId,
-        'access_code' => $accessCode,
-      ]);
-
-      $ids[] = $created->id;
-    }
-
-    return $ids;
-  }
 }

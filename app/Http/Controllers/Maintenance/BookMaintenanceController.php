@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Category;
-use App\Models\Subject;
 use Dompdf\Dompdf;
 use Exception;
 use Illuminate\Http\Client\ConnectionException;
@@ -115,7 +114,7 @@ class BookMaintenanceController extends Controller
         $availability   = $this->extract_enums($books->getTable(), 'availability_status');
         $remarks        = $this->extract_enums($books->getTable(), 'remarks');
         $book_types     = $this->extract_enums($books->getTable(), 'book_type');
-        $subjects = Subject::with('accessCodes')->orderBy('name')->get();
+        $subjects = \App\Models\SubjectAccessCode::orderBy('access_code')->get();
         return view('maintenance.books.create', compact('categories', 'condition', 'availability', 'remarks', 'book_types', 'subjects'));
     }
     private function processSubjectIds(Request $request)
@@ -125,7 +124,7 @@ class BookMaintenanceController extends Controller
         if (is_array($subjectIds)) {
             foreach ($subjectIds as $id) {
                 if (!is_numeric($id) && trim($id) !== '') {
-                    $newSubject = Subject::firstOrCreate(['name' => trim($id)]);
+                    $newSubject = \App\Models\SubjectAccessCode::firstOrCreate(['access_code' => trim($id)]);
                     $processedSubjectIds[] = $newSubject->id;
                 } else if (is_numeric($id)) {
                     $processedSubjectIds[] = $id;
@@ -169,7 +168,7 @@ class BookMaintenanceController extends Controller
             'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:150',
             'subject_ids'       => 'nullable|array',
-            'subject_ids.*'     => 'integer|exists:bk_subjects,id,deleted_at,NULL',
+            'subject_ids.*'     => 'integer|exists:bk_subject_access_codes,id,deleted_at,NULL',
             'authors'           => 'nullable|string|max:1024',
             'description'       => 'nullable|string',
             'edition'           => 'nullable|string|max:50',
@@ -313,7 +312,7 @@ class BookMaintenanceController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            $book = Book::with(['subjects.accessCodes'])->findOrFail($id);
+            $book = Book::with(['subjects'])->findOrFail($id);
             $linkedSubjectIds = $book->subjects->pluck('id')->toArray();
             $books = new Book();
             $categories     = Category::pluck('name', 'id');
@@ -321,7 +320,7 @@ class BookMaintenanceController extends Controller
             $availability   = $this->extract_enums($books->getTable(), 'availability_status');
             $remarks        = $this->extract_enums($books->getTable(), 'remarks');
             $book_types     = $this->extract_enums($books->getTable(), 'book_type');
-            $subjects       = Subject::with('accessCodes')->orderBy('name')->get();
+            $subjects       = \App\Models\SubjectAccessCode::orderBy('access_code')->get();
         } catch (\Exception $e) {
             Log::error('Book Maintenance: Error accessing edit form', [
                 'user_id' => Auth::guard('admin')->id(),
@@ -547,7 +546,7 @@ class BookMaintenanceController extends Controller
             'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:150',
             'subject_ids'       => 'nullable|array',
-            'subject_ids.*'     => 'integer|exists:bk_subjects,id,deleted_at,NULL',
+            'subject_ids.*'     => 'integer|exists:bk_subject_access_codes,id,deleted_at,NULL',
             'authors'           => 'nullable|string|max:1024',
             'description'       => 'nullable|string',
             'edition'           => 'nullable|string|max:50',
@@ -673,7 +672,7 @@ class BookMaintenanceController extends Controller
             'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:150',
             'subject_ids'       => 'nullable|array',
-            'subject_ids.*'     => 'integer|exists:bk_subjects,id,deleted_at,NULL',
+            'subject_ids.*'     => 'integer|exists:bk_subject_access_codes,id,deleted_at,NULL',
             'authors'           => 'nullable|string|max:1024',
             'description'       => 'nullable|string',
             'edition'           => 'nullable|string|max:50',
