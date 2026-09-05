@@ -79,7 +79,7 @@
                         <select name="subject_ids[]" id="subject_ids" class="hidden" multiple>
                             @foreach($subjects as $subject)
                             <option value="{{ $subject->id }}" {{ in_array($subject->id, old('subject_ids', $linkedSubjectIds)) ? 'selected' : '' }}>
-                                {{ $subject->name }}{{ $subject->ddc ? ' (DDC: '.$subject->ddc.')' : '' }}
+                                {{ $subject->access_code }}
                             </option>
                             @endforeach
                         </select>
@@ -419,6 +419,17 @@
                                 subjectDropdown.classList.add('hidden');
                                 updateTags();
                             }
+                        } else {
+                            const id = value;
+                            allSubjects.push({ id: id, text: value });
+                            const opt = document.createElement('option');
+                            opt.value = id;
+                            opt.text = value;
+                            opt.selected = true;
+                            subjectHiddenSelect.appendChild(opt);
+                            subjectSearch.value = '';
+                            subjectDropdown.classList.add('hidden');
+                            updateTags();
                         }
                     }
                 }

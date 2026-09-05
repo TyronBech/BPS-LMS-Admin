@@ -53,6 +53,6 @@ class Book extends Model
 
     public function subjects(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
     {
-        return $this->belongsToMany(Subject::class, 'bk_book_subject', 'book_id', 'subject_id')->withTimestamps();
+        return $this->belongsToMany(SubjectAccessCode::class, 'bk_book_subject_access_code', 'book_id', 'subject_access_code_id')->withTimestamps();
     }
 }

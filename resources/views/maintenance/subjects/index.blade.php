@@ -24,17 +24,15 @@
               <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m19 19-4-4m0-7A7 7 0 1 1 1 8a7 7 0 0 1 14 0Z" />
             </svg>
           </div>
-          <input type="text" id="search" name="search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Search by DDC, subject, book, or access code" value="{{ old('search', $search) }}" autocomplete="off">
+          <input type="text" id="search" name="search" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full ps-10 p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Search by subject access code or book" value="{{ old('search', $search) }}" autocomplete="off">
         </div>
       </div>
 
       <div class="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
         <select id="sort_dropdown" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" onchange="updateSortAndSubmit(this.form)">
           <option value="">Default Sorting</option>
-          <option value="ddc-asc" {{ ($sortBy == 'ddc' && $sortOrder == 'asc') ? 'selected' : '' }}>DDC (Ascending)</option>
-          <option value="ddc-desc" {{ ($sortBy == 'ddc' && $sortOrder == 'desc') ? 'selected' : '' }}>DDC (Descending)</option>
-          <option value="name-asc" {{ ($sortBy == 'name' && $sortOrder == 'asc') ? 'selected' : '' }}>Subject (Ascending)</option>
-          <option value="name-desc" {{ ($sortBy == 'name' && $sortOrder == 'desc') ? 'selected' : '' }}>Subject (Descending)</option>
+          <option value="access_code-asc" {{ ($sortBy == 'access_code' && $sortOrder == 'asc') ? 'selected' : '' }}>Subject Access Code (Ascending)</option>
+          <option value="access_code-desc" {{ ($sortBy == 'access_code' && $sortOrder == 'desc') ? 'selected' : '' }}>Subject Access Code (Descending)</option>
           <option value="updated_at-desc" {{ ($sortBy == 'updated_at' && $sortOrder == 'desc') ? 'selected' : '' }}>Recently Updated</option>
         </select>
 
