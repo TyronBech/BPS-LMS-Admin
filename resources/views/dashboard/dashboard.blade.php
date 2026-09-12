@@ -182,16 +182,24 @@
   <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-2 gap-4">
       <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 10 Most Borrowed Books</h5>
-      <form id="export-top-books-borrowed-form" method="POST" action="{{ route('export-top-books-borrowed') }}">
-        @csrf
-        <input type="hidden" name="chart" id="export-top-books-chart-input">
-        <button type="submit" class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800 transition-colors shadow-sm">
-          <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M14.707 7.793a1 1 0 0 0-1.414 0L11 10.086V1.5a1 1 0 0 0-2 0v8.586L6.707 7.793a1 1 0 1 0-1.414 1.414l4 4a1 1 0 0 0 1.416 0l4-4a1 1 0 0 0-.002-1.414Z"/>
-            <path d="M18 12h-2.55l-2.975 2.975a3.5 3.5 0 0 1-4.95 0L4.55 12H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Zm-3 5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
-          </svg>
-        </button>
-      </form>
+      <div class="flex items-center gap-2">
+        <select id="filter-top-books-type" onchange="fetchTopBorrowedBooks()" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+          <option value="all">All</option>
+          <option value="Print">Prints</option>
+          <option value="Non-print">Non-prints</option>
+          <option value="E-Book">E-Books</option>
+        </select>
+        <form id="export-top-books-borrowed-form" method="POST" action="{{ route('export-top-books-borrowed') }}">
+          @csrf
+          <input type="hidden" name="chart" id="export-top-books-chart-input">
+          <button type="submit" class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800 transition-colors shadow-sm">
+            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M14.707 7.793a1 1 0 0 0-1.414 0L11 10.086V1.5a1 1 0 0 0-2 0v8.586L6.707 7.793a1 1 0 1 0-1.414 1.414l4 4a1 1 0 0 0 1.416 0l4-4a1 1 0 0 0-.002-1.414Z"/>
+              <path d="M18 12h-2.55l-2.975 2.975a3.5 3.5 0 0 1-4.95 0L4.55 12H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Zm-3 5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+            </svg>
+          </button>
+        </form>
+      </div>
     </div>
     <div class="relative h-full">
       <canvas id="top-borrowed-books"></canvas>
@@ -200,16 +208,24 @@
   <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-2 gap-4">
       <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 10 Most Borrowed Books per Category</h5>
-      <form id="export-top-categories-borrowed-form" method="POST" action="{{ route('export-top-categories-borrowed') }}">
-        @csrf
-        <input type="hidden" name="chart" id="export-top-categories-chart-input">
-        <button type="submit" class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800 transition-colors shadow-sm">
-          <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
-            <path d="M14.707 7.793a1 1 0 0 0-1.414 0L11 10.086V1.5a1 1 0 0 0-2 0v8.586L6.707 7.793a1 1 0 1 0-1.414 1.414l4 4a1 1 0 0 0 1.416 0l4-4a1 1 0 0 0-.002-1.414Z"/>
-            <path d="M18 12h-2.55l-2.975 2.975a3.5 3.5 0 0 1-4.95 0L4.55 12H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Zm-3 5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
-          </svg>
-        </button>
-      </form>
+      <div class="flex items-center gap-2">
+        <select id="filter-top-categories-type" onchange="fetchTopBorrowedCategories()" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
+          <option value="all">All</option>
+          <option value="Print">Prints</option>
+          <option value="Non-print">Non-prints</option>
+          <option value="E-Book">E-Books</option>
+        </select>
+        <form id="export-top-categories-borrowed-form" method="POST" action="{{ route('export-top-categories-borrowed') }}">
+          @csrf
+          <input type="hidden" name="chart" id="export-top-categories-chart-input">
+          <button type="submit" class="text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:outline-none focus:ring-red-300 font-medium rounded-lg text-sm p-2.5 text-center inline-flex items-center dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800 transition-colors shadow-sm">
+            <svg class="w-4 h-4" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 20 20">
+              <path d="M14.707 7.793a1 1 0 0 0-1.414 0L11 10.086V1.5a1 1 0 0 0-2 0v8.586L6.707 7.793a1 1 0 1 0-1.414 1.414l4 4a1 1 0 0 0 1.416 0l4-4a1 1 0 0 0-.002-1.414Z"/>
+              <path d="M18 12h-2.55l-2.975 2.975a3.5 3.5 0 0 1-4.95 0L4.55 12H2a2 2 0 0 0-2 2v4a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-4a2 2 0 0 0-2-2Zm-3 5a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/>
+            </svg>
+          </button>
+        </form>
+      </div>
     </div>
     <div class="relative h-full">
       <canvas id="top-borrowed-categories"></canvas>
@@ -641,7 +657,12 @@
   }
   async function fetchTopBorrowedBooks() {
     try {
-      const response = await fetch("{{ route('fetch-top-books-borrowed') }}");
+      const type = document.getElementById('filter-top-books-type')?.value || 'all';
+      let url = "{{ route('fetch-top-books-borrowed') }}";
+      if (type !== 'all') {
+        url += `?book_type=${encodeURIComponent(type)}`;
+      }
+      const response = await fetch(url);
       const data = await handleApiResponse(response, 'top borrowed books');
       const labels = data.labels;
       const counts = data.counts;
@@ -652,7 +673,12 @@
   }
   async function fetchTopBorrowedCategories() {
     try {
-      const response = await fetch("{{ route('fetch-top-categories-borrowed') }}");
+      const type = document.getElementById('filter-top-categories-type')?.value || 'all';
+      let url = "{{ route('fetch-top-categories-borrowed') }}";
+      if (type !== 'all') {
+        url += `?book_type=${encodeURIComponent(type)}`;
+      }
+      const response = await fetch(url);
       const data = await handleApiResponse(response, 'top borrowed categories');
       const labels = data.labels;
       const counts = data.counts;

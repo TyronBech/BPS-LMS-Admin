@@ -646,19 +646,27 @@ class FetchDataController extends Controller
      *
      * @throws \Throwable
      */
-    public function topBooksBorrowed()
+    public function topBooksBorrowed(Request $request)
     {
+        $bookType = $request->query('book_type');
+
         LogFacade::info('Analytics: Fetching top books borrowed', [
             'user_id' => Auth::id(),
             'user_name' => Auth::user()->full_name ?? 'N/A',
+            'book_type' => $bookType,
             'timestamp' => now(),
         ]);
 
         try {
-            $topBooks = Book::with(['transactions' => function ($query) {
-                $query->whereIn('transaction_type', ['Borrowed', 'Returned']);
-            }])
-                ->get()
+            $query = Book::with(['transactions' => function ($q) {
+                $q->whereIn('transaction_type', ['Borrowed', 'Returned']);
+            }]);
+
+            if ($bookType && $bookType !== 'all') {
+                $query->where('book_type', $bookType);
+            }
+
+            $topBooks = $query->get()
                 ->groupBy('title')
                 ->map(function ($groupedBooks) {
                     return [
@@ -708,19 +716,27 @@ class FetchDataController extends Controller
      *
      * @throws \Throwable
      */
-    public function topCategoriesBorrowed()
+    public function topCategoriesBorrowed(Request $request)
     {
+        $bookType = $request->query('book_type');
+
         LogFacade::info('Analytics: Fetching top categories borrowed', [
             'user_id' => Auth::id(),
             'user_name' => Auth::user()->full_name ?? 'N/A',
+            'book_type' => $bookType,
             'timestamp' => now(),
         ]);
 
         try {
-            $topCategories = Book::with(['transactions' => function ($query) {
-                $query->whereIn('transaction_type', ['Borrowed', 'Returned']);
-            }])
-                ->get()
+            $query = Book::with(['transactions' => function ($q) {
+                $q->whereIn('transaction_type', ['Borrowed', 'Returned']);
+            }]);
+
+            if ($bookType && $bookType !== 'all') {
+                $query->where('book_type', $bookType);
+            }
+
+            $topCategories = $query->get()
                 ->groupBy('category_id')
                 ->map(function ($groupedCategories) {
                     return [
