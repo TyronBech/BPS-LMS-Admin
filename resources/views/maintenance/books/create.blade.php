@@ -208,7 +208,102 @@
           </div>
         </div>
 
-        <!-- Section 5: Status & Assets -->
+        <!-- Section 5: Category-Specific Fields -->
+        <div id="category-specific-section" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden hidden">
+          <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            <h6 id="category-specific-title" class="text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">Category-Specific Fields</h6>
+          </div>
+          <div class="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {{-- Periodical Fields --}}
+            <div class="cat-field cat-periodical">
+              <label for="periodical_kind" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Kinds of Periodical:</label>
+              <select id="periodical_kind" name="periodical_kind" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <option value="" {{ old('periodical_kind') == '' ? 'selected' : '' }}>Select kind</option>
+                @foreach(['Newspaper', 'Magazine', 'Journal', 'Newsletter', 'Bulletin'] as $kind)
+                  <option value="{{ $kind }}" {{ old('periodical_kind') == $kind ? 'selected' : '' }}>{{ $kind }}</option>
+                @endforeach
+              </select>
+            </div>
+            <div class="cat-field cat-periodical">
+              <label for="volume" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Volume:</label>
+              <input type="text" id="volume" name="volume" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Vol. 5" value="{{ old('volume') }}">
+            </div>
+            <div class="cat-field cat-periodical">
+              <label for="issue_number" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Issue Number:</label>
+              <input type="text" id="issue_number" name="issue_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., No. 3" value="{{ old('issue_number') }}">
+            </div>
+            <div class="cat-field cat-periodical">
+              <label for="material_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Type:</label>
+              <select id="material_type" name="material_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <option value="" {{ old('material_type') == '' ? 'selected' : '' }}>Select type</option>
+                @foreach(['Article', 'Book Review', 'Essay', 'Case Study', 'Research Article', 'Editorial', 'Letter', 'Report'] as $mtype)
+                  <option value="{{ $mtype }}" {{ old('material_type') == $mtype ? 'selected' : '' }}>{{ $mtype }}</option>
+                @endforeach
+              </select>
+            </div>
+            <div class="cat-field cat-periodical md:col-span-2 lg:col-span-2">
+              <label for="desc_pages" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Page(s):</label>
+              <input type="text" id="desc_pages" name="description[Pages]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., pp. 12-25" value="{{ old('description.Pages') }}">
+            </div>
+
+            {{-- Serials Fields --}}
+            <div class="cat-field cat-serials">
+              <label for="issn" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">ISSN:</label>
+              <input type="text" id="issn" name="issn" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., 1234-5678" value="{{ old('issn') }}">
+            </div>
+            <div class="cat-field cat-serials">
+              <label for="frequency" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Frequency:</label>
+              <select id="frequency" name="frequency" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <option value="" {{ old('frequency') == '' ? 'selected' : '' }}>Select frequency</option>
+                @foreach(['Daily', 'Weekly', 'Biweekly', 'Monthly', 'Bimonthly', 'Quarterly', 'Semi-annually', 'Annually', 'Irregular'] as $freq)
+                  <option value="{{ $freq }}" {{ old('frequency') == $freq ? 'selected' : '' }}>{{ $freq }}</option>
+                @endforeach
+              </select>
+            </div>
+            <div class="cat-field cat-serials">
+              <label for="latest_received" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Latest Received:</label>
+              <input type="text" id="latest_received" name="latest_received" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Vol. 10 No. 3 (2026)" value="{{ old('latest_received') }}">
+            </div>
+            <div class="cat-field cat-serials">
+              <label for="discipline" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Discipline:</label>
+              <input type="text" id="discipline" name="discipline" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Social Sciences" value="{{ old('discipline') }}">
+            </div>
+            <div class="cat-field cat-serials md:col-span-2 lg:col-span-2">
+              <label for="topical_access_point" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Topical Access Point:</label>
+              <input type="text" id="topical_access_point" name="topical_access_point" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Education -- Philippines" value="{{ old('topical_access_point') }}">
+            </div>
+            <div class="cat-field cat-serials md:col-span-2 lg:col-span-3">
+              <label for="corporate_access_point" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Corporate Access Point:</label>
+              <input type="text" id="corporate_access_point" name="corporate_access_point" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Department of Education" value="{{ old('corporate_access_point') }}">
+            </div>
+            <div class="cat-field cat-serials md:col-span-2 lg:col-span-3">
+              <label for="serial_notes" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Notes:</label>
+              <textarea id="serial_notes" name="notes" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Additional notes">{{ old('notes') }}</textarea>
+            </div>
+
+            {{-- Academic Research Fields --}}
+            <div class="cat-field cat-academic-research">
+              <label for="institution" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Institution:</label>
+              <input type="text" id="institution" name="institution" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., University of the Philippines" value="{{ old('institution') }}">
+            </div>
+            <div class="cat-field cat-academic-research">
+              <label for="program" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Program:</label>
+              <input type="text" id="program" name="program" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., BS Computer Science" value="{{ old('program') }}">
+            </div>
+            <div class="cat-field cat-academic-research">
+              <label for="research_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Type of Research:</label>
+              <select id="research_type" name="material_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <option value="" {{ old('material_type') == '' ? 'selected' : '' }}>Select type</option>
+                @foreach(['Thesis', 'Dissertation', 'Capstone', 'Feasibility Study', 'Action Research', 'Case Study', 'Experimental Research'] as $rtype)
+                  <option value="{{ $rtype }}" {{ old('material_type') == $rtype ? 'selected' : '' }}>{{ $rtype }}</option>
+                @endforeach
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 6: Status & Assets -->
         <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
           <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
             <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
@@ -441,6 +536,7 @@
     categorySelect.addEventListener('change', function() {
       syncBookTypeFromCategory();
       prefillAccession();
+      toggleCategorySpecificFields();
     });
 
     function applyAvailabilityRule() {
@@ -493,6 +589,43 @@
       }
     }
 
+    // ── Category-specific fields logic ──────────────────────────────────
+    const categorySpecificSection = document.getElementById('category-specific-section');
+    const categorySpecificTitle = document.getElementById('category-specific-title');
+
+    function getCategoryClassFromName(categoryName) {
+      if (!categoryName) return null;
+      const normalized = categoryName.trim().toLowerCase();
+      if (normalized === 'periodical') return 'cat-periodical';
+      if (normalized === 'serials') return 'cat-serials';
+      if (normalized === 'academic research') return 'cat-academic-research';
+      return null;
+    }
+
+    function toggleCategorySpecificFields() {
+      if (!categorySelect || !categorySpecificSection) return;
+      const selectedCategory = getCategoryById(categorySelect.value);
+      const catClass = selectedCategory ? getCategoryClassFromName(selectedCategory.name) : null;
+
+      // Hide all category-specific fields first
+      document.querySelectorAll('.cat-field').forEach(el => el.classList.add('hidden'));
+
+      if (catClass) {
+        categorySpecificSection.classList.remove('hidden');
+        document.querySelectorAll('.' + catClass).forEach(el => el.classList.remove('hidden'));
+
+        // Update section title
+        const titles = {
+          'cat-periodical': 'Periodical Fields',
+          'cat-serials': 'Serials Fields',
+          'cat-academic-research': 'Academic Research Fields'
+        };
+        categorySpecificTitle.textContent = titles[catClass] || 'Category-Specific Fields';
+      } else {
+        categorySpecificSection.classList.add('hidden');
+      }
+    }
+
     if (bookTypeSelect) {
       bookTypeSelect.addEventListener('change', function() {
         syncCategoryOptionsToBookType();
@@ -516,6 +649,9 @@
     if (categorySelect && categorySelect.value) {
       prefillAccession();
     }
+
+    // Initialize category-specific fields on page load
+    toggleCategorySpecificFields();
 
     // --- Subject Multiselect Logic ---
     const subjectSearch = document.getElementById('subject_search');
