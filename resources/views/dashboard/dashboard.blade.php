@@ -181,13 +181,13 @@
   </div>
   <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-2 gap-4">
-      <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 10 Most Borrowed Books</h5>
+      <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 10 Most Borrowed Materials</h5>
       <div class="flex items-center gap-2">
         <select id="filter-top-books-type" onchange="fetchTopBorrowedBooks()" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
           <option value="all">All</option>
-          <option value="Print">Prints</option>
-          <option value="Non-print">Non-prints</option>
-          <option value="E-Book">E-Books</option>
+          <option value="Print">Print</option>
+          <option value="Non-print">Non-print</option>
+          <option value="E-Book">E-Book</option>
         </select>
         <form id="export-top-books-borrowed-form" method="POST" action="{{ route('export-top-books-borrowed') }}">
           @csrf
@@ -207,13 +207,13 @@
   </div>
   <div class="flex flex-col min-h-96 col-span-1 md:col-span-1 lg:col-span-2 justify-between max-h-96 p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
     <div class="flex flex-col md:flex-row md:items-center justify-between mb-2 gap-4">
-      <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 10 Most Borrowed Books per Category</h5>
+      <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Top 10 Most Borrowed Materials per Category</h5>
       <div class="flex items-center gap-2">
         <select id="filter-top-categories-type" onchange="fetchTopBorrowedCategories()" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block p-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
           <option value="all">All</option>
-          <option value="Print">Prints</option>
-          <option value="Non-print">Non-prints</option>
-          <option value="E-Book">E-Books</option>
+          <option value="Print">Print</option>
+          <option value="Non-print">Non-print</option>
+          <option value="E-Book">E-Book</option>
         </select>
         <form id="export-top-categories-borrowed-form" method="POST" action="{{ route('export-top-categories-borrowed') }}">
           @csrf

@@ -252,6 +252,84 @@
             </div>
           </div>
 
+          {{-- Category-Specific Details --}}
+          @php
+            $categoryName = strtolower(trim($book->category->name ?? ''));
+            $isPeriodical = $categoryName === 'periodical';
+            $isSerials = $categoryName === 'serials';
+            $isAcademicResearch = $categoryName === 'academic research';
+            $hasCategoryFields = $isPeriodical || $isSerials || $isAcademicResearch;
+          @endphp
+
+          @if($hasCategoryFields)
+          <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+            <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
+              <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+              <h6 class="text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">
+                @if($isPeriodical) Periodical Details
+                @elseif($isSerials) Serials Details
+                @else Academic Research Details
+                @endif
+              </h6>
+            </div>
+            <div class="p-6">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-8">
+                @if($isPeriodical)
+                  @foreach([
+                    'Kinds of Periodical' => $book->periodical_kind,
+                    'Volume' => $book->volume,
+                    'Issue Number' => $book->issue_number,
+                    'Type' => $book->material_type,
+                    'Page(s)' => $book->description['Pages'] ?? null,
+                  ] as $label => $value)
+                    @if(!empty($value))
+                    <div class="flex flex-col">
+                      <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ $label }}</span>
+                      <span class="text-base font-medium text-gray-900 dark:text-white">{{ $value }}</span>
+                    </div>
+                    @endif
+                  @endforeach
+                @elseif($isSerials)
+                  @foreach([
+                    'ISSN' => $book->issn,
+                    'Frequency' => $book->frequency,
+                    'Latest Received' => $book->latest_received,
+                    'Discipline' => $book->discipline,
+                    'Topical Access Point' => $book->topical_access_point,
+                    'Corporate Access Point' => $book->corporate_access_point,
+                  ] as $label => $value)
+                    @if(!empty($value))
+                    <div class="flex flex-col">
+                      <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ $label }}</span>
+                      <span class="text-base font-medium text-gray-900 dark:text-white">{{ $value }}</span>
+                    </div>
+                    @endif
+                  @endforeach
+                  @if(!empty($book->notes))
+                  <div class="flex flex-col md:col-span-2 bg-gray-50 dark:bg-gray-700/30 p-4 rounded-lg border border-gray-100 dark:border-gray-700/50">
+                    <span class="text-xs font-bold text-primary-600 dark:text-primary-400 uppercase tracking-widest mb-2">Notes</span>
+                    <p class="text-sm text-gray-700 dark:text-gray-300 leading-relaxed whitespace-pre-line">{{ $book->notes }}</p>
+                  </div>
+                  @endif
+                @elseif($isAcademicResearch)
+                  @foreach([
+                    'Institution' => $book->institution,
+                    'Program' => $book->program,
+                    'Type of Research' => $book->material_type,
+                  ] as $label => $value)
+                    @if(!empty($value))
+                    <div class="flex flex-col">
+                      <span class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">{{ $label }}</span>
+                      <span class="text-base font-medium text-gray-900 dark:text-white">{{ $value }}</span>
+                    </div>
+                    @endif
+                  @endforeach
+                @endif
+              </div>
+            </div>
+          </div>
+          @endif
+
           <!-- Section 6: Status & Digital Assets -->
           <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
             <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">

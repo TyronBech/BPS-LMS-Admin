@@ -283,7 +283,7 @@ class ProcessMaterialImport implements ShouldQueue
 
         for ($i = 18; $i < count($rows); $i++) {
             $isEmptyRow = true;
-            for ($col = $baseCol; $col <= $baseCol + 25; $col++) {
+            for ($col = $baseCol; $col <= $baseCol + 38; $col++) {
                 if (isset($rows[$i][$col]) && trim((string) $rows[$i][$col]) !== '') {
                     $isEmptyRow = false;
                     break;
@@ -325,6 +325,20 @@ class ProcessMaterialImport implements ShouldQueue
                 'category'             => $this->cleanString($rows[$i][$baseCol + 21] ?? null),
                 'digital_copy_url'     => $this->cleanString($rows[$i][$baseCol + 22] ?? null),
                 'subject'              => $this->cleanString($rows[$i][$baseCol + 23] ?? null),
+                // Category-specific fields (26 to 38)
+                'periodical_kind'      => $this->cleanString($rows[$i][$baseCol + 26] ?? null),
+                'volume'               => $this->cleanString($rows[$i][$baseCol + 27] ?? null),
+                'issue_number'         => $this->cleanString($rows[$i][$baseCol + 28] ?? null),
+                'material_type'        => $this->cleanString($rows[$i][$baseCol + 29] ?? null),
+                'issn'                 => $this->cleanString($rows[$i][$baseCol + 30] ?? null),
+                'frequency'            => $this->cleanString($rows[$i][$baseCol + 31] ?? null),
+                'latest_received'      => $this->cleanString($rows[$i][$baseCol + 32] ?? null),
+                'notes'                => $this->cleanString($rows[$i][$baseCol + 33] ?? null),
+                'topical_access_point' => $this->cleanString($rows[$i][$baseCol + 34] ?? null),
+                'corporate_access_point' => $this->cleanString($rows[$i][$baseCol + 35] ?? null),
+                'discipline'           => $this->cleanString($rows[$i][$baseCol + 36] ?? null),
+                'institution'          => $this->cleanString($rows[$i][$baseCol + 37] ?? null),
+                'program'              => $this->cleanString($rows[$i][$baseCol + 38] ?? null),
             ];
         }
 
@@ -450,6 +464,20 @@ class ProcessMaterialImport implements ShouldQueue
             'book_type'            => $finalType,
             'category_id'          => $category->id,
             'digital_copy_url'     => $item['digital_copy_url'] ?? null,
+            // Category-specific fields
+            'periodical_kind'      => $item['periodical_kind'] ?? null,
+            'volume'               => $item['volume'] ?? null,
+            'issue_number'         => $item['issue_number'] ?? null,
+            'material_type'        => $item['material_type'] ?? null,
+            'issn'                 => $item['issn'] ?? null,
+            'frequency'            => $item['frequency'] ?? null,
+            'latest_received'      => $item['latest_received'] ?? null,
+            'notes'                => $item['notes'] ?? null,
+            'topical_access_point' => $item['topical_access_point'] ?? null,
+            'corporate_access_point' => $item['corporate_access_point'] ?? null,
+            'discipline'           => $item['discipline'] ?? null,
+            'institution'          => $item['institution'] ?? null,
+            'program'              => $item['program'] ?? null,
         ];
 
         $isModelDirty = false;
