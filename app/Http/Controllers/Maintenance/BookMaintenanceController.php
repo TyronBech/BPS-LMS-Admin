@@ -299,6 +299,20 @@ class BookMaintenanceController extends Controller
                     'book_type'             => $request->input('book_type'),
                     'condition_status'      => $request->input('condition'),
                     'availability_status'   => $request->input('availability'),
+                    // Category-specific fields
+                    'periodical_kind'       => $request->input('periodical_kind') ?? null,
+                    'volume'                => $request->input('volume') ?? null,
+                    'issue_number'          => $request->input('issue_number') ?? null,
+                    'material_type'         => $request->input('material_type') ?? null,
+                    'issn'                  => $request->input('issn') ?? null,
+                    'frequency'             => $request->input('frequency') ?? null,
+                    'latest_received'       => $request->input('latest_received') ?? null,
+                    'notes'                 => $request->input('notes') ?? null,
+                    'topical_access_point'  => $request->input('topical_access_point') ?? null,
+                    'corporate_access_point' => $request->input('corporate_access_point') ?? null,
+                    'discipline'            => $request->input('discipline') ?? null,
+                    'institution'           => $request->input('institution') ?? null,
+                    'program'               => $request->input('program') ?? null,
                 ]);
 
                 $createdBook->subjectAccessCodes()->sync($subjectAccessCodeIds);
@@ -650,6 +664,20 @@ class BookMaintenanceController extends Controller
             'book_type'         => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'book_type')),
             'condition'         => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'condition_status')),
             'availability'      => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
+            // Category-specific fields
+            'periodical_kind'       => 'nullable|string|max:100',
+            'volume'                => 'nullable|string|max:50',
+            'issue_number'          => 'nullable|string|max:50',
+            'material_type'         => 'nullable|string|max:100',
+            'issn'                  => 'nullable|string|max:50',
+            'frequency'             => 'nullable|string|max:100',
+            'latest_received'       => 'nullable|string|max:255',
+            'notes'                 => 'nullable|string',
+            'topical_access_point'  => 'nullable|string',
+            'corporate_access_point' => 'nullable|string',
+            'discipline'            => 'nullable|string|max:255',
+            'institution'           => 'nullable|string|max:255',
+            'program'               => 'nullable|string|max:255',
         ]);
         $validator->after(function ($validator) use ($request) {
             $this->validateAvailabilityStatus($validator, $request);
@@ -718,6 +746,20 @@ class BookMaintenanceController extends Controller
                 'book_type'             => $request->input('book_type'),
                 'condition_status'      => $request->input('condition'),
                 'availability_status'   => $request->input('availability'),
+                // Category-specific fields
+                'periodical_kind'       => $request->input('periodical_kind'),
+                'volume'                => $request->input('volume'),
+                'issue_number'          => $request->input('issue_number'),
+                'material_type'         => $request->input('material_type'),
+                'issn'                  => $request->input('issn'),
+                'frequency'             => $request->input('frequency'),
+                'latest_received'       => $request->input('latest_received'),
+                'notes'                 => $request->input('notes'),
+                'topical_access_point'  => $request->input('topical_access_point'),
+                'corporate_access_point' => $request->input('corporate_access_point'),
+                'discipline'            => $request->input('discipline'),
+                'institution'           => $request->input('institution'),
+                'program'               => $request->input('program'),
             ]);
 
             $book->subjectAccessCodes()->sync($subjectAccessCodeIds);
@@ -879,6 +921,21 @@ class BookMaintenanceController extends Controller
                     'book_type'             => $request->input('book_type'),
                     'condition_status'      => $request->input('condition'),
                     'availability_status'   => $request->input('availability'),
+                    // Category-specific fields
+                    'periodical_kind'       => $request->input('periodical_kind') ?? null,
+                    'volume'                => $request->input('volume') ?? null,
+                    'issue_number'          => $request->input('issue_number') ?? null,
+                    'material_type'         => $request->input('material_type') ?? null,
+                    'issn'                  => $request->input('issn') ?? null,
+                    'frequency'             => $request->input('frequency') ?? null,
+                    'latest_received'       => $request->input('latest_received') ?? null,
+                    'notes'                 => $request->input('notes') ?? null,
+                    'topical_access_point'  => $request->input('topical_access_point') ?? null,
+                    'corporate_access_point' => $request->input('corporate_access_point') ?? null,
+                    'discipline'            => $request->input('discipline') ?? null,
+                    'institution'           => $request->input('institution') ?? null,
+                    'program'               => $request->input('program') ?? null,
+                    'location'              => $request->input('location') ?? null,
                 ]);
 
                 $copiedBook->subjectAccessCodes()->sync($subjectAccessCodeIds);
