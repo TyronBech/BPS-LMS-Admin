@@ -23,12 +23,12 @@
             <h6 class="text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">Basic Information</h6>
           </div>
           <div class="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
-            <div class="md:col-span-2 lg:col-span-12">
-              <label for="title" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Title:</label>
+            <div id="title-container" class="md:col-span-2 lg:col-span-12">
+              <label for="title" id="title-label" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Title:</label>
               <input type="text" id="title" name="title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Material Title" value="{{ old('title') }}" required>
               @error('title') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
-            <div class="md:col-span-2 lg:col-span-12">
+            <div id="parallel-title-container" class="md:col-span-2 lg:col-span-12">
               <label for="parallel_title" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Parallel Title:</label>
               <input type="text" id="parallel_title" name="parallel_title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Title 1; Title 2 (separated by semicolon)" value="{{ old('parallel_title') }}">
               @error('parallel_title') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
@@ -52,13 +52,13 @@
               </select>
               @error('category') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
-            <div class="md:col-span-2 lg:col-span-4">
+            <div id="accession-container" class="md:col-span-2 lg:col-span-4">
               <label for="accession" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Accession Number:</label>
               <input type="text" id="accession" name="accession" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., FIL0123456789" value="{{ old('accession') }}" required>
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Multiple separated with a semicolon.</p>
               @error('accession') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
-            <div class="lg:col-span-3">
+            <div id="call-number-container" class="lg:col-span-3">
               <label for="call_number" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Call Number:</label>
               <input type="text" id="call_number" name="call_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 192.000" value="{{ old('call_number') }}">
             </div>
@@ -109,7 +109,7 @@
         </div>
 
         <!-- Section 2: Authors Information -->
-        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+        <div id="authors-section" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
           <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
             <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
             <h6 class="text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">Authors & Contributors</h6>
@@ -136,38 +136,38 @@
         </div>
 
         <!-- Section 3: Material Description -->
-        <div id="description-container" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+        <div id="description-section" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
           <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
             <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
             <h6 class="text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">Material Description</h6>
           </div>
           <div class="p-5 space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="md:col-span-3">
+              <div id="desc-description-container" class="md:col-span-3">
                 <label for="desc_description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Physical Description:</label>
                 <textarea id="desc_description" name="description[Description]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Physical characteristics">{{ old('description.Description') }}</textarea>
               </div>
-              <div>
+              <div id="desc-extent-container">
                 <label for="desc_extent" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Extent: <span id="extent_asterisk" class="text-red-500">*</span></label>
                 <input type="text" id="desc_extent" name="description[Extent]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., 200 pages" value="{{ old('description.Extent') }}">
               </div>
-              <div>
+              <div id="desc-acc-material-container">
                 <label for="desc_acc_material" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Acc Material:</label>
                 <input type="text" id="desc_acc_material" name="description[Acc Material]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Accompanying material" value="{{ old('description.Acc Material') }}">
               </div>
-              <div>
+              <div id="desc-series-container">
                 <label for="desc_series" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Series:</label>
                 <input type="text" id="desc_series" name="description[Series]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Harry Potter Series" value="{{ old('description.Series') }}">
               </div>
-              <div class="md:col-span-3">
+              <div id="desc-content-notes-container" class="md:col-span-3">
                 <label for="desc_content_notes" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Content Notes:</label>
                 <textarea id="desc_content_notes" name="description[Content notes]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Table of contents, etc.">{{ old('description.Content notes') }}</textarea>
               </div>
-              <div class="md:col-span-3">
+              <div id="desc-abstract-container" class="md:col-span-3">
                 <label for="desc_abstract" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Abstract:</label>
                 <textarea id="desc_abstract" name="description[Abstract]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Summary or abstract">{{ old('description.Abstract') }}</textarea>
               </div>
-              <div class="md:col-span-3">
+              <div id="desc-reviews-container" class="md:col-span-3">
                 <label for="desc_reviews" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Reviews:</label>
                 <textarea id="desc_reviews" name="description[Reviews]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Material reviews">{{ old('description.Reviews') }}</textarea>
               </div>
@@ -177,19 +177,19 @@
         </div>
 
         <!-- Section 4: Publishing & Logistics -->
-        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+        <div id="publishing-section" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
           <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
             <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
             <h6 class="text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">Publishing & Logistics</h6>
           </div>
           <div class="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div>
+            <div id="publisher-container">
               <label for="publisher" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Publisher:</label>
               <input type="text" id="publisher" name="publisher" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., National Library" value="{{ old('publisher') }}">
               @error('publisher') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
-            <div>
-              <label for="copyright" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Copyright Year:</label>
+            <div id="copyright-container">
+              <label for="copyright" id="copyright-label" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Copyright Year:</label>
               <input type="text" id="copyright" name="copyright" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 2026" value="{{ old('copyright') }}">
               @error('copyright') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
@@ -197,8 +197,8 @@
               <label for="publication" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Place of Publication:</label>
               <input type="text" id="publication" name="publication" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Manila, Philippines" value="{{ old('publication') }}">
             </div>
-            <div>
-              <label for="location" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Location:</label>
+            <div id="location-container">
+              <label for="location" id="location-label" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Location:</label>
               <input type="text" id="location" name="location" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Section A, Shelf 1" value="{{ old('location') }}">
             </div>
             <div id="digital-copy-container" class="lg:col-span-2">
@@ -592,6 +592,9 @@
     // ── Category-specific fields logic ──────────────────────────────────
     const categorySpecificSection = document.getElementById('category-specific-section');
     const categorySpecificTitle = document.getElementById('category-specific-title');
+    const titleLabel = document.getElementById('title-label');
+    const copyrightLabel = document.getElementById('copyright-label');
+    const locationLabel = document.getElementById('location-label');
 
     function getCategoryClassFromName(categoryName) {
       if (!categoryName) return null;
@@ -602,6 +605,77 @@
       return null;
     }
 
+    /**
+     * Defines which generic form element IDs should be visible for each special category.
+     * Any element not listed here will be hidden when that category is selected.
+     */
+    const categoryVisibleFields = {
+      'cat-periodical': [
+        'title-container',        // Article Title
+        'authors-section',        // Creator
+        'copyright-container',    // Date
+        'location-container',     // Location
+        'subject-container',      // Subjects
+        'desc-abstract-container', // Abstract
+        'description-section',    // needed to show abstract
+      ],
+      'cat-serials': [
+        'title-container',        // Title
+        'publication-container',  // Place of Publication
+        'publisher-container',    // Publisher
+        'desc-extent-container',  // Extent
+        'description-section',    // needed to show extent
+        'call-number-container',  // Call Number
+        'accession-container',    // Accession
+        'location-container',     // Library Location
+        'publishing-section',     // needed to show publisher/publication/location
+      ],
+      'cat-academic-research': [
+        'title-container',        // Title Proper
+        'authors-section',        // Creator
+        'copyright-container',    // Date
+        'desc-extent-container',  // Extent
+        'description-section',    // needed to show extent and abstract
+        'call-number-container',  // Call Number
+        'accession-container',    // Accession
+        'languages-container',    // Language
+        'subject-container',      // Subjects
+        'desc-abstract-container', // Abstract
+      ]
+    };
+
+    /** All generic field container IDs that can be toggled */
+    const allToggleableFields = [
+      'title-container', 'parallel-title-container', 'accession-container',
+      'call-number-container', 'isbn-container', 'edition-container',
+      'languages-container', 'subject-container',
+      'authors-section', 'description-section', 'publishing-section',
+      'desc-description-container', 'desc-extent-container',
+      'desc-acc-material-container', 'desc-series-container',
+      'desc-content-notes-container', 'desc-abstract-container',
+      'desc-reviews-container',
+      'publisher-container', 'copyright-container',
+      'publication-container', 'location-container', 'digital-copy-container'
+    ];
+
+    /** Title label mapping per category */
+    const titleLabelMap = {
+      'cat-periodical': 'Article Title:',
+      'cat-serials': 'Title:',
+      'cat-academic-research': 'Title Proper:'
+    };
+
+    /** Copyright/Date label mapping per category */
+    const copyrightLabelMap = {
+      'cat-periodical': 'Date:',
+      'cat-academic-research': 'Date:'
+    };
+
+    /** Location label mapping per category */
+    const locationLabelMap = {
+      'cat-serials': 'Library Location:'
+    };
+
     function toggleCategorySpecificFields() {
       if (!categorySelect || !categorySpecificSection) return;
       const selectedCategory = getCategoryById(categorySelect.value);
@@ -611,6 +685,7 @@
       document.querySelectorAll('.cat-field').forEach(el => el.classList.add('hidden'));
 
       if (catClass) {
+        // Show the category-specific section and its relevant fields
         categorySpecificSection.classList.remove('hidden');
         document.querySelectorAll('.' + catClass).forEach(el => el.classList.remove('hidden'));
 
@@ -621,8 +696,81 @@
           'cat-academic-research': 'Academic Research Fields'
         };
         categorySpecificTitle.textContent = titles[catClass] || 'Category-Specific Fields';
+
+        // Update the title field label
+        if (titleLabel) {
+          titleLabel.textContent = titleLabelMap[catClass] || 'Title:';
+        }
+
+        // Update the copyright/date label
+        if (copyrightLabel) {
+          copyrightLabel.textContent = copyrightLabelMap[catClass] || 'Copyright Year:';
+        }
+
+        // Update the location label
+        if (locationLabel) {
+          locationLabel.textContent = locationLabelMap[catClass] || 'Location:';
+        }
+
+        // Get the list of visible fields for this category
+        const visibleFields = categoryVisibleFields[catClass] || [];
+
+        // Hide all toggleable fields, then show only the ones for this category
+        allToggleableFields.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            if (visibleFields.includes(id)) {
+              el.classList.remove('hidden');
+            } else {
+              el.classList.add('hidden');
+            }
+          }
+        });
+
+        // For description-section: only show the section container if at least one
+        // child description field is visible
+        const descSection = document.getElementById('description-section');
+        if (descSection) {
+          const descChildIds = [
+            'desc-description-container', 'desc-extent-container',
+            'desc-acc-material-container', 'desc-series-container',
+            'desc-content-notes-container', 'desc-abstract-container',
+            'desc-reviews-container'
+          ];
+          const hasVisibleChild = descChildIds.some(id => visibleFields.includes(id));
+          if (hasVisibleChild) {
+            descSection.classList.remove('hidden');
+          } else {
+            descSection.classList.add('hidden');
+          }
+        }
+
+        // For publishing-section: only show if at least one child is visible
+        const pubSection = document.getElementById('publishing-section');
+        if (pubSection) {
+          const pubChildIds = [
+            'publisher-container', 'copyright-container',
+            'publication-container', 'location-container', 'digital-copy-container'
+          ];
+          const hasVisibleChild = pubChildIds.some(id => visibleFields.includes(id));
+          if (hasVisibleChild) {
+            pubSection.classList.remove('hidden');
+          } else {
+            pubSection.classList.add('hidden');
+          }
+        }
       } else {
+        // No special category — show everything (default/generic behavior)
         categorySpecificSection.classList.add('hidden');
+        allToggleableFields.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.remove('hidden');
+        });
+
+        // Reset labels to defaults
+        if (titleLabel) titleLabel.textContent = 'Title:';
+        if (copyrightLabel) copyrightLabel.textContent = 'Copyright Year:';
+        if (locationLabel) locationLabel.textContent = 'Location:';
       }
     }
 
