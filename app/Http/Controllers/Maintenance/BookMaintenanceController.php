@@ -195,6 +195,19 @@ class BookMaintenanceController extends Controller
 
         $this->processSubjectAccessCodes($request);
 
+        // Determine the category name to adjust validation for category-specific field visibility
+        $selectedCategoryModel = Category::find($request->input('category'));
+        $selectedCategoryName = $selectedCategoryModel ? strtolower(trim($selectedCategoryModel->name)) : '';
+        $extentRule = $selectedCategoryName === 'periodical'
+            ? 'nullable|string'
+            : 'required_unless:book_type,Non-print|string|nullable';
+
+        // Periodicals do not logically have accession numbers, but the database requires a unique one.
+        // Auto-generate a guaranteed unique accession using the official format to bypass clashes.
+        if ($selectedCategoryName === 'periodical') {
+            $request->merge(['accession' => $this->generateNextAccessionForCategory($request->input('category'))]);
+        }
+
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string',
             'call_number'       => 'nullable|string|max:50',
@@ -214,7 +227,7 @@ class BookMaintenanceController extends Controller
             'description.Content notes' => 'nullable|string',
             'description.Abstract'      => 'nullable|string',
             'description.Reviews'       => 'nullable|string',
-            'description.Extent'        => 'required_unless:book_type,Non-print|string|nullable',
+            'description.Extent'        => $extentRule,
             'description.Acc Material'  => 'nullable|string',
             'edition'           => 'nullable|string|max:50',
             'publication'       => 'nullable|string|max:50',
@@ -280,7 +293,7 @@ class BookMaintenanceController extends Controller
                 $createdBook = Book::create([
                     'accession'             => $accession,
                     'call_number'           => $request->input('call_number') ?? null,
-                    'isbn'                  => $request->input('isbn') ?? null,
+                    'isbn'                  => $request->input('isbn') ?? 'N/A',
                     'barcode'               => $barcode->getBarcodeJPG($accession, 'C39', 2, 80, array(0, 0, 0, 0), false),
                     'title'                 => $request->input('title'),
                     'parallel_title'        => $request->input('parallel_title') ?? null,
@@ -630,6 +643,13 @@ class BookMaintenanceController extends Controller
 
         $this->processSubjectAccessCodes($request);
 
+        // Determine the category name to adjust validation for category-specific field visibility
+        $selectedCategoryModel = Category::find($request->input('category'));
+        $selectedCategoryName = $selectedCategoryModel ? strtolower(trim($selectedCategoryModel->name)) : '';
+        $extentRule = $selectedCategoryName === 'periodical'
+            ? 'nullable|string'
+            : 'required_unless:book_type,Non-print|string|nullable';
+
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string|max:50',
             'call_number'       => 'nullable|string|max:50',
@@ -649,7 +669,7 @@ class BookMaintenanceController extends Controller
             'description.Content notes' => 'nullable|string',
             'description.Abstract'      => 'nullable|string',
             'description.Reviews'       => 'nullable|string',
-            'description.Extent'        => 'required_unless:book_type,Non-print|string|nullable',
+            'description.Extent'        => $extentRule,
             'description.Acc Material'  => 'nullable|string',
             'edition'           => 'nullable|string|max:50',
             'publication'       => 'nullable|string|max:50',
@@ -727,7 +747,7 @@ class BookMaintenanceController extends Controller
             $book->update([
                 'accession'             => $request->input('accession'),
                 'call_number'           => $request->input('call_number'),
-                'isbn'                  => $request->input('isbn'),
+                'isbn'                  => $request->input('isbn') ?? 'N/A',
                 'barcode'               => $barcode->getBarcodeJPG($request->input('accession'), 'C39', 2, 80, array(0, 0, 0, 0), false),
                 'title'                 => $request->input('title'),
                 'parallel_title'        => $request->input('parallel_title'),
@@ -1472,7 +1492,7 @@ class BookMaintenanceController extends Controller
         }
     }
 
-    public function getNextAccession($categoryId)
+    private function generateNextAccessionForCategory($categoryId)
     {
         $category = Category::findOrFail($categoryId);
         
@@ -1528,9 +1548,12 @@ class BookMaintenanceController extends Controller
         }
 
         $nextNumber = $maxNumber + 1;
-        $nextAccession = $prefix . str_pad((string)$nextNumber, 6, '0', STR_PAD_LEFT);
+        return $prefix . str_pad((string)$nextNumber, 6, '0', STR_PAD_LEFT);
+    }
 
-        return response()->json(['next_accession' => $nextAccession]);
+    public function getNextAccession($categoryId)
+    {
+        return response()->json(['next_accession' => $this->generateNextAccessionForCategory($categoryId)]);
     }
 
     private function validateAvailabilityStatus($validator, Request $request): void
