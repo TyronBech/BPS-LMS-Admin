@@ -43,7 +43,7 @@ class PenaltyRuleController extends Controller
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
 
-        $rules = PenaltyRule::orderBy('created_at', 'desc')
+        $rules = PenaltyRule::orderBy('updated_at', 'desc')
             ->paginate($perPage)
             ->appends([
                 'perPage' => $perPage,
