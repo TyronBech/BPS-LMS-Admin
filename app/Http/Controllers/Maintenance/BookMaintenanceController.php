@@ -96,11 +96,7 @@ class BookMaintenanceController extends Controller
             $booksQuery->where('book_type', $bookType);
         }
 
-        if ($sortBy && $sortOrder) {
-            $booksQuery->orderBy($sortBy, $sortOrder)->orderBy('id', 'desc');
-        } else {
-            $booksQuery->orderBy('updated_at', 'desc')->orderBy('id', 'desc');
-        }
+        $booksQuery->orderBy('updated_at', 'desc');
 
         $books      = $booksQuery
             ->paginate($perPage)
@@ -543,11 +539,7 @@ class BookMaintenanceController extends Controller
         }
 
         // Finalize query
-        if ($sortBy && $sortOrder) {
-            $booksQuery->orderBy($sortBy, $sortOrder)->orderBy('id', 'desc');
-        } else {
-            $booksQuery->orderBy('updated_at', 'desc')->orderBy('id', 'desc');
-        }
+        $booksQuery->orderBy('updated_at', 'desc');
 
         $books = $booksQuery
             ->paginate($perPage)

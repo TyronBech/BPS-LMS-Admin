@@ -56,7 +56,7 @@ class AnnouncementMaintenanceController extends Controller
                 ->orWhere('category', 'like', "%{$search}%")
                 ->orWhere('content', 'like', "%{$search}%");
         })
-            ->orderBy('created_at', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->paginate($perPage)
             ->appends(['search' => $search, 'perPage' => $perPage]);
 

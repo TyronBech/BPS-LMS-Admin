@@ -52,7 +52,7 @@ class TransactionMaintenanceController extends Controller
         }
 
         $transactions = Transaction::with('user', 'book')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->paginate($perPage)
             ->appends([
                 'perPage' => $perPage,

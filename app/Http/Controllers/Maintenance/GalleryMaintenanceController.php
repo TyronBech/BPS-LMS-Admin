@@ -45,8 +45,7 @@ class GalleryMaintenanceController extends Controller
                 $query->where('name', 'like', "%{$search}%")
                     ->orWhere('title', 'like', "%{$search}%");
             })
-            ->orderBy('sort_order')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->paginate($perPage, ['*'], 'photo_page')
             ->appends(['search' => $search, 'perPage' => $perPage, 'tab' => 'photo']);
 
@@ -55,8 +54,7 @@ class GalleryMaintenanceController extends Controller
                     ->orWhere('title', 'like', "%{$search}%");
             })
             ->withCount('folders')
-            ->orderBy('sort_order')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->paginate($perPage, ['*'], 'video_page')
             ->appends(['search' => $search, 'perPage' => $perPage, 'tab' => 'video']);
 
@@ -264,8 +262,7 @@ class GalleryMaintenanceController extends Controller
         $album = VideoAlbum::findOrFail($request->id);
         $folders = VideoFolder::where('album_id', $album->id)
             ->withCount('items')
-            ->orderBy('sort_order')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->paginate(10);
             
         return view('maintenance.library-website.gallery.show-video-album', compact('album', 'folders'));
@@ -407,8 +404,7 @@ class GalleryMaintenanceController extends Controller
     {
         $folder = VideoFolder::with('album')->findOrFail($request->id);
         $items = VideoItem::where('folder_id', $folder->id)
-            ->orderBy('sort_order')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->paginate(10);
             
         return view('maintenance.library-website.gallery.show-video-folder', compact('folder', 'items'));
