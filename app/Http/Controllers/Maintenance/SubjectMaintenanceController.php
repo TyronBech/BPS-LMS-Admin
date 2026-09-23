@@ -47,11 +47,7 @@ class SubjectMaintenanceController extends Controller
             $query->where('access_code', 'like', "%{$search}%");
         }
 
-        if ($sortBy && $sortOrder) {
-            $query->orderBy($sortBy, $sortOrder)->orderBy('id', 'desc');
-        } else {
-            $query->orderBy('access_code', 'asc')->orderBy('id', 'desc');
-        }
+        $query->orderBy('updated_at', 'desc');
 
         $subjectAccessCodes = $query->paginate($perPage)->appends([
             'perPage' => $perPage,
