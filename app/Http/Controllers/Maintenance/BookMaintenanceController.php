@@ -96,7 +96,11 @@ class BookMaintenanceController extends Controller
             $booksQuery->where('book_type', $bookType);
         }
 
-        $booksQuery->orderBy('updated_at', 'desc');
+        if ($sortBy && in_array($sortBy, ['accession', 'title']) && in_array(strtolower($sortOrder), ['asc', 'desc'])) {
+            $booksQuery->orderBy($sortBy, $sortOrder);
+        } else {
+            $booksQuery->orderBy('updated_at', 'desc');
+        }
 
         $books      = $booksQuery
             ->paginate($perPage)
@@ -470,9 +474,9 @@ class BookMaintenanceController extends Controller
         }
 
         if ($request->input('barcodeBtn') === 'barcode') {
-            $this->export_barcode($request);
+            return $this->export_barcode($request);
         } elseif ($request->input('callNumberBtn') === 'callNumber') {
-            $this->export_call_numbers($request);
+            return $this->export_call_numbers($request);
         }
         // Fetch categories for dropdown
         $categories = Category::select('id', 'name')->orderBy('name')->get();
@@ -539,7 +543,11 @@ class BookMaintenanceController extends Controller
         }
 
         // Finalize query
-        $booksQuery->orderBy('updated_at', 'desc');
+        if ($sortBy && in_array($sortBy, ['accession', 'title']) && in_array(strtolower($sortOrder), ['asc', 'desc'])) {
+            $booksQuery->orderBy($sortBy, $sortOrder);
+        } else {
+            $booksQuery->orderBy('updated_at', 'desc');
+        }
 
         $books = $booksQuery
             ->paginate($perPage)

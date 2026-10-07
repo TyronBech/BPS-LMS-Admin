@@ -3,8 +3,8 @@
 use Illuminate\Support\Str;
 
 $mysqlSslCaOption = defined('Pdo\\Mysql::ATTR_SSL_CA')
-    ? Pdo\Mysql::ATTR_SSL_CA
-    : PDO::MYSQL_ATTR_SSL_CA;
+    ? constant('Pdo\\Mysql::ATTR_SSL_CA')
+    : (defined('PDO::MYSQL_ATTR_SSL_CA') ? constant('PDO::MYSQL_ATTR_SSL_CA') : null);
 
 return [
 
