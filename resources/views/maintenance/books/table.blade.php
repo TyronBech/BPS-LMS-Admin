@@ -2,23 +2,23 @@
 <div class="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-4 justify-between items-center mb-4 w-full">
   <div class="w-full md:w-auto">
     <div id="checked-books" class="hidden flex-wrap items-center gap-2">
-      <h5 id="selectedHeader" class="text-sm font-bold tracking-tight border-2 rounded-lg px-5 py-2">Selected</h5>
+      <h5 id="selectedHeader" class="inline-flex items-center justify-center h-10 px-4 text-sm font-bold tracking-tight border-2 border-gray-300 dark:border-gray-400 text-gray-900 dark:text-white bg-transparent rounded-lg m-0 whitespace-nowrap">Selected</h5>
       @can(PermissionsEnum::DELETE_BOOKS, 'admin')
-      <button data-modal-target="bulk-delete-book-modal" data-modal-toggle="bulk-delete-book-modal" class="bulkDeleteBookBtn focus:outline-none text-white bg-red-500 hover:bg-red-700 focus:ring-4 focus:ring-red-300 font-medium rounded-lg text-sm px-5 py-2" type="button" value="">
+      <button data-modal-target="bulk-delete-book-modal" data-modal-toggle="bulk-delete-book-modal" class="bulkDeleteBookBtn inline-flex items-center justify-center h-10 px-4 text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:ring-4 focus:ring-red-300 dark:bg-red-600 dark:hover:bg-red-700 dark:focus:ring-red-800 rounded-lg focus:outline-none whitespace-nowrap transition-colors" type="button" value="">
         Delete
       </button>
       @endcan
-      <form action="{{ route('maintenance.export-barcode') }}" method="GET" class="flex skip-loader">
+      <form action="{{ route('maintenance.export-barcode') }}" method="GET" class="inline-flex items-center m-0 p-0 skip-loader">
         @csrf
         <input type="hidden" name="ids" id="export_barcode_ids" value="" />
-        <button id="exportBarcodeBtn" type="submit" title="Export Barcode" value="barcode" class="exportBarcode skip-loader text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
+        <button id="exportBarcodeBtn" type="submit" title="Export Barcode" value="barcode" class="exportBarcode skip-loader inline-flex items-center justify-center h-10 px-4 text-sm font-medium text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 rounded-lg focus:outline-none whitespace-nowrap transition-colors">
           Generate Barcode
         </button>
       </form>
-      <form action="{{ route('maintenance.export-call-number') }}" method="GET" class="flex skip-loader">
+      <form action="{{ route('maintenance.export-call-number') }}" method="GET" class="inline-flex items-center m-0 p-0 skip-loader">
         @csrf
         <input type="hidden" name="ids" id="export_call_number_ids" value="" />
-        <button id="exportCallNumberBtn" type="submit" title="Export Call Number" value="callNumber" class="exportCallNumber skip-loader text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2 dark:bg-primary-600 dark:hover:bg-primary-700 focus:outline-none dark:focus:ring-primary-800">
+        <button id="exportCallNumberBtn" type="submit" title="Export Call Number" value="callNumber" class="exportCallNumber skip-loader inline-flex items-center justify-center h-10 px-4 text-sm font-medium text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:ring-primary-300 dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800 rounded-lg focus:outline-none whitespace-nowrap transition-colors">
           Generate Call Number
         </button>
       </form>
@@ -28,6 +28,7 @@
     <label for="perPage" class="mr-2 text-sm font-medium text-gray-700 dark:text-gray-300">Show</label>
     <input type="hidden" name="search" value="{{ request('search', '') }}">
     <input type="hidden" name="category" value="{{ request('category', '') }}">
+    <input type="hidden" name="book_type" value="{{ request('book_type', '') }}">
     <input type="hidden" name="sort_by" value="{{ $sortBy }}">
     <input type="hidden" name="sort_order" value="{{ $sortOrder }}">
     <input name="perPage" id="perPage" type="number" min="1" max="500" onchange="this.form.submit()" value="{{ request('perPage', 10) }}" class="border border-gray-300 text-xs rounded-lg focus:ring-primary-400 focus:border-primary-400 p-2 my-2 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500">
@@ -57,8 +58,8 @@
       <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 group">
         <td class="w-4 p-4">
           <div class="flex items-center">
-            <input id="bookCheck" type="checkbox" value="{{ $item->id }}" class="w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
-            <label for="bookCheck" class="sr-only">checkbox</label>
+            <input id="bookCheck-{{ $item->id }}" type="checkbox" value="{{ $item->id }}" class="bookCheck book-check w-4 h-4 text-primary-600 bg-gray-100 border-gray-300 rounded focus:ring-primary-500 dark:focus:ring-primary-600 dark:ring-offset-gray-800 dark:focus:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600">
+            <label for="bookCheck-{{ $item->id }}" class="sr-only">checkbox</label>
           </div>
         </td>
         <th scope="row" class="px-6 py-4 font-medium text-gray-900 dark:text-white max-w-[15rem] sm:max-w-xs md:max-w-sm lg:max-w-md">
@@ -157,84 +158,4 @@
     </div>
   </div>
 </div>
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    document.addEventListener('click', function(event) {
-      const deleteBtn = event.target.closest('.deleteBookBtn');
-      if (deleteBtn) {
-        const deleteBookID = document.getElementById('delete_book_id');
-        if (deleteBookID) {
-          deleteBookID.value = deleteBtn.value;
-        }
-      }
-    });
-  });
-  const bookCheck = document.querySelectorAll('#bookCheck');
-  let checkedBooks = 0;
-  const checkedBooksContainer = document.getElementById('checked-books');
-  const bulkDeleteBookIds = document.getElementById('bulk-delete_book_ids');
-  const bulkDeleteBookBtn = document.getElementById('bulkDeleteBookBtn');
-  const selectedHeader = document.getElementById('selectedHeader');
-  const selectAllCheckbox = document.getElementById('selectAll');
-  bulkDeleteBookIds.value = '';
-  bulkDeleteBookBtn.value = '';
-  const selectedIds = new Set();
-  bookCheck.forEach(check => {
-    check.addEventListener('change', function(event) {
-      const bookId = event.target.value;
-      if (event.target.checked) {
-        selectedIds.add(bookId);
-        checkedBooks++;
-      } else {
-        selectedIds.delete(bookId);
-        checkedBooks--;
-        selectAllCheckbox.checked = false;
-      }
-      bulkDeleteBookIds.value = Array.from(selectedIds).join(',');
-      bulkDeleteBookBtn.value = Array.from(selectedIds).join(',');
-      if (checkedBooks > 0) {
-        checkedBooksContainer.classList.replace('hidden', 'flex');
-        selectedHeader.textContent = `Selected (${checkedBooks})`;
-      } else {
-        checkedBooksContainer.classList.replace('flex', 'hidden');
-      }
-    });
-  });
-  selectAllCheckbox.addEventListener('change', function(event) {
-    checkedBooks = 0;
-    bookCheck.forEach(check => {
-      check.checked = event.target.checked;
-      const bookId = check.value;
-      if (event.target.checked) {
-        selectedIds.add(bookId);
-        checkedBooks++;
-      } else {
-        selectedIds.delete(bookId);
-        checkedBooks = 0;
-      }
-      bulkDeleteBookIds.value = Array.from(selectedIds).join(',');
-      bulkDeleteBookBtn.value = Array.from(selectedIds).join(',');
-      if (checkedBooks > 0) {
-        checkedBooksContainer.classList.replace('hidden', 'flex');
-        selectedHeader.textContent = `Selected (${checkedBooks})`;
-      } else {
-        checkedBooksContainer.classList.replace('flex', 'hidden');
-      }
-    });
-  });
-  const exportBarcodeButtons = document.querySelectorAll('.exportBarcode');
-  const exportBarcodeIds = document.getElementById('export_barcode_ids');
-  exportBarcodeButtons.forEach(button => {
-    button.addEventListener('click', function() {
-      exportBarcodeIds.value = Array.from(selectedIds).join(',');
-    });
-  });
 
-  const exportCallNumberButtons = document.querySelectorAll('.exportCallNumber');
-  const exportCallNumberIds = document.getElementById('export_call_number_ids');
-  exportCallNumberButtons.forEach(button => {
-    button.addEventListener('click', function() {
-      exportCallNumberIds.value = Array.from(selectedIds).join(',');
-    });
-  });
-</script>

@@ -73,8 +73,7 @@
       document.getElementById('sort_by').value = '';
       document.getElementById('sort_order').value = '';
     }
-
-    form.submit();
+    // Form submission is automatically handled once by app.js select change listener
   }
 </script>
 @endsection
