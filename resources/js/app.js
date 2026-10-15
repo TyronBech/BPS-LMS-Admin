@@ -376,13 +376,15 @@ document.addEventListener("DOMContentLoaded", () => {
                 input._lastSearchValue = input.value;
             });
 
-            const submitter = e.submitter || activeSubmitter;
+            const submitter = e.submitter || activeSubmitter || document.activeElement;
             const skipAjaxValues = ['pdf', 'excel', 'barcode', 'callNumber'];
+            const hiddenSubmitValue = form.querySelector('input[name="submit"]')?.value;
             
             // Allow normal submission for exports
             if (
                 (submitter && skipAjaxValues.includes(submitter.value)) ||
-                (submitter && (submitter.name === 'submit' || submitter.classList.contains('btn-export')))
+                (submitter && (submitter.name === 'submit' || submitter.classList.contains('btn-export'))) ||
+                (hiddenSubmitValue && skipAjaxValues.includes(hiddenSubmitValue))
             ) {
                 return;
             }

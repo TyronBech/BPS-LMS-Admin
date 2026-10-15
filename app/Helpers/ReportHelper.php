@@ -164,7 +164,7 @@ class ReportHelper
     /**
      * Helper to parse dates with multiple formats.
      */
-    private static function parseDate($value): Carbon
+    public static function parseDate($value): Carbon
     {
         if ($value instanceof Carbon) {
             return $value;
