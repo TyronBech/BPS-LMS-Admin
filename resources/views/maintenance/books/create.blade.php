@@ -599,9 +599,9 @@
     function getCategoryClassFromName(categoryName) {
       if (!categoryName) return null;
       const normalized = categoryName.trim().toLowerCase();
-      if (normalized === 'periodical') return 'cat-periodical';
-      if (normalized === 'serials') return 'cat-serials';
-      if (normalized === 'academic research') return 'cat-academic-research';
+      if (normalized === 'periodical' || normalized === 'periodicals') return 'cat-periodical';
+      if (normalized === 'serials' || normalized === 'series' || normalized === 'serial') return 'cat-serials';
+      if (normalized === 'academic research' || normalized === 'academic researches' || normalized === 'research works' || normalized === 'research') return 'cat-academic-research';
       return null;
     }
 
