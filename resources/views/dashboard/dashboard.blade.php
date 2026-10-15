@@ -463,7 +463,36 @@
         return;
       }
 
+      // Ensure one grade level and section per card
+      const sectionMap = new Map();
+
       data.forEach(sectionData => {
+        const title = (sectionData.section_title || (sectionData.level_label ? `${sectionData.level_label} - ${sectionData.section}` : `Section ${sectionData.section}`)).trim();
+        const dedupeKey = title.toLowerCase();
+
+        if (!sectionMap.has(dedupeKey)) {
+          sectionMap.set(dedupeKey, {
+            ...sectionData,
+            section_title: title,
+            students: [...(sectionData.students || [])]
+          });
+        } else {
+          // Merge students if duplicate section exists
+          const existing = sectionMap.get(dedupeKey);
+          const existingStudentIds = new Set(existing.students.map(s => s.id));
+          (sectionData.students || []).forEach(s => {
+            if (!existingStudentIds.has(s.id)) {
+              existing.students.push(s);
+              existingStudentIds.add(s.id);
+            }
+          });
+          // Sort merged students by visits count descending and keep top 5
+          existing.students.sort((a, b) => (b.logs_count || 0) - (a.logs_count || 0));
+          existing.students = existing.students.slice(0, 5);
+        }
+      });
+
+      sectionMap.forEach(sectionData => {
         const {
           section,
           students,
@@ -568,7 +597,36 @@
         return;
       }
 
+      // Ensure one grade level and section per card
+      const sectionMap = new Map();
+
       data.forEach(sectionData => {
+        const title = (sectionData.section_title || (sectionData.level_label ? `${sectionData.level_label} - ${sectionData.section}` : `Section ${sectionData.section}`)).trim();
+        const dedupeKey = title.toLowerCase();
+
+        if (!sectionMap.has(dedupeKey)) {
+          sectionMap.set(dedupeKey, {
+            ...sectionData,
+            section_title: title,
+            students: [...(sectionData.students || [])]
+          });
+        } else {
+          // Merge students if duplicate section exists
+          const existing = sectionMap.get(dedupeKey);
+          const existingStudentIds = new Set(existing.students.map(s => s.id));
+          (sectionData.students || []).forEach(s => {
+            if (!existingStudentIds.has(s.id)) {
+              existing.students.push(s);
+              existingStudentIds.add(s.id);
+            }
+          });
+          // Sort merged students by borrow count descending and keep top 5
+          existing.students.sort((a, b) => (b.borrow_count || 0) - (a.borrow_count || 0));
+          existing.students = existing.students.slice(0, 5);
+        }
+      });
+
+      sectionMap.forEach(sectionData => {
         const {
           section,
           students,
