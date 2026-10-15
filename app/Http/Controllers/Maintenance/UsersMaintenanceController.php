@@ -64,7 +64,7 @@ class UsersMaintenanceController extends Controller
 
         $students = User::whereHas('students')
             ->with('students')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->paginate($perStudentPage, ['*'], 'students_page')
             ->appends([
                 'perStudentPage' => $perStudentPage,
@@ -73,7 +73,7 @@ class UsersMaintenanceController extends Controller
 
         $employees = User::whereHas('employees')
             ->with('employees')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->paginate($perEmployeePage, ['*'], 'employees_page')
             ->appends([
                 'perEmployeePage' => $perEmployeePage,
@@ -82,7 +82,7 @@ class UsersMaintenanceController extends Controller
 
         $visitors = User::whereHas('visitors')
             ->with('visitors')
-            ->orderBy('created_at', 'desc')
+            ->orderBy('updated_at', 'desc')
             ->paginate($perVisitorPage, ['*'], 'visitors_page')
             ->appends([
                 'perVisitorPage' => $perVisitorPage,
@@ -272,7 +272,7 @@ class UsersMaintenanceController extends Controller
                   });
             });
         }
-        $students = $studentsQuery->orderBy('id', 'asc')
+        $students = $studentsQuery->orderBy('updated_at', 'desc')
             ->paginate($perStudentPage, ['*'], 'students_page')
             ->appends([
                 'perStudentPage' => $perStudentPage,
@@ -289,7 +289,7 @@ class UsersMaintenanceController extends Controller
                   });
             });
         }
-        $employees = $employeesQuery->orderBy('id', 'asc')
+        $employees = $employeesQuery->orderBy('updated_at', 'desc')
             ->paginate($perEmployeePage, ['*'], 'employees_page')
             ->appends([
                 'perEmployeePage' => $perEmployeePage,
@@ -307,7 +307,7 @@ class UsersMaintenanceController extends Controller
                   });
             });
         }
-        $visitors = $visitorsQuery->orderBy('id', 'asc')
+        $visitors = $visitorsQuery->orderBy('updated_at', 'desc')
             ->paginate($perVisitorPage, ['*'], 'visitors_page')
             ->appends([
                 'perVisitorPage' => $perVisitorPage,
@@ -1249,7 +1249,7 @@ class UsersMaintenanceController extends Controller
                             ->orWhere('employee_role', 'like', "%{$search}%");
                     });
                 })
-                ->orderBy('id', 'asc')
+                ->orderBy('updated_at', 'desc')
                 ->get();
 
             $dataRows = [];
@@ -1287,7 +1287,7 @@ class UsersMaintenanceController extends Controller
                             ->orWhere('purpose', 'like', "%{$search}%");
                     });
                 })
-                ->orderBy('id', 'asc')
+                ->orderBy('updated_at', 'desc')
                 ->get();
 
             $dataRows = [];
@@ -1326,7 +1326,7 @@ class UsersMaintenanceController extends Controller
                             ->orWhere('section', 'like', "%{$search}%");
                     });
                 })
-                ->orderBy('id', 'asc')
+                ->orderBy('updated_at', 'desc')
                 ->get();
 
             $dataRows = [];

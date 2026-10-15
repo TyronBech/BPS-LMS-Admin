@@ -45,7 +45,7 @@ class BookCirculationController extends Controller
 
         $validator = Validator::make($request->all(), [
             'barcode'       => 'nullable|string|max:255',
-            'title'         => 'nullable|string|max:255',
+            'title'         => 'nullable|string|max:500',
             'perPage'       => 'nullable|integer|min:1|max:500',
         ]);
 
@@ -101,7 +101,7 @@ class BookCirculationController extends Controller
         $books = new Book();
         $validator = Validator::make($request->all(), [
             'availability'  => 'nullable|in:' . implode(',', $this->extract_enums($books->getTable(), 'availability_status')),
-            'title'         => 'nullable|string|max:255',
+            'title'         => 'nullable|string|max:500',
             'barcode'       => 'nullable|string|max:255',
             'perPage'       => 'nullable|integer|min:1|max:500',
         ]);

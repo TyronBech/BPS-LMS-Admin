@@ -43,7 +43,7 @@ class PrivilegeMaintenanceController extends Controller
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
 
-        $privileges = UserGroup::orderBy('created_at', 'desc')
+        $privileges = UserGroup::orderBy('updated_at', 'desc')
             ->paginate($perPage)
             ->appends([
                 'perPage' => $perPage,

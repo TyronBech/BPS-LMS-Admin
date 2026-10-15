@@ -256,13 +256,21 @@ class FetchDataController extends Controller
 
         // Build months list between startDT and endDT (inclusive)
         $months = collect();
-        $cursor = $startDT->copy()->startOfMonth();
-        while ($cursor->lte($endDT)) {
+        $y = $startDT->year;
+        $m = $startDT->month;
+        $endY = $endDT->year;
+        $endM = $endDT->month;
+
+        while ($y < $endY || ($y == $endY && $m <= $endM)) {
             $months->push([
-                'key' => $cursor->format('Y-m'),
-                'label' => $cursor->format('Y F'),
+                'key' => $y . '-' . str_pad($m, 2, '0', STR_PAD_LEFT),
+                'label' => Carbon::create($y, $m, 1)->format('Y F'),
             ]);
-            $cursor->addMonthNoOverflow();
+            $m++;
+            if ($m > 12) {
+                $m = 1;
+                $y++;
+            }
         }
 
         LogFacade::debug('Analytics: Generated months list for transaction history', [
@@ -406,16 +414,7 @@ class FetchDataController extends Controller
         ]);
 
         try {
-            $levelSections = StudentDetail::select('level', 'section')
-                ->whereNotNull('section')
-                ->where('section', '!=', '')
-                ->distinct()
-                ->get()
-                ->sortBy(function ($item) {
-                    $weight = $this->getGradeLevelWeight($item->level);
-                    return sprintf('%04d_%s', $weight, strtolower(trim($item->section)));
-                })
-                ->values();
+            $levelSections = $this->getNormalizedLevelSections();
             $results = collect();
 
             $hasRange = false;
@@ -443,15 +442,7 @@ class FetchDataController extends Controller
             }
 
             foreach ($levelSections as $ls) {
-                $level   = $ls->level;
-                $section = $ls->section;
-
-                $topStudents = User::whereHas('students', function ($q) use ($level, $section) {
-                    if (!empty($level)) {
-                        $q->where('level', $level);
-                    }
-                    $q->where('section', $section);
-                })
+                $topStudents = $this->buildStudentQueryForSection($ls['raw_levels'], $ls['raw_sections'])
                     ->with('students')
                     ->withCount(['logs as logs_count' => function ($query) use ($hasRange, $startDT, $endDT) {
                         $query->whereNotNull('time_in');
@@ -467,8 +458,8 @@ class FetchDataController extends Controller
                     ->get();
 
                 LogFacade::debug('Analytics: Fetched top students for section', [
-                    'level' => $level,
-                    'section' => $section,
+                    'level' => $ls['level_label'],
+                    'section' => $ls['section'],
                     'students_count' => $topStudents->count(),
                     'user_id' => Auth::id(),
                 ]);
@@ -476,10 +467,10 @@ class FetchDataController extends Controller
                 $filtered = $topStudents->filter(fn($s) => $s->logs_count > 0);
                 if ($filtered->isNotEmpty()) {
                     $results->push([
-                        'level'         => $level,
-                        'level_label'   => $this->formatGradeLevelLabel($level),
-                        'section'       => $section,
-                        'section_title' => $this->formatSectionTitle($level, $section),
+                        'level'         => $ls['level'],
+                        'level_label'   => $ls['level_label'],
+                        'section'       => $ls['section'],
+                        'section_title' => $ls['section_title'],
                         'students'      => $filtered->values(),
                     ]);
                 }
@@ -530,17 +521,7 @@ class FetchDataController extends Controller
         ]);
 
         try {
-            $levelSections = StudentDetail::select('level', 'section')
-                ->whereNotNull('section')
-                ->where('section', '!=', '')
-                ->distinct()
-                ->get()
-                ->sortBy(function ($item) {
-                    $weight = $this->getGradeLevelWeight($item->level);
-                    return sprintf('%04d_%s', $weight, strtolower(trim($item->section)));
-                })
-                ->values();
-
+            $levelSections = $this->getNormalizedLevelSections();
             $results = collect();
 
             $hasRange = false;
@@ -568,15 +549,7 @@ class FetchDataController extends Controller
             }
 
             foreach ($levelSections as $ls) {
-                $level   = $ls->level;
-                $section = $ls->section;
-
-                $topStudents = User::whereHas('students', function ($q) use ($level, $section) {
-                    if (!empty($level)) {
-                        $q->where('level', $level);
-                    }
-                    $q->where('section', $section);
-                })
+                $topStudents = $this->buildStudentQueryForSection($ls['raw_levels'], $ls['raw_sections'])
                     ->with('students')
                     ->withCount(['transactions as borrow_count' => function ($query) use ($hasRange, $startDT, $endDT) {
                         if ($hasRange) {
@@ -590,8 +563,8 @@ class FetchDataController extends Controller
                     ->get();
 
                 LogFacade::debug('Analytics: Fetched top borrowers for section', [
-                    'level' => $level,
-                    'section' => $section,
+                    'level' => $ls['level_label'],
+                    'section' => $ls['section'],
                     'students_count' => $topStudents->count(),
                     'user_id' => Auth::id(),
                 ]);
@@ -599,10 +572,10 @@ class FetchDataController extends Controller
                 $filtered = $topStudents->filter(fn($s) => $s->borrow_count > 0);
                 if ($filtered->isNotEmpty()) {
                     $results->push([
-                        'level'         => $level,
-                        'level_label'   => $this->formatGradeLevelLabel($level),
-                        'section'       => $section,
-                        'section_title' => $this->formatSectionTitle($level, $section),
+                        'level'         => $ls['level'],
+                        'level_label'   => $ls['level_label'],
+                        'section'       => $ls['section'],
+                        'section_title' => $ls['section_title'],
                         'students'      => $filtered->values(),
                     ]);
                 }
@@ -638,19 +611,27 @@ class FetchDataController extends Controller
      *
      * @throws \Throwable
      */
-    public function topBooksBorrowed()
+    public function topBooksBorrowed(Request $request)
     {
+        $bookType = $request->query('book_type');
+
         LogFacade::info('Analytics: Fetching top books borrowed', [
             'user_id' => Auth::id(),
             'user_name' => Auth::user()->full_name ?? 'N/A',
+            'book_type' => $bookType,
             'timestamp' => now(),
         ]);
 
         try {
-            $topBooks = Book::with(['transactions' => function ($query) {
-                $query->whereIn('transaction_type', ['Borrowed', 'Returned']);
-            }])
-                ->get()
+            $query = Book::with(['transactions' => function ($q) {
+                $q->whereIn('transaction_type', ['Borrowed', 'Returned']);
+            }]);
+
+            if ($bookType && $bookType !== 'all') {
+                $query->where('book_type', $bookType);
+            }
+
+            $topBooks = $query->get()
                 ->groupBy('title')
                 ->map(function ($groupedBooks) {
                     return [
@@ -700,19 +681,27 @@ class FetchDataController extends Controller
      *
      * @throws \Throwable
      */
-    public function topCategoriesBorrowed()
+    public function topCategoriesBorrowed(Request $request)
     {
+        $bookType = $request->query('book_type');
+
         LogFacade::info('Analytics: Fetching top categories borrowed', [
             'user_id' => Auth::id(),
             'user_name' => Auth::user()->full_name ?? 'N/A',
+            'book_type' => $bookType,
             'timestamp' => now(),
         ]);
 
         try {
-            $topCategories = Book::with(['transactions' => function ($query) {
-                $query->whereIn('transaction_type', ['Borrowed', 'Returned']);
-            }])
-                ->get()
+            $query = Book::with(['transactions' => function ($q) {
+                $q->whereIn('transaction_type', ['Borrowed', 'Returned']);
+            }]);
+
+            if ($bookType && $bookType !== 'all') {
+                $query->where('book_type', $bookType);
+            }
+
+            $topCategories = $query->get()
                 ->groupBy('category_id')
                 ->map(function ($groupedCategories) {
                     return [
@@ -773,29 +762,11 @@ class FetchDataController extends Controller
             } catch (\Throwable $e) {}
         }
         
-        $levelSections = StudentDetail::select('level', 'section')
-            ->whereNotNull('section')
-            ->where('section', '!=', '')
-            ->distinct()
-            ->get()
-            ->sortBy(function ($item) {
-                $weight = $this->getGradeLevelWeight($item->level);
-                return sprintf('%04d_%s', $weight, strtolower(trim($item->section)));
-            })
-            ->values();
-
+        $levelSections = $this->getNormalizedLevelSections();
         $results = collect();
         
         foreach ($levelSections as $ls) {
-            $level   = $ls->level;
-            $section = $ls->section;
-
-            $topStudents = User::whereHas('students', function ($q) use ($level, $section) {
-                if (!empty($level)) {
-                    $q->where('level', $level);
-                }
-                $q->where('section', $section);
-            })
+            $topStudents = $this->buildStudentQueryForSection($ls['raw_levels'], $ls['raw_sections'])
                 ->with('students')
                 ->withCount(['logs as logs_count' => function ($query) use ($hasRange, $startDT, $endDT) {
                     $query->whereNotNull('time_in');
@@ -813,10 +784,10 @@ class FetchDataController extends Controller
             $filtered = $topStudents->filter(fn($s) => $s->logs_count > 0);
             if ($filtered->isNotEmpty()) {
                 $results->push([
-                    'level'         => $level,
-                    'level_label'   => $this->formatGradeLevelLabel($level),
-                    'section'       => $section,
-                    'section_title' => $this->formatSectionTitle($level, $section),
+                    'level'         => $ls['level'],
+                    'level_label'   => $ls['level_label'],
+                    'section'       => $ls['section'],
+                    'section_title' => $ls['section_title'],
                     'students'      => $filtered->values(),
                 ]);
             }
@@ -869,29 +840,11 @@ class FetchDataController extends Controller
             } catch (\Throwable $e) {}
         }
         
-        $levelSections = StudentDetail::select('level', 'section')
-            ->whereNotNull('section')
-            ->where('section', '!=', '')
-            ->distinct()
-            ->get()
-            ->sortBy(function ($item) {
-                $weight = $this->getGradeLevelWeight($item->level);
-                return sprintf('%04d_%s', $weight, strtolower(trim($item->section)));
-            })
-            ->values();
-
+        $levelSections = $this->getNormalizedLevelSections();
         $results = collect();
         
         foreach ($levelSections as $ls) {
-            $level   = $ls->level;
-            $section = $ls->section;
-
-            $topStudents = User::whereHas('students', function ($q) use ($level, $section) {
-                if (!empty($level)) {
-                    $q->where('level', $level);
-                }
-                $q->where('section', $section);
-            })
+            $topStudents = $this->buildStudentQueryForSection($ls['raw_levels'], $ls['raw_sections'])
                 ->with('students')
                 ->withCount(['transactions as borrow_count' => function ($query) use ($hasRange, $startDT, $endDT) {
                     if ($hasRange) {
@@ -907,10 +860,10 @@ class FetchDataController extends Controller
             $filtered = $topStudents->filter(fn($s) => $s->borrow_count > 0);
             if ($filtered->isNotEmpty()) {
                 $results->push([
-                    'level'         => $level,
-                    'level_label'   => $this->formatGradeLevelLabel($level),
-                    'section'       => $section,
-                    'section_title' => $this->formatSectionTitle($level, $section),
+                    'level'         => $ls['level'],
+                    'level_label'   => $ls['level_label'],
+                    'section'       => $ls['section'],
+                    'section_title' => $ls['section_title'],
                     'students'      => $filtered->values(),
                 ]);
             }
@@ -1045,7 +998,7 @@ class FetchDataController extends Controller
             return 'N/A';
         }
 
-        $clean = strtoupper(trim($level));
+        $clean = strtoupper(trim(preg_replace('/\s+/', ' ', $level)));
 
         if ($clean === 'NURSERY') {
             return 'Nursery';
@@ -1055,15 +1008,19 @@ class FetchDataController extends Controller
             return 'Kindergarten';
         }
 
-        if (str_starts_with($clean, 'GRADE ')) {
-            return ucwords(strtolower($level));
+        if (preg_match('/^GRADE\s*(\d+)$/i', $clean, $matches)) {
+            return 'Grade ' . (int) $matches[1];
         }
 
         if (is_numeric($clean)) {
-            return 'Grade ' . $clean;
+            return 'Grade ' . (int) $clean;
         }
 
-        return 'Grade ' . ucwords(strtolower($level));
+        if (str_starts_with($clean, 'GRADE ')) {
+            return ucwords(strtolower($clean));
+        }
+
+        return 'Grade ' . ucwords(strtolower($clean));
     }
 
     /**
@@ -1076,12 +1033,118 @@ class FetchDataController extends Controller
     private function formatSectionTitle(?string $level, ?string $section): string
     {
         $label = $this->formatGradeLevelLabel($level);
-        $sec = trim($section ?? '');
+        $sec = trim(preg_replace('/\s+/', ' ', $section ?? ''));
 
         if (empty($sec)) {
             return $label;
         }
 
-        return $label . ' - ' . $sec;
+        return $label . ' - ' . strtoupper($sec);
+    }
+
+    /**
+     * Get distinct normalized grade levels and sections with their corresponding raw database values.
+     *
+     * @return \Illuminate\Support\Collection
+     */
+    private function getNormalizedLevelSections()
+    {
+        $rawRecords = StudentDetail::select('level', 'section')
+            ->whereNotNull('section')
+            ->where('section', '!=', '')
+            ->distinct()
+            ->get();
+
+        $grouped = [];
+
+        foreach ($rawRecords as $record) {
+            $rawLevel = $record->level;
+            $rawSection = $record->section;
+
+            $levelLabel = $this->formatGradeLevelLabel($rawLevel);
+            $sectionClean = strtoupper(trim(preg_replace('/\s+/', ' ', $rawSection ?? '')));
+
+            if ($sectionClean === '') {
+                continue;
+            }
+
+            $key = $levelLabel . '___' . $sectionClean;
+
+            if (!isset($grouped[$key])) {
+                $grouped[$key] = [
+                    'level'         => $rawLevel,
+                    'level_label'   => $levelLabel,
+                    'section'       => $sectionClean,
+                    'section_title' => $this->formatSectionTitle($rawLevel, $sectionClean),
+                    'weight'        => $this->getGradeLevelWeight($levelLabel),
+                    'raw_levels'    => [],
+                    'raw_sections'  => [],
+                ];
+            }
+
+            if (!in_array($rawLevel, $grouped[$key]['raw_levels'], true)) {
+                $grouped[$key]['raw_levels'][] = $rawLevel;
+            }
+
+            if (!in_array($rawSection, $grouped[$key]['raw_sections'], true)) {
+                $grouped[$key]['raw_sections'][] = $rawSection;
+            }
+        }
+
+        return collect($grouped)
+            ->sortBy(function ($item) {
+                return sprintf('%04d_%s', $item['weight'], strtolower($item['section']));
+            })
+            ->values();
+    }
+
+    /**
+     * Scope a User query for students matching the given raw levels and sections.
+     *
+     * @param array $rawLevels
+     * @param array $rawSections
+     * @return \Illuminate\Database\Eloquent\Builder
+     */
+    private function buildStudentQueryForSection(array $rawLevels, array $rawSections)
+    {
+        return User::whereHas('students', function ($q) use ($rawLevels, $rawSections) {
+            $allLevelVariants = [];
+            $hasEmptyLevel = false;
+            foreach ($rawLevels as $l) {
+                if (is_null($l) || $l === '') {
+                    $hasEmptyLevel = true;
+                } else {
+                    $allLevelVariants[] = $l;
+                    $trimmed = trim($l);
+                    if ($trimmed !== '') {
+                        $allLevelVariants[] = $trimmed;
+                    }
+                }
+            }
+            $allLevelVariants = array_values(array_unique($allLevelVariants));
+
+            $q->where(function ($sub) use ($allLevelVariants, $hasEmptyLevel) {
+                if (!empty($allLevelVariants)) {
+                    $sub->whereIn('level', $allLevelVariants);
+                }
+                if ($hasEmptyLevel) {
+                    $sub->orWhereNull('level')->orWhere('level', '');
+                }
+            });
+
+            $allSectionVariants = [];
+            foreach ($rawSections as $s) {
+                if (!is_null($s) && $s !== '') {
+                    $allSectionVariants[] = $s;
+                    $trimmed = trim($s);
+                    if ($trimmed !== '') {
+                        $allSectionVariants[] = $trimmed;
+                    }
+                }
+            }
+            $allSectionVariants = array_values(array_unique($allSectionVariants));
+
+            $q->whereIn('section', $allSectionVariants);
+        });
     }
 }

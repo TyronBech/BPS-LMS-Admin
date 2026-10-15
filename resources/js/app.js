@@ -324,11 +324,26 @@ document.addEventListener("DOMContentLoaded", () => {
         const inputs = form.querySelectorAll('input[type="text"], input[type="search"]');
         const selects = form.querySelectorAll('select');
         let debounceTimer;
+        let currentAbortController = null;
 
         inputs.forEach(input => {
-            const triggerSearch = () => {
+            input._lastSearchValue = input.value;
+
+            const triggerSearch = (e) => {
+                // If it's a blur/change event and the value has not changed, do nothing
+                if (e && e.type === 'change' && input.value === input._lastSearchValue) {
+                    return;
+                }
+
+                // If event is not an explicit user input and the value hasn't changed, skip
+                if (e && e.type !== 'input' && input.value === input._lastSearchValue) {
+                    return;
+                }
+
+                input._lastSearchValue = input.value;
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(() => {
+                    hideLoader();
                     form.classList.add('skip-loader');
                     if (input.id) sessionStorage.setItem('autoSearchFocus', input.id);
                     if (form.requestSubmit) {
@@ -336,7 +351,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     } else {
                         form.submit();
                     }
-                }, 500);
+                }, 400);
             };
 
             input.addEventListener('input', triggerSearch);
@@ -346,6 +361,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
         selects.forEach(select => {
             select.addEventListener('change', () => {
+                hideLoader();
+                clearTimeout(debounceTimer);
                 form.classList.add('skip-loader');
                 if (form.requestSubmit) {
                     form.requestSubmit(hiddenSubmit);
@@ -356,18 +373,26 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         form.addEventListener('submit', async (e) => {
-            const submitter = e.submitter || activeSubmitter;
+            clearTimeout(debounceTimer);
+            inputs.forEach(input => {
+                input._lastSearchValue = input.value;
+            });
+
+            const submitter = e.submitter || activeSubmitter || document.activeElement;
             const skipAjaxValues = ['pdf', 'excel', 'barcode', 'callNumber'];
+            const hiddenSubmitValue = form.querySelector('input[name="submit"]')?.value;
             
             // Allow normal submission for exports
             if (
                 (submitter && skipAjaxValues.includes(submitter.value)) ||
-                (submitter && (submitter.name === 'submit' || submitter.classList.contains('btn-export')))
+                (submitter && (submitter.name === 'submit' || submitter.classList.contains('btn-export'))) ||
+                (hiddenSubmitValue && skipAjaxValues.includes(hiddenSubmitValue))
             ) {
                 return;
             }
 
             e.preventDefault();
+            hideLoader();
             const formData = new FormData(form);
             const params = new URLSearchParams(formData);
             const method = form.method.toUpperCase();
@@ -386,6 +411,13 @@ document.addEventListener("DOMContentLoaded", () => {
                 fetchOptions.body = formData;
             }
 
+            // Abort previous in-flight request to prevent race conditions & ghost refreshes
+            if (currentAbortController) {
+                currentAbortController.abort();
+            }
+            currentAbortController = new AbortController();
+            fetchOptions.signal = currentAbortController.signal;
+
             try {
                 const response = await fetch(url, fetchOptions);
                 const html = await response.text();
@@ -398,16 +430,25 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 if (oldContainer && newContainer) {
                     oldContainer.innerHTML = newContainer.innerHTML;
+                    hideLoader();
                     if (typeof initFlowbite === 'function') initFlowbite();
                     oldContainer.dispatchEvent(new CustomEvent('contentUpdated'));
                     if (method === 'GET') {
                         window.history.pushState({}, '', url);
                     }
-                } else {
-                    // Fallback if no container found
+                } else if (response.ok) {
+                    // Fallback only if response was successful but container missing
                     window.location.href = url;
+                } else {
+                    hideLoader();
+                    console.error('AJAX search failed with response status:', response.status);
                 }
             } catch (error) {
+                hideLoader();
+                if (error.name === 'AbortError') {
+                    // Stale request aborted cleanly by newer action
+                    return;
+                }
                 console.error('AJAX search failed', error);
             }
         });
@@ -417,6 +458,10 @@ document.addEventListener("DOMContentLoaded", () => {
         if (clearBtn) {
             clearBtn.addEventListener('click', async (e) => {
                 e.preventDefault();
+                clearTimeout(debounceTimer);
+                if (currentAbortController) {
+                    currentAbortController.abort();
+                }
                 
                 // Use data-clear-url if provided
                 const clearUrl = clearBtn.getAttribute('data-clear-url');

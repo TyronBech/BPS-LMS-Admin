@@ -21,49 +21,135 @@ use Exception;
 class TransactionMaintenanceController extends Controller
 {
     /**
-     * Show the list of transactions in the database.
+     * Show the list of transactions in the database with optional search and status filtering.
      *
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
     public function index(Request $request)
     {
-        $perPage = $request->input('perPage', 10);
+        $perPage         = $request->input('perPage', 10);
+        $search          = $request->input('search', '');
+        $status          = $request->input('status', '');
+        $transactionType = $request->input('transaction_type', '');
+
+        $transaction         = new Transaction();
+        $books               = new Book();
+        $transactionTypes    = $this->extract_enums($transaction->getTable(), 'transaction_type');
+        $transactionStatuses = $this->extract_enums($transaction->getTable(), 'status');
+        $conditions          = $this->extract_enums($books->getTable(), 'condition_status');
+        $penaltyStatuses     = $this->extract_enums($transaction->getTable(), 'penalty_status');
 
         Log::info('Transaction Maintenance: List page accessed', [
-            'user_id' => Auth::guard('admin')->id(),
-            'user_name' => Auth::guard('admin')->user()->full_name,
-            'per_page' => $perPage,
-            'ip_address' => $request->ip(),
-            'timestamp' => now(),
+            'user_id'          => Auth::guard('admin')->id(),
+            'user_name'        => Auth::guard('admin')->user()->full_name ?? Auth::guard('admin')->user()->first_name ?? 'Admin',
+            'per_page'         => $perPage,
+            'search'           => $search,
+            'status'           => $status,
+            'transaction_type' => $transactionType,
+            'ip_address'       => $request->ip(),
+            'timestamp'        => now(),
         ]);
 
-        $validator = Validator::make($request->all(), [
+        $rules = [
             'perPage' => 'nullable|integer|min:1|max:500',
-        ]);
-        if ($validator->fails()) {
-            Log::warning('Transaction Maintenance: Invalid perPage parameter', [
-                'user_id' => Auth::guard('admin')->id(),
-                'errors' => $validator->errors(),
-                'ip_address' => $request->ip(),
-                'timestamp' => now(),
-            ]);
-            return redirect()->back()->with('toast-warning', 'Invalid per page parameter')->withInput();
+            'search'  => 'nullable|string|max:255',
+        ];
+        if ($request->filled('status')) {
+            $rules['status'] = 'string|in:' . implode(',', $transactionStatuses);
+        }
+        if ($request->filled('transaction_type')) {
+            $rules['transaction_type'] = 'string|in:' . implode(',', $transactionTypes);
         }
 
-        $transactions = Transaction::with('user', 'book')
-            ->orderBy('created_at', 'desc')
+        $validator = Validator::make($request->all(), $rules);
+        if ($validator->fails()) {
+            Log::warning('Transaction Maintenance: Invalid filter parameter', [
+                'user_id'    => Auth::guard('admin')->id(),
+                'errors'     => $validator->errors(),
+                'ip_address' => $request->ip(),
+                'timestamp'  => now(),
+            ]);
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+        }
+
+        $query = Transaction::with(['user', 'book'])
+            ->whereHas('user')
+            ->whereHas('book');
+
+        if (!empty($search)) {
+            $searchTerms = array_filter(explode(' ', trim($search)));
+            $query->where(function ($q) use ($search, $searchTerms) {
+                // Search in User (name, email, rfid, student/employee id)
+                $q->whereHas('user', function ($userQuery) use ($searchTerms, $search) {
+                    $userQuery->where(function ($subQ) use ($searchTerms, $search) {
+                        if (!empty($searchTerms)) {
+                            $subQ->where(function ($wordsQ) use ($searchTerms) {
+                                foreach ($searchTerms as $term) {
+                                    $wordsQ->where(function ($termQ) use ($term) {
+                                        $termQ->where('first_name', 'like', "%{$term}%")
+                                            ->orWhere('middle_name', 'like', "%{$term}%")
+                                            ->orWhere('last_name', 'like', "%{$term}%");
+                                    });
+                                }
+                            });
+                        }
+                        $subQ->orWhereRaw("CONCAT(first_name, ' ', last_name) LIKE ?", ["%{$search}%"])
+                            ->orWhereRaw("CONCAT(last_name, ', ', first_name) LIKE ?", ["%{$search}%"])
+                            ->orWhereRaw("CONCAT(last_name, ' ', first_name) LIKE ?", ["%{$search}%"])
+                            ->orWhere('email', 'like', "%{$search}%")
+                            ->orWhere('rfid', 'like', "%{$search}%")
+                            ->orWhereHas('students', function ($studentQ) use ($search) {
+                                $studentQ->where('id_number', 'like', "%{$search}%");
+                            })
+                            ->orWhereHas('employees', function ($employeeQ) use ($search) {
+                                $employeeQ->where('employee_id', 'like', "%{$search}%");
+                            });
+                    });
+                });
+
+                // Search in Book (title, parallel title, accession, call number, isbn, barcode, authors)
+                $q->orWhereHas('book', function ($bookQuery) use ($search) {
+                    $bookQuery->where('title', 'like', "%{$search}%")
+                        ->orWhere('parallel_title', 'like', "%{$search}%")
+                        ->orWhere('accession', 'like', "%{$search}%")
+                        ->orWhere('call_number', 'like', "%{$search}%")
+                        ->orWhere('isbn', 'like', "%{$search}%")
+                        ->orWhere('barcode', 'like', "%{$search}%")
+                        ->orWhereRaw('CAST(authors AS CHAR) LIKE ?', ["%{$search}%"]);
+                });
+            });
+        }
+
+        if (!empty($status)) {
+            $query->where('status', $status);
+        }
+
+        if (!empty($transactionType)) {
+            $query->where('transaction_type', $transactionType);
+        }
+
+        $transactions = $query
+            ->orderBy('updated_at', 'desc')
             ->paginate($perPage)
             ->appends([
-                'perPage' => $perPage,
+                'perPage'          => $perPage,
+                'search'           => $search,
+                'status'           => $status,
+                'transaction_type' => $transactionType,
             ]);
-        $transaction            = new Transaction();
-        $books                  = new Book();
-        $transactionTypes       = $this->extract_enums($transaction->getTable(), 'transaction_type');
-        $transactionStatuses    = $this->extract_enums($transaction->getTable(), 'status');
-        $conditions             = $this->extract_enums($books->getTable(), 'condition_status');
-        $penaltyStatuses        = $this->extract_enums($transaction->getTable(), 'penalty_status');
-        return view('maintenance.transactions.index', compact('transactions', 'transactionTypes', 'transactionStatuses', 'conditions', 'penaltyStatuses', 'perPage'));
+
+        return view('maintenance.transactions.index', compact(
+            'transactions',
+            'transactionTypes',
+            'transactionStatuses',
+            'conditions',
+            'penaltyStatuses',
+            'perPage',
+            'search',
+            'status',
+            'transactionType'
+        ));
     }
     /**
      * Show a single transaction from the database based on the given id.

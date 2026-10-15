@@ -25,12 +25,12 @@
             <h6 class="text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">Basic Information</h6>
           </div>
           <div class="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
-            <div class="md:col-span-2 lg:col-span-12">
-              <label for="title" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Title:</label>
-              <input type="text" id="title" name="title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Material Title" value="{{ old('title', $book->title) }}" required>
+            <div id="title-container" class="md:col-span-2 lg:col-span-12">
+              <label for="title" id="title-label" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Title:</label>
+              <input type="text" id="title" name="title" maxlength="500" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Material Title" value="{{ old('title', $book->title) }}" required>
               @error('title') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
-            <div class="md:col-span-2 lg:col-span-12">
+            <div id="parallel-title-container" class="md:col-span-2 lg:col-span-12">
               <label for="parallel_title" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Parallel Title:</label>
               <input type="text" id="parallel_title" name="parallel_title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Title 1; Title 2 (separated by semicolon)" value="{{ old('parallel_title', $book->parallel_title) }}">
               @error('parallel_title') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
@@ -54,12 +54,12 @@
               </select>
               @error('category') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
-            <div class="md:col-span-2 lg:col-span-4">
+            <div id="accession-container" class="md:col-span-2 lg:col-span-4">
               <label for="accession" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Accession Number:</label>
               <input type="text" id="accession" name="accession" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., FIL0123456789" value="{{ old('accession', $book->accession) }}" required>
               @error('accession') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
-            <div class="lg:col-span-3">
+            <div id="call-number-container" class="lg:col-span-3">
               <label for="call_number" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Call Number:</label>
               <input type="text" id="call_number" name="call_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 192.000" value="{{ old('call_number', $book->call_number) }}">
             </div>
@@ -110,7 +110,7 @@
         </div>
 
         <!-- Section 2: Authors Information -->
-        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+        <div id="authors-section" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
           <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
             <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
             <h6 class="text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">Authors & Contributors</h6>
@@ -137,38 +137,38 @@
         </div>
 
         <!-- Section 3: Material Description -->
-        <div id="description-container" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+        <div id="description-section" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
           <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
             <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
             <h6 class="text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">Material Description</h6>
           </div>
           <div class="p-5 space-y-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div class="md:col-span-3">
+              <div id="desc-description-container" class="md:col-span-3">
                 <label for="desc_description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Physical Description:</label>
                 <textarea id="desc_description" name="description[Description]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Physical characteristics">{{ old('description.Description', is_array($book->description['Description'] ?? '') ? implode(', ', $book->description['Description']) : ($book->description['Description'] ?? '')) }}</textarea>
               </div>
-              <div>
+              <div id="desc-extent-container">
                 <label for="desc_extent" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Extent: <span id="extent_asterisk" class="text-red-500">*</span></label>
                 <input type="text" id="desc_extent" name="description[Extent]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., 200 pages" value="{{ old('description.Extent', is_array($book->description['Extent'] ?? '') ? implode(', ', $book->description['Extent']) : ($book->description['Extent'] ?? '')) }}">
               </div>
-              <div>
+              <div id="desc-acc-material-container">
                 <label for="desc_acc_material" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Acc Material:</label>
                 <input type="text" id="desc_acc_material" name="description[Acc Material]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Accompanying material" value="{{ old('description.Acc Material', is_array($book->description['Acc Material'] ?? '') ? implode(', ', $book->description['Acc Material']) : ($book->description['Acc Material'] ?? '')) }}">
               </div>
-              <div>
+              <div id="desc-series-container">
                 <label for="desc_series" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Series:</label>
                 <input type="text" id="desc_series" name="description[Series]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Harry Potter Series" value="{{ old('description.Series', is_array($book->description['Series'] ?? '') ? implode(', ', $book->description['Series']) : ($book->description['Series'] ?? '')) }}">
               </div>
-              <div class="md:col-span-3">
+              <div id="desc-content-notes-container" class="md:col-span-3">
                 <label for="desc_content_notes" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Content Notes:</label>
                 <textarea id="desc_content_notes" name="description[Content notes]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Table of contents, etc.">{{ old('description.Content notes', is_array($book->description['Content notes'] ?? '') ? implode(', ', $book->description['Content notes']) : ($book->description['Content notes'] ?? '')) }}</textarea>
               </div>
-              <div class="md:col-span-3">
+              <div id="desc-abstract-container" class="md:col-span-3">
                 <label for="desc_abstract" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Abstract:</label>
                 <textarea id="desc_abstract" name="description[Abstract]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Summary or abstract">{{ old('description.Abstract', is_array($book->description['Abstract'] ?? '') ? implode(', ', $book->description['Abstract']) : ($book->description['Abstract'] ?? '')) }}</textarea>
               </div>
-              <div class="md:col-span-3">
+              <div id="desc-reviews-container" class="md:col-span-3">
                 <label for="desc_reviews" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Reviews:</label>
                 <textarea id="desc_reviews" name="description[Reviews]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Material reviews">{{ old('description.Reviews', is_array($book->description['Reviews'] ?? '') ? implode(', ', $book->description['Reviews']) : ($book->description['Reviews'] ?? '')) }}</textarea>
               </div>
@@ -178,19 +178,19 @@
         </div>
 
         <!-- Section 4: Publishing & Logistics -->
-        <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
+        <div id="publishing-section" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
           <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
             <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
             <h6 class="text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">Publishing & Logistics</h6>
           </div>
           <div class="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div>
+            <div id="publisher-container">
               <label for="publisher" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Publisher:</label>
               <input type="text" id="publisher" name="publisher" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., National Library" value="{{ old('publisher', $book->publisher) }}">
               @error('publisher') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
-            <div>
-              <label for="copyright" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Copyright Year:</label>
+            <div id="copyright-container">
+              <label for="copyright" id="copyright-label" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Copyright Year:</label>
               <input type="text" id="copyright" name="copyright" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 2026" value="{{ old('copyright', $book->copyrights) }}">
               @error('copyright') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
@@ -198,8 +198,8 @@
               <label for="publication" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Place of Publication:</label>
               <input type="text" id="publication" name="publication" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Manila, Philippines" value="{{ old('publication', $book->place_of_publication) }}">
             </div>
-            <div>
-              <label for="location" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Location:</label>
+            <div id="location-container">
+              <label for="location" id="location-label" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Location:</label>
               <input type="text" id="location" name="location" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Section A, Shelf 1" value="{{ old('location', $book->location) }}">
             </div>
             <div id="digital-copy-container" class="lg:col-span-2">
@@ -209,7 +209,102 @@
           </div>
         </div>
 
-        <!-- Section 5: Status & Assets -->
+        <!-- Section 5: Category-Specific Fields -->
+        <div id="category-specific-section" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden hidden">
+          <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
+            <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            <h6 id="category-specific-title" class="text-sm font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">Category-Specific Fields</h6>
+          </div>
+          <div class="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {{-- Periodical Fields --}}
+            <div class="cat-field cat-periodical">
+              <label for="periodical_kind" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Kinds of Periodical:</label>
+              <select id="periodical_kind" name="periodical_kind" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <option value="">Select kind</option>
+                @foreach(['Newspaper', 'Magazine', 'Journal', 'Newsletter', 'Bulletin'] as $kind)
+                  <option value="{{ $kind }}" {{ old('periodical_kind', $book->periodical_kind) == $kind ? 'selected' : '' }}>{{ $kind }}</option>
+                @endforeach
+              </select>
+            </div>
+            <div class="cat-field cat-periodical">
+              <label for="volume" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Volume:</label>
+              <input type="text" id="volume" name="volume" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Vol. 5" value="{{ old('volume', $book->volume) }}">
+            </div>
+            <div class="cat-field cat-periodical">
+              <label for="issue_number" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Issue Number:</label>
+              <input type="text" id="issue_number" name="issue_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., No. 3" value="{{ old('issue_number', $book->issue_number) }}">
+            </div>
+            <div class="cat-field cat-periodical">
+              <label for="material_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Type:</label>
+              <select id="material_type" name="material_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <option value="">Select type</option>
+                @foreach(['Article', 'Book Review', 'Essay', 'Case Study', 'Research Article', 'Editorial', 'Letter', 'Report'] as $mtype)
+                  <option value="{{ $mtype }}" {{ old('material_type', $book->material_type) == $mtype ? 'selected' : '' }}>{{ $mtype }}</option>
+                @endforeach
+              </select>
+            </div>
+            <div class="cat-field cat-periodical md:col-span-2 lg:col-span-2">
+              <label for="desc_pages" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Page(s):</label>
+              <input type="text" id="desc_pages" name="description[Pages]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., pp. 12-25" value="{{ old('description.Pages', $book->description['Pages'] ?? '') }}">
+            </div>
+
+            {{-- Serials Fields --}}
+            <div class="cat-field cat-serials">
+              <label for="issn" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">ISSN:</label>
+              <input type="text" id="issn" name="issn" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., 1234-5678" value="{{ old('issn', $book->issn) }}">
+            </div>
+            <div class="cat-field cat-serials">
+              <label for="frequency" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Frequency:</label>
+              <select id="frequency" name="frequency" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <option value="">Select frequency</option>
+                @foreach(['Daily', 'Weekly', 'Biweekly', 'Monthly', 'Bimonthly', 'Quarterly', 'Semi-annually', 'Annually', 'Irregular'] as $freq)
+                  <option value="{{ $freq }}" {{ old('frequency', $book->frequency) == $freq ? 'selected' : '' }}>{{ $freq }}</option>
+                @endforeach
+              </select>
+            </div>
+            <div class="cat-field cat-serials">
+              <label for="latest_received" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Latest Received:</label>
+              <input type="text" id="latest_received" name="latest_received" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Vol. 10 No. 3 (2026)" value="{{ old('latest_received', $book->latest_received) }}">
+            </div>
+            <div class="cat-field cat-serials">
+              <label for="discipline" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Discipline:</label>
+              <input type="text" id="discipline" name="discipline" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Social Sciences" value="{{ old('discipline', $book->discipline) }}">
+            </div>
+            <div class="cat-field cat-serials md:col-span-2 lg:col-span-2">
+              <label for="topical_access_point" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Topical Access Point:</label>
+              <input type="text" id="topical_access_point" name="topical_access_point" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Education -- Philippines" value="{{ old('topical_access_point', $book->topical_access_point) }}">
+            </div>
+            <div class="cat-field cat-serials md:col-span-2 lg:col-span-3">
+              <label for="corporate_access_point" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Corporate Access Point:</label>
+              <input type="text" id="corporate_access_point" name="corporate_access_point" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Department of Education" value="{{ old('corporate_access_point', $book->corporate_access_point) }}">
+            </div>
+            <div class="cat-field cat-serials md:col-span-2 lg:col-span-3">
+              <label for="serial_notes" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Notes:</label>
+              <textarea id="serial_notes" name="notes" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Additional notes">{{ old('notes', $book->notes) }}</textarea>
+            </div>
+
+            {{-- Academic Research Fields --}}
+            <div class="cat-field cat-academic-research">
+              <label for="institution" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Institution:</label>
+              <input type="text" id="institution" name="institution" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., University of the Philippines" value="{{ old('institution', $book->institution) }}">
+            </div>
+            <div class="cat-field cat-academic-research">
+              <label for="program" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Program:</label>
+              <input type="text" id="program" name="program" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., BS Computer Science" value="{{ old('program', $book->program) }}">
+            </div>
+            <div class="cat-field cat-academic-research">
+              <label for="research_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Type of Research:</label>
+              <select id="research_type" name="material_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
+                <option value="">Select type</option>
+                @foreach(['Thesis', 'Dissertation', 'Capstone', 'Feasibility Study', 'Action Research', 'Case Study', 'Experimental Research'] as $rtype)
+                  <option value="{{ $rtype }}" {{ old('material_type', $book->material_type) == $rtype ? 'selected' : '' }}>{{ $rtype }}</option>
+                @endforeach
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Section 6: Status & Assets -->
         <div class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden">
           <div class="px-5 py-3 bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700 flex items-center gap-2">
             <svg class="w-5 h-5 text-primary-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
@@ -231,13 +326,19 @@
                   @php
                     $isDisabled = false;
                     $currentStatus = $book->availability_status;
+                    $hasActiveBorrowing = $book->activeBorrowing()->exists();
+                    $hasActiveReservation = $book->activeReservation()->exists();
 
-                    if ($value === 'Borrowed' || $value === 'Reserved') {
-                        if ($currentStatus !== $value) {
+                    if ($value === 'Borrowed') {
+                        if (!$hasActiveBorrowing) {
+                            $isDisabled = true;
+                        }
+                    } elseif ($value === 'Reserved') {
+                        if (!$hasActiveReservation) {
                             $isDisabled = true;
                         }
                     } elseif ($value === 'Available') {
-                        if ($currentStatus === 'Borrowed' || $currentStatus === 'Reserved') {
+                        if ($hasActiveBorrowing || $hasActiveReservation) {
                             $isDisabled = true;
                         }
                     }
@@ -306,7 +407,9 @@
               <label for="copy_remarks" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Remarks:</label>
               <select id="copy_remarks" name="remarks" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
                 @foreach($remarks as $value)
-                <option value="{{ $value }}" {{ $value == $book->remarks ? 'selected' : '' }}>{{ $value }}</option>
+                  @if($value !== 'Unreturned')
+                    <option value="{{ $value }}" {{ $value === 'On Shelf' ? 'selected' : '' }}>{{ $value }}</option>
+                  @endif
                 @endforeach
               </select>
             </div>
@@ -315,7 +418,7 @@
               <select id="copy_availability" name="availability" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
                 @foreach($availability as $value)
                   @if($value !== 'Borrowed' && $value !== 'Reserved')
-                    <option value="{{ $value }}" {{ ($book->availability_status === 'Borrowed' || $book->availability_status === 'Reserved' ? 'Available' : $book->availability_status) == $value ? 'selected' : '' }}>{{ $value }}</option>
+                    <option value="{{ $value }}" {{ $value === 'Available' ? 'selected' : '' }}>{{ $value }}</option>
                   @endif
                 @endforeach
               </select>
@@ -325,10 +428,11 @@
               <label for="copy_condition" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Condition:</label>
               <select id="copy_condition" name="condition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
                 @foreach($condition as $value)
-                <option value="{{ $value }}" {{ $value == $book->condition_status ? 'selected' : '' }}>{{ $value }}</option>
+                <option value="{{ $value }}" {{ ($book->condition_status ?? 'Good') == $value ? 'selected' : '' }}>{{ $value }}</option>
                 @endforeach
               </select>
             </div>
+            <input type="hidden" name="source_book_id" value="{{ $book->id }}">
             <input type="hidden" name="title" value="{{ $book->title }}">
             <input type="hidden" name="parallel_title" value="{{ $book->parallel_title }}">
             <input type="hidden" name="book_type" value="{{ $book->book_type }}">
@@ -341,11 +445,22 @@
                 <input type="hidden" name="authors[{{ $key }}]" value="{{ is_array($value) ? json_encode($value) : $value }}">
               @endforeach
             @endif
+            @php
+              $sourceDesc = is_array($book->description) ? $book->description : [];
+              $sourceExtent = $sourceDesc['Extent'] ?? ($sourceDesc['extent'] ?? null);
+
+              if (empty($sourceExtent) || trim((string)$sourceExtent) === '') {
+                  $sourceExtent = 'N/A';
+              }
+            @endphp
             @if(is_array($book->description))
               @foreach($book->description as $key => $value)
-                <input type="hidden" name="description[{{ $key }}]" value="{{ is_array($value) ? json_encode($value) : $value }}">
+                @if(strtolower($key) !== 'extent')
+                  <input type="hidden" name="description[{{ $key }}]" value="{{ is_array($value) ? json_encode($value) : $value }}">
+                @endif
               @endforeach
             @endif
+            <input type="hidden" name="description[Extent]" value="{{ $sourceExtent }}">
             <input type="hidden" name="publication" value="{{ $book->place_of_publication }}">
             <input type="hidden" name="publisher" value="{{ $book->publisher }}">
             <input type="hidden" name="copyright" value="{{ $book->copyrights }}">
@@ -353,6 +468,21 @@
             <input type="hidden" id="copy_category" name="category" value="{{ $book->category_id }}">
             <input type="hidden" name="call_number" value="{{ $book->call_number }}">
             <input type="hidden" name="isbn" value="{{ $book->isbn }}">
+            <input type="hidden" name="periodical_kind" value="{{ $book->periodical_kind }}">
+            <input type="hidden" name="volume" value="{{ $book->volume }}">
+            <input type="hidden" name="issue_number" value="{{ $book->issue_number }}">
+            <input type="hidden" name="material_type" value="{{ $book->material_type }}">
+            <input type="hidden" name="issn" value="{{ $book->issn }}">
+            <input type="hidden" name="frequency" value="{{ $book->frequency }}">
+            <input type="hidden" name="latest_received" value="{{ $book->latest_received }}">
+            <input type="hidden" name="notes" value="{{ $book->notes }}">
+            <input type="hidden" name="topical_access_point" value="{{ $book->topical_access_point }}">
+            <input type="hidden" name="corporate_access_point" value="{{ $book->corporate_access_point }}">
+            <input type="hidden" name="discipline" value="{{ $book->discipline }}">
+            <input type="hidden" name="institution" value="{{ $book->institution }}">
+            <input type="hidden" name="program" value="{{ $book->program }}">
+            <input type="hidden" name="location" value="{{ $book->location }}">
+            <input type="hidden" name="languages" value="{{ $book->languages }}">
           </div>
         </div>
         <!-- Modal footer -->
@@ -461,6 +591,8 @@
     }
 
     const originalAvailability = '{{ $book->availability_status }}';
+    const hasActiveBorrowing = {{ $book->activeBorrowing()->exists() ? 'true' : 'false' }};
+    const hasActiveReservation = {{ $book->activeReservation()->exists() ? 'true' : 'false' }};
 
     function applyAvailabilityRule(isInitial = false) {
       if (!availabilitySelect || !availabilityHidden || !remarksSelect) return;
@@ -474,7 +606,7 @@
         if (isInitial) {
           availabilitySelect.value = originalAvailability;
         } else {
-          if (originalAvailability === 'Borrowed' || originalAvailability === 'Reserved') {
+          if ((originalAvailability === 'Borrowed' && hasActiveBorrowing) || (originalAvailability === 'Reserved' && hasActiveReservation)) {
             availabilitySelect.value = originalAvailability;
           } else {
             availabilitySelect.value = 'Available';
@@ -520,7 +652,10 @@
     }
 
     if (categorySelect) {
-      categorySelect.addEventListener('change', syncBookTypeFromCategory);
+      categorySelect.addEventListener('change', function() {
+        syncBookTypeFromCategory();
+        toggleCategorySpecificFields();
+      });
     }
 
     if (bookTypeSelect) {
@@ -546,6 +681,11 @@
 
       const categoryId = copyCategoryInput.value;
       if (!categoryId) return;
+
+      if (copyRemarks) {
+        copyRemarks.value = 'On Shelf';
+      }
+      applyAvailabilityRuleCopy();
 
       try {
         const response = await fetch(`/admin/maintenance/books/next-accession/${categoryId}`);
@@ -650,15 +790,226 @@
       copyAccessionInputEl.addEventListener('input', validateCopyAccessionInput);
     }
 
+    // Copy modal availability logic
+    const copyRemarks = document.getElementById('copy_remarks');
+    const copyAvailability = document.getElementById('copy_availability');
+    const copyAvailabilityHidden = document.getElementById('copy_availability_hidden');
+
+    function applyAvailabilityRuleCopy() {
+      if (!copyAvailability || !copyAvailabilityHidden || !copyRemarks) return;
+      const rv = copyRemarks.value;
+      if (rv && rv !== 'On Shelf') {
+        copyAvailability.value = 'Unavailable';
+        copyAvailability.setAttribute('disabled', 'disabled');
+        copyAvailabilityHidden.value = 'Unavailable';
+        copyAvailabilityHidden.removeAttribute('disabled');
+      } else {
+        copyAvailability.value = 'Available';
+        copyAvailability.removeAttribute('disabled');
+        copyAvailabilityHidden.setAttribute('disabled', 'disabled');
+      }
+    }
+
+    if (copyRemarks) {
+      copyRemarks.addEventListener('change', applyAvailabilityRuleCopy);
+      applyAvailabilityRuleCopy();
+    }
+
     // Prefill when modal button is clicked
     const copyModalBtn = document.querySelector('[data-modal-target="copy-book-modal"]');
     if (copyModalBtn) {
       copyModalBtn.addEventListener('click', prefillCopyAccession);
     }
 
+    // ── Category-specific fields logic ──────────────────────────────────
+    const categorySpecificSection = document.getElementById('category-specific-section');
+    const categorySpecificTitle = document.getElementById('category-specific-title');
+    const titleLabel = document.getElementById('title-label');
+    const copyrightLabel = document.getElementById('copyright-label');
+    const locationLabel = document.getElementById('location-label');
+
+    function getCategoryClassFromName(categoryName) {
+      if (!categoryName) return null;
+      const normalized = categoryName.trim().toLowerCase();
+      if (normalized === 'periodical' || normalized === 'periodicals') return 'cat-periodical';
+      if (normalized === 'serials' || normalized === 'series' || normalized === 'serial') return 'cat-serials';
+      if (normalized === 'academic research' || normalized === 'academic researches' || normalized === 'research works' || normalized === 'research') return 'cat-academic-research';
+      return null;
+    }
+
+    /**
+     * Defines which generic form element IDs should be visible for each special category.
+     * Any element not listed here will be hidden when that category is selected.
+     */
+    const categoryVisibleFields = {
+      'cat-periodical': [
+        'title-container',        // Article Title
+        'authors-section',        // Creator
+        'copyright-container',    // Date
+        'location-container',     // Location
+        'subject-container',      // Subjects
+        'desc-abstract-container', // Abstract
+        'description-section',    // needed to show abstract
+      ],
+      'cat-serials': [
+        'title-container',        // Title
+        'publication-container',  // Place of Publication
+        'publisher-container',    // Publisher
+        'desc-extent-container',  // Extent
+        'description-section',    // needed to show extent
+        'call-number-container',  // Call Number
+        'accession-container',    // Accession
+        'location-container',     // Library Location
+        'publishing-section',     // needed to show publisher/publication/location
+      ],
+      'cat-academic-research': [
+        'title-container',        // Title Proper
+        'authors-section',        // Creator
+        'copyright-container',    // Date
+        'desc-extent-container',  // Extent
+        'description-section',    // needed to show extent and abstract
+        'call-number-container',  // Call Number
+        'accession-container',    // Accession
+        'languages-container',    // Language
+        'subject-container',      // Subjects
+        'desc-abstract-container', // Abstract
+      ]
+    };
+
+    /** All generic field container IDs that can be toggled */
+    const allToggleableFields = [
+      'title-container', 'parallel-title-container', 'accession-container',
+      'call-number-container', 'isbn-container', 'edition-container',
+      'languages-container', 'subject-container',
+      'authors-section', 'description-section', 'publishing-section',
+      'desc-description-container', 'desc-extent-container',
+      'desc-acc-material-container', 'desc-series-container',
+      'desc-content-notes-container', 'desc-abstract-container',
+      'desc-reviews-container',
+      'publisher-container', 'copyright-container',
+      'publication-container', 'location-container', 'digital-copy-container'
+    ];
+
+    /** Title label mapping per category */
+    const titleLabelMap = {
+      'cat-periodical': 'Article Title:',
+      'cat-serials': 'Title:',
+      'cat-academic-research': 'Title Proper:'
+    };
+
+    /** Copyright/Date label mapping per category */
+    const copyrightLabelMap = {
+      'cat-periodical': 'Date:',
+      'cat-academic-research': 'Date:'
+    };
+
+    /** Location label mapping per category */
+    const locationLabelMap = {
+      'cat-serials': 'Library Location:'
+    };
+
+    function toggleCategorySpecificFields() {
+      if (!categorySelect || !categorySpecificSection) return;
+      const selectedCategory = getCategoryById(categorySelect.value);
+      const catClass = selectedCategory ? getCategoryClassFromName(selectedCategory.name) : null;
+
+      // Hide all category-specific fields first
+      document.querySelectorAll('.cat-field').forEach(el => el.classList.add('hidden'));
+
+      if (catClass) {
+        // Show the category-specific section and its relevant fields
+        categorySpecificSection.classList.remove('hidden');
+        document.querySelectorAll('.' + catClass).forEach(el => el.classList.remove('hidden'));
+
+        // Update section title
+        const titles = {
+          'cat-periodical': 'Periodical Fields',
+          'cat-serials': 'Serials Fields',
+          'cat-academic-research': 'Academic Research Fields'
+        };
+        categorySpecificTitle.textContent = titles[catClass] || 'Category-Specific Fields';
+
+        // Update the title field label
+        if (titleLabel) {
+          titleLabel.textContent = titleLabelMap[catClass] || 'Title:';
+        }
+
+        // Update the copyright/date label
+        if (copyrightLabel) {
+          copyrightLabel.textContent = copyrightLabelMap[catClass] || 'Copyright Year:';
+        }
+
+        // Update the location label
+        if (locationLabel) {
+          locationLabel.textContent = locationLabelMap[catClass] || 'Location:';
+        }
+
+        // Get the list of visible fields for this category
+        const visibleFields = categoryVisibleFields[catClass] || [];
+
+        // Hide all toggleable fields, then show only the ones for this category
+        allToggleableFields.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) {
+            if (visibleFields.includes(id)) {
+              el.classList.remove('hidden');
+            } else {
+              el.classList.add('hidden');
+            }
+          }
+        });
+
+        // For description-section: only show the section container if at least one
+        // child description field is visible
+        const descSection = document.getElementById('description-section');
+        if (descSection) {
+          const descChildIds = [
+            'desc-description-container', 'desc-extent-container',
+            'desc-acc-material-container', 'desc-series-container',
+            'desc-content-notes-container', 'desc-abstract-container',
+            'desc-reviews-container'
+          ];
+          const hasVisibleChild = descChildIds.some(id => visibleFields.includes(id));
+          if (hasVisibleChild) {
+            descSection.classList.remove('hidden');
+          } else {
+            descSection.classList.add('hidden');
+          }
+        }
+
+        // For publishing-section: only show if at least one child is visible
+        const pubSection = document.getElementById('publishing-section');
+        if (pubSection) {
+          const pubChildIds = [
+            'publisher-container', 'copyright-container',
+            'publication-container', 'location-container', 'digital-copy-container'
+          ];
+          const hasVisibleChild = pubChildIds.some(id => visibleFields.includes(id));
+          if (hasVisibleChild) {
+            pubSection.classList.remove('hidden');
+          } else {
+            pubSection.classList.add('hidden');
+          }
+        }
+      } else {
+        // No special category — show everything (default/generic behavior)
+        categorySpecificSection.classList.add('hidden');
+        allToggleableFields.forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.classList.remove('hidden');
+        });
+
+        // Reset labels to defaults
+        if (titleLabel) titleLabel.textContent = 'Title:';
+        if (copyrightLabel) copyrightLabel.textContent = 'Copyright Year:';
+        if (locationLabel) locationLabel.textContent = 'Location:';
+      }
+    }
+
     restructureFormByBookType();
     applyAvailabilityRule(true);
     prefillCopyAccession();
+    toggleCategorySpecificFields();
 
     // --- Subject Multiselect Logic ---
     const subjectSearch = document.getElementById('subject_search');

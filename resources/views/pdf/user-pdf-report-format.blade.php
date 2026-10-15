@@ -123,6 +123,7 @@
       <thead>
         <tr>
           <th>Name</th>
+          <th>Grade & Section</th>
           <th>Date</th>
           <th>Time In</th>
           <th>Time Out</th>
@@ -133,6 +134,13 @@
         @if($item->user)
         <tr>
           <td>{{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}</td>
+          <td>
+            @if($item->user->students)
+              {{ $item->user->students->level }} - {{ $item->user->students->section }}
+            @else
+              -
+            @endif
+          </td>
           <td>{{ \Carbon\Carbon::parse($item->start)->format('M j, Y') }}</td>
           <td>{{ \Carbon\Carbon::parse($item->start)->format('g:i A') }}</td>
           <td>{{ $item->end ? \Carbon\Carbon::parse($item->end)->format('g:i A') : 'No Time Out' }}</td>
@@ -140,7 +148,7 @@
         @endif
         @empty
         <tr>
-          <td colspan="4" style="text-align: center;">No data found.</td>
+          <td colspan="5" style="text-align: center;">No data found.</td>
         </tr>
         @endforelse
       </tbody>

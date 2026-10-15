@@ -48,7 +48,7 @@ class BibliographyController extends Controller
         ]);
 
         $validator = Validator::make($request->all(), [
-            'title' => 'nullable|string|max:255',
+            'title' => 'nullable|string|max:500',
             'author' => 'nullable|string|max:255',
             'perPage' => 'nullable|integer|min:1|max:500',
         ]);
@@ -91,7 +91,7 @@ class BibliographyController extends Controller
         ]);
 
         $validator = Validator::make($request->all(), [
-            'title' => 'nullable|string|max:255',
+            'title' => 'nullable|string|max:500',
             'author' => 'nullable|string|max:255',
             'category' => ['nullable', Rule::in($categoryOptions)],
             'perPage' => 'nullable|integer|min:1|max:500',

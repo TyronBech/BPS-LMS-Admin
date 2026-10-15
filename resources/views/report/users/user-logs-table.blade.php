@@ -18,6 +18,7 @@
           <tr>
             <th scope="col" class="px-4 py-2">Type</th>
             <th scope="col" class="px-4 py-2">Name</th>
+            <th scope="col" class="px-4 py-2 whitespace-nowrap">Grade & Section</th>
             <th scope="col" class="px-4 py-2">Date</th>
             <th scope="col" class="px-4 py-2">Time in</th>
             <th scope="col" class="px-4 py-2">Time out</th>
@@ -27,10 +28,17 @@
         <tbody>
           @forelse($data as $item)
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-            <td class="px-4 py-2">{{ ucwords($item->user->privileges->category) ?? 'N/A' }}</td>
+            <td class="px-4 py-2">{{ ucwords($item->user->privileges->category ?? 'N/A') }}</td>
             <th scope="row" class="px-4 py-2 font-medium text-gray-900 whitespace-nowrap dark:text-white">
               {{ $item->user->last_name }}, {{ $item->user->first_name }} {{ $item->user->middle_name ?? '' }}
             </th>
+            <td class="px-4 py-2 whitespace-nowrap">
+              @if($item->user && $item->user->students)
+                {{ $item->user->students->level }} - {{ $item->user->students->section }}
+              @else
+                -
+              @endif
+            </td>
             @php $start = \Carbon\Carbon::parse($item->start); @endphp
             <td class="px-4 py-2">{{ $start->format('Y-m-d') }}</td>
             <td class="px-4 py-2">{{ $start->format('g:i A') }}</td>
@@ -41,11 +49,11 @@
               -
               @endif
             </td>
-            <td class="px-4 py-2">{{ ucwords($item->remarks) ?? 'No Remarks' }}</td>
+            <td class="px-4 py-2">{{ $item->remarks ? ucwords($item->remarks) : 'No Remarks' }}</td>
           </tr>
           @empty
           <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700">
-            <td colspan="6" class="px-4 py-2 text-center">No data found.</td>
+            <td colspan="7" class="px-4 py-2 text-center">No data found.</td>
           </tr>
           @endforelse
         </tbody>

@@ -7,7 +7,7 @@
     <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4">
       <h5 class="text-2xl font-bold tracking-tight text-gray-900 dark:text-white">Materials</h5>
       @can(PermissionsEnum::ADD_BOOKS, 'admin')
-      <a href="{{ route('maintenance.create-book', ['return_to',  request()->fullUrl()]) }}" class="w-full sm:w-auto mt-4 sm:mt-0 inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-center text-white bg-primary-500 rounded-lg hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">
+      <a href="{{ route('maintenance.create-book', ['return_to' => request()->fullUrl()]) }}" class="w-full sm:w-auto mt-4 sm:mt-0 inline-flex items-center justify-center px-4 py-2 text-sm font-medium text-center text-white bg-primary-500 rounded-lg hover:bg-primary-400 focus:ring-4 focus:outline-none focus:ring-primary-400 dark:bg-primary-400 dark:hover:bg-primary-500 dark:focus:ring-primary-500">
         Add New Material
       </a>
       @endcan
@@ -83,27 +83,150 @@
 @section('scripts')
 <script>
   function resetSortAndSubmit(form) {
-    document.getElementById('sort_by').value = '';
-    document.getElementById('sort_order').value = '';
-    form.classList.add('skip-loader');
-    form.submit();
+    const sortBy = document.getElementById('sort_by');
+    const sortOrder = document.getElementById('sort_order');
+    if (sortBy) sortBy.value = '';
+    if (sortOrder) sortOrder.value = '';
+    // Form submission is automatically handled once by app.js select change listener
   }
 
   function updateSortAndSubmit(form) {
-    const sortDropdown = document.getElementById('sort_dropdown').value;
-    if (sortDropdown) {
-      const parts = sortDropdown.split('-');
-      document.getElementById('sort_by').value = parts[0];
-      document.getElementById('sort_order').value = parts[1];
+    const sortDropdown = document.getElementById('sort_dropdown');
+    const sortBy = document.getElementById('sort_by');
+    const sortOrder = document.getElementById('sort_order');
+    if (sortDropdown && sortDropdown.value) {
+      const parts = sortDropdown.value.split('-');
+      if (sortBy) sortBy.value = parts[0];
+      if (sortOrder) sortOrder.value = parts[1];
     } else {
-      document.getElementById('sort_by').value = '';
-      document.getElementById('sort_order').value = '';
+      if (sortBy) sortBy.value = '';
+      if (sortOrder) sortOrder.value = '';
     }
-    form.classList.add('skip-loader');
-    form.submit();
+    // Form submission is automatically handled once by app.js select change listener
   }
 
+  // Set of selected book IDs (persists/syncs cleanly)
+  const selectedBookIds = new Set();
+
+  function updateBookSelectionUI() {
+    const checkedBooksContainer = document.getElementById('checked-books');
+    const selectedHeader = document.getElementById('selectedHeader');
+    const selectAllCheckbox = document.getElementById('selectAll');
+    const bulkDeleteBookIds = document.getElementById('bulk-delete_book_ids');
+    const bulkDeleteBookBtn = document.getElementById('bulkDeleteBookBtn');
+    const exportBarcodeIds = document.getElementById('export_barcode_ids');
+    const exportCallNumberIds = document.getElementById('export_call_number_ids');
+    const checkboxes = document.querySelectorAll('.book-check, .bookCheck');
+
+    // Keep checkboxes in sync with selectedBookIds Set
+    checkboxes.forEach(cb => {
+      cb.checked = selectedBookIds.has(cb.value);
+    });
+
+    const count = selectedBookIds.size;
+    const idsString = Array.from(selectedBookIds).join(',');
+
+    if (bulkDeleteBookIds) bulkDeleteBookIds.value = idsString;
+    if (bulkDeleteBookBtn) bulkDeleteBookBtn.value = idsString;
+    if (exportBarcodeIds) exportBarcodeIds.value = idsString;
+    if (exportCallNumberIds) exportCallNumberIds.value = idsString;
+
+    if (checkedBooksContainer) {
+      if (count > 0) {
+        checkedBooksContainer.classList.remove('hidden');
+        checkedBooksContainer.classList.add('flex');
+        if (selectedHeader) selectedHeader.textContent = `Selected (${count})`;
+      } else {
+        checkedBooksContainer.classList.remove('flex');
+        checkedBooksContainer.classList.add('hidden');
+        if (selectedHeader) selectedHeader.textContent = 'Selected';
+      }
+    }
+
+    if (selectAllCheckbox) {
+      if (checkboxes.length > 0 && Array.from(checkboxes).every(cb => cb.checked)) {
+        selectAllCheckbox.checked = true;
+      } else {
+        selectAllCheckbox.checked = false;
+      }
+    }
+  }
+
+  // Delegated event listener for checkbox changes (handles initial table and AJAX-replaced tables)
+  document.addEventListener('change', function(event) {
+    // Individual book checkbox
+    if (event.target.matches('.book-check, .bookCheck')) {
+      const bookId = event.target.value;
+      if (event.target.checked) {
+        selectedBookIds.add(bookId);
+      } else {
+        selectedBookIds.delete(bookId);
+      }
+      updateBookSelectionUI();
+      return;
+    }
+
+    // Select All checkbox
+    if (event.target.id === 'selectAll' || event.target.matches('#selectAll')) {
+      const isChecked = event.target.checked;
+      const checkboxes = document.querySelectorAll('.book-check, .bookCheck');
+      checkboxes.forEach(cb => {
+        cb.checked = isChecked;
+        const bookId = cb.value;
+        if (isChecked) {
+          selectedBookIds.add(bookId);
+        } else {
+          selectedBookIds.delete(bookId);
+        }
+      });
+      updateBookSelectionUI();
+      return;
+    }
+  });
+
+  // Delegated click listener for modals and buttons
+  document.addEventListener('click', function(event) {
+    const deleteBtn = event.target.closest('.deleteBookBtn');
+    if (deleteBtn) {
+      const deleteBookID = document.getElementById('delete_book_id');
+      if (deleteBookID) {
+        deleteBookID.value = deleteBtn.value;
+      }
+    }
+
+    if (event.target.closest('.exportBarcode')) {
+      const exportBarcodeIds = document.getElementById('export_barcode_ids');
+      if (exportBarcodeIds) {
+        exportBarcodeIds.value = Array.from(selectedBookIds).join(',');
+      }
+    }
+
+    if (event.target.closest('.exportCallNumber')) {
+      const exportCallNumberIds = document.getElementById('export_call_number_ids');
+      if (exportCallNumberIds) {
+        exportCallNumberIds.value = Array.from(selectedBookIds).join(',');
+      }
+    }
+  });
+
   document.addEventListener('DOMContentLoaded', function() {
+    const tableContainer = document.getElementById('table-container');
+    if (tableContainer) {
+      tableContainer.addEventListener('contentUpdated', function() {
+        updateBookSelectionUI();
+      });
+    }
+
+    const clearBtn = document.querySelector('.btn-clear-filters');
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function() {
+        selectedBookIds.clear();
+        updateBookSelectionUI();
+      });
+    }
+
+    updateBookSelectionUI();
+
     const searchInput = document.getElementById('search');
     const suggestionsContainer = document.getElementById('suggestions-container');
     const suggestionsList = document.getElementById('suggestions-list');
@@ -116,45 +239,51 @@
                     ];
                   })) ?>;
 
-    searchInput.addEventListener('input', function() {
-      const query = this.value.toLowerCase();
-      suggestionsList.innerHTML = '';
+    if (searchInput && suggestionsContainer && suggestionsList) {
+      searchInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        suggestionsList.innerHTML = '';
 
-      if (query.length === 0) {
-        suggestionsContainer.classList.add('hidden');
-        return;
-      }
+        if (query.length === 0) {
+          suggestionsContainer.classList.add('hidden');
+          return;
+        }
 
-      const filteredBooks = books.filter(book =>
-        book.title.toLowerCase().includes(query) |
-        (book.author && book.author.toLowerCase().includes(query)) ||
-        (book.isbn && book.isbn.toLowerCase().includes(query))
-      );
+        const filteredBooks = books.filter(book =>
+          book.title.toLowerCase().includes(query) ||
+          (book.author && book.author.toLowerCase().includes(query)) ||
+          (book.isbn && book.isbn.toLowerCase().includes(query))
+        );
 
-      if (filteredBooks.length > 0) {
-        filteredBooks.forEach(book => {
-          const li = document.createElement('li');
-          li.textContent = book.author ? `${book.title} by ${book.author}` : book.title;
-          li.className = 'px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600';
-          li.addEventListener('click', function() {
-            searchInput.value = book.title;
-            suggestionsContainer.classList.add('hidden');
-            searchInput.form.classList.add('skip-loader');
-            searchInput.form.submit();
+        if (filteredBooks.length > 0) {
+          filteredBooks.forEach(book => {
+            const li = document.createElement('li');
+            li.textContent = book.author ? `${book.title} by ${book.author}` : book.title;
+            li.className = 'px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600';
+            li.addEventListener('click', function() {
+              searchInput.value = book.title;
+              suggestionsContainer.classList.add('hidden');
+              searchInput.form.classList.add('skip-loader');
+              if (searchInput.form.requestSubmit) {
+                searchInput.form.requestSubmit();
+              } else {
+                searchInput.form.submit();
+              }
+            });
+            suggestionsList.appendChild(li);
           });
-          suggestionsList.appendChild(li);
-        });
-        suggestionsContainer.classList.remove('hidden');
-      } else {
-        suggestionsContainer.classList.add('hidden');
-      }
-    });
+          suggestionsContainer.classList.remove('hidden');
+        } else {
+          suggestionsContainer.classList.add('hidden');
+        }
+      });
 
-    document.addEventListener('click', function(e) {
-      if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
-        suggestionsContainer.classList.add('hidden');
-      }
-    });
+      document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !suggestionsContainer.contains(e.target)) {
+          suggestionsContainer.classList.add('hidden');
+        }
+      });
+    }
   });
 </script>
 @endsection
