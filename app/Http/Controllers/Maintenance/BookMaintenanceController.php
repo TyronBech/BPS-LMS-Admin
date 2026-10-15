@@ -198,13 +198,13 @@ class BookMaintenanceController extends Controller
         // Determine the category name to adjust validation for category-specific field visibility
         $selectedCategoryModel = Category::find($request->input('category'));
         $selectedCategoryName = $selectedCategoryModel ? strtolower(trim($selectedCategoryModel->name)) : '';
-        $extentRule = $selectedCategoryName === 'periodical'
+        $extentRule = in_array($selectedCategoryName, ['periodical', 'periodicals'])
             ? 'nullable|string'
             : 'required_unless:book_type,Non-print|string|nullable';
 
         // Periodicals do not logically have accession numbers, but the database requires a unique one.
         // Auto-generate a guaranteed unique accession using the official format to bypass clashes.
-        if ($selectedCategoryName === 'periodical') {
+        if (in_array($selectedCategoryName, ['periodical', 'periodicals'])) {
             $request->merge(['accession' => $this->generateNextAccessionForCategory($request->input('category'))]);
         }
 
@@ -576,39 +576,69 @@ class BookMaintenanceController extends Controller
     {
         $mimeType = null;
         $accession = $request->input('accession');
+        $id = $request->input('id');
 
         Log::info('Book Maintenance: Viewing book details', [
             'user_id' => Auth::guard('admin')->id(),
             'user_name' => Auth::guard('admin')->user()->full_name,
             'accession' => $accession,
+            'id' => $id,
             'ip_address' => $request->ip(),
             'timestamp' => now(),
         ]);
 
-        $book = Book::with(['category', 'subjectAccessCodes'])->where('accession', $accession)->first();
-        try {
-            $cover = $this->getBookImage($book->title, $book->author, $book->isbn ?? null);
-            if (!$cover) {
-                $cover = null;
-            }
-        } catch (Exception $e) {
-            Log::error('Book Maintenance: Error fetching book cover image', [
-                'user_id' => Auth::guard('admin')->id(),
-                'accession' => $accession,
-                'error_message' => $e->getMessage(),
-                'timestamp' => now(),
-            ]);
-            $cover = null;
+        $query = Book::with(['category', 'subjectAccessCodes']);
+        if ($accession) {
+            $query->where('accession', $accession);
+        } elseif ($id) {
+            $query->where('id', $id);
         }
+        $book = $query->first();
+
         if (!$book) {
             Log::warning('Book Maintenance: Book not found for viewing', [
                 'user_id' => Auth::guard('admin')->id(),
                 'accession' => $accession,
+                'id' => $id,
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-error', 'Book not found!')->withInput();
+            return redirect()->back()->with('toast-error', 'Material not found!')->withInput();
         }
+
+        $cover = null;
+        if (!empty($book->cover_image)) {
+            try {
+                $imageData = base64_decode($book->cover_image);
+                $finfo = new \finfo(FILEINFO_MIME_TYPE);
+                $mimeType = $finfo->buffer($imageData) ?: 'image/jpeg';
+            } catch (\Throwable $e) {
+                $mimeType = 'image/jpeg';
+            }
+        } else {
+            try {
+                $authorName = null;
+                if (is_array($book->authors)) {
+                    $authorName = $book->authors['Main author'] ?? ($book->authors['Corporate author'] ?? null);
+                } elseif (is_string($book->authors)) {
+                    $authorName = $book->authors;
+                }
+                $isbnParam = (!empty($book->isbn) && $book->isbn !== 'N/A') ? $book->isbn : null;
+                $cover = $this->getBookImage($book->title, $authorName, $isbnParam);
+                if (!$cover) {
+                    $cover = null;
+                }
+            } catch (Exception $e) {
+                Log::error('Book Maintenance: Error fetching book cover image', [
+                    'user_id' => Auth::guard('admin')->id(),
+                    'accession' => $accession,
+                    'error_message' => $e->getMessage(),
+                    'timestamp' => now(),
+                ]);
+                $cover = null;
+            }
+        }
+
         return view('maintenance.books.view', compact('book', 'cover', 'mimeType'));
     }
     /**
@@ -646,7 +676,7 @@ class BookMaintenanceController extends Controller
         // Determine the category name to adjust validation for category-specific field visibility
         $selectedCategoryModel = Category::find($request->input('category'));
         $selectedCategoryName = $selectedCategoryModel ? strtolower(trim($selectedCategoryModel->name)) : '';
-        $extentRule = $selectedCategoryName === 'periodical'
+        $extentRule = in_array($selectedCategoryName, ['periodical', 'periodicals'])
             ? 'nullable|string'
             : 'required_unless:book_type,Non-print|string|nullable';
 

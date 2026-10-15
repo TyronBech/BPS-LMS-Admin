@@ -57,8 +57,8 @@
       <div class="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
         <button type="button" data-clear-url="{{ route('report.user') }}" class="btn-clear-filters bg-white hover:bg-gray-100 text-gray-900 border border-gray-300 font-bold py-2.5 px-4 rounded whitespace-nowrap transition-colors dark:bg-gray-800 dark:hover:bg-gray-700 dark:text-gray-300 dark:border-gray-600 text-sm" title="Clear Filters">Clear</button>
         @can(PermissionsEnum::CREATE_REPORTS)
-        <button type="submit" name="submit" value="pdf" class="bg-red-500 hover:bg-red-700 active:bg-red-900 text-white font-bold py-2.5 px-4 rounded whitespace-nowrap transition-colors text-sm">PDF</button>
-        <button type="submit" name="submit" value="excel" class="bg-green-500 hover:bg-green-700 active:bg-green-900 text-white font-bold py-2.5 px-4 rounded whitespace-nowrap transition-colors text-sm">Excel</button>
+        <button type="submit" name="submit" value="pdf" class="btn-export skip-loader bg-red-500 hover:bg-red-700 active:bg-red-900 text-white font-bold py-2.5 px-4 rounded whitespace-nowrap transition-colors text-sm">PDF</button>
+        <button type="submit" name="submit" value="excel" class="btn-export skip-loader bg-green-500 hover:bg-green-700 active:bg-green-900 text-white font-bold py-2.5 px-4 rounded whitespace-nowrap transition-colors text-sm">Excel</button>
         @endcan
       </div>
 
@@ -72,4 +72,24 @@
 </div>
 @endsection
 @section('scripts')
+<script type="module">
+  document.querySelectorAll('.btn-export').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const form = this.closest('form');
+      if (form) {
+        let actionInput = form.querySelector('input[name="submit"]');
+        if (!actionInput) {
+          actionInput = document.createElement('input');
+          actionInput.type = 'hidden';
+          actionInput.name = 'submit';
+          form.appendChild(actionInput);
+        }
+        actionInput.value = this.value;
+        setTimeout(() => {
+          if (actionInput) actionInput.value = '';
+        }, 1500);
+      }
+    });
+  });
+</script>
 @endsection

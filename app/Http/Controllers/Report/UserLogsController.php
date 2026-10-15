@@ -68,6 +68,23 @@ class UserLogsController extends Controller
             return redirect()->route('report.user')->with('toast-warning', $validator->errors()->first())->withInput();
         }
 
+        $action = $request->input('submit') ?: $request->input('submit_action');
+        if ($action === 'pdf') {
+            $data = $this->generateData($request, new Log(), true);
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
+            $this->generatePDF($data);
+            return redirect()->route('report.user')->with('toast-success', 'Successfully exported to PDF');
+        } elseif ($action === 'excel') {
+            $data = $this->generateData($request, new Log(), true);
+            if ($data->isEmpty()) {
+                return redirect()->back()->with('toast-warning', 'No data available to be exported.')->withInput();
+            }
+            $this->exportExcel($data);
+            return redirect()->route('report.user')->with('toast-success', 'Successfully exported to Excel');
+        }
+
         $data = $this->generateData($request, new Log(), false);
 
         // Query consolidated hourly counts for the summary card
@@ -77,9 +94,11 @@ class UserLogsController extends Controller
             ->whereHas('user');
 
         if ($fromInputDate && $toInputDate) {
-            $startDate = Carbon::createFromFormat('m/d/Y', $fromInputDate)->startOfDay();
-            $endDate   = Carbon::createFromFormat('m/d/Y', $toInputDate)->endOfDay();
-            $summaryQuery->whereBetween('time_in', [$startDate, $endDate]);
+            try {
+                $startDate = \App\Helpers\ReportHelper::parseDate($fromInputDate)->startOfDay();
+                $endDate   = \App\Helpers\ReportHelper::parseDate($toInputDate)->endOfDay();
+                $summaryQuery->whereBetween('time_in', [$startDate, $endDate]);
+            } catch (\Throwable $e) {}
         }
 
         if (strlen($search) > 0) {
@@ -118,10 +137,14 @@ class UserLogsController extends Controller
 
         $numDays = 1;
         if ($fromInputDate && $toInputDate) {
-            $startDate = Carbon::createFromFormat('m/d/Y', $fromInputDate)->startOfDay();
-            $endDate   = Carbon::createFromFormat('m/d/Y', $toInputDate)->endOfDay();
-            $numDays = $startDate->diffInDays($endDate) + 1;
-            if ($numDays < 1) $numDays = 1;
+            try {
+                $startDate = \App\Helpers\ReportHelper::parseDate($fromInputDate)->startOfDay();
+                $endDate   = \App\Helpers\ReportHelper::parseDate($toInputDate)->endOfDay();
+                $numDays = $startDate->diffInDays($endDate) + 1;
+                if ($numDays < 1) $numDays = 1;
+            } catch (\Throwable $e) {
+                $numDays = 1;
+            }
         } else {
             $numDays = $summaryQuery->clone()->selectRaw('COUNT(DISTINCT DATE(time_in)) as count')->first()->count ?? 1;
             if ($numDays < 1) $numDays = 1;
@@ -168,7 +191,7 @@ class UserLogsController extends Controller
             'end'           => 'nullable|date|after_or_equal:start',
             'search'        => 'nullable|string|max:255',
             'perPage'       => 'nullable|integer|min:1|max:500',
-            'user_type'     => 'in:all,student,employee,visitor',
+            'user_type'     => 'nullable|in:all,student,employee,visitor',
         ]);
         if ($validator->fails()) {
             Logger::warning('User Logs Report: Validation failed', [
@@ -179,7 +202,9 @@ class UserLogsController extends Controller
             ]);
             return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
         }
-        if ($request->input('submit') == 'pdf') {
+
+        $action = $request->input('submit') ?: $request->input('submit_action');
+        if ($action === 'pdf') {
             Logger::info('User Logs Report: Generating PDF export', [
                 'user_id' => Auth::guard('admin')->id(),
                 'timestamp' => now()
@@ -190,7 +215,7 @@ class UserLogsController extends Controller
             }
             $this->generatePDF($data);
             return redirect()->route('report.user')->with('toast-success', 'Successfully exported to PDF');
-        } else if ($request->input('submit') == 'excel') {
+        } else if ($action === 'excel') {
             Logger::info('User Logs Report: Generating Excel export', [
                 'user_id' => Auth::guard('admin')->id(),
                 'timestamp' => now()
@@ -212,9 +237,11 @@ class UserLogsController extends Controller
             ->whereHas('user');
 
         if ($fromInputDate && $toInputDate) {
-            $startDate = Carbon::createFromFormat('m/d/Y', $fromInputDate)->startOfDay();
-            $endDate   = Carbon::createFromFormat('m/d/Y', $toInputDate)->endOfDay();
-            $summaryQuery->whereBetween('time_in', [$startDate, $endDate]);
+            try {
+                $startDate = \App\Helpers\ReportHelper::parseDate($fromInputDate)->startOfDay();
+                $endDate   = \App\Helpers\ReportHelper::parseDate($toInputDate)->endOfDay();
+                $summaryQuery->whereBetween('time_in', [$startDate, $endDate]);
+            } catch (\Throwable $e) {}
         }
 
         if (strlen($search) > 0) {
@@ -253,10 +280,14 @@ class UserLogsController extends Controller
 
         $numDays = 1;
         if ($fromInputDate && $toInputDate) {
-            $startDate = Carbon::createFromFormat('m/d/Y', $fromInputDate)->startOfDay();
-            $endDate   = Carbon::createFromFormat('m/d/Y', $toInputDate)->endOfDay();
-            $numDays = $startDate->diffInDays($endDate) + 1;
-            if ($numDays < 1) $numDays = 1;
+            try {
+                $startDate = \App\Helpers\ReportHelper::parseDate($fromInputDate)->startOfDay();
+                $endDate   = \App\Helpers\ReportHelper::parseDate($toInputDate)->endOfDay();
+                $numDays = $startDate->diffInDays($endDate) + 1;
+                if ($numDays < 1) $numDays = 1;
+            } catch (\Throwable $e) {
+                $numDays = 1;
+            }
         } else {
             $numDays = $summaryQuery->clone()->selectRaw('COUNT(DISTINCT DATE(time_in)) as count')->first()->count ?? 1;
             if ($numDays < 1) $numDays = 1;
@@ -762,13 +793,29 @@ class UserLogsController extends Controller
                 }
             }
 
+            ini_set('memory_limit', '2048M');
+            ini_set('max_execution_time', 300);
+
             $settings = UISetting::first() ?? new UISetting();
+            $adminUser = Auth::guard('admin')->user() ?? Auth::user();
+            $authUserName = trim(($adminUser->first_name ?? '') . ' ' . ($adminUser->last_name ?? ''));
+            if ($authUserName === '') {
+                $authUserName = 'Administrator';
+            }
+
+            $logoBase64 = null;
+            if (!empty($settings->org_logo_full)) {
+                $logoBase64 = preg_replace('/^data:image\/\w+;base64,/', '', $settings->org_logo_full);
+            } elseif (file_exists(public_path('img/BPSLogoFull.png'))) {
+                $logoBase64 = base64_encode(file_get_contents(public_path('img/BPSLogoFull.png')));
+            }
+
             $items = [
                 'title'       => \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Attendance Monitoring Graphical Report', $start ?? $startDate, $end ?? $endDate, $hourlyData, 'start'),
                 'school'      => $settings->org_name ?? "Bicutan Parochial School, Inc.",
                 'address'     => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
-                'logo'        => $settings->org_logo_full ?? base64_encode(file_get_contents((public_path('img/BPSLogoFull.png')))),
-                'user'        => Auth::user()->first_name . ' ' . Auth::user()->last_name,
+                'logo'        => $logoBase64,
+                'user'        => $authUserName,
                 'date'        => now()->format('F d, Y'),
                 'chart'       => $chart,
                 'range'       => $range,
@@ -803,13 +850,29 @@ class UserLogsController extends Controller
 
     private function generatePDF(Collection $data)
     {
+        ini_set('memory_limit', '2048M');
+        ini_set('max_execution_time', 300);
+
         $settings = UISetting::first() ?? new UISetting();
+        $adminUser = Auth::guard('admin')->user() ?? Auth::user();
+        $authUserName = trim(($adminUser->first_name ?? '') . ' ' . ($adminUser->last_name ?? ''));
+        if ($authUserName === '') {
+            $authUserName = 'Administrator';
+        }
+
+        $logoBase64 = null;
+        if (!empty($settings->org_logo_full)) {
+            $logoBase64 = preg_replace('/^data:image\/\w+;base64,/', '', $settings->org_logo_full);
+        } elseif (file_exists(public_path('img/BPSLogoFull.png'))) {
+            $logoBase64 = base64_encode(file_get_contents(public_path('img/BPSLogoFull.png')));
+        }
+
         $items = [
             'title'         => \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Attendance Monitoring Report', request('start'), request('end'), $data, 'start'),
             'school'        => $settings->org_name ?? "Bicutan Parochial School, Inc.",
             'address'       => $settings->org_address ?? "Manuel L. Quezon St., Lower Bicutan, Taguig City",
-            'logo'          => $settings->org_logo_full ?? base64_encode(file_get_contents(public_path('img/BPSLogoFull.png'))),
-            'user'          => Auth::user()->first_name . ' ' . Auth::user()->last_name,
+            'logo'          => $logoBase64,
+            'user'          => $authUserName,
             'date'          => "as of " . date('F j, Y'),
             'data'          => $data,
             'totalCount'    => $data->count(),
@@ -820,7 +883,7 @@ class UserLogsController extends Controller
         $options->set('isPhpEnabled', true);
         $options->set('isRemoteEnabled', true);
         $dompdf = new Dompdf($options);
-        $dompdf->loadHtml(view('pdf.user-pdf-report-format', $items));
+        $dompdf->loadHtml(view('pdf.user-pdf-report-format', $items)->render());
         $dompdf->setPaper('legal', 'portrait');
         $dompdf->render();
         $dompdf->stream('users-report ' . date('Y-m-d') . '.pdf', array('Attachment' => true));
@@ -829,72 +892,99 @@ class UserLogsController extends Controller
 
     private function exportExcel(Collection $data)
     {
+        ini_set('memory_limit', '2048M');
+        ini_set('max_execution_time', 300);
+
         $spreadsheet    = new Spreadsheet();
         $logo           = new Drawing();
-        $settings      = UISetting::first() ?? new UISetting();
+        $settings       = UISetting::first() ?? new UISetting();
         $sheet          = $spreadsheet->getActiveSheet();
 
-        $tempLogoPath = public_path('img/orgLogoFull.png');
-        $decodedLogo = base64_decode($settings->org_logo_full);
-        file_put_contents($tempLogoPath, $decodedLogo);
+        $adminUser = Auth::guard('admin')->user() ?? Auth::user();
+        $authUserName = trim(($adminUser->first_name ?? '') . ' ' . ($adminUser->last_name ?? ''));
+        if ($authUserName === '') {
+            $authUserName = 'Administrator';
+        }
 
-        $logo->setName(($settings->org_initial ?? 'BPS') . ' Logo');
-        $logo->setDescription(($settings->org_initial ?? 'BPS') . ' Logo');
-        $logo->setPath($tempLogoPath ?? public_path('img/OwlQueryFull.png'));
-        $logo->setHeight(90);
-        $logo->setCoordinates('A1');
-        $logo->setOffsetX(120);
-        $logo->setOffsetY(5);
-        $logo->setWorksheet($sheet);
+        $tempLogoPath = null;
+        if (!empty($settings->org_logo_full)) {
+            $rawBase64 = preg_replace('/^data:image\/\w+;base64,/', '', $settings->org_logo_full);
+            $decodedLogo = base64_decode($rawBase64);
+            if (!empty($decodedLogo)) {
+                $tempLogoPath = public_path('img/orgLogoFull.png');
+                file_put_contents($tempLogoPath, $decodedLogo);
+            }
+        }
+        $logoPath = ($tempLogoPath && file_exists($tempLogoPath)) 
+            ? $tempLogoPath 
+            : (file_exists(public_path('img/BPSLogoFull.png')) ? public_path('img/BPSLogoFull.png') : null);
+
+        if ($logoPath && file_exists($logoPath)) {
+            $logo->setName(($settings->org_initial ?? 'BPS') . ' Logo');
+            $logo->setDescription(($settings->org_initial ?? 'BPS') . ' Logo');
+            $logo->setPath($logoPath);
+            $logo->setHeight(90);
+            $logo->setCoordinates('A1');
+            $logo->setOffsetX(120);
+            $logo->setOffsetY(5);
+            $logo->setWorksheet($sheet);
+        }
 
         $sheet->setTitle('Attendance Monitoring Report');
         $sheet->getPageSetup()->setPaperSize(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::PAPERSIZE_LEGAL);
         $sheet->getPageSetup()->setOrientation(\PhpOffice\PhpSpreadsheet\Worksheet\PageSetup::ORIENTATION_PORTRAIT);
         $sheet->getPageSetup()->setFitToWidth(1);
         $sheet->getPageSetup()->setFitToHeight(0);
-        $sheet->mergeCells('A6:D6');
+        $sheet->mergeCells('A6:E6');
         $sheet->setCellValue('A6', \App\Helpers\ReportHelper::getFormattedHeaderSuffix('Attendance Monitoring Report', request('start'), request('end'), $data, 'start'));
-        $sheet->getStyle('A6:D6')->getFont()->setBold(true);
-        $sheet->getStyle('A6:D6')->getFont()->setSize(14);
-        $sheet->getStyle('A6:D6')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('A6:D6')->getAlignment()->setVertical('center');
+        $sheet->getStyle('A6:E6')->getFont()->setBold(true);
+        $sheet->getStyle('A6:E6')->getFont()->setSize(14);
+        $sheet->getStyle('A6:E6')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A6:E6')->getAlignment()->setVertical('center');
 
         $sheet->getColumnDimension('A')->setWidth(30);
-        $sheet->getColumnDimension('B')->setWidth(20);
+        $sheet->getColumnDimension('B')->setWidth(25);
         $sheet->getColumnDimension('C')->setWidth(20);
         $sheet->getColumnDimension('D')->setWidth(20);
-        $sheet->mergeCells('A7:D7');
+        $sheet->getColumnDimension('E')->setWidth(20);
+        $sheet->mergeCells('A7:E7');
         $sheet->setCellValue('A7', 'as of ' . date('F j, Y'));
-        $sheet->getStyle('A7:D7')->getFont()->setBold(true);
-        $sheet->getStyle('A7:D7')->getFont()->setSize(10);
-        $sheet->getStyle('A7:D7')->getAlignment()->setHorizontal('center');
-        $sheet->getStyle('A7:D7')->getAlignment()->setVertical('center');
-        $sheet->getStyle('A7:D7')->getAlignment()->setWrapText(true);
-        $sheet->getStyle('A9:D9')->getFont()->setSize(10);
-        $sheet->getStyle('A9:D9')->getFont()->setBold(true);
-        $sheet->getStyle('A9:D9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
-        $sheet->getStyle('A9:D9')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
+        $sheet->getStyle('A7:E7')->getFont()->setBold(true);
+        $sheet->getStyle('A7:E7')->getFont()->setSize(10);
+        $sheet->getStyle('A7:E7')->getAlignment()->setHorizontal('center');
+        $sheet->getStyle('A7:E7')->getAlignment()->setVertical('center');
+        $sheet->getStyle('A7:E7')->getAlignment()->setWrapText(true);
+        $sheet->getStyle('A9:E9')->getFont()->setSize(10);
+        $sheet->getStyle('A9:E9')->getFont()->setBold(true);
+        $sheet->getStyle('A9:E9')->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        $sheet->getStyle('A9:E9')->getFill()->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)->getStartColor()->setARGB('FFCCCCCC');
 
         $sheet->setCellValue('A9', 'Name');
-        $sheet->setCellValue('B9', 'Date');
-        $sheet->setCellValue('C9', 'Time in');
-        $sheet->setCellValue('D9', 'Time out');
+        $sheet->setCellValue('B9', 'Grade & Section');
+        $sheet->setCellValue('C9', 'Date');
+        $sheet->setCellValue('D9', 'Time in');
+        $sheet->setCellValue('E9', 'Time out');
         $row = 10;
         foreach ($data as $item) {
             if (!$item->user) {
                 continue; // Skip if users relationship is not loaded
             }
+            $gradeSection = ($item->user->privileges && $item->user->privileges->user_type === 'student' && $item->user->students)
+                ? ($item->user->students->level . ' - ' . $item->user->students->section)
+                : '-';
+
             $sheet->setCellValue('A' . $row, $item->user->last_name . ', ' . $item->user->first_name . ' ' . $item->user->middle_name);
-            $sheet->setCellValue('B' . $row, Carbon::parse($item->start)->format('M j, Y'));
-            $sheet->setCellValue('C' . $row, Carbon::parse($item->start)->format('g:i A'));
+            $sheet->setCellValue('B' . $row, $gradeSection);
+            $sheet->setCellValue('C' . $row, Carbon::parse($item->start)->format('M j, Y'));
+            $sheet->setCellValue('D' . $row, Carbon::parse($item->start)->format('g:i A'));
             if ($item->end) {
-                $sheet->setCellValue('D' . $row, Carbon::parse($item->end)->format('g:i A'));
+                $sheet->setCellValue('E' . $row, Carbon::parse($item->end)->format('g:i A'));
             } else {
-                $sheet->setCellValue('D' . $row, 'No Time Out');
+                $sheet->setCellValue('E' . $row, 'No Time Out');
             }
-            $sheet->getStyle('A' . $row . ':D' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-            $sheet->getStyle('A' . $row . ':D' . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
-            $sheet->getStyle('A' . $row . ':D' . $row)->getAlignment()->setWrapText(true);
+            $sheet->getStyle('A' . $row . ':E' . $row)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+            $sheet->getStyle('A' . $row . ':E' . $row)->getAlignment()->setVertical(\PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_TOP);
+            $sheet->getStyle('A' . $row . ':E' . $row)->getAlignment()->setWrapText(true);
             $row++;
         }
 
@@ -905,13 +995,13 @@ class UserLogsController extends Controller
                 ],
             ],
         ];
-        $sheet->getStyle('A9:D' . ($row - 1))->applyFromArray($styleArray);
+        $sheet->getStyle('A9:E' . ($row - 1))->applyFromArray($styleArray);
 
         $row += 2;
-        $sheet->mergeCells('A' . $row . ':D' . $row);
-        $sheet->setCellValue('A' . $row, 'Report Generated By: ' . Auth::user()->first_name . ' ' . Auth::user()->last_name);
+        $sheet->mergeCells('A' . $row . ':E' . $row);
+        $sheet->setCellValue('A' . $row, 'Report Generated By: ' . $authUserName);
 
-        $styleRange = 'A' . $row . ':D' . $row;
+        $styleRange = 'A' . $row . ':E' . $row;
         $sheet->getStyle($styleRange)->getFont()->setBold(true);
         $sheet->getStyle($styleRange)->getFont()->setSize(10);
         $sheet->getStyle($styleRange)->getAlignment()->setHorizontal('left');
@@ -924,7 +1014,7 @@ class UserLogsController extends Controller
         header("Content-Disposition: attachment;filename=\"$fileName\"");
         $writer->save("php://output");
 
-        if (file_exists($tempLogoPath)) {
+        if ($tempLogoPath && file_exists($tempLogoPath)) {
             unlink($tempLogoPath);
         }
         exit;
@@ -941,7 +1031,8 @@ class UserLogsController extends Controller
         $query = $model->newQuery()
             ->with([
                 'user:id,privilege_id,first_name,middle_name,last_name',
-                'user.privileges'
+                'user.privileges',
+                'user.students:id,user_id,level,section'
             ])
             ->select([
                 'id',
@@ -956,9 +1047,11 @@ class UserLogsController extends Controller
             ->whereNotNull('time_in');
 
         if ($startStr && $endStr) {
-            $startDate = Carbon::createFromFormat('m/d/Y', $startStr)->startOfDay();
-            $endDate   = Carbon::createFromFormat('m/d/Y', $endStr)->endOfDay();
-            $query->whereBetween('time_in', [$startDate, $endDate]);
+            try {
+                $startDate = \App\Helpers\ReportHelper::parseDate($startStr)->startOfDay();
+                $endDate   = \App\Helpers\ReportHelper::parseDate($endStr)->endOfDay();
+                $query->whereBetween('time_in', [$startDate, $endDate]);
+            } catch (\Throwable $e) {}
         }
 
         if (strlen($search) > 0) {
@@ -1012,9 +1105,11 @@ class UserLogsController extends Controller
             ->whereHas('user');
 
         if ($startStr && $endStr) {
-            $startDate = Carbon::createFromFormat('m/d/Y', $startStr)->startOfDay();
-            $endDate   = Carbon::createFromFormat('m/d/Y', $endStr)->endOfDay();
-            $dateQuery->whereBetween('time_in', [$startDate, $endDate]);
+            try {
+                $startDate = \App\Helpers\ReportHelper::parseDate($startStr)->startOfDay();
+                $endDate   = \App\Helpers\ReportHelper::parseDate($endStr)->endOfDay();
+                $dateQuery->whereBetween('time_in', [$startDate, $endDate]);
+            } catch (\Throwable $e) {}
         }
 
         if (strlen($search) > 0) {

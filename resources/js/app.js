@@ -343,6 +343,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 input._lastSearchValue = input.value;
                 clearTimeout(debounceTimer);
                 debounceTimer = setTimeout(() => {
+                    hideLoader();
                     form.classList.add('skip-loader');
                     if (input.id) sessionStorage.setItem('autoSearchFocus', input.id);
                     if (form.requestSubmit) {
@@ -360,6 +361,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         selects.forEach(select => {
             select.addEventListener('change', () => {
+                hideLoader();
                 clearTimeout(debounceTimer);
                 form.classList.add('skip-loader');
                 if (form.requestSubmit) {
@@ -376,18 +378,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 input._lastSearchValue = input.value;
             });
 
-            const submitter = e.submitter || activeSubmitter;
+            const submitter = e.submitter || activeSubmitter || document.activeElement;
             const skipAjaxValues = ['pdf', 'excel', 'barcode', 'callNumber'];
+            const hiddenSubmitValue = form.querySelector('input[name="submit"]')?.value;
             
             // Allow normal submission for exports
             if (
                 (submitter && skipAjaxValues.includes(submitter.value)) ||
-                (submitter && (submitter.name === 'submit' || submitter.classList.contains('btn-export')))
+                (submitter && (submitter.name === 'submit' || submitter.classList.contains('btn-export'))) ||
+                (hiddenSubmitValue && skipAjaxValues.includes(hiddenSubmitValue))
             ) {
                 return;
             }
 
             e.preventDefault();
+            hideLoader();
             const formData = new FormData(form);
             const params = new URLSearchParams(formData);
             const method = form.method.toUpperCase();
@@ -425,16 +430,21 @@ document.addEventListener("DOMContentLoaded", () => {
                 
                 if (oldContainer && newContainer) {
                     oldContainer.innerHTML = newContainer.innerHTML;
+                    hideLoader();
                     if (typeof initFlowbite === 'function') initFlowbite();
                     oldContainer.dispatchEvent(new CustomEvent('contentUpdated'));
                     if (method === 'GET') {
                         window.history.pushState({}, '', url);
                     }
-                } else {
-                    // Fallback if no container found
+                } else if (response.ok) {
+                    // Fallback only if response was successful but container missing
                     window.location.href = url;
+                } else {
+                    hideLoader();
+                    console.error('AJAX search failed with response status:', response.status);
                 }
             } catch (error) {
+                hideLoader();
                 if (error.name === 'AbortError') {
                     // Stale request aborted cleanly by newer action
                     return;
