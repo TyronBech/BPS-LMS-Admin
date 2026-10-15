@@ -379,7 +379,7 @@ class ProcessMaterialImport implements ShouldQueue
         // ── Validation ──────────────────────────────────────────────────────
         $validator = Validator::make($item, [
             'accession' => 'required|string|max:255',
-            'title'     => 'required|string|max:255',
+            'title'     => 'required|string|max:500',
             'category'  => 'required|string',
             'book_type' => 'required|string',
         ]);
