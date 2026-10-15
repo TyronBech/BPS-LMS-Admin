@@ -27,7 +27,7 @@
           <div class="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
             <div id="title-container" class="md:col-span-2 lg:col-span-12">
               <label for="title" id="title-label" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Title:</label>
-              <input type="text" id="title" name="title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Material Title" value="{{ old('title', $book->title) }}" required>
+              <input type="text" id="title" name="title" maxlength="500" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Material Title" value="{{ old('title', $book->title) }}" required>
               @error('title') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
             <div id="parallel-title-container" class="md:col-span-2 lg:col-span-12">
@@ -326,13 +326,19 @@
                   @php
                     $isDisabled = false;
                     $currentStatus = $book->availability_status;
+                    $hasActiveBorrowing = $book->activeBorrowing()->exists();
+                    $hasActiveReservation = $book->activeReservation()->exists();
 
-                    if ($value === 'Borrowed' || $value === 'Reserved') {
-                        if ($currentStatus !== $value) {
+                    if ($value === 'Borrowed') {
+                        if (!$hasActiveBorrowing) {
+                            $isDisabled = true;
+                        }
+                    } elseif ($value === 'Reserved') {
+                        if (!$hasActiveReservation) {
                             $isDisabled = true;
                         }
                     } elseif ($value === 'Available') {
-                        if ($currentStatus === 'Borrowed' || $currentStatus === 'Reserved') {
+                        if ($hasActiveBorrowing || $hasActiveReservation) {
                             $isDisabled = true;
                         }
                     }
@@ -401,7 +407,9 @@
               <label for="copy_remarks" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Remarks:</label>
               <select id="copy_remarks" name="remarks" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
                 @foreach($remarks as $value)
-                <option value="{{ $value }}" {{ $value == $book->remarks ? 'selected' : '' }}>{{ $value }}</option>
+                  @if($value !== 'Unreturned')
+                    <option value="{{ $value }}" {{ $value === 'On Shelf' ? 'selected' : '' }}>{{ $value }}</option>
+                  @endif
                 @endforeach
               </select>
             </div>
@@ -410,7 +418,7 @@
               <select id="copy_availability" name="availability" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
                 @foreach($availability as $value)
                   @if($value !== 'Borrowed' && $value !== 'Reserved')
-                    <option value="{{ $value }}" {{ ($book->availability_status === 'Borrowed' || $book->availability_status === 'Reserved' ? 'Available' : $book->availability_status) == $value ? 'selected' : '' }}>{{ $value }}</option>
+                    <option value="{{ $value }}" {{ $value === 'Available' ? 'selected' : '' }}>{{ $value }}</option>
                   @endif
                 @endforeach
               </select>
@@ -420,10 +428,11 @@
               <label for="copy_condition" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Condition:</label>
               <select id="copy_condition" name="condition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
                 @foreach($condition as $value)
-                <option value="{{ $value }}" {{ $value == $book->condition_status ? 'selected' : '' }}>{{ $value }}</option>
+                <option value="{{ $value }}" {{ ($book->condition_status ?? 'Good') == $value ? 'selected' : '' }}>{{ $value }}</option>
                 @endforeach
               </select>
             </div>
+            <input type="hidden" name="source_book_id" value="{{ $book->id }}">
             <input type="hidden" name="title" value="{{ $book->title }}">
             <input type="hidden" name="parallel_title" value="{{ $book->parallel_title }}">
             <input type="hidden" name="book_type" value="{{ $book->book_type }}">
@@ -436,11 +445,22 @@
                 <input type="hidden" name="authors[{{ $key }}]" value="{{ is_array($value) ? json_encode($value) : $value }}">
               @endforeach
             @endif
+            @php
+              $sourceDesc = is_array($book->description) ? $book->description : [];
+              $sourceExtent = $sourceDesc['Extent'] ?? ($sourceDesc['extent'] ?? null);
+
+              if (empty($sourceExtent) || trim((string)$sourceExtent) === '') {
+                  $sourceExtent = 'N/A';
+              }
+            @endphp
             @if(is_array($book->description))
               @foreach($book->description as $key => $value)
-                <input type="hidden" name="description[{{ $key }}]" value="{{ is_array($value) ? json_encode($value) : $value }}">
+                @if(strtolower($key) !== 'extent')
+                  <input type="hidden" name="description[{{ $key }}]" value="{{ is_array($value) ? json_encode($value) : $value }}">
+                @endif
               @endforeach
             @endif
+            <input type="hidden" name="description[Extent]" value="{{ $sourceExtent }}">
             <input type="hidden" name="publication" value="{{ $book->place_of_publication }}">
             <input type="hidden" name="publisher" value="{{ $book->publisher }}">
             <input type="hidden" name="copyright" value="{{ $book->copyrights }}">
@@ -571,6 +591,8 @@
     }
 
     const originalAvailability = '{{ $book->availability_status }}';
+    const hasActiveBorrowing = {{ $book->activeBorrowing()->exists() ? 'true' : 'false' }};
+    const hasActiveReservation = {{ $book->activeReservation()->exists() ? 'true' : 'false' }};
 
     function applyAvailabilityRule(isInitial = false) {
       if (!availabilitySelect || !availabilityHidden || !remarksSelect) return;
@@ -584,7 +606,7 @@
         if (isInitial) {
           availabilitySelect.value = originalAvailability;
         } else {
-          if (originalAvailability === 'Borrowed' || originalAvailability === 'Reserved') {
+          if ((originalAvailability === 'Borrowed' && hasActiveBorrowing) || (originalAvailability === 'Reserved' && hasActiveReservation)) {
             availabilitySelect.value = originalAvailability;
           } else {
             availabilitySelect.value = 'Available';
@@ -659,6 +681,11 @@
 
       const categoryId = copyCategoryInput.value;
       if (!categoryId) return;
+
+      if (copyRemarks) {
+        copyRemarks.value = 'On Shelf';
+      }
+      applyAvailabilityRuleCopy();
 
       try {
         const response = await fetch(`/admin/maintenance/books/next-accession/${categoryId}`);
@@ -763,6 +790,31 @@
       copyAccessionInputEl.addEventListener('input', validateCopyAccessionInput);
     }
 
+    // Copy modal availability logic
+    const copyRemarks = document.getElementById('copy_remarks');
+    const copyAvailability = document.getElementById('copy_availability');
+    const copyAvailabilityHidden = document.getElementById('copy_availability_hidden');
+
+    function applyAvailabilityRuleCopy() {
+      if (!copyAvailability || !copyAvailabilityHidden || !copyRemarks) return;
+      const rv = copyRemarks.value;
+      if (rv && rv !== 'On Shelf') {
+        copyAvailability.value = 'Unavailable';
+        copyAvailability.setAttribute('disabled', 'disabled');
+        copyAvailabilityHidden.value = 'Unavailable';
+        copyAvailabilityHidden.removeAttribute('disabled');
+      } else {
+        copyAvailability.value = 'Available';
+        copyAvailability.removeAttribute('disabled');
+        copyAvailabilityHidden.setAttribute('disabled', 'disabled');
+      }
+    }
+
+    if (copyRemarks) {
+      copyRemarks.addEventListener('change', applyAvailabilityRuleCopy);
+      applyAvailabilityRuleCopy();
+    }
+
     // Prefill when modal button is clicked
     const copyModalBtn = document.querySelector('[data-modal-target="copy-book-modal"]');
     if (copyModalBtn) {
@@ -779,9 +831,9 @@
     function getCategoryClassFromName(categoryName) {
       if (!categoryName) return null;
       const normalized = categoryName.trim().toLowerCase();
-      if (normalized === 'periodical') return 'cat-periodical';
-      if (normalized === 'serials') return 'cat-serials';
-      if (normalized === 'academic research') return 'cat-academic-research';
+      if (normalized === 'periodical' || normalized === 'periodicals') return 'cat-periodical';
+      if (normalized === 'serials' || normalized === 'series' || normalized === 'serial') return 'cat-serials';
+      if (normalized === 'academic research' || normalized === 'academic researches' || normalized === 'research works' || normalized === 'research') return 'cat-academic-research';
       return null;
     }
 
