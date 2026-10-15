@@ -150,7 +150,15 @@ class Book extends Model
     {
         return $this->hasOne(Transaction::class, 'book_id', 'id')
             ->where('transaction_type', 'Borrowed')
-            ->whereIn('status', ['Borrowed', 'Overdue']);
+            ->whereIn('status', ['Borrowed', 'Overdue', 'Renew']);
+    }
+
+    /**
+     * Get the active borrowing transaction for the book (alias for activeBorrow).
+     */
+    public function activeBorrowing(): HasOne
+    {
+        return $this->activeBorrow();
     }
 
     /**

@@ -198,9 +198,31 @@ class BookMaintenanceController extends Controller
         // Determine the category name to adjust validation for category-specific field visibility
         $selectedCategoryModel = Category::find($request->input('category'));
         $selectedCategoryName = $selectedCategoryModel ? strtolower(trim($selectedCategoryModel->name)) : '';
-        $extentRule = in_array($selectedCategoryName, ['periodical', 'periodicals'])
+
+        $isSpecialCategory = in_array($selectedCategoryName, [
+            'periodical', 'periodicals',
+            'academic research', 'academic researches', 'research works', 'research', 'thesis', 'theses', 'dissertation', 'dissertations',
+            'series', 'serials', 'serial', 'periodical series',
+        ])
+        || !empty($request->input('periodical_kind'))
+        || !empty($request->input('institution'))
+        || !empty($request->input('program'))
+        || !empty($request->input('issn'))
+        || !empty($request->input('frequency'));
+
+        $extentRule = $isSpecialCategory
             ? 'nullable|string'
             : 'required_unless:book_type,Non-print|string|nullable';
+
+        if ($isSpecialCategory) {
+            $desc = $request->input('description', []);
+            if (is_array($desc) && (empty($desc['Extent']) || trim((string)$desc['Extent']) === '')) {
+                if (in_array($selectedCategoryName, ['periodical', 'periodicals']) || !empty($request->input('periodical_kind'))) {
+                    $desc['Extent'] = 'N/A';
+                }
+                $request->merge(['description' => $desc]);
+            }
+        }
 
         // Periodicals do not logically have accession numbers, but the database requires a unique one.
         // Auto-generate a guaranteed unique accession using the official format to bypass clashes.
@@ -212,7 +234,7 @@ class BookMaintenanceController extends Controller
             'accession'         => 'required|string',
             'call_number'       => 'nullable|string|max:50',
             'isbn'              => 'nullable|string|max:20',
-            'title'             => 'required|string|max:150',
+            'title'             => 'required|string|max:500',
             'parallel_title'    => 'nullable|string',
             'subject_access_codes' => 'nullable|array',
             'subject_access_codes.*' => 'integer|exists:bk_subject_access_codes,id,deleted_at,NULL',
@@ -676,15 +698,37 @@ class BookMaintenanceController extends Controller
         // Determine the category name to adjust validation for category-specific field visibility
         $selectedCategoryModel = Category::find($request->input('category'));
         $selectedCategoryName = $selectedCategoryModel ? strtolower(trim($selectedCategoryModel->name)) : '';
-        $extentRule = in_array($selectedCategoryName, ['periodical', 'periodicals'])
+
+        $isSpecialCategory = in_array($selectedCategoryName, [
+            'periodical', 'periodicals',
+            'academic research', 'academic researches', 'research works', 'research', 'thesis', 'theses', 'dissertation', 'dissertations',
+            'series', 'serials', 'serial', 'periodical series',
+        ])
+        || !empty($request->input('periodical_kind'))
+        || !empty($request->input('institution'))
+        || !empty($request->input('program'))
+        || !empty($request->input('issn'))
+        || !empty($request->input('frequency'));
+
+        $extentRule = $isSpecialCategory
             ? 'nullable|string'
             : 'required_unless:book_type,Non-print|string|nullable';
+
+        if ($isSpecialCategory) {
+            $desc = $request->input('description', []);
+            if (is_array($desc) && (empty($desc['Extent']) || trim((string)$desc['Extent']) === '')) {
+                if (in_array($selectedCategoryName, ['periodical', 'periodicals']) || !empty($request->input('periodical_kind'))) {
+                    $desc['Extent'] = 'N/A';
+                }
+                $request->merge(['description' => $desc]);
+            }
+        }
 
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string|max:50',
             'call_number'       => 'nullable|string|max:50',
             'isbn'              => 'nullable|string|max:20',
-            'title'             => 'required|string|max:150',
+            'title'             => 'required|string|max:500',
             'parallel_title'    => 'nullable|string',
             'subject_access_codes' => 'nullable|array',
             'subject_access_codes.*' => 'integer|exists:bk_subject_access_codes,id,deleted_at,NULL',
@@ -869,11 +913,63 @@ class BookMaintenanceController extends Controller
             'timestamp' => now(),
         ]);
 
+        // Automatically resolve and populate description and Extent for copied materials
+        $description = $request->input('description', []);
+        if (!is_array($description)) {
+            $description = [];
+        }
+
+        $sourceBookId = $request->input('source_book_id');
+        $sourceBook = $sourceBookId ? Book::find($sourceBookId) : null;
+        if (!$sourceBook && $request->input('title')) {
+            $sourceBook = Book::where('category_id', $request->input('category'))
+                ->where('title', $request->input('title'))
+                ->first();
+        }
+
+        $selectedCategoryModel = Category::find($request->input('category'));
+        $selectedCategoryName = $selectedCategoryModel ? strtolower(trim($selectedCategoryModel->name)) : '';
+
+        $isPeriodical = in_array($selectedCategoryName, ['periodical', 'periodicals'])
+            || !empty($request->input('periodical_kind'))
+            || ($sourceBook && !empty($sourceBook->periodical_kind))
+            || (!empty($request->input('volume')) && empty($request->input('issn')))
+            || (!empty($request->input('issue_number')) && empty($request->input('issn')));
+
+        $isAcademicResearch = in_array($selectedCategoryName, ['academic research', 'academic researches', 'research works', 'research', 'thesis', 'theses', 'dissertation', 'dissertations'])
+            || !empty($request->input('institution'))
+            || !empty($request->input('program'))
+            || ($sourceBook && (!empty($sourceBook->institution) || !empty($sourceBook->program)));
+
+        $isSeries = in_array($selectedCategoryName, ['series', 'serials', 'serial', 'periodical series'])
+            || !empty($request->input('issn'))
+            || !empty($request->input('frequency'))
+            || !empty($request->input('latest_received'))
+            || !empty($request->input('topical_access_point'))
+            || !empty($request->input('corporate_access_point'))
+            || ($sourceBook && (!empty($sourceBook->issn) || !empty($sourceBook->frequency)));
+
+        $extent = $description['Extent'] ?? ($description['extent'] ?? null);
+
+        // Fallback to source book's extent if missing or empty
+        if ((empty($extent) || trim((string)$extent) === '') && $sourceBook && is_array($sourceBook->description)) {
+            $extent = $sourceBook->description['Extent'] ?? ($sourceBook->description['extent'] ?? null);
+        }
+
+        // If still empty, automatically default based on category use case
+        if (empty($extent) || trim((string)$extent) === '') {
+            $extent = 'N/A';
+        }
+
+        $description['Extent'] = $extent;
+        unset($description['extent']);
+        $request->merge(['description' => $description]);
+
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string',
             'call_number'       => 'nullable|string|max:50',
             'isbn'              => 'nullable|string|max:20',
-            'title'             => 'required|string|max:150',
+            'title'             => 'required|string|max:500',
             'parallel_title'    => 'nullable|string',
             'subject_access_codes' => 'nullable|array',
             'subject_access_codes.*' => 'integer|exists:bk_subject_access_codes,id,deleted_at,NULL',
@@ -888,7 +984,7 @@ class BookMaintenanceController extends Controller
             'description.Content notes' => 'nullable|string',
             'description.Abstract'      => 'nullable|string',
             'description.Reviews'       => 'nullable|string',
-            'description.Extent'        => 'required_unless:book_type,Non-print|string|nullable',
+            'description.Extent'        => 'nullable|string',
             'description.Acc Material'  => 'nullable|string',
             'edition'           => 'nullable|string|max:50',
             'publication'       => 'nullable|string|max:50',
@@ -896,7 +992,7 @@ class BookMaintenanceController extends Controller
             'copyright'         => 'nullable|string|max:50',
             'cover_image'       => 'nullable|image|mimes:jpeg,png,jpg,gif|max:5120',
             'digital_copy_url'  => 'nullable|string|url',
-            'remarks'           => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'remarks')),
+            'remarks'           => 'required|in:' . implode(',', array_diff($this->extract_enums($books->getTable(), 'remarks'), ['Unreturned'])),
             'category'          => 'required|in:' . implode(',', Category::pluck('id')->toArray()),
             'book_type'         => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'book_type')),
             'condition'         => 'required|in:' . implode(',', $this->extract_enums($books->getTable(), 'condition_status')),
@@ -966,26 +1062,26 @@ class BookMaintenanceController extends Controller
                     'cover_image'           => $request->input('cover_image') ?? null,
                     'languages'             => $request->input('languages') ?? null,
                     'digital_copy_url'      => $request->input('digital_copy_url') ?? null,
-                    'remarks'               => $request->input('remarks'),
+                    'remarks'               => $request->input('remarks', 'On Shelf'),
                     'category_id'           => $request->input('category'),
                     'book_type'             => $request->input('book_type'),
-                    'condition_status'      => $request->input('condition'),
-                    'availability_status'   => $request->input('availability'),
+                    'condition_status'      => $request->input('condition', 'Good'),
+                    'availability_status'   => $request->input('availability', 'Available'),
                     // Category-specific fields
-                    'periodical_kind'       => $request->input('periodical_kind') ?? null,
-                    'volume'                => $request->input('volume') ?? null,
-                    'issue_number'          => $request->input('issue_number') ?? null,
-                    'material_type'         => $request->input('material_type') ?? null,
-                    'issn'                  => $request->input('issn') ?? null,
-                    'frequency'             => $request->input('frequency') ?? null,
-                    'latest_received'       => $request->input('latest_received') ?? null,
-                    'notes'                 => $request->input('notes') ?? null,
-                    'topical_access_point'  => $request->input('topical_access_point') ?? null,
-                    'corporate_access_point' => $request->input('corporate_access_point') ?? null,
-                    'discipline'            => $request->input('discipline') ?? null,
-                    'institution'           => $request->input('institution') ?? null,
-                    'program'               => $request->input('program') ?? null,
-                    'location'              => $request->input('location') ?? null,
+                    'periodical_kind'       => $request->input('periodical_kind') ?? ($sourceBook->periodical_kind ?? null),
+                    'volume'                => $request->input('volume') ?? ($sourceBook->volume ?? null),
+                    'issue_number'          => $request->input('issue_number') ?? ($sourceBook->issue_number ?? null),
+                    'material_type'         => $request->input('material_type') ?? ($sourceBook->material_type ?? null),
+                    'issn'                  => $request->input('issn') ?? ($sourceBook->issn ?? null),
+                    'frequency'             => $request->input('frequency') ?? ($sourceBook->frequency ?? null),
+                    'latest_received'       => $request->input('latest_received') ?? ($sourceBook->latest_received ?? null),
+                    'notes'                 => $request->input('notes') ?? ($sourceBook->notes ?? null),
+                    'topical_access_point'  => $request->input('topical_access_point') ?? ($sourceBook->topical_access_point ?? null),
+                    'corporate_access_point' => $request->input('corporate_access_point') ?? ($sourceBook->corporate_access_point ?? null),
+                    'discipline'            => $request->input('discipline') ?? ($sourceBook->discipline ?? null),
+                    'institution'           => $request->input('institution') ?? ($sourceBook->institution ?? null),
+                    'program'               => $request->input('program') ?? ($sourceBook->program ?? null),
+                    'location'              => $request->input('location') ?? ($sourceBook->location ?? null),
                 ]);
 
                 $copiedBook->subjectAccessCodes()->sync($subjectAccessCodeIds);
@@ -1001,7 +1097,7 @@ class BookMaintenanceController extends Controller
             $copiedAccessions = array_map('trim', explode(';', $request->input('accession')));
             foreach ($copiedAccessions as $acc) {
                 $book = Book::where('accession', $acc)->first();
-                if ($book) {
+                if ($book && $book->book_type !== 'E-books') {
                     Inventory::create([
                         'book_id'    => $book->id,
                         'is_scanned' => 1,
@@ -1597,15 +1693,19 @@ class BookMaintenanceController extends Controller
 
         if ($currentAvailability === 'Borrowed') {
             if ($availability === 'Available') {
-                $validator->errors()->add('availability', 'This book is currently borrowed. It must first be returned before its status can be set to "Available".');
-                return;
+                if ($currentBook && $currentBook->activeBorrowing()->exists()) {
+                    $validator->errors()->add('availability', 'This book is currently borrowed. It must first be returned before its status can be set to "Available".');
+                    return;
+                }
             }
         }
 
         if ($currentAvailability === 'Reserved') {
             if ($availability === 'Available') {
-                $validator->errors()->add('availability', 'This book is currently reserved. It must first be returned or cancelled before its status can be set to "Available".');
-                return;
+                if ($currentBook && $currentBook->activeReservation()->exists()) {
+                    $validator->errors()->add('availability', 'This book is currently reserved. It must first be returned or cancelled before its status can be set to "Available".');
+                    return;
+                }
             }
         }
 
