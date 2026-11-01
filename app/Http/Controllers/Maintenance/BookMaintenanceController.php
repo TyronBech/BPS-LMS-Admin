@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Maintenance;
 
 use App\Http\Controllers\Controller;
-use App\Enum\AcquisitionModeEnum;
+use App\Support\BookAcquisitionDetails;
 use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Category;
@@ -13,7 +13,6 @@ use Exception;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -200,7 +199,7 @@ class BookMaintenanceController extends Controller
         // Determine the category name to adjust validation for category-specific field visibility
         $selectedCategoryModel = Category::find($request->input('category'));
         $selectedCategoryName = $selectedCategoryModel ? strtolower(trim($selectedCategoryModel->name)) : '';
-        $request->merge($this->acquisitionDetails($request, $selectedCategoryModel));
+        $request->merge(BookAcquisitionDetails::normalize($request->only(BookAcquisitionDetails::FIELDS), $selectedCategoryModel));
 
         $isSpecialCategory = in_array($selectedCategoryName, [
             'periodical', 'periodicals',
@@ -235,7 +234,7 @@ class BookMaintenanceController extends Controller
 
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string',
-            ...$this->acquisitionRules(),
+            ...BookAcquisitionDetails::rules(),
             'call_number'       => 'nullable|string|max:50',
             'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:500',
@@ -705,7 +704,7 @@ class BookMaintenanceController extends Controller
         // Determine the category name to adjust validation for category-specific field visibility
         $selectedCategoryModel = Category::find($request->input('category'));
         $selectedCategoryName = $selectedCategoryModel ? strtolower(trim($selectedCategoryModel->name)) : '';
-        $request->merge($this->acquisitionDetails($request, $selectedCategoryModel));
+        $request->merge(BookAcquisitionDetails::normalize($request->only(BookAcquisitionDetails::FIELDS), $selectedCategoryModel));
 
         $isSpecialCategory = in_array($selectedCategoryName, [
             'periodical', 'periodicals',
@@ -734,7 +733,7 @@ class BookMaintenanceController extends Controller
 
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string|max:50',
-            ...$this->acquisitionRules(),
+            ...BookAcquisitionDetails::rules(),
             'call_number'       => 'nullable|string|max:50',
             'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:500',
@@ -941,7 +940,7 @@ class BookMaintenanceController extends Controller
 
         $selectedCategoryModel = Category::find($request->input('category'));
         $selectedCategoryName = $selectedCategoryModel ? strtolower(trim($selectedCategoryModel->name)) : '';
-        $request->merge($this->acquisitionDetails($request, $selectedCategoryModel));
+        $request->merge(BookAcquisitionDetails::normalize($request->only(BookAcquisitionDetails::FIELDS), $selectedCategoryModel));
 
         $isPeriodical = in_array($selectedCategoryName, ['periodical', 'periodicals'])
             || !empty($request->input('periodical_kind'))
@@ -980,7 +979,7 @@ class BookMaintenanceController extends Controller
 
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string',
-            ...$this->acquisitionRules(),
+            ...BookAcquisitionDetails::rules(),
             'call_number'       => 'nullable|string|max:50',
             'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:500',
@@ -1542,26 +1541,6 @@ class BookMaintenanceController extends Controller
             ]);
             return null;
         }
-    }
-
-    private function acquisitionRules(): array
-    {
-        return [
-            'acquisition_mode' => ['nullable', Rule::enum(AcquisitionModeEnum::class)],
-            'price' => ['nullable', 'numeric', 'min:0', 'max:9999999999.99', 'decimal:0,2'],
-            'acquisition_date' => ['nullable', 'date_format:Y-m-d'],
-        ];
-    }
-
-    private function acquisitionDetails(Request $request, ?Category $category): array
-    {
-        $details = [];
-        foreach (['acquisition_mode', 'price', 'acquisition_date'] as $field) {
-            $value = $category?->isAcademicResearch() ? null : $request->input($field);
-            $details[$field] = $value === '' ? null : $value;
-        }
-
-        return $details;
     }
 
     /**

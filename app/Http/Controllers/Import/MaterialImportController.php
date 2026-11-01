@@ -6,7 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Jobs\ProcessMaterialImport;
 use App\Models\ImportProgress;
 use Illuminate\Http\Request;
-use PhpOffice\PhpSpreadsheet\Reader\Xlsx as ReaderXlsx;
+use App\Models\Category;
+use App\Services\Imports\MaterialImportReader;
+use App\Support\BookAcquisitionDetails;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -27,7 +30,7 @@ class MaterialImportController extends Controller
             'timestamp'  => now(),
         ]);
 
-        if (!$request->has('page') && !$request->has('perPage')) {
+        if (!$request->has('page') && !$request->has('perPage') && !$request->boolean('preserve_import')) {
             $oldFile = $request->session()->get('material_import_file');
             if ($oldFile) {
                 if (\Illuminate\Support\Facades\Storage::exists($oldFile)) {
@@ -86,25 +89,10 @@ class MaterialImportController extends Controller
                 return redirect()->route('import.import-materials')->with('toast-warning', 'Please select a file to upload.');
             }
 
-            // Parse file on the fly
-            $data = $this->readMaterialsExcel(\Illuminate\Support\Facades\Storage::path($filePath));
-
-            // Merge any edits from session
             $sessionEdits = $request->session()->get('material_import_edits', []);
-            foreach ($sessionEdits as $index => $edit) {
-                if (isset($data[$index])) {
-                    if (isset($edit['authors'])) {
-                        $data[$index]['authors'] = array_merge($data[$index]['authors'], $edit['authors']);
-                    }
-                    if (isset($edit['description'])) {
-                        $data[$index]['description'] = array_merge($data[$index]['description'], $edit['description']);
-                    }
-                    $data[$index] = array_merge(
-                        $data[$index],
-                        array_diff_key($edit, ['authors' => 1, 'description' => 1])
-                    );
-                }
-            }
+            $data = $this->readMaterialsExcel(\Illuminate\Support\Facades\Storage::path($filePath), $sessionEdits);
+            $acquisitionErrors = $this->acquisitionErrors($data);
+            $researchCategoryNames = Category::all()->filter(fn ($category) => $category->isAcademicResearch())->map(fn ($category) => strtolower(trim($category->name)))->values()->all();
 
             // Query existing book accessions
             $accessions = [];
@@ -170,11 +158,13 @@ class MaterialImportController extends Controller
                 'existingCount'         => $existingCount,
                 'perPage'               => $perPage,
                 'activeImport'          => $activeImport,
+                'acquisitionErrors'      => $acquisitionErrors,
+                'researchCategoryNames'  => $researchCategoryNames,
             ]);
 
         } catch (\Exception $e) {
             Log::error('Material Import Error: ' . $e->getMessage());
-            return redirect()->route('import.import-materials')->with('toast-error', $this->friendlyErrorMessage($e));
+            return redirect()->route('import.import-materials', ['preserve_import' => 1])->with('toast-error', $this->friendlyErrorMessage($e));
         }
     }
 
@@ -238,8 +228,17 @@ class MaterialImportController extends Controller
                 );
             }
 
-            // Parse file to get row count
-            $data = $this->readMaterialsExcel(\Illuminate\Support\Facades\Storage::path($filePath));
+            // Keep corrections across failed attempts and validate the exact data passed to the worker.
+            $request->session()->put('material_import_edits', $sessionEdits);
+            $data = $this->readMaterialsExcel(\Illuminate\Support\Facades\Storage::path($filePath), $sessionEdits);
+            $errors = $this->acquisitionErrors($data);
+            if ($errors !== []) {
+                return response()->json([
+                    'error' => true,
+                    'message' => reset($errors)[0],
+                    'errors' => $errors,
+                ], 422);
+            }
 
             // Create the progress record first
             $progress = ImportProgress::create([
@@ -293,79 +292,30 @@ class MaterialImportController extends Controller
     /**
      * Reads and parses raw materials data from Excel file.
      */
-    private function readMaterialsExcel(string $fullPath): array
+    private function readMaterialsExcel(string $fullPath, array $edits = []): array
     {
         ini_set('memory_limit', '1G');
         set_time_limit(300);
 
-        $reader = new ReaderXlsx();
-        $reader->setReadDataOnly(true);
-        $spreadsheet = $reader->load($fullPath);
-        $sheet = $spreadsheet->getActiveSheet();
-        $rows = $sheet->toArray();
+        return (new MaterialImportReader)->read($fullPath, $edits);
+    }
 
-        if (empty($rows) || !isset($rows[0][0])) {
-            if (count($rows) <= 18) {
-                throw new \Exception('Excel file is empty or template is incorrect.');
+    private function acquisitionErrors(array $rows): array
+    {
+        $categories = Category::all()->keyBy(fn ($category) => strtolower(trim($category->name)));
+        $errors = [];
+        foreach ($rows as $index => $item) {
+            $categoryName = is_string($item['category'] ?? null) ? strtolower(trim($item['category'])) : '';
+            $details = BookAcquisitionDetails::normalize($item, $categories->get($categoryName), false);
+            $validator = Validator::make($details, BookAcquisitionDetails::rules());
+            foreach ($validator->errors()->messages() as $field => $messages) {
+                $row = $item['_excel_row'];
+                $accession = is_scalar($item['accession'] ?? null) ? $item['accession'] : 'Unknown';
+                $errors["materials.{$index}.{$field}"] = array_map(fn ($message) => "Excel row {$row} (accession: {$accession}): {$message}", $messages);
             }
         }
 
-        $data           = [];
-        $headerRowIndex = 17;
-        $baseCol        = 0;
-
-        if (isset($rows[$headerRowIndex][1]) && strtolower(trim((string) $rows[$headerRowIndex][1])) === 'accession') {
-            $baseCol = 1;
-        }
-
-        for ($i = 18; $i < count($rows); $i++) {
-            $isEmptyRow = true;
-            for ($col = $baseCol; $col <= $baseCol + 25; $col++) {
-                if (isset($rows[$i][$col]) && trim((string) $rows[$i][$col]) !== '') {
-                    $isEmptyRow = false;
-                    break;
-                }
-            }
-
-            if ($isEmptyRow) {
-                continue;
-            }
-
-            $data[] = [
-                'accession'            => isset($rows[$i][$baseCol]) ? trim((string) $rows[$i][$baseCol]) : null,
-                'title'                => isset($rows[$i][$baseCol + 1]) ? trim((string) $rows[$i][$baseCol + 1]) : null,
-                'parallel_title'       => isset($rows[$i][$baseCol + 24]) ? trim((string) $rows[$i][$baseCol + 24]) : null,
-                'authors'              => [
-                    'Main author'      => isset($rows[$i][$baseCol + 2]) ? trim((string) $rows[$i][$baseCol + 2]) : null,
-                    'Corporate author' => isset($rows[$i][$baseCol + 3]) ? trim((string) $rows[$i][$baseCol + 3]) : null,
-                    'Added authors'    => isset($rows[$i][$baseCol + 4]) ? trim((string) $rows[$i][$baseCol + 4]) : null,
-                    'Contributors'     => isset($rows[$i][$baseCol + 5]) ? trim((string) $rows[$i][$baseCol + 5]) : null,
-                ],
-                'edition'              => isset($rows[$i][$baseCol + 6]) ? trim((string) $rows[$i][$baseCol + 6]) : null,
-                'call_number'          => isset($rows[$i][$baseCol + 7]) ? trim((string) $rows[$i][$baseCol + 7]) : null,
-                'isbn'                 => isset($rows[$i][$baseCol + 8]) ? trim((string) $rows[$i][$baseCol + 8]) : null,
-                'description'          => [
-                    'Description'   => isset($rows[$i][$baseCol + 9]) ? trim((string) $rows[$i][$baseCol + 9]) : null,
-                    'Content notes' => isset($rows[$i][$baseCol + 10]) ? trim((string) $rows[$i][$baseCol + 10]) : null,
-                    'Abstract'      => isset($rows[$i][$baseCol + 11]) ? trim((string) $rows[$i][$baseCol + 11]) : null,
-                    'Reviews'       => isset($rows[$i][$baseCol + 12]) ? trim((string) $rows[$i][$baseCol + 12]) : null,
-                    'Extent'        => isset($rows[$i][$baseCol + 13]) ? trim((string) $rows[$i][$baseCol + 13]) : null,
-                    'Acc Material'  => isset($rows[$i][$baseCol + 14]) ? trim((string) $rows[$i][$baseCol + 14]) : null,
-                    'Series'        => isset($rows[$i][$baseCol + 25]) ? trim((string) $rows[$i][$baseCol + 25]) : null,
-                ],
-                'place_of_publication' => isset($rows[$i][$baseCol + 15]) ? trim((string) $rows[$i][$baseCol + 15]) : null,
-                'publisher'            => isset($rows[$i][$baseCol + 16]) ? trim((string) $rows[$i][$baseCol + 16]) : null,
-                'copyrights'           => isset($rows[$i][$baseCol + 17]) ? trim((string) $rows[$i][$baseCol + 17]) : null,
-                'location'             => isset($rows[$i][$baseCol + 18]) ? trim((string) $rows[$i][$baseCol + 18]) : null,
-                'languages'            => isset($rows[$i][$baseCol + 19]) ? trim((string) $rows[$i][$baseCol + 19]) : null,
-                'book_type'            => isset($rows[$i][$baseCol + 20]) ? trim((string) $rows[$i][$baseCol + 20]) : 'Print',
-                'category'             => isset($rows[$i][$baseCol + 21]) ? trim((string) $rows[$i][$baseCol + 21]) : null,
-                'digital_copy_url'     => isset($rows[$i][$baseCol + 22]) ? trim((string) $rows[$i][$baseCol + 22]) : null,
-                'subject'              => isset($rows[$i][$baseCol + 23]) ? trim((string) $rows[$i][$baseCol + 23]) : null,
-            ];
-        }
-
-        return $data;
+        return $errors;
     }
 
     /**

@@ -3,6 +3,8 @@
 namespace App\Jobs;
 
 use App\Models\Book;
+use App\Support\BookAcquisitionDetails;
+use App\Services\Imports\MaterialImportReader;
 use App\Models\BkLastAccession;
 use App\Models\Category;
 use App\Models\ImportProgress;
@@ -155,7 +157,7 @@ class ProcessMaterialImport implements ShouldQueue
                     DB::statement('SET @current_user_id = ?', [$this->initiatedBy]);
 
                     foreach ($chunk as $globalRowIndex => $item) {
-                        $rowNumber = $globalRowIndex + 1; // 1-based row number for user display
+                        $rowNumber = $item['_excel_row'] ?? ($globalRowIndex + 19); // 1-based row number for user display
 
                         $status = $this->processRow($item, $rowNumber);
                         if ($status === 'new') {
@@ -267,103 +269,7 @@ class ProcessMaterialImport implements ShouldQueue
      */
     private function parseExcel(string $fullPath): array
     {
-        $reader = new \PhpOffice\PhpSpreadsheet\Reader\Xlsx();
-        $reader->setReadDataOnly(true);
-        $spreadsheet = $reader->load($fullPath);
-        $sheet = $spreadsheet->getActiveSheet();
-        $rows = $sheet->toArray();
-
-        $data = [];
-        $headerRowIndex = 17;
-        $baseCol = 0;
-
-        if (isset($rows[$headerRowIndex][1]) && strtolower(trim((string) $rows[$headerRowIndex][1])) === 'accession') {
-            $baseCol = 1;
-        }
-
-        for ($i = 18; $i < count($rows); $i++) {
-            $isEmptyRow = true;
-            for ($col = $baseCol; $col <= $baseCol + 38; $col++) {
-                if (isset($rows[$i][$col]) && trim((string) $rows[$i][$col]) !== '') {
-                    $isEmptyRow = false;
-                    break;
-                }
-            }
-
-            if ($isEmptyRow) {
-                continue;
-            }
-
-            $data[] = [
-                'accession'            => $this->capitalizeAccessionLegend($this->cleanString($rows[$i][$baseCol] ?? null)),
-                'title'                => $this->cleanString($rows[$i][$baseCol + 1] ?? null),
-                'parallel_title'       => $this->cleanString($rows[$i][$baseCol + 24] ?? null),
-                'authors'              => [
-                    'Main author'      => $this->cleanString($rows[$i][$baseCol + 2] ?? null),
-                    'Corporate author' => $this->cleanString($rows[$i][$baseCol + 3] ?? null),
-                    'Added authors'    => $this->cleanString($rows[$i][$baseCol + 4] ?? null),
-                    'Contributors'     => $this->cleanString($rows[$i][$baseCol + 5] ?? null),
-                ],
-                'edition'              => $this->cleanString($rows[$i][$baseCol + 6] ?? null),
-                'call_number'          => $this->cleanString($rows[$i][$baseCol + 7] ?? null),
-                'isbn'                 => $this->cleanString($rows[$i][$baseCol + 8] ?? null),
-                'description'          => [
-                    'Description'   => $this->cleanString($rows[$i][$baseCol + 9] ?? null),
-                    'Content notes' => $this->cleanString($rows[$i][$baseCol + 10] ?? null),
-                    'Abstract'      => $this->cleanString($rows[$i][$baseCol + 11] ?? null),
-                    'Reviews'       => $this->cleanString($rows[$i][$baseCol + 12] ?? null),
-                    'Extent'        => $this->cleanString($rows[$i][$baseCol + 13] ?? null),
-                    'Acc Material'  => $this->cleanString($rows[$i][$baseCol + 14] ?? null),
-                    'Series'        => $this->cleanString($rows[$i][$baseCol + 25] ?? null),
-                ],
-                'place_of_publication' => $this->cleanString($rows[$i][$baseCol + 15] ?? null),
-                'publisher'            => $this->cleanString($rows[$i][$baseCol + 16] ?? null),
-                'copyrights'           => $this->cleanString($rows[$i][$baseCol + 17] ?? null),
-                'location'             => $this->cleanString($rows[$i][$baseCol + 18] ?? null),
-                'languages'            => $this->cleanString($rows[$i][$baseCol + 19] ?? null),
-                'book_type'            => $this->cleanString($rows[$i][$baseCol + 20] ?? null) ?? 'Print',
-                'category'             => $this->cleanString($rows[$i][$baseCol + 21] ?? null),
-                'digital_copy_url'     => $this->cleanString($rows[$i][$baseCol + 22] ?? null),
-                'subject'              => $this->cleanString($rows[$i][$baseCol + 23] ?? null),
-                // Category-specific fields (26 to 38)
-                'periodical_kind'      => $this->cleanString($rows[$i][$baseCol + 26] ?? null),
-                'volume'               => $this->cleanString($rows[$i][$baseCol + 27] ?? null),
-                'issue_number'         => $this->cleanString($rows[$i][$baseCol + 28] ?? null),
-                'material_type'        => $this->cleanString($rows[$i][$baseCol + 29] ?? null),
-                'issn'                 => $this->cleanString($rows[$i][$baseCol + 30] ?? null),
-                'frequency'            => $this->cleanString($rows[$i][$baseCol + 31] ?? null),
-                'latest_received'      => $this->cleanString($rows[$i][$baseCol + 32] ?? null),
-                'notes'                => $this->cleanString($rows[$i][$baseCol + 33] ?? null),
-                'topical_access_point' => $this->cleanString($rows[$i][$baseCol + 34] ?? null),
-                'corporate_access_point' => $this->cleanString($rows[$i][$baseCol + 35] ?? null),
-                'discipline'           => $this->cleanString($rows[$i][$baseCol + 36] ?? null),
-                'institution'          => $this->cleanString($rows[$i][$baseCol + 37] ?? null),
-                'program'              => $this->cleanString($rows[$i][$baseCol + 38] ?? null),
-            ];
-        }
-
-        // Apply user edits if any
-        foreach ($this->edits as $index => $edit) {
-            if (isset($data[$index])) {
-                if (isset($edit['authors'])) {
-                    $data[$index]['authors'] = array_merge($data[$index]['authors'], $edit['authors']);
-                }
-                if (isset($edit['description'])) {
-                    $data[$index]['description'] = array_merge($data[$index]['description'], $edit['description']);
-                }
-                $data[$index] = array_merge(
-                    $data[$index],
-                    array_diff_key($edit, ['authors' => 1, 'description' => 1])
-                );
-            }
-        }
-
-        // Free the spreadsheet from memory — it can consume 50–100 MB for large files
-        $spreadsheet->disconnectWorksheets();
-        unset($spreadsheet, $sheet, $rows);
-        gc_collect_cycles();
-
-        return $data;
+        return (new MaterialImportReader)->read($fullPath, $this->edits);
     }
 
     /**
@@ -398,6 +304,12 @@ class ProcessMaterialImport implements ShouldQueue
             throw new \Exception(
                 "Row {$rowNumber} (accession: {$item['accession']}): Category not found: {$item['category']}"
             );
+        }
+
+        $acquisition = BookAcquisitionDetails::normalize($item, $category, false);
+        $acquisitionValidator = Validator::make($acquisition, BookAcquisitionDetails::rules());
+        if ($acquisitionValidator->fails()) {
+            throw new \InvalidArgumentException("Excel row {$rowNumber} (accession: {$item['accession']}): ".$acquisitionValidator->errors()->first());
         }
 
         // ── Type mapping ────────────────────────────────────────────────────
@@ -479,6 +391,8 @@ class ProcessMaterialImport implements ShouldQueue
             'institution'          => $item['institution'] ?? null,
             'program'              => $item['program'] ?? null,
         ];
+
+        $fillData = array_merge($fillData, $acquisition);
 
         $isModelDirty = false;
         $subjectChanged = false;
@@ -588,33 +502,4 @@ class ProcessMaterialImport implements ShouldQueue
         return 'skipped';
     }
 
-    /**
-     * Clean a string by trimming it and converting empty strings to null.
-     */
-    private function cleanString(mixed $value): ?string
-    {
-        if ($value === null) {
-            return null;
-        }
-        $val = trim((string) $value);
-        return $val === '' ? null : $val;
-    }
-
-    /**
-     * Capitalize the legend part of the accession (before the hyphen).
-     */
-    private function capitalizeAccessionLegend(?string $accession): ?string
-    {
-        if (!$accession) {
-            return null;
-        }
-
-        $parts = explode('-', $accession, 2);
-        if (count($parts) === 2) {
-            $parts[0] = strtoupper($parts[0]);
-            return implode('-', $parts);
-        }
-
-        return strtoupper($accession);
-    }
 }
