@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Maintenance;
 
 use App\Http\Controllers\Controller;
+use App\Enum\AcquisitionModeEnum;
 use Illuminate\Http\Request;
 use App\Models\Book;
 use App\Models\Category;
@@ -12,6 +13,7 @@ use Exception;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -198,6 +200,7 @@ class BookMaintenanceController extends Controller
         // Determine the category name to adjust validation for category-specific field visibility
         $selectedCategoryModel = Category::find($request->input('category'));
         $selectedCategoryName = $selectedCategoryModel ? strtolower(trim($selectedCategoryModel->name)) : '';
+        $request->merge($this->acquisitionDetails($request, $selectedCategoryModel));
 
         $isSpecialCategory = in_array($selectedCategoryName, [
             'periodical', 'periodicals',
@@ -232,6 +235,7 @@ class BookMaintenanceController extends Controller
 
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string',
+            ...$this->acquisitionRules(),
             'call_number'       => 'nullable|string|max:50',
             'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:500',
@@ -277,7 +281,7 @@ class BookMaintenanceController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withErrors($validator)->withInput();
         }
         $accessions = collect(explode(';', (string) $request->input('accession')))
             ->map(fn($item) => trim((string) $item))
@@ -334,6 +338,9 @@ class BookMaintenanceController extends Controller
                     'book_type'             => $request->input('book_type'),
                     'condition_status'      => $request->input('condition'),
                     'availability_status'   => $request->input('availability'),
+                    'acquisition_mode'      => $request->input('acquisition_mode'),
+                    'price'                 => $request->input('price'),
+                    'acquisition_date'      => $request->input('acquisition_date'),
                     // Category-specific fields
                     'periodical_kind'       => $request->input('periodical_kind') ?? null,
                     'volume'                => $request->input('volume') ?? null,
@@ -698,6 +705,7 @@ class BookMaintenanceController extends Controller
         // Determine the category name to adjust validation for category-specific field visibility
         $selectedCategoryModel = Category::find($request->input('category'));
         $selectedCategoryName = $selectedCategoryModel ? strtolower(trim($selectedCategoryModel->name)) : '';
+        $request->merge($this->acquisitionDetails($request, $selectedCategoryModel));
 
         $isSpecialCategory = in_array($selectedCategoryName, [
             'periodical', 'periodicals',
@@ -726,6 +734,7 @@ class BookMaintenanceController extends Controller
 
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string|max:50',
+            ...$this->acquisitionRules(),
             'call_number'       => 'nullable|string|max:50',
             'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:500',
@@ -785,7 +794,7 @@ class BookMaintenanceController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withErrors($validator)->withInput();
         }
 
         $accession = trim((string) $request->input('accession'));
@@ -840,6 +849,9 @@ class BookMaintenanceController extends Controller
                 'book_type'             => $request->input('book_type'),
                 'condition_status'      => $request->input('condition'),
                 'availability_status'   => $request->input('availability'),
+                'acquisition_mode'      => $request->input('acquisition_mode'),
+                'price'                 => $request->input('price'),
+                'acquisition_date'      => $request->input('acquisition_date'),
                 // Category-specific fields
                 'periodical_kind'       => $request->input('periodical_kind'),
                 'volume'                => $request->input('volume'),
@@ -929,6 +941,7 @@ class BookMaintenanceController extends Controller
 
         $selectedCategoryModel = Category::find($request->input('category'));
         $selectedCategoryName = $selectedCategoryModel ? strtolower(trim($selectedCategoryModel->name)) : '';
+        $request->merge($this->acquisitionDetails($request, $selectedCategoryModel));
 
         $isPeriodical = in_array($selectedCategoryName, ['periodical', 'periodicals'])
             || !empty($request->input('periodical_kind'))
@@ -967,6 +980,7 @@ class BookMaintenanceController extends Controller
 
         $validator = Validator::make($request->all(), [
             'accession'         => 'required|string',
+            ...$this->acquisitionRules(),
             'call_number'       => 'nullable|string|max:50',
             'isbn'              => 'nullable|string|max:20',
             'title'             => 'required|string|max:500',
@@ -1010,7 +1024,7 @@ class BookMaintenanceController extends Controller
                 'ip_address' => $request->ip(),
                 'timestamp' => now(),
             ]);
-            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withInput();
+            return redirect()->back()->with('toast-warning', $validator->errors()->first())->withErrors($validator, 'copy')->withInput();
         }
         if ($request->hasFile('cover_image')) {
             $image = $request->file('cover_image');
@@ -1067,6 +1081,9 @@ class BookMaintenanceController extends Controller
                     'book_type'             => $request->input('book_type'),
                     'condition_status'      => $request->input('condition', 'Good'),
                     'availability_status'   => $request->input('availability', 'Available'),
+                    'acquisition_mode'      => $request->input('acquisition_mode'),
+                    'price'                 => $request->input('price'),
+                    'acquisition_date'      => $request->input('acquisition_date'),
                     // Category-specific fields
                     'periodical_kind'       => $request->input('periodical_kind') ?? ($sourceBook->periodical_kind ?? null),
                     'volume'                => $request->input('volume') ?? ($sourceBook->volume ?? null),
@@ -1525,6 +1542,26 @@ class BookMaintenanceController extends Controller
             ]);
             return null;
         }
+    }
+
+    private function acquisitionRules(): array
+    {
+        return [
+            'acquisition_mode' => ['nullable', Rule::enum(AcquisitionModeEnum::class)],
+            'price' => ['nullable', 'numeric', 'min:0', 'max:9999999999.99', 'decimal:0,2'],
+            'acquisition_date' => ['nullable', 'date_format:Y-m-d'],
+        ];
+    }
+
+    private function acquisitionDetails(Request $request, ?Category $category): array
+    {
+        $details = [];
+        foreach (['acquisition_mode', 'price', 'acquisition_date'] as $field) {
+            $value = $category?->isAcademicResearch() ? null : $request->input($field);
+            $details[$field] = $value === '' ? null : $value;
+        }
+
+        return $details;
     }
 
     /**

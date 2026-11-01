@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enum\AcquisitionModeEnum;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -38,6 +39,9 @@ class Book extends Model
         'condition_status',
         'languages',
         'location',
+        'acquisition_mode',
+        'price',
+        'acquisition_date',
         // Periodical fields
         'periodical_kind',
         'volume',
@@ -58,6 +62,9 @@ class Book extends Model
     protected $casts = [
         'description' => 'array',
         'authors' => 'array',
+        'acquisition_mode' => AcquisitionModeEnum::class,
+        'price' => 'decimal:2',
+        'acquisition_date' => 'date:Y-m-d',
     ];
 
     protected static function booted(): void
