@@ -4,10 +4,9 @@ return [
 
     'backup' => [
         /*
-         * The name of this application. You can use this name to monitor
-         * the backups.
+         * Spatie uses this name as a directory relative to the backup disk.
          */
-        'name' => env('APP_NAME', 'laravel-backup'),
+        'name' => 'backups',
 
         'dump' => [
             'mysql' => [
@@ -86,7 +85,7 @@ return [
 
     'monitor_backups' => [
         [
-            'name' => env('APP_NAME', 'laravel-backup'),
+            'name' => 'backups',
             'disks' => ['backups'], // monitor the same disk
             'health_checks' => [
                 \Spatie\Backup\Tasks\Monitor\HealthChecks\MaximumAgeInDays::class => 1,
