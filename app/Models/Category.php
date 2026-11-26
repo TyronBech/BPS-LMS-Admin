@@ -30,6 +30,14 @@ class Category extends Model
         'educational_level' => 'array',
     ];
 
+    public function isAcademicResearch(): bool
+    {
+        return in_array(strtolower(trim((string) $this->name)), [
+            'academic research', 'academic researches', 'research works', 'research',
+            'thesis', 'theses', 'dissertation', 'dissertations',
+        ], true);
+    }
+
     public function books(): HasMany
     {
         return $this->hasMany(Book::class, 'category_id', 'id');

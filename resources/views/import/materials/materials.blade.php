@@ -150,6 +150,9 @@ document.addEventListener('DOMContentLoaded', function () {
             }));
 
             if (!response.ok || data.error) {
+                form?.querySelectorAll('[data-material-error]').forEach(el => {
+                    el.textContent = (data.errors?.[el.dataset.materialError] || []).join(' ');
+                });
                 window.ImportOverlay.showFailure(data.message || 'Unable to start the import.');
                 btn.disabled   = false;
                 btn.textContent = 'Insert to Database';

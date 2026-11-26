@@ -1,5 +1,9 @@
 @extends('layouts.admin-app')
 @section('content')
+@php
+  $isCopyRetry = (string) old('source_book_id') === (string) $book->id;
+  $editInput = fn ($key, $default = null) => $isCopyRetry ? $default : old($key, $default);
+@endphp
 <div class="container mx-auto px-4 sm:px-6 lg:px-8">
   <h1 class="text-3xl text-center font-bold text-gray-800 dark:text-white mt-8 mb-6">Maintenance</h1>
   <div class="w-full p-4 sm:p-6 bg-white border border-gray-200 rounded-lg dark:bg-gray-800 dark:border-gray-700 shadow-md">
@@ -27,19 +31,19 @@
           <div class="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
             <div id="title-container" class="md:col-span-2 lg:col-span-12">
               <label for="title" id="title-label" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Title:</label>
-              <input type="text" id="title" name="title" maxlength="500" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Material Title" value="{{ old('title', $book->title) }}" required>
+              <input type="text" id="title" name="title" maxlength="500" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="Material Title" value="{{ $editInput('title', $book->title) }}" required>
               @error('title') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
             <div id="parallel-title-container" class="md:col-span-2 lg:col-span-12">
               <label for="parallel_title" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Parallel Title:</label>
-              <input type="text" id="parallel_title" name="parallel_title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Title 1; Title 2 (separated by semicolon)" value="{{ old('parallel_title', $book->parallel_title) }}">
+              <input type="text" id="parallel_title" name="parallel_title" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Title 1; Title 2 (separated by semicolon)" value="{{ $editInput('parallel_title', $book->parallel_title) }}">
               @error('parallel_title') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
             <div class="lg:col-span-4">
               <label for="book_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Material Type:</label>
               <select id="book_type" name="book_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
                 @foreach($book_types as $value)
-                <option value="{{ $value }}" {{ old('book_type', $book->book_type) == $value ? 'selected' : '' }}>{{ $value }}</option>
+                <option value="{{ $value }}" {{ $editInput('book_type', $book->book_type) == $value ? 'selected' : '' }}>{{ $value }}</option>
                 @endforeach
               </select>
               @error('book_type') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
@@ -49,31 +53,31 @@
               <select id="category" name="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
                 <option value="" disabled>Choose a category</option>
                 @foreach($categories as $category)
-                <option value="{{ $category->id }}" data-category-type="{{ $category->category_type }}" {{ old('category', $book->category_id) == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                <option value="{{ $category->id }}" data-category-type="{{ $category->category_type }}" data-acquisition-eligible="{{ $category->isAcademicResearch() ? 'false' : 'true' }}" {{ $editInput('category', $book->category_id) == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
                 @endforeach
               </select>
               @error('category') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
             <div id="accession-container" class="md:col-span-2 lg:col-span-4">
               <label for="accession" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Accession Number:</label>
-              <input type="text" id="accession" name="accession" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., FIL0123456789" value="{{ old('accession', $book->accession) }}" required>
+              <input type="text" id="accession" name="accession" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., FIL0123456789" value="{{ $editInput('accession', $book->accession) }}" required>
               @error('accession') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
             <div id="call-number-container" class="lg:col-span-3">
               <label for="call_number" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Call Number:</label>
-              <input type="text" id="call_number" name="call_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 192.000" value="{{ old('call_number', $book->call_number) }}">
+              <input type="text" id="call_number" name="call_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 192.000" value="{{ $editInput('call_number', $book->call_number) }}">
             </div>
             <div id="isbn-container" class="lg:col-span-3">
               <label for="isbn" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">ISBN:</label>
-              <input type="text" id="isbn" name="isbn" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 9789712345678" value="{{ old('isbn', $book->isbn) }}">
+              <input type="text" id="isbn" name="isbn" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 9789712345678" value="{{ $editInput('isbn', $book->isbn) }}">
             </div>
             <div id="edition-container" class="lg:col-span-3">
               <label for="edition" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Edition:</label>
-              <input type="text" id="edition" name="edition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 1st Edition" value="{{ old('edition', $book->edition) }}">
+              <input type="text" id="edition" name="edition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 1st Edition" value="{{ $editInput('edition', $book->edition) }}">
             </div>
             <div id="languages-container" class="lg:col-span-3">
               <label for="languages" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Language:</label>
-              <input type="text" id="languages" name="languages" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., English" value="{{ old('languages', $book->languages) }}">
+              <input type="text" id="languages" name="languages" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., English" value="{{ $editInput('languages', $book->languages) }}">
             </div>
             <div id="subject-container" class="md:col-span-2 lg:col-span-12">
               <label for="subject_search" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Subject Access Codes:</label>
@@ -96,7 +100,7 @@
                 {{-- Actual Hidden Select for Form Submission --}}
                 <select name="subject_access_codes[]" id="subject_access_codes" class="hidden" multiple>
                   @foreach($subjects as $subject)
-                  <option value="{{ $subject->id }}" {{ in_array($subject->id, old('subject_access_codes', $linkedSubjectIds)) ? 'selected' : '' }}>
+                  <option value="{{ $subject->id }}" {{ in_array($subject->id, $editInput('subject_access_codes', $linkedSubjectIds)) ? 'selected' : '' }}>
                     {{ $subject->access_code }}
                   </option>
                   @endforeach
@@ -118,19 +122,19 @@
           <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label for="authors_main" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Main Author:</label>
-              <input type="text" id="authors_main" name="authors[Main author]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Primary Author" value="{{ old('authors.Main author', is_array($book->authors['Main author'] ?? '') ? implode(', ', $book->authors['Main author']) : ($book->authors['Main author'] ?? '')) }}">
+              <input type="text" id="authors_main" name="authors[Main author]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Primary Author" value="{{ $editInput('authors.Main author', is_array($book->authors['Main author'] ?? '') ? implode(', ', $book->authors['Main author']) : ($book->authors['Main author'] ?? '')) }}">
             </div>
             <div>
               <label for="authors_corporate" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Corporate Author:</label>
-              <input type="text" id="authors_corporate" name="authors[Corporate author]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Organization/Company" value="{{ old('authors.Corporate author', is_array($book->authors['Corporate author'] ?? '') ? implode(', ', $book->authors['Corporate author']) : ($book->authors['Corporate author'] ?? '')) }}">
+              <input type="text" id="authors_corporate" name="authors[Corporate author]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Organization/Company" value="{{ $editInput('authors.Corporate author', is_array($book->authors['Corporate author'] ?? '') ? implode(', ', $book->authors['Corporate author']) : ($book->authors['Corporate author'] ?? '')) }}">
             </div>
             <div>
               <label for="authors_added" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Added Authors:</label>
-              <input type="text" id="authors_added" name="authors[Added authors]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Co-authors" value="{{ old('authors.Added authors', is_array($book->authors['Added authors'] ?? '') ? implode(', ', $book->authors['Added authors']) : ($book->authors['Added authors'] ?? '')) }}">
+              <input type="text" id="authors_added" name="authors[Added authors]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Co-authors" value="{{ $editInput('authors.Added authors', is_array($book->authors['Added authors'] ?? '') ? implode(', ', $book->authors['Added authors']) : ($book->authors['Added authors'] ?? '')) }}">
             </div>
             <div>
               <label for="authors_contributors" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Contributors:</label>
-              <input type="text" id="authors_contributors" name="authors[Contributors]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Editors, Translators, etc." value="{{ old('authors.Contributors', is_array($book->authors['Contributors'] ?? '') ? implode(', ', $book->authors['Contributors']) : ($book->authors['Contributors'] ?? '')) }}">
+              <input type="text" id="authors_contributors" name="authors[Contributors]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Editors, Translators, etc." value="{{ $editInput('authors.Contributors', is_array($book->authors['Contributors'] ?? '') ? implode(', ', $book->authors['Contributors']) : ($book->authors['Contributors'] ?? '')) }}">
             </div>
             @error('authors.*') <p class="md:col-span-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
           </div>
@@ -146,31 +150,31 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div id="desc-description-container" class="md:col-span-3">
                 <label for="desc_description" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Physical Description:</label>
-                <textarea id="desc_description" name="description[Description]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Physical characteristics">{{ old('description.Description', is_array($book->description['Description'] ?? '') ? implode(', ', $book->description['Description']) : ($book->description['Description'] ?? '')) }}</textarea>
+                <textarea id="desc_description" name="description[Description]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Physical characteristics">{{ $editInput('description.Description', is_array($book->description['Description'] ?? '') ? implode(', ', $book->description['Description']) : ($book->description['Description'] ?? '')) }}</textarea>
               </div>
               <div id="desc-extent-container">
                 <label for="desc_extent" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Extent: <span id="extent_asterisk" class="text-red-500">*</span></label>
-                <input type="text" id="desc_extent" name="description[Extent]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., 200 pages" value="{{ old('description.Extent', is_array($book->description['Extent'] ?? '') ? implode(', ', $book->description['Extent']) : ($book->description['Extent'] ?? '')) }}">
+                <input type="text" id="desc_extent" name="description[Extent]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., 200 pages" value="{{ $editInput('description.Extent', is_array($book->description['Extent'] ?? '') ? implode(', ', $book->description['Extent']) : ($book->description['Extent'] ?? '')) }}">
               </div>
               <div id="desc-acc-material-container">
                 <label for="desc_acc_material" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Acc Material:</label>
-                <input type="text" id="desc_acc_material" name="description[Acc Material]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Accompanying material" value="{{ old('description.Acc Material', is_array($book->description['Acc Material'] ?? '') ? implode(', ', $book->description['Acc Material']) : ($book->description['Acc Material'] ?? '')) }}">
+                <input type="text" id="desc_acc_material" name="description[Acc Material]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Accompanying material" value="{{ $editInput('description.Acc Material', is_array($book->description['Acc Material'] ?? '') ? implode(', ', $book->description['Acc Material']) : ($book->description['Acc Material'] ?? '')) }}">
               </div>
               <div id="desc-series-container">
                 <label for="desc_series" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Series:</label>
-                <input type="text" id="desc_series" name="description[Series]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Harry Potter Series" value="{{ old('description.Series', is_array($book->description['Series'] ?? '') ? implode(', ', $book->description['Series']) : ($book->description['Series'] ?? '')) }}">
+                <input type="text" id="desc_series" name="description[Series]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Harry Potter Series" value="{{ $editInput('description.Series', is_array($book->description['Series'] ?? '') ? implode(', ', $book->description['Series']) : ($book->description['Series'] ?? '')) }}">
               </div>
               <div id="desc-content-notes-container" class="md:col-span-3">
                 <label for="desc_content_notes" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Content Notes:</label>
-                <textarea id="desc_content_notes" name="description[Content notes]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Table of contents, etc.">{{ old('description.Content notes', is_array($book->description['Content notes'] ?? '') ? implode(', ', $book->description['Content notes']) : ($book->description['Content notes'] ?? '')) }}</textarea>
+                <textarea id="desc_content_notes" name="description[Content notes]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Table of contents, etc.">{{ $editInput('description.Content notes', is_array($book->description['Content notes'] ?? '') ? implode(', ', $book->description['Content notes']) : ($book->description['Content notes'] ?? '')) }}</textarea>
               </div>
               <div id="desc-abstract-container" class="md:col-span-3">
                 <label for="desc_abstract" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Abstract:</label>
-                <textarea id="desc_abstract" name="description[Abstract]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Summary or abstract">{{ old('description.Abstract', is_array($book->description['Abstract'] ?? '') ? implode(', ', $book->description['Abstract']) : ($book->description['Abstract'] ?? '')) }}</textarea>
+                <textarea id="desc_abstract" name="description[Abstract]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Summary or abstract">{{ $editInput('description.Abstract', is_array($book->description['Abstract'] ?? '') ? implode(', ', $book->description['Abstract']) : ($book->description['Abstract'] ?? '')) }}</textarea>
               </div>
               <div id="desc-reviews-container" class="md:col-span-3">
                 <label for="desc_reviews" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Reviews:</label>
-                <textarea id="desc_reviews" name="description[Reviews]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Material reviews">{{ old('description.Reviews', is_array($book->description['Reviews'] ?? '') ? implode(', ', $book->description['Reviews']) : ($book->description['Reviews'] ?? '')) }}</textarea>
+                <textarea id="desc_reviews" name="description[Reviews]" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Material reviews">{{ $editInput('description.Reviews', is_array($book->description['Reviews'] ?? '') ? implode(', ', $book->description['Reviews']) : ($book->description['Reviews'] ?? '')) }}</textarea>
               </div>
             </div>
             @error('description.*') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
@@ -186,28 +190,35 @@
           <div class="p-5 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div id="publisher-container">
               <label for="publisher" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Publisher:</label>
-              <input type="text" id="publisher" name="publisher" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., National Library" value="{{ old('publisher', $book->publisher) }}">
+              <input type="text" id="publisher" name="publisher" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., National Library" value="{{ $editInput('publisher', $book->publisher) }}">
               @error('publisher') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
             <div id="copyright-container">
               <label for="copyright" id="copyright-label" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Copyright Year:</label>
-              <input type="text" id="copyright" name="copyright" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 2026" value="{{ old('copyright', $book->copyrights) }}">
+              <input type="text" id="copyright" name="copyright" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., 2026" value="{{ $editInput('copyright', $book->copyrights) }}">
               @error('copyright') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
             </div>
             <div id="publication-container">
               <label for="publication" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Place of Publication:</label>
-              <input type="text" id="publication" name="publication" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Manila, Philippines" value="{{ old('publication', $book->place_of_publication) }}">
+              <input type="text" id="publication" name="publication" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Manila, Philippines" value="{{ $editInput('publication', $book->place_of_publication) }}">
             </div>
             <div id="location-container">
               <label for="location" id="location-label" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Location:</label>
-              <input type="text" id="location" name="location" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Section A, Shelf 1" value="{{ old('location', $book->location) }}">
+              <input type="text" id="location" name="location" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="e.g., Section A, Shelf 1" value="{{ $editInput('location', $book->location) }}">
             </div>
             <div id="digital-copy-container" class="lg:col-span-2">
               <label for="digital_copy_url" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Digital Copy URL:</label>
-              <input type="url" id="digital_copy_url" name="digital_copy_url" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="https://example.com" value="{{ old('digital_copy_url', $book->digital_copy_url) }}">
+              <input type="url" id="digital_copy_url" name="digital_copy_url" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" placeholder="https://example.com" value="{{ $editInput('digital_copy_url', $book->digital_copy_url) }}">
             </div>
           </div>
         </div>
+
+        @include('maintenance.books.partials.acquisition-fields', [
+          'acquisitionBook' => $book,
+          'restoreAcquisitionInput' => !$isCopyRetry,
+          'acquisitionCategoryInput' => 'category',
+          'acquisitionEligible' => !($categories->firstWhere('id', $editInput('category', $book->category_id))?->isAcademicResearch() ?? false),
+        ])
 
         <!-- Section 5: Category-Specific Fields -->
         <div id="category-specific-section" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden hidden">
@@ -222,82 +233,82 @@
               <select id="periodical_kind" name="periodical_kind" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                 <option value="">Select kind</option>
                 @foreach(['Newspaper', 'Magazine', 'Journal', 'Newsletter', 'Bulletin'] as $kind)
-                  <option value="{{ $kind }}" {{ old('periodical_kind', $book->periodical_kind) == $kind ? 'selected' : '' }}>{{ $kind }}</option>
+                  <option value="{{ $kind }}" {{ $editInput('periodical_kind', $book->periodical_kind) == $kind ? 'selected' : '' }}>{{ $kind }}</option>
                 @endforeach
               </select>
             </div>
             <div class="cat-field cat-periodical">
               <label for="volume" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Volume:</label>
-              <input type="text" id="volume" name="volume" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Vol. 5" value="{{ old('volume', $book->volume) }}">
+              <input type="text" id="volume" name="volume" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Vol. 5" value="{{ $editInput('volume', $book->volume) }}">
             </div>
             <div class="cat-field cat-periodical">
               <label for="issue_number" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Issue Number:</label>
-              <input type="text" id="issue_number" name="issue_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., No. 3" value="{{ old('issue_number', $book->issue_number) }}">
+              <input type="text" id="issue_number" name="issue_number" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., No. 3" value="{{ $editInput('issue_number', $book->issue_number) }}">
             </div>
             <div class="cat-field cat-periodical">
               <label for="material_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Type:</label>
               <select id="material_type" name="material_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                 <option value="">Select type</option>
                 @foreach(['Article', 'Book Review', 'Essay', 'Case Study', 'Research Article', 'Editorial', 'Letter', 'Report'] as $mtype)
-                  <option value="{{ $mtype }}" {{ old('material_type', $book->material_type) == $mtype ? 'selected' : '' }}>{{ $mtype }}</option>
+                  <option value="{{ $mtype }}" {{ $editInput('material_type', $book->material_type) == $mtype ? 'selected' : '' }}>{{ $mtype }}</option>
                 @endforeach
               </select>
             </div>
             <div class="cat-field cat-periodical md:col-span-2 lg:col-span-2">
               <label for="desc_pages" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Page(s):</label>
-              <input type="text" id="desc_pages" name="description[Pages]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., pp. 12-25" value="{{ old('description.Pages', $book->description['Pages'] ?? '') }}">
+              <input type="text" id="desc_pages" name="description[Pages]" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., pp. 12-25" value="{{ $editInput('description.Pages', $book->description['Pages'] ?? '') }}">
             </div>
 
             {{-- Serials Fields --}}
             <div class="cat-field cat-serials">
               <label for="issn" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">ISSN:</label>
-              <input type="text" id="issn" name="issn" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., 1234-5678" value="{{ old('issn', $book->issn) }}">
+              <input type="text" id="issn" name="issn" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., 1234-5678" value="{{ $editInput('issn', $book->issn) }}">
             </div>
             <div class="cat-field cat-serials">
               <label for="frequency" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Frequency:</label>
               <select id="frequency" name="frequency" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                 <option value="">Select frequency</option>
                 @foreach(['Daily', 'Weekly', 'Biweekly', 'Monthly', 'Bimonthly', 'Quarterly', 'Semi-annually', 'Annually', 'Irregular'] as $freq)
-                  <option value="{{ $freq }}" {{ old('frequency', $book->frequency) == $freq ? 'selected' : '' }}>{{ $freq }}</option>
+                  <option value="{{ $freq }}" {{ $editInput('frequency', $book->frequency) == $freq ? 'selected' : '' }}>{{ $freq }}</option>
                 @endforeach
               </select>
             </div>
             <div class="cat-field cat-serials">
               <label for="latest_received" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Latest Received:</label>
-              <input type="text" id="latest_received" name="latest_received" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Vol. 10 No. 3 (2026)" value="{{ old('latest_received', $book->latest_received) }}">
+              <input type="text" id="latest_received" name="latest_received" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Vol. 10 No. 3 (2026)" value="{{ $editInput('latest_received', $book->latest_received) }}">
             </div>
             <div class="cat-field cat-serials">
               <label for="discipline" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Discipline:</label>
-              <input type="text" id="discipline" name="discipline" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Social Sciences" value="{{ old('discipline', $book->discipline) }}">
+              <input type="text" id="discipline" name="discipline" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Social Sciences" value="{{ $editInput('discipline', $book->discipline) }}">
             </div>
             <div class="cat-field cat-serials md:col-span-2 lg:col-span-2">
               <label for="topical_access_point" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Topical Access Point:</label>
-              <input type="text" id="topical_access_point" name="topical_access_point" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Education -- Philippines" value="{{ old('topical_access_point', $book->topical_access_point) }}">
+              <input type="text" id="topical_access_point" name="topical_access_point" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Education -- Philippines" value="{{ $editInput('topical_access_point', $book->topical_access_point) }}">
             </div>
             <div class="cat-field cat-serials md:col-span-2 lg:col-span-3">
               <label for="corporate_access_point" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Corporate Access Point:</label>
-              <input type="text" id="corporate_access_point" name="corporate_access_point" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Department of Education" value="{{ old('corporate_access_point', $book->corporate_access_point) }}">
+              <input type="text" id="corporate_access_point" name="corporate_access_point" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., Department of Education" value="{{ $editInput('corporate_access_point', $book->corporate_access_point) }}">
             </div>
             <div class="cat-field cat-serials md:col-span-2 lg:col-span-3">
               <label for="serial_notes" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Notes:</label>
-              <textarea id="serial_notes" name="notes" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Additional notes">{{ old('notes', $book->notes) }}</textarea>
+              <textarea id="serial_notes" name="notes" rows="2" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Additional notes">{{ $editInput('notes', $book->notes) }}</textarea>
             </div>
 
             {{-- Academic Research Fields --}}
             <div class="cat-field cat-academic-research">
               <label for="institution" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Institution:</label>
-              <input type="text" id="institution" name="institution" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., University of the Philippines" value="{{ old('institution', $book->institution) }}">
+              <input type="text" id="institution" name="institution" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., University of the Philippines" value="{{ $editInput('institution', $book->institution) }}">
             </div>
             <div class="cat-field cat-academic-research">
               <label for="program" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Program:</label>
-              <input type="text" id="program" name="program" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., BS Computer Science" value="{{ old('program', $book->program) }}">
+              <input type="text" id="program" name="program" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="e.g., BS Computer Science" value="{{ $editInput('program', $book->program) }}">
             </div>
             <div class="cat-field cat-academic-research">
               <label for="research_type" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Type of Research:</label>
               <select id="research_type" name="material_type" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                 <option value="">Select type</option>
                 @foreach(['Thesis', 'Dissertation', 'Capstone', 'Feasibility Study', 'Action Research', 'Case Study', 'Experimental Research'] as $rtype)
-                  <option value="{{ $rtype }}" {{ old('material_type', $book->material_type) == $rtype ? 'selected' : '' }}>{{ $rtype }}</option>
+                  <option value="{{ $rtype }}" {{ $editInput('material_type', $book->material_type) == $rtype ? 'selected' : '' }}>{{ $rtype }}</option>
                 @endforeach
               </select>
             </div>
@@ -315,7 +326,7 @@
               <label for="remarks" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Remarks:</label>
               <select id="remarks" name="remarks" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
                 @foreach($remarks as $value)
-                <option value="{{ $value }}" {{ old('remarks', $book->remarks) == $value ? 'selected' : '' }}>{{ $value }}</option>
+                <option value="{{ $value }}" {{ $editInput('remarks', $book->remarks) == $value ? 'selected' : '' }}>{{ $value }}</option>
                 @endforeach
               </select>
             </div>
@@ -343,7 +354,7 @@
                         }
                     }
                   @endphp
-                  <option value="{{ $value }}" {{ old('availability', $currentStatus) == $value ? 'selected' : '' }} {{ $isDisabled ? 'disabled' : '' }}>
+                  <option value="{{ $value }}" {{ $editInput('availability', $currentStatus) == $value ? 'selected' : '' }} {{ $isDisabled ? 'disabled' : '' }}>
                     {{ $value }}
                   </option>
                 @endforeach
@@ -354,7 +365,7 @@
               <label for="condition" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Condition:</label>
               <select id="condition" name="condition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
                 @foreach($condition as $value)
-                <option value="{{ $value }}" {{ old('condition', $book->condition_status) == $value ? 'selected' : '' }}>{{ $value }}</option>
+                <option value="{{ $value }}" {{ $editInput('condition', $book->condition_status) == $value ? 'selected' : '' }}>{{ $value }}</option>
                 @endforeach
               </select>
             </div>
@@ -374,7 +385,7 @@
 </div>
 
 <!-- Create Copy Modal -->
-<div id="copy-book-modal" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
+<div id="copy-book-modal" data-restore-copy="{{ old('source_book_id') == $book->id ? 'true' : 'false' }}" tabindex="-1" aria-hidden="true" class="hidden overflow-y-auto overflow-x-hidden fixed top-0 right-0 left-0 z-50 justify-center items-center w-full md:inset-0 h-[calc(100%-1rem)] max-h-full">
   <div class="relative p-4 w-full max-w-2xl max-h-full">
     <!-- Modal content -->
     <div class="relative bg-white rounded-lg dark:bg-gray-700 shadow-md">
@@ -397,9 +408,9 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div class="md:col-span-2">
               <label for="copy_accession" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Accession Number:</label>
-              <input type="text" id="copy_accession" name="accession" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., FIL0123456789" required>
+              <input type="text" id="copy_accession" name="accession" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" placeholder="e.g., FIL0123456789" value="{{ $isCopyRetry ? old('accession') : '' }}" required>
               <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">Add multiple by separating with a semicolon.</p>
-              @error('accession')
+              @error('accession', 'copy')
               <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p>
               @enderror
             </div>
@@ -408,7 +419,7 @@
               <select id="copy_remarks" name="remarks" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
                 @foreach($remarks as $value)
                   @if($value !== 'Unreturned')
-                    <option value="{{ $value }}" {{ $value === 'On Shelf' ? 'selected' : '' }}>{{ $value }}</option>
+                    <option value="{{ $value }}" {{ $value === ($isCopyRetry ? old('remarks') : 'On Shelf') ? 'selected' : '' }}>{{ $value }}</option>
                   @endif
                 @endforeach
               </select>
@@ -418,7 +429,7 @@
               <select id="copy_availability" name="availability" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
                 @foreach($availability as $value)
                   @if($value !== 'Borrowed' && $value !== 'Reserved')
-                    <option value="{{ $value }}" {{ $value === 'Available' ? 'selected' : '' }}>{{ $value }}</option>
+                    <option value="{{ $value }}" {{ $value === ($isCopyRetry ? old('availability') : 'Available') ? 'selected' : '' }}>{{ $value }}</option>
                   @endif
                 @endforeach
               </select>
@@ -428,7 +439,7 @@
               <label for="copy_condition" class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Condition:</label>
               <select id="copy_condition" name="condition" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-500 focus:border-primary-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white" required>
                 @foreach($condition as $value)
-                <option value="{{ $value }}" {{ ($book->condition_status ?? 'Good') == $value ? 'selected' : '' }}>{{ $value }}</option>
+                <option value="{{ $value }}" {{ ($isCopyRetry ? old('condition') : ($book->condition_status ?? 'Good')) == $value ? 'selected' : '' }}>{{ $value }}</option>
                 @endforeach
               </select>
             </div>
@@ -465,7 +476,7 @@
             <input type="hidden" name="publisher" value="{{ $book->publisher }}">
             <input type="hidden" name="copyright" value="{{ $book->copyrights }}">
             <input type="hidden" name="digital_copy_url" value="{{ $book->digital_copy_url }}">
-            <input type="hidden" id="copy_category" name="category" value="{{ $book->category_id }}">
+            <input type="hidden" id="copy_category" name="category" value="{{ $book->category_id }}" data-acquisition-eligible="{{ $book->category?->isAcademicResearch() ? 'false' : 'true' }}">
             <input type="hidden" name="call_number" value="{{ $book->call_number }}">
             <input type="hidden" name="isbn" value="{{ $book->isbn }}">
             <input type="hidden" name="periodical_kind" value="{{ $book->periodical_kind }}">
@@ -485,7 +496,17 @@
             <input type="hidden" name="languages" value="{{ $book->languages }}">
           </div>
         </div>
-        <!-- Modal footer -->
+          <div class="px-4 pb-4 md:px-5 md:pb-5">
+            @include('maintenance.books.partials.acquisition-fields', [
+              'acquisitionPrefix' => 'copy_',
+              'acquisitionErrorBag' => 'copy',
+              'acquisitionBook' => null,
+              'restoreAcquisitionInput' => old('source_book_id') == $book->id,
+              'acquisitionCategoryInput' => 'copy_category',
+              'acquisitionEligible' => !($book->category?->isAcademicResearch() ?? false),
+            ])
+          </div>
+      <!-- Modal footer -->
         <div class="flex items-center justify-end p-4 md:p-5 border-t border-gray-200 rounded-b dark:border-gray-600">
           <button type="submit" class="text-white bg-primary-700 hover:bg-primary-800 focus:ring-4 focus:outline-none focus:ring-primary-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center dark:bg-primary-600 dark:hover:bg-primary-700 dark:focus:ring-primary-800">Submit</button>
           <button data-modal-hide="copy-book-modal" type="button" class="skip-loader py-2.5 px-5 ms-3 text-sm font-medium text-gray-900 focus:outline-none bg-white rounded-lg border border-gray-200 hover:bg-gray-100 hover:text-primary-500 focus:z-10 focus:ring-4 focus:ring-gray-100 dark:focus:ring-gray-700 dark:bg-gray-800 dark:text-gray-50 dark:border-gray-600 dark:hover:text-primary-50 dark:hover:bg-gray-700 shadow-md">Cancel</button>
@@ -678,6 +699,7 @@
     async function prefillCopyAccession() {
       const copyAccessionInput = document.getElementById('copy_accession');
       if (!copyAccessionInput || !copyCategoryInput) return;
+      if (document.getElementById('copy-book-modal')?.dataset.restoreCopy === 'true') return;
 
       const categoryId = copyCategoryInput.value;
       if (!categoryId) return;
@@ -1130,4 +1152,5 @@
     updateTags();
   });
 </script>
+@include('maintenance.books.partials.acquisition-script')
 @endsection

@@ -37,13 +37,14 @@
                 </div>
 
                 <div class="overflow-x-auto rounded border border-slate-100 dark:border-slate-700">
-                    <table class="w-full text-left border-collapse min-w-[1200px]">
+                    <table class="w-full text-left border-collapse min-w-[1420px]">
                         <thead>
                             <tr class="bg-primary-600 text-white text-[10px] uppercase tracking-wider font-black">
                                 <th class="px-3 py-2 border-r border-primary-500 min-w-[120px]">Accession & Title</th>
                                 <th class="px-3 py-2 border-r border-primary-500 min-w-[300px]">Authors & Contributors</th>
                                 <th class="px-3 py-2 border-r border-primary-500 min-w-[400px]">Material Description</th>
                                 <th class="px-3 py-2 border-r border-primary-500 min-w-[150px]">IDs & Pub</th>
+                                <th class="px-3 py-2 border-r border-primary-500 min-w-[220px]">Acquisition Details (Optional)</th>
                                 <th class="px-3 py-2 min-w-[200px]">System Info</th>
                             </tr>
                         </thead>
@@ -135,6 +136,10 @@
                                     </div>
                                 </td>
 
+                                <td class="p-2 align-top">
+                                    @include('import.materials.acquisition-fields')
+                                </td>
+
                                 <!-- System -->
                                 <td class="p-2 space-y-1.5 align-top">
                                     <div class="flex gap-1">
@@ -165,7 +170,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="py-12 text-center text-slate-400 italic">No new records to preview.</td>
+                                <td colspan="6" class="py-12 text-center text-slate-400 italic">No new records to preview.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -189,13 +194,14 @@
                 </div>
 
                 <div class="overflow-x-auto rounded border border-slate-100 dark:border-slate-700">
-                    <table class="w-full text-left border-collapse min-w-[1200px]">
+                    <table class="w-full text-left border-collapse min-w-[1420px]">
                         <thead>
                             <tr class="bg-slate-700 text-white text-[10px] uppercase tracking-wider font-black">
                                 <th class="px-3 py-2 border-r border-slate-600 min-w-[120px]">Accession & Title</th>
                                 <th class="px-3 py-2 border-r border-slate-600 min-w-[300px]">Authors & Contributors</th>
                                 <th class="px-3 py-2 border-r border-slate-600 min-w-[400px]">Material Description</th>
                                 <th class="px-3 py-2 border-r border-slate-600 min-w-[150px]">IDs & Pub</th>
+                                <th class="px-3 py-2 border-r border-primary-500 min-w-[220px]">Acquisition Details (Optional)</th>
                                 <th class="px-3 py-2 min-w-[200px]">System Info</th>
                             </tr>
                         </thead>
@@ -287,6 +293,10 @@
                                     </div>
                                 </td>
 
+                                <td class="p-2 align-top">
+                                    @include('import.materials.acquisition-fields')
+                                </td>
+
                                 <!-- System -->
                                 <td class="p-2 space-y-1.5 align-top">
                                     <div class="flex gap-1">
@@ -317,7 +327,7 @@
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="5" class="py-12 text-center text-slate-400 italic">No existing records to preview.</td>
+                                <td colspan="6" class="py-12 text-center text-slate-400 italic">No existing records to preview.</td>
                             </tr>
                             @endforelse
                         </tbody>
@@ -340,6 +350,21 @@
         form.submit();
     }
     document.addEventListener('DOMContentLoaded', function() {
+        const researchNames = @json($researchCategoryNames ?? []);
+        document.querySelectorAll('[data-material-acquisition]').forEach(section => {
+            const row = section.closest('tr');
+            const category = row.querySelector('[name="materials[' + section.dataset.rowIndex + '][category]"]');
+            const sync = () => {
+                const excluded = researchNames.includes((category?.value || '').trim().toLowerCase());
+                section.hidden = excluded;
+                section.disabled = excluded;
+                section.classList.toggle('hidden', excluded);
+                row.querySelector('[data-material-acquisition-research]')?.classList.toggle('hidden', !excluded);
+            };
+            category?.addEventListener('input', sync);
+            sync();
+        });
+
         document.querySelectorAll('.pagination a, .pagination-links a').forEach(link => {
             link.addEventListener('click', function(e) {
                 e.preventDefault();

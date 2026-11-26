@@ -811,6 +811,27 @@
         </div>
       </div>
 
+      @if(!($book->category?->isAcademicResearch() ?? false))
+        <section id="acquisition-details" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden" aria-labelledby="acquisition-details-heading">
+          <div class="px-6 py-4 bg-gray-50/70 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
+            <h6 id="acquisition-details-heading" class="text-xs font-bold uppercase tracking-wider text-gray-700 dark:text-gray-300">Acquisition Details</h6>
+          </div>
+          <dl class="p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="min-w-0">
+              <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Acquisition Mode</dt>
+              <dd class="mt-1 text-base font-medium text-gray-900 dark:text-white">{{ $book->acquisition_mode?->value ?? '—' }}</dd>
+            </div>
+            <div class="min-w-0">
+              <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Price per Copy</dt>
+              <dd class="mt-1 text-base font-medium text-gray-900 dark:text-white break-words">{{ $book->price ?? '—' }}</dd>
+            </div>
+            <div class="min-w-0">
+              <dt class="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Acquisition Date</dt>
+              <dd class="mt-1 text-base font-medium text-gray-900 dark:text-white">{{ $book->acquisition_date?->format('Y-m-d') ?? '—' }}</dd>
+            </div>
+          </dl>
+        </section>
+      @endif
     </div>
 
   </div>

@@ -47,7 +47,7 @@
               <select id="category" name="category" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-primary-400 focus:border-primary-400 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-primary-500 dark:focus:border-primary-500" required>
                 <option value="" selected disabled>Choose a category</option>
                 @foreach($categories as $category)
-                <option value="{{ $category->id }}" data-category-type="{{ $category->category_type }}" {{ old('category') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                <option value="{{ $category->id }}" data-category-type="{{ $category->category_type }}" data-acquisition-eligible="{{ $category->isAcademicResearch() ? 'false' : 'true' }}" {{ old('category') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
                 @endforeach
               </select>
               @error('category') <p class="mt-2 text-sm text-red-600 dark:text-red-500">{{ $message }}</p> @enderror
@@ -207,6 +207,13 @@
             </div>
           </div>
         </div>
+
+        @include('maintenance.books.partials.acquisition-fields', [
+          'acquisitionBook' => null,
+          'restoreAcquisitionInput' => true,
+          'acquisitionCategoryInput' => 'category',
+          'acquisitionEligible' => !($categories->firstWhere('id', old('category'))?->isAcademicResearch() ?? false),
+        ])
 
         <!-- Section 5: Category-Specific Fields -->
         <div id="category-specific-section" class="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-sm overflow-hidden hidden">
@@ -920,4 +927,5 @@
     updateTags();
   });
 </script>
+@include('maintenance.books.partials.acquisition-script')
 @endsection
