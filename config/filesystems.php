@@ -61,7 +61,7 @@ return [
         ],
         'backups' => [
             'driver' => 'local',
-            'root' => storage_path('app/backups'), // not including the app name
+            'root' => storage_path('app'), // Spatie appends the backup name.
             'throw' => false,
         ],
 
